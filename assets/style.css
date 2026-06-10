@@ -34,9 +34,9 @@ a{color:inherit}
 h1,h2,h3,h4{font-family:var(--ff-disp);color:#fff;letter-spacing:-.02em}
 button{font-family:var(--ff-body)}
 
-.brand{font-family:var(--ff-disp);font-weight:800;font-size:1.3rem;color:#fff;letter-spacing:-.03em;display:flex;flex-direction:column;line-height:1.1}
+.brand{font-family:var(--ff-disp);font-weight:800;font-size:1.3rem;color:#fff;letter-spacing:-.03em;display:flex;align-items:baseline;gap:8px;line-height:1.1;white-space:nowrap}
 .brand b{color:var(--gold)}
-.brand small{font-family:var(--ff-mono);font-size:.5rem;letter-spacing:.32em;color:var(--mut);font-weight:500;margin-top:2px}
+.brand small{font-family:var(--ff-mono);font-size:.5rem;letter-spacing:.32em;color:var(--mut);font-weight:500}
 
 /* ---------- BUTTONS ---------- */
 .btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--ff-disp);font-weight:700;font-size:.85rem;padding:10px 18px;border-radius:11px;cursor:pointer;border:0;transition:.15s}
