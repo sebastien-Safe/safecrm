@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S@FE CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- ================= ÉCRAN DE CONNEXION ================= -->
+<div id="login-screen" class="login-screen">
+  <div class="login-card">
+    <div class="brand">S<b>@</b>FE<small>CRM</small></div>
+    <h1>Connexion</h1>
+    <div class="field"><label>E-mail</label><input id="login-email" type="email" autocomplete="username"></div>
+    <div class="field"><label>Mot de passe</label><input id="login-password" type="password" autocomplete="current-password"></div>
+    <button class="btn btn-pri" id="login-btn" style="width:100%;justify-content:center">Se connecter</button>
+    <p class="error" id="login-error"></p>
+  </div>
+</div>
+
+<!-- ================= APPLICATION ================= -->
+<div id="app" class="app" style="display:none">
+  <aside class="sidebar">
+    <div class="brand">S<b>@</b>FE<small>CRM</small></div>
+    <nav class="navlinks">
+      <button data-view="dashboard" class="navlink active">Tableau de bord</button>
+      <button data-view="contacts" class="navlink">Contacts</button>
+      <button data-view="contracts" class="navlink">Contrats</button>
+      <button data-view="tasks" class="navlink">Tâches</button>
+    </nav>
+    <div class="sidebar-footer">
+      <span id="user-email"></span>
+      <button id="logout-btn" class="btn btn-out btn-sm">Déconnexion</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ---------- TABLEAU DE BORD ---------- -->
+    <section id="view-dashboard" class="view active">
+      <div class="view-head">
+        <div>
+          <h2>Tableau de bord</h2>
+          <p>Vue d'ensemble de votre activité S@FE</p>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="n" id="stat-contacts">–</div><div class="l">Contacts au total</div></div>
+        <div class="stat-card"><div class="n" id="stat-clients">–</div><div class="l">Clients actifs</div></div>
+        <div class="stat-card"><div class="n" id="stat-contracts">–</div><div class="l">Contrats en cours</div></div>
+        <div class="stat-card"><div class="n" id="stat-tasks-late">–</div><div class="l">Tâches en retard</div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="panel-block">
+          <h3>Tâches à venir / en retard</h3>
+          <div class="mini-list" id="upcoming-tasks-list"><p class="empty">Chargement…</p></div>
+        </div>
+        <div class="panel-block">
+          <h3>Derniers contacts ajoutés</h3>
+          <div class="mini-list" id="recent-contacts-list"><p class="empty">Chargement…</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- CONTACTS ---------- -->
+    <section id="view-contacts" class="view">
+      <div class="view-head">
+        <div>
+          <h2>Contacts</h2>
+          <p>Prospects et clients, toutes activités confondues</p>
+        </div>
+        <button class="btn btn-pri" id="btn-new-contact">+ Nouveau contact</button>
+      </div>
+      <div class="filters">
+        <input type="text" id="contacts-search" placeholder="Rechercher (nom, entreprise, e-mail…)">
+        <select id="contacts-filter-statut">
+          <option value="">Tous statuts</option>
+          <option>Prospect</option><option>Client</option><option>Inactif</option>
+        </select>
+        <select id="contacts-filter-activite">
+          <option value="">Toutes activités</option>
+          <option>Digitalisation</option><option>RGPD</option><option>Assurance</option><option>Autre</option>
+        </select>
+      </div>
+      <div class="scrollx">
+        <table class="tbl">
+          <thead><tr>
+            <th>Nom</th><th>Entreprise</th><th>Activités</th><th>Statut</th><th>Téléphone</th><th>E-mail</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="contacts-tbody"><tr><td colspan="7" class="empty">Chargement…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- CONTRATS ---------- -->
+    <section id="view-contracts" class="view">
+      <div class="view-head">
+        <div>
+          <h2>Contrats</h2>
+          <p>Suivi des prestations, statuts et échéances</p>
+        </div>
+        <button class="btn btn-pri" id="btn-new-contract">+ Nouveau contrat</button>
+      </div>
+      <div class="filters">
+        <select id="contracts-filter-statut">
+          <option value="">Tous statuts</option>
+          <option>Devis envoyé</option><option>Signé</option><option>En cours</option><option>Terminé</option><option>Résilié</option>
+        </select>
+        <select id="contracts-filter-recurrence">
+          <option value="">Toutes récurrences</option>
+          <option>Ponctuel</option><option>Mensuel</option><option>Annuel</option>
+        </select>
+      </div>
+      <div class="scrollx">
+        <table class="tbl">
+          <thead><tr>
+            <th>Contact</th><th>Type</th><th>Formule</th><th>Montant</th><th>Récurrence</th><th>Début</th><th>Échéance</th><th>Statut</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="contracts-tbody"><tr><td colspan="9" class="empty">Chargement…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- TÂCHES ---------- -->
+    <section id="view-tasks" class="view">
+      <div class="view-head">
+        <div>
+          <h2>Tâches</h2>
+          <p>Organisation par statut — cliquez sur les boutons pour faire avancer une tâche</p>
+        </div>
+        <button class="btn btn-pri" id="btn-new-task">+ Nouvelle tâche</button>
+      </div>
+      <div class="filters">
+        <input type="text" id="tasks-filter-assigne" placeholder="Filtrer par assigné…">
+      </div>
+      <div class="kanban">
+        <div class="kanban-col"><h4>À faire</h4><div id="kanban-todo"></div></div>
+        <div class="kanban-col"><h4>En cours</h4><div id="kanban-inprogress"></div></div>
+        <div class="kanban-col"><h4>Terminé</h4><div id="kanban-done"></div></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ================= MODALE CONTACT ================= -->
+<div class="modal" id="contact-modal">
+  <div class="box">
+    <h3 id="contact-modal-title">Nouveau contact</h3>
+    <input type="hidden" id="c-id">
+    <div class="field-row">
+      <div class="field"><label>Nom *</label><input id="c-nom" type="text" placeholder="Nom du contact"></div>
+      <div class="field"><label>Entreprise</label><input id="c-entreprise" type="text" placeholder="Raison sociale"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>E-mail</label><input id="c-email" type="email"></div>
+      <div class="field"><label>Téléphone</label><input id="c-telephone" type="tel"></div>
+    </div>
+    <div class="field"><label>Adresse</label><input id="c-adresse" type="text"></div>
+    <div class="field-row">
+      <div class="field"><label>Statut</label>
+        <select id="c-statut"><option>Prospect</option><option>Client</option><option>Inactif</option></select>
+      </div>
+      <div class="field"><label>Source</label><input id="c-source" type="text" placeholder="Ex : GBP, bouche-à-oreille…"></div>
+    </div>
+    <div class="field"><label>Activités concernées</label>
+      <div class="checks">
+        <label><input type="checkbox" value="Digitalisation" class="c-activite"> Digitalisation / SEO local</label>
+        <label><input type="checkbox" value="RGPD" class="c-activite"> RGPD</label>
+        <label><input type="checkbox" value="Assurance" class="c-activite"> Assurance</label>
+        <label><input type="checkbox" value="Autre" class="c-activite"> Autre</label>
+      </div>
+    </div>
+    <div class="field"><label>Notes</label><textarea id="c-notes"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="contact-delete-btn" style="display:none;margin-right:auto">Supprimer</button>
+      <button class="btn btn-out" id="contact-cancel-btn">Annuler</button>
+      <button class="btn btn-pri" id="contact-save-btn">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODALE CONTRAT ================= -->
+<div class="modal" id="contract-modal">
+  <div class="box">
+    <h3 id="contract-modal-title">Nouveau contrat</h3>
+    <input type="hidden" id="ct-id">
+    <div class="field"><label>Contact *</label>
+      <select id="ct-contact"><option value="">— Sélectionner un contact —</option></select>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Type de prestation *</label>
+        <input id="ct-type" list="contract-types" placeholder="Ex : Référencement Local">
+        <datalist id="contract-types">
+          <option value="Référencement Local">
+          <option value="Mise en conformité RGPD">
+          <option value="DPO externalisé">
+          <option value="Audit RGPD">
+          <option value="Gestion Fiche Google Business">
+          <option value="Courtage Assurance">
+          <option value="Click & Collect">
+          <option value="Autre">
+        </datalist>
+      </div>
+      <div class="field"><label>Formule</label><input id="ct-formule" type="text" placeholder="Ex : Boost, Premium…"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Montant (€ HT)</label><input id="ct-montant" type="number" step="0.01" min="0"></div>
+      <div class="field"><label>Récurrence</label>
+        <select id="ct-recurrence"><option>Ponctuel</option><option>Mensuel</option><option>Annuel</option></select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Date de début</label><input id="ct-date-debut" type="date"></div>
+      <div class="field"><label>Échéance / renouvellement</label><input id="ct-date-echeance" type="date"></div>
+    </div>
+    <div class="field"><label>Statut</label>
+      <select id="ct-statut"><option>Devis envoyé</option><option>Signé</option><option>En cours</option><option>Terminé</option><option>Résilié</option></select>
+    </div>
+    <div class="field"><label>Notes</label><textarea id="ct-notes"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="contract-delete-btn" style="display:none;margin-right:auto">Supprimer</button>
+      <button class="btn btn-out" id="contract-cancel-btn">Annuler</button>
+      <button class="btn btn-pri" id="contract-save-btn">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODALE TÂCHE ================= -->
+<div class="modal" id="task-modal">
+  <div class="box">
+    <h3 id="task-modal-title">Nouvelle tâche</h3>
+    <input type="hidden" id="t-id">
+    <div class="field"><label>Titre *</label><input id="t-titre" type="text" placeholder="Ex : Relancer le devis RGPD"></div>
+    <div class="field"><label>Description</label><textarea id="t-description"></textarea></div>
+    <div class="field-row">
+      <div class="field"><label>Contact lié</label><select id="t-contact"><option value="">— Aucun —</option></select></div>
+      <div class="field"><label>Contrat lié</label><select id="t-contract"><option value="">— Aucun —</option></select></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Échéance</label><input id="t-echeance" type="date"></div>
+      <div class="field"><label>Priorité</label>
+        <select id="t-priorite"><option>Basse</option><option selected>Normale</option><option>Haute</option></select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Statut</label>
+        <select id="t-statut"><option>À faire</option><option>En cours</option><option>Terminé</option></select>
+      </div>
+      <div class="field"><label>Assigné à</label><input id="t-assigne" type="text" placeholder="Ex : Sébastien"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="task-delete-btn" style="display:none;margin-right:auto">Supprimer</button>
+      <button class="btn btn-out" id="task-cancel-btn">Annuler</button>
+      <button class="btn btn-pri" id="task-save-btn">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
