@@ -2,7 +2,7 @@
 // S@FE CRM — Logique applicative
 // =========================================================
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const state = {
   contacts: [],
@@ -65,7 +65,7 @@ function contractLabel(ct) {
 // AUTHENTIFICATION
 // ---------------------------------------------------------
 async function init() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   if (session) {
     state.user = session.user;
     showApp();
@@ -73,7 +73,7 @@ async function init() {
     showLogin();
   }
 
-  supabase.auth.onAuthStateChange((event, session) => {
+  sb.auth.onAuthStateChange((event, session) => {
     if (session) {
       state.user = session.user;
       showApp();
@@ -106,14 +106,14 @@ async function login() {
     $('#login-error').textContent = 'Merci de renseigner e-mail et mot de passe.';
     return;
   }
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await sb.auth.signInWithPassword({ email, password });
   if (error) {
     $('#login-error').textContent = "Connexion impossible : " + error.message;
   }
 }
 
 async function logout() {
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
 }
 
 // ---------------------------------------------------------
@@ -125,19 +125,19 @@ async function loadAll() {
 }
 
 async function loadContacts() {
-  const { data, error } = await supabase.from('contacts').select('*').order('created_at', { ascending: false });
+  const { data, error } = await sb.from('contacts').select('*').order('created_at', { ascending: false });
   if (error) return alert('Erreur chargement contacts : ' + error.message);
   state.contacts = data || [];
 }
 
 async function loadContracts() {
-  const { data, error } = await supabase.from('contracts').select('*').order('created_at', { ascending: false });
+  const { data, error } = await sb.from('contracts').select('*').order('created_at', { ascending: false });
   if (error) return alert('Erreur chargement contrats : ' + error.message);
   state.contracts = data || [];
 }
 
 async function loadTasks() {
-  const { data, error } = await supabase.from('tasks').select('*').order('echeance', { ascending: true, nullsFirst: false });
+  const { data, error } = await sb.from('tasks').select('*').order('echeance', { ascending: true, nullsFirst: false });
   if (error) return alert('Erreur chargement tâches : ' + error.message);
   state.tasks = data || [];
 }
@@ -273,9 +273,9 @@ async function saveContact() {
   };
   let error;
   if (id) {
-    ({ error } = await supabase.from('contacts').update(payload).eq('id', id));
+    ({ error } = await sb.from('contacts').update(payload).eq('id', id));
   } else {
-    ({ error } = await supabase.from('contacts').insert(payload));
+    ({ error } = await sb.from('contacts').insert(payload));
   }
   if (error) return alert('Erreur : ' + error.message);
   closeContactModal();
@@ -286,7 +286,7 @@ async function deleteContact() {
   const id = $('#c-id').value;
   if (!id) return;
   if (!confirm('Supprimer ce contact ? Les contrats et tâches associés seront aussi détachés ou supprimés.')) return;
-  const { error } = await supabase.from('contacts').delete().eq('id', id);
+  const { error } = await sb.from('contacts').delete().eq('id', id);
   if (error) return alert('Erreur : ' + error.message);
   closeContactModal();
   await loadAll();
@@ -379,9 +379,9 @@ async function saveContract() {
   };
   let error;
   if (id) {
-    ({ error } = await supabase.from('contracts').update(payload).eq('id', id));
+    ({ error } = await sb.from('contracts').update(payload).eq('id', id));
   } else {
-    ({ error } = await supabase.from('contracts').insert(payload));
+    ({ error } = await sb.from('contracts').insert(payload));
   }
   if (error) return alert('Erreur : ' + error.message);
   closeContractModal();
@@ -392,7 +392,7 @@ async function deleteContract() {
   const id = $('#ct-id').value;
   if (!id) return;
   if (!confirm('Supprimer ce contrat ?')) return;
-  const { error } = await supabase.from('contracts').delete().eq('id', id);
+  const { error } = await sb.from('contracts').delete().eq('id', id);
   if (error) return alert('Erreur : ' + error.message);
   closeContractModal();
   await loadAll();
@@ -476,9 +476,9 @@ async function saveTask() {
   };
   let error;
   if (id) {
-    ({ error } = await supabase.from('tasks').update(payload).eq('id', id));
+    ({ error } = await sb.from('tasks').update(payload).eq('id', id));
   } else {
-    ({ error } = await supabase.from('tasks').insert(payload));
+    ({ error } = await sb.from('tasks').insert(payload));
   }
   if (error) return alert('Erreur : ' + error.message);
   closeTaskModal();
@@ -489,14 +489,14 @@ async function deleteTask() {
   const id = $('#t-id').value;
   if (!id) return;
   if (!confirm('Supprimer cette tâche ?')) return;
-  const { error } = await supabase.from('tasks').delete().eq('id', id);
+  const { error } = await sb.from('tasks').delete().eq('id', id);
   if (error) return alert('Erreur : ' + error.message);
   closeTaskModal();
   await loadAll();
 }
 
 async function quickSetTaskStatus(id, statut) {
-  const { error } = await supabase.from('tasks').update({ statut }).eq('id', id);
+  const { error } = await sb.from('tasks').update({ statut }).eq('id', id);
   if (error) return alert('Erreur : ' + error.message);
   await loadAll();
 }
