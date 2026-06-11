@@ -27,145 +27,176 @@
 // =========================================================
 
 // deno-lint-ignore-file
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+// COMMENTEZ L'IMPORT SMTP POUR LE TEST
+// import { SMTPClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts"
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
-
-  // ---- Authentification de l'utilisateur appelant ----
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader) return json({ error: "missing_authorization" }, 401);
-
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } },
-  );
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !user) return json({ error: "unauthorized" }, 401);
-
-  // ---- Lecture du payload ----
-  let payload: {
-    pdf_base64: string; filename: string; ref_unique: string;
-    client_email: string; client_name?: string;
-    contract_id?: string; contact_id?: string;
-    subject?: string; body?: string;
-  };
-  try { payload = await req.json(); }
-  catch { return json({ error: "invalid_json" }, 400); }
-
-  if (!payload.pdf_base64 || !payload.filename || !payload.client_email) {
-    return json({ error: "missing_fields", required: ["pdf_base64", "filename", "client_email"] }, 400);
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
   }
 
-  // ---- Décodage du PDF (base64 → Uint8Array) ----
-  const pdfBytes = Uint8Array.from(atob(payload.pdf_base64), c => c.charCodeAt(0));
-
-  // ---- Étape 1 : Upload kDrive Infomaniak ----
-  const kdriveId = Deno.env.get("KDRIVE_ID");
-  const kdriveFolder = Deno.env.get("KDRIVE_FOLDER_ID");
-  const kdriveToken = Deno.env.get("KDRIVE_TOKEN");
-  if (!kdriveId || !kdriveFolder || !kdriveToken) {
-    return json({ error: "kdrive_not_configured" }, 500);
-  }
-
-  const kdriveUrl = `https://api.infomaniak.com/2/drive/${kdriveId}/upload`
-    + `?directory_id=${kdriveFolder}`
-    + `&file_name=${encodeURIComponent(payload.filename)}`
-    + `&total_size=${pdfBytes.length}`
-    + `&conflict=rename`;
-
-  let kdriveResponse: { id?: string; name?: string; url?: string } | null = null;
   try {
-    const r = await fetch(kdriveUrl, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${kdriveToken}`,
-        "Content-Type": "application/octet-stream",
-      },
-      body: pdfBytes,
+    console.log("=== DÉBUT DU DÉBOGAGE ===") // Ce log DOIT apparaître
+
+    const { pdf_base64, filename, client_email, client_name, subject, body, ref_unique } = await req.json()
+    
+    // ... (Gardez tout le code de vérification des variables et d'upload kDrive) ...
+    // ... (Commentez toute la partie SMTP pour l'instant) ...
+
+    // Simulez une réussite pour tester
+    return new Response(JSON.stringify({ success: true, message: "Test réussi (SMTP désactivé)" }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
     });
-    if (!r.ok) {
-      const txt = await r.text();
-      console.error("kdrive_upload_failed", r.status, txt);
-      return json({ error: "kdrive_upload_failed", status: r.status, details: txt }, 502);
+
+  } catch (error) {
+    console.error("=== ERREUR GLOBALE ===", error)
+    return new Response(JSON.stringify({ error: error.message }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 
+    })
+  }
+})
+
+
+    // --- 1. LECTURE ET VÉRIFICATION DES VARIABLES ---
+    const kdriveId = Deno.env.get('KDRIVE_ID')
+    const kdriveFolderName = Deno.env.get('KDRIVE_FOLDER_NAME')
+    const kdriveUser = Deno.env.get('KDRIVE_USER')
+    const kdrivePass = Deno.env.get('KDRIVE_APP_PASSWORD')
+
+    // Gestion flexible du nom de variable mot de passe SMTP
+    let smtpPass = Deno.env.get('SMTP_PASS')
+    if (!smtpPass) smtpPass = Deno.env.get('SMTP_PASSWORD')
+
+    const smtpHost = Deno.env.get('SMTP_HOST') ?? 'smtp.ionos.fr'
+    let smtpPort = Number(Deno.env.get('SMTP_PORT'))
+    if (!smtpPort || smtpPort === 0) smtpPort = 465 
+    
+    const smtpUser = Deno.env.get('SMTP_USER') ?? 'contact@safe-digitalisation.fr'
+    const fromName = Deno.env.get('SMTP_FROM_NAME') ?? 'S@FE Digitalisation'
+
+    // --- VÉRIFICATION CRITIQUE DU DOSSIER ---
+    const DOSSIER_ATTENDU = "Clients";
+    
+    console.log("VARIABLES KDRIVE:", {
+      id: kdriveId,
+      folder_recu: kdriveFolderName,
+      folder_attendu: DOSSIER_ATTENDU,
+      user: kdriveUser,
+      pass_set: !!kdrivePass
+    })
+
+    if (!kdrivePass) throw new Error("KDRIVE_APP_PASSWORD est manquant.")
+    if (!smtpPass) throw new Error("SMTP_PASS (ou SMTP_PASSWORD) est manquant.")
+    if (!kdriveFolderName) throw new Error("KDRIVE_FOLDER_NAME est manquant.")
+    
+    // Vérifie que le dossier configuré est bien 'Clients'
+    if (kdriveFolderName !== DOSSIER_ATTENDU) {
+      throw new Error(`ERREUR DE CONFIGURATION : Le dossier configuré est "${kdriveFolderName}" mais doit être impérativement "${DOSSIER_ATTENDU}". Vérifiez la variable KDRIVE_FOLDER_NAME dans Supabase.`)
     }
-    const j = await r.json();
-    // Réponse Infomaniak : { result: "success", data: { id, name, ... } }
-    const data = j?.data || j;
-    kdriveResponse = {
-      id: data?.id,
-      name: data?.name || payload.filename,
-      url: data?.id
-        ? `https://ksuite.infomaniak.com/kdrive/app/drive/${kdriveId}/files/${data.id}`
-        : undefined,
-    };
-  } catch (e) {
-    console.error("kdrive_error", e);
-    return json({ error: "kdrive_error", details: String(e) }, 502);
+
+    if (!filename) throw new Error("Le nom du fichier (filename) est manquant dans la requête.")
+
+    // --- 2. PRÉPARATION DU FICHIER PDF ---
+    const binaryString = atob(pdf_base64)
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i)
+    }
+    const pdfBlob = new Blob([bytes], { type: 'application/pdf' })
+    
+    // Construction URL WebDAV vers le dossier 'Clients'
+    const encodedFolder = encodeURIComponent(kdriveFolderName)
+    const encodedFilename = encodeURIComponent(filename)
+    const webdavUrl = `https://${kdriveId}.connect.kdrive.infomaniak.com/${encodedFolder}/${encodedFilename}`
+    
+    console.log("📂 Destination finale:", webdavUrl)
+
+    // --- 3. TEST UPLOAD KDRIVE (WebDAV) ---
+    console.log("Tentative d'upload kDrive dans le dossier 'Clients'...")
+    const credentials = btoa(`${kdriveUser}:${kdrivePass}`)
+    
+    const uploadResponse = await fetch(webdavUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/pdf',
+        'Content-Length': String(pdfBlob.size)
+      },
+      body: pdfBlob
+    })
+
+    if (!uploadResponse.ok) {
+      const errorText = await uploadResponse.text()
+      console.error("ÉCHEC KDRIVE:", uploadResponse.status, errorText)
+      throw new Error(`Échec kDrive (${uploadResponse.status}): ${errorText}`)
+    }
+    console.log("✅ Upload kDrive réussi dans le dossier 'Clients' !")
+
+    // --- 4. TEST ENVOI SMTP (IONOS) ---
+    console.log(`Tentative de connexion SMTP à ${smtpHost}:${smtpPort}...`)
+    
+    const client = new SMTPClient()
+    try {
+      await client.connectTLS({
+        hostname: smtpHost,
+        port: smtpPort,
+        username: smtpUser,
+        password: smtpPass,
+      })
+      console.log("✅ Connexion SMTP réussie!")
+
+      await client.send({
+        from: `${fromName} <${smtpUser}>`,
+        to: client_email,
+        subject: subject || `Votre bon de commande S@FE — ${ref_unique}`,
+        content: body || `Bonjour ${client_name}, veuillez trouver ci-joint votre document.`,
+        attachments: [
+          {
+            filename: filename,
+            content: bytes,
+          },
+        ],
+      })
+      console.log("✅ Email envoyé avec succès!")
+      
+    } catch (smtpError) {
+      console.error("ÉCHEC SMTP DÉTAILLÉ:", smtpError)
+      throw new Error(`Échec SMTP: ${smtpError.message}`)
+    } finally {
+      await client.close()
+    }
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: "Contrat signé, déposé dans le dossier 'Clients' sur kDrive et envoyé par email.",
+        kdrive: { url: webdavUrl, folder: DOSSIER_ATTENDU },
+        email: { sent_to: client_email }
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
+
+  } catch (error) {
+    console.error("=== ERREUR GLOBALE ===", error)
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        debug: "Vérifiez les logs Supabase."
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
+    )
   }
-
-  // ---- Étape 2 : Envoi par e-mail au client ----
-  const smtpHost = Deno.env.get("SMTP_HOST") ?? "smtp.mail.me.com";
-  const smtpPort = Number(Deno.env.get("SMTP_PORT") ?? 587);
-  const smtpUser = Deno.env.get("SMTP_USER");
-  const smtpPassword = Deno.env.get("SMTP_PASSWORD");
-  const fromName = Deno.env.get("SMTP_FROM_NAME") ?? "S@FE Digitalisation";
-
-  if (!smtpUser || !smtpPassword) {
-    return json({ error: "smtp_not_configured", kdrive: kdriveResponse }, 500);
-  }
-
-  const client = new SMTPClient({
-    connection: {
-      hostname: smtpHost,
-      port: smtpPort,
-      tls: smtpPort === 465,
-      auth: { username: smtpUser, password: smtpPassword },
-    },
-  });
-
-  try {
-    await client.send({
-      from: `${fromName} <${smtpUser}>`,
-      to: payload.client_email,
-      cc: smtpUser, // copie au compte S@FE pour traçabilité
-      subject: payload.subject ?? `Votre bon de commande S@FE — ${payload.ref_unique}`,
-      content: payload.body ?? "Veuillez trouver ci-joint votre bon de commande S@FE signé.",
-      attachments: [
-        {
-          filename: payload.filename,
-          content: pdfBytes,
-          contentType: "application/pdf",
-        },
-      ],
-    });
-    await client.close();
-  } catch (e) {
-    try { await client.close(); } catch (_) {}
-    console.error("smtp_send_failed", e);
-    return json({ error: "smtp_send_failed", details: String(e), kdrive: kdriveResponse }, 502);
-  }
-
-  return json({
-    ok: true,
-    kdrive: kdriveResponse,
-    sent_to: payload.client_email,
-  });
-});
+})
