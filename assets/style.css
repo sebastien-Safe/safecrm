@@ -57,6 +57,8 @@ button{font-family:var(--ff-body)}
 .login-card .brand{margin-bottom:18px}
 .login-card h1{font-size:1.4rem;margin-bottom:18px}
 .login-card .error{color:var(--alert);font-size:.85rem;margin-top:10px;min-height:1.2em}
+.error{color:var(--alert);font-size:.85rem;margin-top:8px;min-height:1.2em}
+.success{color:var(--ok);font-size:.85rem;margin-top:8px}
 
 /* ---------- FIELDS ---------- */
 .field{margin-bottom:14px}

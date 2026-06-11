@@ -702,6 +702,10 @@ function openProfileModal() {
   $('#profile-prenom').value = state.profile?.prenom || '';
   $('#profile-photo-input').value = '';
   $('#profile-error').textContent = '';
+  $('#profile-new-password').value = '';
+  $('#profile-new-password-2').value = '';
+  $('#password-error').textContent = '';
+  $('#password-success').style.display = 'none';
   setAvatar($('#profile-avatar-preview'), state.profile?.photo_url, state.profile?.prenom || state.user?.email);
   $('#profile-modal').classList.add('show');
 }
@@ -751,6 +755,31 @@ async function saveProfile() {
   await loadProfile();
   renderUserBadge();
   renderObjectifs();
+}
+
+async function changePassword() {
+  const pw1 = $('#profile-new-password').value;
+  const pw2 = $('#profile-new-password-2').value;
+  $('#password-error').textContent = '';
+  $('#password-success').style.display = 'none';
+
+  if (!pw1 || pw1.length < 6) {
+    $('#password-error').textContent = 'Le mot de passe doit contenir au moins 6 caractères.';
+    return;
+  }
+  if (pw1 !== pw2) {
+    $('#password-error').textContent = 'Les deux mots de passe ne correspondent pas.';
+    return;
+  }
+
+  const { error } = await sb.auth.updateUser({ password: pw1 });
+  if (error) {
+    $('#password-error').textContent = 'Erreur : ' + error.message;
+    return;
+  }
+  $('#profile-new-password').value = '';
+  $('#profile-new-password-2').value = '';
+  $('#password-success').style.display = 'block';
 }
 
 // ---------------------------------------------------------
@@ -924,6 +953,7 @@ function bindEvents() {
   $('#profile-cancel-btn').addEventListener('click', closeProfileModal);
   $('#profile-save-btn').addEventListener('click', saveProfile);
   $('#profile-photo-input').addEventListener('change', previewProfilePhoto);
+  $('#password-save-btn').addEventListener('click', changePassword);
 
   // Objectifs
   $('#save-jours-btn').addEventListener('click', saveJoursTravailles);
