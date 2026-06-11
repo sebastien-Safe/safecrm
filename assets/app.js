@@ -81,6 +81,7 @@ const CONTRACT_STATUT_BADGE = {
 };
 const PRIORITY_BADGE = { 'Basse': 'badge-gray', 'Normale': 'badge-blue', 'Haute': 'badge-red' };
 const ACTIVITE_BADGE = { 'Digitalisation': 'badge-blue', 'RGPD': 'badge-gold', 'Assurance': 'badge-green', 'Autre': 'badge-gray' };
+const TASK_TYPE_BADGE = { 'Premier contact': 'badge-blue', 'RDV visio': 'badge-gold', 'RDV terrain': 'badge-green', 'Autre': 'badge-gray' };
 
 // ---------------------------------------------------------
 // GRILLE TARIFAIRE (issue de safe-digitalisation.fr)
@@ -154,6 +155,8 @@ async function init() {
   });
 
   bindEvents();
+  updateDashboardClock();
+  setInterval(updateDashboardClock, 30000);
 }
 
 function showLogin() {
@@ -313,7 +316,20 @@ function switchView(view) {
 // ---------------------------------------------------------
 // TABLEAU DE BORD
 // ---------------------------------------------------------
+function updateDashboardClock() {
+  const el = $('#dashboard-clock');
+  if (!el) return;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Paris' });
+  const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
+  el.textContent = `${capitalize(dateStr)} — ${timeStr} (heure de Paris)`;
+}
+
 function renderDashboard() {
+  const name = state.profile?.prenom || (state.user?.email ? state.user.email.split('@')[0] : 'Utilisateur');
+  $('#dashboard-title').textContent = `Tableau de bord de ${name}`;
+  updateDashboardClock();
+
   $('#stat-contacts').textContent = state.contacts.length;
   $('#stat-clients').textContent = state.contacts.filter(c => c.statut === 'Client').length;
   $('#stat-contracts').textContent = state.contracts.filter(c => ['Signé', 'En cours'].includes(c.statut)).length;
@@ -373,18 +389,29 @@ function renderContacts() {
     return;
   }
   tbody.innerHTML = list.map(c => `
-    <tr>
+    <tr class="${c.rgpd_ko ? 'row-rgpd-ko' : ''}">
       <td>${escapeHtml(c.nom)}</td>
       <td>${escapeHtml(c.entreprise || '—')}</td>
       <td><div class="tag-row">${(c.activites || []).map(a => `<span class="badge ${ACTIVITE_BADGE[a] || 'badge-gray'}">${escapeHtml(a)}</span>`).join('') || '—'}</div></td>
-      <td><span class="badge ${CONTACT_STATUT_BADGE[c.statut] || 'badge-gray'}">${escapeHtml(c.statut)}</span></td>
+      <td>${c.rgpd_ko ? '<span class="badge badge-red">🚫 RGPD KO</span>' : `<span class="badge ${CONTACT_STATUT_BADGE[c.statut] || 'badge-gray'}">${escapeHtml(c.statut)}</span>`}</td>
       <td class="nowrap">${escapeHtml(c.telephone || '—')}</td>
       <td>${c.email ? `<a href="mailto:${escapeHtml(c.email)}" style="color:var(--accent)">${escapeHtml(c.email)}</a>` : '—'}</td>
       <td class="nowrap">${escapeHtml(creatorName(c.created_by))}</td>
       <td class="actions">
-        <button class="btn btn-out btn-sm" data-edit-contact="${c.id}">Modifier</button>
+        <button class="btn btn-out btn-sm" data-edit-contact="${c.id}">${c.rgpd_ko ? 'Voir' : 'Modifier'}</button>
       </td>
     </tr>`).join('');
+}
+
+const CONTACT_FIELD_IDS = ['c-nom', 'c-entreprise', 'c-email', 'c-telephone', 'c-adresse', 'c-statut', 'c-source', 'c-notes'];
+
+function setContactFieldsLocked(locked) {
+  CONTACT_FIELD_IDS.forEach(id => { $('#' + id).disabled = locked; });
+  $all('.c-activite').forEach(cb => { cb.disabled = locked; });
+  $('#c-rgpd-ko').disabled = locked;
+  $('#contact-save-btn').style.display = locked ? 'none' : '';
+  $('#c-rgpd-ko-field').style.display = locked ? 'none' : '';
+  $('#c-rgpd-locked-msg').style.display = locked ? 'block' : 'none';
 }
 
 function openContactModal(id = null) {
@@ -399,7 +426,9 @@ function openContactModal(id = null) {
   $('#c-statut').value = c?.statut || 'Prospect';
   $('#c-source').value = c?.source || '';
   $('#c-notes').value = c?.notes || '';
+  $('#c-rgpd-ko').checked = !!c?.rgpd_ko;
   $all('.c-activite').forEach(cb => cb.checked = (c?.activites || []).includes(cb.value));
+  setContactFieldsLocked(!!c?.rgpd_ko);
   $('#contact-delete-btn').style.display = c ? 'inline-flex' : 'none';
   $('#contact-modal').classList.add('show');
 }
@@ -410,9 +439,11 @@ function closeContactModal() {
 
 async function saveContact() {
   const id = $('#c-id').value;
+  const existing = id ? state.contacts.find(x => x.id === id) : null;
   const nom = $('#c-nom').value.trim();
   if (!nom) { alert('Le nom est obligatoire.'); return; }
   const statut = $('#c-statut').value;
+  const rgpdKoChecked = $('#c-rgpd-ko').checked;
   const payload = {
     nom,
     entreprise: $('#c-entreprise').value.trim() || null,
@@ -423,9 +454,25 @@ async function saveContact() {
     source: $('#c-source').value.trim() || null,
     notes: $('#c-notes').value.trim() || null,
     activites: $all('.c-activite').filter(cb => cb.checked).map(cb => cb.value),
+    rgpd_ko: rgpdKoChecked,
   };
+  // Passage en RGPD KO : confirmation puis effacement des coordonnées
+  if (rgpdKoChecked && !existing?.rgpd_ko) {
+    const confirmed = confirm(
+      "Confirmez-vous que ce contact ne souhaite plus être sollicité (RGPD KO) ?\n\n" +
+      "Cette action est définitive : l'e-mail, le téléphone et l'adresse vont être effacés, " +
+      "et la fiche sera verrouillée en lecture seule."
+    );
+    if (!confirmed) {
+      $('#c-rgpd-ko').checked = false;
+      payload.rgpd_ko = false;
+    } else {
+      payload.email = null;
+      payload.telephone = null;
+      payload.adresse = null;
+    }
+  }
   // Mémorise la date de passage au statut "Client" (pour l'objectif "Nouveaux clients")
-  const existing = id ? state.contacts.find(x => x.id === id) : null;
   if (statut === 'Client' && (!existing || existing.statut !== 'Client')) {
     payload.devenu_client_at = new Date().toISOString();
   }
@@ -672,13 +719,19 @@ function taskCardHtml(t) {
   if (t.statut === 'À faire') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|En cours">→ En cours</button>`;
   if (t.statut === 'En cours') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|Terminé">→ Terminé</button>`;
   if (t.statut === 'Terminé') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|À faire">↺ Réouvrir</button>`;
+  const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
+  const rdvLine = isRdv && (t.rdv_date || t.rdv_heure || t.rdv_lieu)
+    ? `<div class="meta" style="margin-top:6px"><span>📍 ${formatDate(t.rdv_date)}${t.rdv_heure ? ' à ' + t.rdv_heure.slice(0,5) : ''}${t.rdv_lieu ? ' — ' + escapeHtml(t.rdv_lieu) : ''}</span></div>`
+    : '';
   return `
     <div class="kanban-card">
+      ${t.type_tache ? `<span class="badge ${TASK_TYPE_BADGE[t.type_tache] || 'badge-gray'}" style="margin-bottom:6px;display:inline-block">${escapeHtml(t.type_tache)}</span>` : ''}
       <div class="title">${escapeHtml(t.titre)}</div>
       <div class="meta">
         <span class="${overdue ? 'overdue' : ''}">📅 ${formatDate(t.echeance)}</span>
         <span class="badge ${PRIORITY_BADGE[t.priorite] || 'badge-gray'}">${escapeHtml(t.priorite)}</span>
       </div>
+      ${rdvLine}
       ${t.contact_id ? `<div class="meta" style="margin-top:6px"><span>👤 ${escapeHtml(contactName(t.contact_id))}</span></div>` : ''}
       ${t.assigne_a ? `<div class="meta" style="margin-top:4px"><span>🧑‍💼 ${escapeHtml(t.assigne_a)}</span></div>` : ''}
       <div class="actions">
@@ -697,18 +750,35 @@ function renderTasks() {
   $('#kanban-done').innerHTML = cols['Terminé'].length ? cols['Terminé'].map(taskCardHtml).join('') : '<p class="empty">Aucune tâche.</p>';
 }
 
+function onTaskTypeChange() {
+  const type = $('#t-type').value;
+  const isRdv = type === 'RDV visio' || type === 'RDV terrain';
+  $('#t-rdv-fields').style.display = isRdv ? 'block' : 'none';
+  $('#t-echeance-row').style.gridTemplateColumns = isRdv ? '1fr' : '1fr 1fr';
+  $('#t-echeance-field').style.display = isRdv ? 'none' : '';
+  $('#t-rdv-lieu-label').textContent = type === 'RDV terrain' ? 'Lieu du RDV' : 'Lieu / Lien visio';
+  $('#t-rdv-lieu').placeholder = type === 'RDV terrain'
+    ? 'Ex : adresse du rendez-vous'
+    : 'Ex : lien Google Meet, Teams, Zoom…';
+}
+
 function openTaskModal(id = null) {
   const t = id ? state.tasks.find(x => x.id === id) : null;
   $('#task-modal-title').textContent = t ? 'Modifier la tâche' : 'Nouvelle tâche';
   $('#t-id').value = t?.id || '';
+  $('#t-type').value = t?.type_tache || 'Premier contact';
   $('#t-titre').value = t?.titre || '';
   $('#t-description').value = t?.description || '';
   $('#t-contact').value = t?.contact_id || '';
   $('#t-contract').value = t?.contract_id || '';
+  $('#t-rdv-date').value = t?.rdv_date || '';
+  $('#t-rdv-heure').value = t?.rdv_heure ? t.rdv_heure.slice(0, 5) : '';
+  $('#t-rdv-lieu').value = t?.rdv_lieu || '';
   $('#t-echeance').value = t?.echeance || '';
   $('#t-priorite').value = t?.priorite || 'Normale';
   $('#t-statut').value = t?.statut || 'À faire';
   $('#t-assigne').value = t?.assigne_a || '';
+  onTaskTypeChange();
   $('#task-delete-btn').style.display = t ? 'inline-flex' : 'none';
   $('#task-modal').classList.add('show');
 }
@@ -722,12 +792,20 @@ async function saveTask() {
   const titre = $('#t-titre').value.trim();
   if (!titre) { alert('Le titre est obligatoire.'); return; }
   const statut = $('#t-statut').value;
+  const type_tache = $('#t-type').value;
+  const isRdv = type_tache === 'RDV visio' || type_tache === 'RDV terrain';
+  const rdv_date = isRdv ? ($('#t-rdv-date').value || null) : null;
   const payload = {
+    type_tache,
     titre,
     description: $('#t-description').value.trim() || null,
     contact_id: $('#t-contact').value || null,
     contract_id: $('#t-contract').value || null,
-    echeance: $('#t-echeance').value || null,
+    rdv_date,
+    rdv_heure: isRdv ? ($('#t-rdv-heure').value || null) : null,
+    rdv_lieu: isRdv ? ($('#t-rdv-lieu').value.trim() || null) : null,
+    // Pour un RDV, l'échéance suit la date du RDV (sinon la date saisie librement)
+    echeance: isRdv ? rdv_date : ($('#t-echeance').value || null),
     priorite: $('#t-priorite').value,
     statut,
     assigne_a: $('#t-assigne').value.trim() || null,
@@ -1072,6 +1150,7 @@ function bindEvents() {
   $('#task-cancel-btn').addEventListener('click', closeTaskModal);
   $('#task-save-btn').addEventListener('click', saveTask);
   $('#task-delete-btn').addEventListener('click', deleteTask);
+  $('#t-type').addEventListener('change', onTaskTypeChange);
 
   // Profil utilisateur
   $('#profile-btn').addEventListener('click', openProfileModal);
