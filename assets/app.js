@@ -368,8 +368,7 @@ function renderAll() {
 // NAVIGATION
 // ---------------------------------------------------------
 function switchView(view) {
-  if (!view) return; // ignore les clics sur des navlink sans data-view (sous-onglets admin)
-  $all('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  $all('.navlink').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   $all('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
   if (view === 'admin' && isAdmin()) renderAdmin();
 }
@@ -776,10 +775,6 @@ function onContractTypeChange() {
 }
 
 function openContractModal(id = null) {
-  // Toujours rafraîchir les selects avant ouverture (les contacts peuvent
-  // avoir été ajoutés/modifiés depuis le dernier rendu)
-  populateContactSelects();
-
   const ct = id ? state.contracts.find(x => x.id === id) : null;
   $('#contract-modal-title').textContent = ct ? 'Modifier le contrat' : 'Nouveau contrat';
   $('#ct-id').value = ct?.id || '';
@@ -915,10 +910,6 @@ function onTaskTypeChange() {
 }
 
 function openTaskModal(id = null) {
-  // Rafraîchir les selects (contacts et contrats) à chaque ouverture
-  populateContactSelects();
-  populateContractSelects();
-
   const t = id ? state.tasks.find(x => x.id === id) : null;
   $('#task-modal-title').textContent = t ? 'Modifier la tâche' : 'Nouvelle tâche';
   $('#t-id').value = t?.id || '';
@@ -1198,22 +1189,27 @@ function miniGauge(label, value, target, unit) {
     </div>`;
 }
 
-// Rend une grille de blocs nominatifs (photo + jauges) pour la liste d'utilisateurs donnée.
-// Utilisé à la fois par l'onglet Objectifs (admin) et l'onglet Administration > Par utilisateur.
-function renderTeamGauges(containerEl, users, options = {}) {
-  if (!containerEl) return;
-  const limit = options.limit || 10;
-  if (!users.length) {
-    containerEl.innerHTML = '<p class="empty">Aucun utilisateur connu.</p>';
+function renderAdminPerUser() {
+  const grid = $('#admin-per-user-grid');
+  if (!grid) return;
+  // Tous les utilisateurs connus (limite affichage à 10 pour rester lisible)
+  const allUsers = Object.values(state.profilesById)
+    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
+  $('#admin-per-user-count').textContent = allUsers.length;
+  if (!allUsers.length) {
+    grid.innerHTML = '<p class="empty">Aucun utilisateur connu.</p>';
     return;
   }
-  const shown = users.slice(0, limit);
-  const truncated = users.length > limit;
+  const users = allUsers.slice(0, 10);
+  const truncated = allUsers.length > 10;
+
+  // On récupère les objectifs cibles de chaque utilisateur (depuis state.objectifs)
   const targetFor = (uid, metric) => {
     const o = state.objectifs.find(o => o.user_id === uid && o.metric_type === metric);
     return o ? computeObjectifTarget(o) : 0;
   };
-  containerEl.innerHTML = shown.map(u => {
+
+  grid.innerHTML = users.map(u => {
     const contacts = computeObjectifValue({ metric_type: 'nouveaux_contacts' }, u.id);
     const ca       = computeObjectifValue({ metric_type: 'ca_genere' }, u.id);
     const comm     = ca * (COMMISSION_RATE / 100);
@@ -1239,18 +1235,7 @@ function renderTeamGauges(containerEl, users, options = {}) {
           ${miniGauge('Commissions (12 %)', comm, tComm, '€')}
         </div>
       </div>`;
-  }).join('') + (truncated
-    ? `<p class="mut" style="font-size:.82rem;margin-top:10px">⚠️ ${users.length - limit} utilisateur(s) supplémentaire(s) non affiché(s) — affichage limité à ${limit}.</p>`
-    : '');
-}
-
-function renderAdminPerUser() {
-  const grid = $('#admin-per-user-grid');
-  if (!grid) return;
-  const allUsers = Object.values(state.profilesById)
-    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
-  $('#admin-per-user-count').textContent = allUsers.length;
-  renderTeamGauges(grid, allUsers);
+  }).join('') + (truncated ? `<p class="mut" style="font-size:.82rem;margin-top:10px">⚠️ ${allUsers.length - 10} utilisateur(s) supplémentaire(s) non affiché(s) — affichage limité à 10.</p>` : '');
 }
 
 async function loadAdminUsers() {
@@ -1283,8 +1268,7 @@ function renderAdminUsers() {
         <td class="actions">
           <button class="btn btn-out btn-sm" data-admin-message="${u.id}" ${isSelf ? 'disabled' : ''}>Message</button>
           <button class="btn btn-out btn-sm" data-admin-toggle-admin="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas vous rétrograder"' : ''}>${u.is_admin ? 'Rétrograder' : 'Promouvoir'}</button>
-          <button class="btn ${banned ? 'btn-pri' : 'btn-out'} btn-sm" data-admin-ban="${u.id}|${banned ? '0' : '1'}" ${isSelf ? 'disabled' : ''}>${banned ? 'Restaurer' : 'Révoquer'}</button>
-          <button class="btn btn-danger btn-sm" data-admin-delete="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas supprimer votre propre compte"' : ''}>Supprimer</button>
+          <button class="btn ${banned ? 'btn-pri' : 'btn-danger'} btn-sm" data-admin-ban="${u.id}|${banned ? '0' : '1'}" ${isSelf ? 'disabled' : ''}>${banned ? 'Restaurer' : 'Révoquer'}</button>
         </td>
       </tr>`;
   }).join('');
@@ -1300,37 +1284,6 @@ async function adminToggleAdmin(userId) {
   if (error) { alert("Erreur : " + error.message); return; }
   await loadAdminUsers();
   renderAdminUsers();
-}
-
-async function adminDeleteUser(userId) {
-  const u = state.adminUsers.find(x => x.id === userId);
-  if (!u) return;
-  const label = u.prenom || u.email;
-  // Double confirmation pour une action irréversible
-  if (!confirm(
-    `⚠️ SUPPRESSION DÉFINITIVE\n\n` +
-    `Vous êtes sur le point de supprimer définitivement le compte de ${label} (${u.email}).\n\n` +
-    `Cette action est IRRÉVERSIBLE :\n` +
-    `• Le compte et son profil seront supprimés\n` +
-    `• Les contacts, contrats et tâches qu'il/elle a créés seront conservés mais perdront leur auteur\n` +
-    `• Pour seulement bloquer la connexion (réversible), utilisez plutôt "Révoquer"\n\n` +
-    `Continuer ?`
-  )) return;
-  // Confirmation explicite par saisie du prénom/email
-  const typed = prompt(`Pour confirmer, tapez exactement : ${label}`);
-  if (typed !== label) {
-    alert("Suppression annulée (texte non identique).");
-    return;
-  }
-  const { error } = await sb.rpc('admin_delete_user', { target_user_id: userId });
-  if (error) { alert("Erreur : " + error.message); return; }
-  alert(`✅ Compte ${label} supprimé définitivement.`);
-  await loadAdminUsers();
-  renderAdminUsers();
-  // Recharger les profils pour mettre à jour "Ajouté par" dans les listes
-  await loadAllProfiles();
-  renderContacts();
-  renderContracts();
 }
 
 async function adminToggleBan(userId, banned) {
@@ -1536,18 +1489,6 @@ function renderObjectifs() {
 
   // 🏆 Si l'objectif commission est atteint ce mois-ci, on lance le feu d'artifice
   checkAndCelebrateCommissions();
-
-  // 👥 Pour les super-admins : afficher en plus la grille nominative de toute l'équipe
-  const teamBlock = $('#team-perf-block');
-  const teamGrid  = $('#team-perf-grid');
-  if (isAdmin() && teamBlock && teamGrid) {
-    teamBlock.style.display = 'block';
-    const allUsers = Object.values(state.profilesById)
-      .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
-    renderTeamGauges(teamGrid, allUsers);
-  } else if (teamBlock) {
-    teamBlock.style.display = 'none';
-  }
 }
 
 async function saveJoursTravailles() {
@@ -2105,9 +2046,8 @@ function bindEvents() {
   $('#reset-submit-btn').addEventListener('click', submitNewPassword);
   $('#reset-password-2').addEventListener('keydown', e => { if (e.key === 'Enter') submitNewPassword(); });
 
-  // Navigation (uniquement les liens de la sidebar — pas les sous-onglets admin
-  // qui ont `data-admin-tab` mais portent aussi la classe .navlink pour le style)
-  $all('.navlink[data-view]').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
+  // Navigation
+  $all('.navlink').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
 
   // Filtres
   ['contacts-search', 'contacts-filter-statut', 'contacts-filter-activite'].forEach(id => {
@@ -2199,9 +2139,6 @@ function bindEvents() {
 
     const toggleAdmBtn = e.target.closest('[data-admin-toggle-admin]');
     if (toggleAdmBtn) return adminToggleAdmin(toggleAdmBtn.dataset.adminToggleAdmin);
-
-    const deleteBtn = e.target.closest('[data-admin-delete]');
-    if (deleteBtn) return adminDeleteUser(deleteBtn.dataset.adminDelete);
   });
 
   // Fermeture des modales en cliquant en dehors
