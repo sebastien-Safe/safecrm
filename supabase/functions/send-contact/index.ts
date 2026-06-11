@@ -7,7 +7,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Gestion CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -21,34 +20,40 @@ serve(async (req) => {
     const kdriveId = Deno.env.get('KDRIVE_ID')
     const kdriveFolderName = Deno.env.get('KDRIVE_FOLDER_NAME')
     const kdriveUser = Deno.env.get('KDRIVE_USER')
-    const kdrivePass = Deno.env.get('KDRIVE_APP_PASSWORD') // Nom exact de la variable
+    const kdrivePass = Deno.env.get('KDRIVE_APP_PASSWORD')
+
+    // Gestion flexible du nom de variable mot de passe SMTP
+    let smtpPass = Deno.env.get('SMTP_PASS')
+    if (!smtpPass) smtpPass = Deno.env.get('SMTP_PASSWORD')
 
     const smtpHost = Deno.env.get('SMTP_HOST') ?? 'smtp.ionos.fr'
-    const smtpPort = Number(Deno.env.get('SMTP_PORT') ?? '465')
+    let smtpPort = Number(Deno.env.get('SMTP_PORT'))
+    if (!smtpPort || smtpPort === 0) smtpPort = 465 
+    
     const smtpUser = Deno.env.get('SMTP_USER') ?? 'contact@safe-digitalisation.fr'
-    const smtpPass = Deno.env.get('SMTP_PASS') // Ou SMTP_PASSWORD selon votre config
     const fromName = Deno.env.get('SMTP_FROM_NAME') ?? 'S@FE Digitalisation'
 
-    // Affichage sécurisé dans les logs (on masque les mots de passe)
+    // --- VÉRIFICATION CRITIQUE DU DOSSIER ---
+    const DOSSIER_ATTENDU = "Clients";
+    
     console.log("VARIABLES KDRIVE:", {
       id: kdriveId,
-      folder: kdriveFolderName,
+      folder_recu: kdriveFolderName,
+      folder_attendu: DOSSIER_ATTENDU,
       user: kdriveUser,
-      pass_set: !!kdrivePass // true si défini, false si vide
+      pass_set: !!kdrivePass
     })
 
-    console.log("VARIABLES SMTP:", {
-      host: smtpHost,
-      port: smtpPort,
-      user: smtpUser,
-      pass_set: !!smtpPass,
-      from: fromName
-    })
+    if (!kdrivePass) throw new Error("KDRIVE_APP_PASSWORD est manquant.")
+    if (!smtpPass) throw new Error("SMTP_PASS (ou SMTP_PASSWORD) est manquant.")
+    if (!kdriveFolderName) throw new Error("KDRIVE_FOLDER_NAME est manquant.")
+    
+    // Vérifie que le dossier configuré est bien 'Clients'
+    if (kdriveFolderName !== DOSSIER_ATTENDU) {
+      throw new Error(`ERREUR DE CONFIGURATION : Le dossier configuré est "${kdriveFolderName}" mais doit être impérativement "${DOSSIER_ATTENDU}". Vérifiez la variable KDRIVE_FOLDER_NAME dans Supabase.`)
+    }
 
-    // Vérification bloquante si variable manquante
-    if (!kdrivePass) throw new Error("KDRIVE_APP_PASSWORD est manquant dans les variables Supabase.")
-    if (!smtpPass) throw new Error("SMTP_PASS (ou SMTP_PASSWORD) est manquant dans les variables Supabase.")
-    if (!kdriveFolderName) throw new Error("KDRIVE_FOLDER_NAME est manquant (mettez le NOM du dossier, pas l'ID).")
+    if (!filename) throw new Error("Le nom du fichier (filename) est manquant dans la requête.")
 
     // --- 2. PRÉPARATION DU FICHIER PDF ---
     const binaryString = atob(pdf_base64)
@@ -58,14 +63,15 @@ serve(async (req) => {
     }
     const pdfBlob = new Blob([bytes], { type: 'application/pdf' })
     
-    // Construction URL WebDAV
+    // Construction URL WebDAV vers le dossier 'Clients'
     const encodedFolder = encodeURIComponent(kdriveFolderName)
     const encodedFilename = encodeURIComponent(filename)
     const webdavUrl = `https://${kdriveId}.connect.kdrive.infomaniak.com/${encodedFolder}/${encodedFilename}`
-    console.log("URL WebDAV cible:", webdavUrl)
+    
+    console.log("📂 Destination finale:", webdavUrl)
 
     // --- 3. TEST UPLOAD KDRIVE (WebDAV) ---
-    console.log("Tentative d'upload kDrive...")
+    console.log("Tentative d'upload kDrive dans le dossier 'Clients'...")
     const credentials = btoa(`${kdriveUser}:${kdrivePass}`)
     
     const uploadResponse = await fetch(webdavUrl, {
@@ -83,15 +89,13 @@ serve(async (req) => {
       console.error("ÉCHEC KDRIVE:", uploadResponse.status, errorText)
       throw new Error(`Échec kDrive (${uploadResponse.status}): ${errorText}`)
     }
-    console.log("✅ Upload kDrive réussi!")
+    console.log("✅ Upload kDrive réussi dans le dossier 'Clients' !")
 
     // --- 4. TEST ENVOI SMTP (IONOS) ---
     console.log(`Tentative de connexion SMTP à ${smtpHost}:${smtpPort}...`)
     
     const client = new SMTPClient()
     try {
-      // Connexion TLS (pour le port 465) ou STARTTLS (pour 587)
-      // La librairie deno-smtp gère automatiquement le TLS si on utilise connectTLS
       await client.connectTLS({
         hostname: smtpHost,
         port: smtpPort,
@@ -100,7 +104,6 @@ serve(async (req) => {
       })
       console.log("✅ Connexion SMTP réussie!")
 
-      // Envoi de l'email
       await client.send({
         from: `${fromName} <${smtpUser}>`,
         to: client_email,
@@ -122,12 +125,11 @@ serve(async (req) => {
       await client.close()
     }
 
-    // --- 5. RÉPONSE SUCCÈS ---
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Contrat signé, déposé sur kDrive et envoyé par email.",
-        kdrive: { url: webdavUrl },
+        message: "Contrat signé, déposé dans le dossier 'Clients' sur kDrive et envoyé par email.",
+        kdrive: { url: webdavUrl, folder: DOSSIER_ATTENDU },
         email: { sent_to: client_email }
       }),
       { 
@@ -141,7 +143,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        debug: "Vérifiez les logs Supabase pour le détail des variables."
+        debug: "Vérifiez les logs Supabase."
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
