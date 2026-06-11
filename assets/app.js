@@ -368,7 +368,8 @@ function renderAll() {
 // NAVIGATION
 // ---------------------------------------------------------
 function switchView(view) {
-  $all('.navlink').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  if (!view) return; // ignore les clics sur des navlink sans data-view (sous-onglets admin)
+  $all('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   $all('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
   if (view === 'admin' && isAdmin()) renderAdmin();
 }
@@ -2104,8 +2105,9 @@ function bindEvents() {
   $('#reset-submit-btn').addEventListener('click', submitNewPassword);
   $('#reset-password-2').addEventListener('keydown', e => { if (e.key === 'Enter') submitNewPassword(); });
 
-  // Navigation
-  $all('.navlink').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
+  // Navigation (uniquement les liens de la sidebar — pas les sous-onglets admin
+  // qui ont `data-admin-tab` mais portent aussi la classe .navlink pour le style)
+  $all('.navlink[data-view]').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
 
   // Filtres
   ['contacts-search', 'contacts-filter-statut', 'contacts-filter-activite'].forEach(id => {
