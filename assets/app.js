@@ -9,6 +9,7 @@ const state = {
   contracts: [],
   tasks: [],
   profile: null,
+  profilesById: {},
   objectifs: [],
   user: null,
 };
@@ -84,28 +85,34 @@ const ACTIVITE_BADGE = { 'Digitalisation': 'badge-blue', 'RGPD': 'badge-gold', '
 // ---------------------------------------------------------
 // GRILLE TARIFAIRE (issue de safe-digitalisation.fr)
 // Formules pré-remplies par type de prestation : montant HT,
-// récurrence, et frais de mise en place éventuels (ajoutés
-// automatiquement en note). Les types non listés ici (Audit RGPD,
-// Gestion Fiche Google Business, Courtage Assurance, Autre)
-// n'ont pas de tarif catalogue publié : la formule reste
+// récurrence, frais de mise en place et engagement minimum
+// (ajoutés automatiquement en note). Les types non listés ici
+// (Audit RGPD, Gestion Fiche Google Business, Courtage Assurance,
+// Autre) n'ont pas de tarif catalogue publié : la formule reste
 // "Personnalisé / Sur devis" avec saisie libre.
 // ---------------------------------------------------------
 const FORMULE_PRESETS = {
   'Référencement Local': [
-    { label: 'Essentiel', montant: 79,  recurrence: 'Mensuel',  setup: 150 },
-    { label: 'Boost',     montant: 149, recurrence: 'Mensuel',  setup: 250 },
-    { label: 'Prestige',  montant: 249, recurrence: 'Mensuel',  setup: 0   },
+    { label: 'Essentiel', montant: 79,  recurrence: 'Mensuel', setup: 150, engagement: 6 },
+    { label: 'Boost',     montant: 149, recurrence: 'Mensuel', setup: 250, engagement: 6 },
+    { label: 'Prestige',  montant: 249, recurrence: 'Mensuel', setup: 0,   engagement: 3 },
   ],
   'Click & Collect': [
-    { label: 'Essentiel', montant: 39,  recurrence: 'Mensuel',  setup: 150 },
-    { label: 'Pro',       montant: 79,  recurrence: 'Mensuel',  setup: 250 },
-    { label: 'Premium',   montant: 129, recurrence: 'Mensuel',  setup: 0   },
+    { label: 'Essentiel', montant: 39,  recurrence: 'Mensuel', setup: 150, engagement: 6 },
+    { label: 'Pro',       montant: 79,  recurrence: 'Mensuel', setup: 250, engagement: 6 },
+    { label: 'Premium',   montant: 129, recurrence: 'Mensuel', setup: 0,   engagement: 3 },
   ],
   'Mise en conformité RGPD': [
-    { label: 'Mise en conformité (forfait)', montant: 1490, recurrence: 'Ponctuel', setup: 0 },
+    { label: 'Diagnostic (offert)',          montant: 0,    recurrence: 'Ponctuel', setup: 0, engagement: 0 },
+    { label: 'Mise en conformité (forfait)', montant: 1490, recurrence: 'Ponctuel', setup: 0, engagement: 0 },
   ],
   'DPO externalisé': [
-    { label: 'Abonnement DPO', montant: 149, recurrence: 'Mensuel', setup: 0 },
+    { label: 'Abonnement DPO', montant: 149, recurrence: 'Mensuel', setup: 0, engagement: 12 },
+  ],
+  'Cybersécurité': [
+    { label: 'Audit de vulnérabilité',  montant: 490,  recurrence: 'Ponctuel', setup: 0, engagement: 0 },
+    { label: 'Pack Sécurité Essentiel', montant: 990,  recurrence: 'Ponctuel', setup: 0, engagement: 0 },
+    { label: 'Pack Résilience Pro',     montant: 1990, recurrence: 'Ponctuel', setup: 0, engagement: 0 },
   ],
 };
 const FORMULE_CUSTOM = '__custom__';
@@ -233,7 +240,7 @@ async function logout() {
 // CHARGEMENT DES DONNÉES
 // ---------------------------------------------------------
 async function loadAll() {
-  await Promise.all([loadContacts(), loadContracts(), loadTasks(), loadProfile(), loadObjectifs()]);
+  await Promise.all([loadContacts(), loadContracts(), loadTasks(), loadProfile(), loadAllProfiles(), loadObjectifs()]);
   renderAll();
 }
 
@@ -259,6 +266,23 @@ async function loadProfile() {
   const { data, error } = await sb.from('profiles').select('*').eq('id', state.user.id).maybeSingle();
   if (error) { console.error('Erreur chargement profil :', error.message); }
   state.profile = data || { id: state.user.id, prenom: null, photo_url: null, jours_travailles: null, jours_travailles_mois: null };
+}
+
+async function loadAllProfiles() {
+  const { data, error } = await sb.from('profiles').select('id, prenom');
+  if (error) { console.error('Erreur chargement profils :', error.message); state.profilesById = {}; return; }
+  state.profilesById = {};
+  (data || []).forEach(p => { state.profilesById[p.id] = p; });
+}
+
+function creatorName(userId) {
+  if (!userId) return '—';
+  const p = state.profilesById?.[userId];
+  if (p?.prenom) return p.prenom;
+  if (userId === state.user?.id) {
+    return state.user?.email ? state.user.email.split('@')[0] : '—';
+  }
+  return '—';
 }
 
 async function loadObjectifs() {
@@ -345,7 +369,7 @@ function renderContacts() {
   const list = getFilteredContacts();
   const tbody = $('#contacts-tbody');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="7" class="empty">Aucun contact ne correspond aux filtres.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="empty">Aucun contact ne correspond aux filtres.</td></tr>`;
     return;
   }
   tbody.innerHTML = list.map(c => `
@@ -356,6 +380,7 @@ function renderContacts() {
       <td><span class="badge ${CONTACT_STATUT_BADGE[c.statut] || 'badge-gray'}">${escapeHtml(c.statut)}</span></td>
       <td class="nowrap">${escapeHtml(c.telephone || '—')}</td>
       <td>${c.email ? `<a href="mailto:${escapeHtml(c.email)}" style="color:var(--accent)">${escapeHtml(c.email)}</a>` : '—'}</td>
+      <td class="nowrap">${escapeHtml(creatorName(c.created_by))}</td>
       <td class="actions">
         <button class="btn btn-out btn-sm" data-edit-contact="${c.id}">Modifier</button>
       </td>
@@ -408,7 +433,7 @@ async function saveContact() {
   if (id) {
     ({ error } = await sb.from('contacts').update(payload).eq('id', id));
   } else {
-    ({ error } = await sb.from('contacts').insert(payload));
+    ({ error } = await sb.from('contacts').insert({ ...payload, created_by: state.user.id }));
   }
   if (error) return alert('Erreur : ' + error.message);
   closeContactModal();
@@ -442,7 +467,7 @@ function renderContracts() {
   const list = getFilteredContracts();
   const tbody = $('#contracts-tbody');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="9" class="empty">Aucun contrat ne correspond aux filtres.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" class="empty">Aucun contrat ne correspond aux filtres.</td></tr>`;
     return;
   }
   tbody.innerHTML = list.map(ct => {
@@ -462,6 +487,7 @@ function renderContracts() {
       <td>${formatDate(ct.date_debut)}</td>
       <td class="${isOverdue(ct.date_echeance, ct.statut) ? 'overdue' : ''}">${formatDate(ct.date_echeance)}</td>
       <td><span class="badge ${CONTRACT_STATUT_BADGE[ct.statut] || 'badge-gray'}">${escapeHtml(ct.statut)}</span></td>
+      <td class="nowrap">${escapeHtml(creatorName(ct.created_by))}</td>
       <td class="actions">
         <button class="btn btn-out btn-sm" data-edit-contract="${ct.id}">Modifier</button>
       </td>
@@ -524,13 +550,20 @@ function onFormuleChange(applyPreset = true) {
   if (preset) {
     $('#ct-montant').value = preset.montant;
     $('#ct-recurrence').value = preset.recurrence;
+    const note = $('#ct-notes');
+    const extraNotes = [];
     if (preset.setup) {
-      const note = $('#ct-notes');
-      const setupNote = `Frais de mise en place : ${preset.setup} € HT (facturés au 1er mois, non remboursables).`;
-      if (!note.value.includes('Frais de mise en place')) {
-        note.value = note.value ? note.value + '\n' + setupNote : setupNote;
-      }
+      extraNotes.push(`Frais de mise en place : ${preset.setup} € HT (facturés au 1er mois, non remboursables).`);
     }
+    if (preset.engagement) {
+      extraNotes.push(`Engagement minimum : ${preset.engagement} mois.`);
+    }
+    extraNotes.forEach(n => {
+      const key = n.split(' :')[0];
+      if (!note.value.includes(key)) {
+        note.value = note.value ? note.value + '\n' + n : n;
+      }
+    });
   }
   updateNetDisplay();
 }
@@ -605,7 +638,7 @@ async function saveContract() {
   if (id) {
     ({ error } = await sb.from('contracts').update(payload).eq('id', id));
   } else {
-    ({ error } = await sb.from('contracts').insert(payload));
+    ({ error } = await sb.from('contracts').insert({ ...payload, created_by: state.user.id }));
   }
   if (error) return alert('Erreur : ' + error.message);
   closeContractModal();
@@ -851,6 +884,8 @@ function computeObjectifValue(o) {
   switch (o.metric_type) {
     case 'nouveaux_clients':
       return state.contacts.filter(c => c.statut === 'Client' && isThisMonth(c.devenu_client_at || c.created_at)).length;
+    case 'nouveaux_contacts':
+      return state.contacts.filter(c => isThisMonth(c.created_at)).length;
     case 'contrats_total':
       return state.contracts.filter(c => ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
     case 'contrats_type':
@@ -861,6 +896,15 @@ function computeObjectifValue(o) {
       return state.contracts
         .filter(c => c.recurrence === 'Mensuel' && ['Signé', 'En cours'].includes(c.statut))
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
+    case 'ca_genere':
+      return state.contracts
+        .filter(c => ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at))
+        .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
+    case 'commissions': {
+      const ca = computeObjectifValue({ metric_type: 'ca_genere' });
+      const taux = Number(o.taux_commission) || 0;
+      return ca * (taux / 100);
+    }
     default:
       return 0;
   }
@@ -894,7 +938,7 @@ function renderObjectifs() {
     const value = computeObjectifValue(o);
     const target = computeObjectifTarget(o);
     const pct = target > 0 ? (value / target) * 100 : (value > 0 ? 100 : 0);
-    const isMoney = o.metric_type === 'ca_recurrent';
+    const isMoney = ['ca_recurrent', 'ca_genere', 'commissions'].includes(o.metric_type);
     const valLabel = isMoney ? formatMoney(value) : value;
     const targetLabel = isMoney ? formatMoney(target) : target;
     return `
@@ -922,13 +966,23 @@ async function saveJoursTravailles() {
 function openObjectifsModal() {
   const list = $('#objectifs-edit-list');
   list.innerHTML = state.objectifs.map(o => {
-    const unit = o.metric_type === 'ca_recurrent' ? '€' : (o.scale_by_days ? `/ ${o.jours_reference}j` : '');
-    return `
+    const isMoney = ['ca_recurrent', 'ca_genere', 'commissions'].includes(o.metric_type);
+    const unit = (isMoney ? '€ ' : '') + (o.scale_by_days ? `/ ${o.jours_reference}j` : '');
+    let row = `
     <div class="objectif-row">
       <label>${escapeHtml(o.label)}</label>
       <input type="number" step="0.01" min="0" data-objectif-id="${o.id}" value="${o.objectif_base}">
       <span class="unit">${unit}</span>
     </div>`;
+    if (o.metric_type === 'commissions') {
+      row += `
+    <div class="objectif-row" style="padding-top:0">
+      <label class="mut" style="font-size:.82rem">↳ Taux de commission appliqué au CA généré</label>
+      <input type="number" step="0.1" min="0" max="100" data-taux-id="${o.id}" value="${o.taux_commission ?? 0}">
+      <span class="unit">%</span>
+    </div>`;
+    }
+    return row;
   }).join('');
   $('#jours-ref-label').textContent = state.objectifs[0]?.jours_reference || 20;
   $('#objectifs-modal').classList.add('show');
@@ -944,6 +998,13 @@ async function saveObjectifsModal() {
     const { error } = await sb.from('objectifs')
       .update({ objectif_base: Number(inp.value) || 0 })
       .eq('id', inp.dataset.objectifId);
+    if (error) return alert('Erreur : ' + error.message);
+  }
+  const tauxInputs = $all('#objectifs-edit-list input[data-taux-id]');
+  for (const inp of tauxInputs) {
+    const { error } = await sb.from('objectifs')
+      .update({ taux_commission: Number(inp.value) || 0 })
+      .eq('id', inp.dataset.tauxId);
     if (error) return alert('Erreur : ' + error.message);
   }
   closeObjectifsModal();
