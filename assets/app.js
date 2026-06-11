@@ -1173,28 +1173,69 @@ function renderAdminOverview() {
   }).join('');
 }
 
+// Mini-jauge horizontale (barre) pour la vue admin par utilisateur
+function miniGauge(label, value, target, unit) {
+  const pct = target > 0 ? Math.min(100, (value / target) * 100) : (value > 0 ? 100 : 0);
+  const color = gaugeColor(pct);
+  const valLabel = unit === '€' ? formatMoney(value) : value;
+  const tgtLabel = unit === '€' ? formatMoney(target) : target;
+  return `
+    <div class="mini-gauge">
+      <div class="mg-head">
+        <span class="mg-label">${escapeHtml(label)}</span>
+        <span class="mg-values" style="color:${color}">${valLabel} <span class="mut">/ ${tgtLabel}</span></span>
+      </div>
+      <div class="mg-bar"><div class="mg-fill" style="width:${pct.toFixed(0)}%;background:${color}"></div></div>
+    </div>`;
+}
+
 function renderAdminPerUser() {
-  const tbody = $('#admin-per-user-table tbody');
-  // Tous les utilisateurs connus via les profils
-  const users = Object.values(state.profilesById);
-  if (!users.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucun utilisateur connu.</td></tr>';
+  const grid = $('#admin-per-user-grid');
+  if (!grid) return;
+  // Tous les utilisateurs connus (limite affichage à 10 pour rester lisible)
+  const allUsers = Object.values(state.profilesById)
+    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
+  $('#admin-per-user-count').textContent = allUsers.length;
+  if (!allUsers.length) {
+    grid.innerHTML = '<p class="empty">Aucun utilisateur connu.</p>';
     return;
   }
-  tbody.innerHTML = users.map(u => {
+  const users = allUsers.slice(0, 10);
+  const truncated = allUsers.length > 10;
+
+  // On récupère les objectifs cibles de chaque utilisateur (depuis state.objectifs)
+  const targetFor = (uid, metric) => {
+    const o = state.objectifs.find(o => o.user_id === uid && o.metric_type === metric);
+    return o ? computeObjectifTarget(o) : 0;
+  };
+
+  grid.innerHTML = users.map(u => {
     const contacts = computeObjectifValue({ metric_type: 'nouveaux_contacts' }, u.id);
-    const ca       = computeObjectifValue({ metric_type: 'ca_genere' },         u.id);
+    const ca       = computeObjectifValue({ metric_type: 'ca_genere' }, u.id);
     const comm     = ca * (COMMISSION_RATE / 100);
+    const tContacts = targetFor(u.id, 'nouveaux_contacts');
+    const tCa       = targetFor(u.id, 'ca_genere');
+    const tComm     = targetFor(u.id, 'commissions');
     const actifs   = state.contracts.filter(c => c.created_by === u.id && ['Signé', 'En cours'].includes(c.statut)).length;
+    const photo = u.photo_url
+      ? `<div class="pu-avatar" style="background-image:url('${escapeHtml(u.photo_url)}')"></div>`
+      : `<div class="pu-avatar pu-avatar-letter">${escapeHtml((u.prenom || '?').charAt(0).toUpperCase())}</div>`;
     return `
-      <tr>
-        <td>${escapeHtml(u.prenom || '—')}${u.is_admin ? ' <span class="badge badge-gold" style="margin-left:6px">Admin</span>' : ''}</td>
-        <td class="num">${contacts}</td>
-        <td class="num">${formatMoney(ca)}</td>
-        <td class="num">${formatMoney(comm)}</td>
-        <td class="num">${actifs}</td>
-      </tr>`;
-  }).join('');
+      <div class="per-user-row">
+        <div class="pu-identity">
+          ${photo}
+          <div>
+            <div class="pu-name">${escapeHtml(u.prenom || '—')}${u.is_admin ? ' <span class="badge badge-gold" style="margin-left:4px">Admin</span>' : ''}</div>
+            <div class="pu-sub mut">${actifs} contrat${actifs > 1 ? 's' : ''} actif${actifs > 1 ? 's' : ''}</div>
+          </div>
+        </div>
+        <div class="pu-gauges">
+          ${miniGauge('Entrées en contact', contacts, tContacts, '')}
+          ${miniGauge('CA généré', ca, tCa, '€')}
+          ${miniGauge('Commissions (12 %)', comm, tComm, '€')}
+        </div>
+      </div>`;
+  }).join('') + (truncated ? `<p class="mut" style="font-size:.82rem;margin-top:10px">⚠️ ${allUsers.length - 10} utilisateur(s) supplémentaire(s) non affiché(s) — affichage limité à 10.</p>` : '');
 }
 
 async function loadAdminUsers() {
@@ -1735,26 +1776,82 @@ async function openTotpEnroll() {
   const err = $('#totp-enroll-error'); err.style.display = 'none';
   $('#totp-code').value = '';
   try {
-    const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'CRM S@FE' });
-    if (error) throw error;
+    // 1. Lister les facteurs déjà existants pour cet utilisateur
+    const { data: factorsData, error: listErr } = await sb.auth.mfa.listFactors();
+    if (listErr) { alert("Erreur (listFactors) : " + (listErr.message || JSON.stringify(listErr))); console.error(listErr); return; }
+    const allTotp = (factorsData?.totp) || [];
+
+    // S'il existe déjà un facteur vérifié, on bloque
+    const verified = allTotp.find(f => f.status === 'verified');
+    if (verified) {
+      alert("Votre compte a déjà la 2FA activée. Désactivez-la d'abord pour en enregistrer une nouvelle.");
+      return;
+    }
+
+    // Nettoyer les anciens enrôlements non vérifiés (Supabase n'autorise qu'un seul facteur en cours)
+    for (const f of allTotp) {
+      if (f.status !== 'verified') {
+        try { await sb.auth.mfa.unenroll({ factorId: f.id }); }
+        catch (e) { console.warn('unenroll cleanup:', e); }
+      }
+    }
+
+    // 2. Démarrer un nouvel enrôlement (sans friendlyName pour éviter les conflits de doublon)
+    const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp' });
+    if (error) {
+      alert("Erreur Supabase MFA : " + (error.message || JSON.stringify(error)) + "\n\nLog technique : " + JSON.stringify(error));
+      console.error('mfa.enroll error:', error);
+      return;
+    }
+    if (!data?.totp) {
+      alert("Réponse inattendue de Supabase : aucun QR code retourné. Vérifiez que MFA TOTP est bien activé dans Authentication → Settings → Multi-Factor Authentication.\n\nRéponse reçue : " + JSON.stringify(data));
+      console.error('mfa.enroll unexpected:', data);
+      return;
+    }
+
     state._totpEnrollFactorId = data.id;
-    // Affichage du QR code (otpauth URI) via librairie qrcode.js
+
+    // 3. Affichage du QR code
     const otpauth = data.totp.uri;
     const container = $('#totp-qr'); container.innerHTML = '';
-    if (window.QRCode) {
+
+    // Plan A : librairie qrcode.js (canvas)
+    if (window.QRCode && typeof window.QRCode.toCanvas === 'function') {
       const canvas = document.createElement('canvas');
-      await window.QRCode.toCanvas(canvas, otpauth, { width: 200, margin: 1, color: { dark: '#0a1628', light: '#ffffff' } });
+      await window.QRCode.toCanvas(canvas, otpauth, { width: 220, margin: 1, color: { dark: '#0a1628', light: '#ffffff' } });
       container.appendChild(canvas);
-    } else {
-      // Fallback : afficher le secret en grand
-      container.innerHTML = `<code style="font-family:var(--ff-mono);font-size:.9rem;color:var(--gold);word-break:break-all">${otpauth}</code>`;
     }
+    // Plan B : qr_code envoyé par Supabase en SVG dataURL (selon version SDK)
+    else if (data.totp.qr_code) {
+      const img = document.createElement('img');
+      img.src = data.totp.qr_code;
+      img.alt = 'QR code TOTP';
+      img.style.cssText = 'width:220px;height:220px;background:#fff;padding:10px;border-radius:8px';
+      container.appendChild(img);
+    }
+    // Plan C : générateur en ligne (sans réseau utilisateur)
+    else {
+      const img = document.createElement('img');
+      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(otpauth);
+      img.alt = 'QR code TOTP';
+      img.style.cssText = 'background:#fff;padding:10px;border-radius:8px';
+      container.appendChild(img);
+    }
+
+    // Fallback texte si rien ne s'affiche (au pire l'utilisateur peut taper la clé manuellement)
+    const hint = document.createElement('p');
+    hint.className = 'mut';
+    hint.style.cssText = 'font-size:.78rem;margin-top:8px;text-align:center';
+    hint.textContent = "Si le QR code ne s'affiche pas, saisissez la clé secrète ci-dessous dans votre application.";
+    container.appendChild(hint);
+
     $('#totp-secret').value = data.totp.secret;
     $('#totp-enroll-modal').classList.add('show');
+
   } catch (e) {
-    err.textContent = 'Erreur : ' + (e.message || e);
-    err.style.display = 'block';
-    alert('Impossible de démarrer l\'enrôlement TOTP. Vérifiez que la 2FA TOTP est activée dans Supabase Authentication > Providers.');
+    // Erreur non Supabase (ex. réseau, lib non chargée)
+    alert("Exception lors de l'enrôlement TOTP : " + (e.message || e) + "\n\nVoir la console (F12) pour le détail technique.");
+    console.error('openTotpEnroll exception:', e);
   }
 }
 
