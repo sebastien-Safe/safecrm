@@ -81,6 +81,35 @@ const CONTRACT_STATUT_BADGE = {
 const PRIORITY_BADGE = { 'Basse': 'badge-gray', 'Normale': 'badge-blue', 'Haute': 'badge-red' };
 const ACTIVITE_BADGE = { 'Digitalisation': 'badge-blue', 'RGPD': 'badge-gold', 'Assurance': 'badge-green', 'Autre': 'badge-gray' };
 
+// ---------------------------------------------------------
+// GRILLE TARIFAIRE (issue de safe-digitalisation.fr)
+// Formules pré-remplies par type de prestation : montant HT,
+// récurrence, et frais de mise en place éventuels (ajoutés
+// automatiquement en note). Les types non listés ici (Audit RGPD,
+// Gestion Fiche Google Business, Courtage Assurance, Autre)
+// n'ont pas de tarif catalogue publié : la formule reste
+// "Personnalisé / Sur devis" avec saisie libre.
+// ---------------------------------------------------------
+const FORMULE_PRESETS = {
+  'Référencement Local': [
+    { label: 'Essentiel', montant: 79,  recurrence: 'Mensuel',  setup: 150 },
+    { label: 'Boost',     montant: 149, recurrence: 'Mensuel',  setup: 250 },
+    { label: 'Prestige',  montant: 249, recurrence: 'Mensuel',  setup: 0   },
+  ],
+  'Click & Collect': [
+    { label: 'Essentiel', montant: 39,  recurrence: 'Mensuel',  setup: 150 },
+    { label: 'Pro',       montant: 79,  recurrence: 'Mensuel',  setup: 250 },
+    { label: 'Premium',   montant: 129, recurrence: 'Mensuel',  setup: 0   },
+  ],
+  'Mise en conformité RGPD': [
+    { label: 'Mise en conformité (forfait)', montant: 1490, recurrence: 'Ponctuel', setup: 0 },
+  ],
+  'DPO externalisé': [
+    { label: 'Abonnement DPO', montant: 149, recurrence: 'Mensuel', setup: 0 },
+  ],
+};
+const FORMULE_CUSTOM = '__custom__';
+
 function contactName(id) {
   const c = state.contacts.find(c => c.id === id);
   if (!c) return '—';
@@ -361,12 +390,19 @@ function renderContracts() {
     tbody.innerHTML = `<tr><td colspan="9" class="empty">Aucun contrat ne correspond aux filtres.</td></tr>`;
     return;
   }
-  tbody.innerHTML = list.map(ct => `
+  tbody.innerHTML = list.map(ct => {
+    const montant = Number(ct.montant) || 0;
+    const remise = Number(ct.remise) || 0;
+    const net = Math.max(0, montant - remise);
+    const montantCell = remise > 0
+      ? `${formatMoney(net)}<br><span class="mut" style="font-size:.74rem">(remise -${formatMoney(remise)})</span>`
+      : formatMoney(montant);
+    return `
     <tr>
       <td>${escapeHtml(contactName(ct.contact_id))}</td>
       <td>${escapeHtml(ct.type)}</td>
       <td>${escapeHtml(ct.formule || '—')}</td>
-      <td>${formatMoney(ct.montant)}</td>
+      <td>${montantCell}</td>
       <td>${escapeHtml(ct.recurrence)}</td>
       <td>${formatDate(ct.date_debut)}</td>
       <td class="${isOverdue(ct.date_echeance, ct.statut) ? 'overdue' : ''}">${formatDate(ct.date_echeance)}</td>
@@ -374,7 +410,8 @@ function renderContracts() {
       <td class="actions">
         <button class="btn btn-out btn-sm" data-edit-contract="${ct.id}">Modifier</button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 function populateContactSelects() {
@@ -388,19 +425,96 @@ function populateContractSelects() {
   $('#t-contract').innerHTML = '<option value="">— Aucun —</option>' + opts;
 }
 
+function populateFormuleSelect(type, currentFormule) {
+  const sel = $('#ct-formule-select');
+  const customInput = $('#ct-formule-custom');
+  const presets = FORMULE_PRESETS[type] || [];
+
+  let opts = presets.map(f => {
+    const unit = f.recurrence === 'Mensuel' ? '/mois' : (f.recurrence === 'Annuel' ? '/an' : ' (forfait)');
+    const setup = f.setup ? ` + ${f.setup} € mise en place` : '';
+    return `<option value="${escapeHtml(f.label)}">${escapeHtml(f.label)} — ${f.montant} € HT${unit}${setup}</option>`;
+  }).join('');
+  opts += `<option value="${FORMULE_CUSTOM}">Personnalisé / Sur devis</option>`;
+  sel.innerHTML = opts;
+
+  const match = presets.find(f => f.label === currentFormule);
+  if (match) {
+    sel.value = match.label;
+    customInput.style.display = 'none';
+    customInput.value = '';
+  } else {
+    sel.value = FORMULE_CUSTOM;
+    customInput.style.display = '';
+    customInput.value = currentFormule || '';
+  }
+}
+
+function onFormuleChange(applyPreset = true) {
+  const sel = $('#ct-formule-select');
+  const type = $('#ct-type').value.trim();
+  const customInput = $('#ct-formule-custom');
+
+  if (sel.value === FORMULE_CUSTOM) {
+    customInput.style.display = '';
+    updateNetDisplay();
+    return;
+  }
+  customInput.style.display = 'none';
+  customInput.value = '';
+
+  if (!applyPreset) { updateNetDisplay(); return; }
+
+  const preset = (FORMULE_PRESETS[type] || []).find(f => f.label === sel.value);
+  if (preset) {
+    $('#ct-montant').value = preset.montant;
+    $('#ct-recurrence').value = preset.recurrence;
+    if (preset.setup) {
+      const note = $('#ct-notes');
+      const setupNote = `Frais de mise en place : ${preset.setup} € HT (facturés au 1er mois, non remboursables).`;
+      if (!note.value.includes('Frais de mise en place')) {
+        note.value = note.value ? note.value + '\n' + setupNote : setupNote;
+      }
+    }
+  }
+  updateNetDisplay();
+}
+
+function updateNetDisplay() {
+  const montant = Number($('#ct-montant').value) || 0;
+  const remiseActive = $('#ct-remise-check').checked;
+  const remise = remiseActive ? (Number($('#ct-remise').value) || 0) : 0;
+  const net = Math.max(0, montant - remise);
+  $('#ct-net-wrap').style.display = remiseActive && remise > 0 ? '' : 'none';
+  $('#ct-net-display').value = formatMoney(net);
+}
+
+function onContractTypeChange() {
+  populateFormuleSelect($('#ct-type').value.trim(), null);
+  onFormuleChange(true);
+}
+
 function openContractModal(id = null) {
   const ct = id ? state.contracts.find(x => x.id === id) : null;
   $('#contract-modal-title').textContent = ct ? 'Modifier le contrat' : 'Nouveau contrat';
   $('#ct-id').value = ct?.id || '';
   $('#ct-contact').value = ct?.contact_id || '';
   $('#ct-type').value = ct?.type || '';
-  $('#ct-formule').value = ct?.formule || '';
   $('#ct-montant').value = ct?.montant ?? '';
   $('#ct-recurrence').value = ct?.recurrence || 'Ponctuel';
   $('#ct-date-debut').value = ct?.date_debut || '';
   $('#ct-date-echeance').value = ct?.date_echeance || '';
   $('#ct-statut').value = ct?.statut || 'Devis envoyé';
   $('#ct-notes').value = ct?.notes || '';
+
+  populateFormuleSelect(ct?.type || '', ct?.formule || null);
+
+  const remise = Number(ct?.remise) || 0;
+  $('#ct-remise-check').checked = remise > 0;
+  $('#ct-remise').value = remise > 0 ? remise : '';
+  $('#ct-remise').style.display = remise > 0 ? '' : 'none';
+  updateNetDisplay();
+
   $('#contract-delete-btn').style.display = ct ? 'inline-flex' : 'none';
   $('#contract-modal').classList.add('show');
 }
@@ -415,11 +529,17 @@ async function saveContract() {
   const type = $('#ct-type').value.trim();
   if (!contact_id || !type) { alert('Le contact et le type de prestation sont obligatoires.'); return; }
   const montant = $('#ct-montant').value;
+  const formuleSel = $('#ct-formule-select').value;
+  const formule = formuleSel === FORMULE_CUSTOM
+    ? ($('#ct-formule-custom').value.trim() || null)
+    : formuleSel;
+  const remise = $('#ct-remise-check').checked ? (Number($('#ct-remise').value) || 0) : 0;
   const payload = {
     contact_id,
     type,
-    formule: $('#ct-formule').value.trim() || null,
+    formule,
     montant: montant === '' ? null : Number(montant),
+    remise,
     recurrence: $('#ct-recurrence').value,
     date_debut: $('#ct-date-debut').value || null,
     date_echeance: $('#ct-date-echeance').value || null,
@@ -656,7 +776,7 @@ function computeObjectifValue(o) {
     case 'ca_recurrent':
       return state.contracts
         .filter(c => c.recurrence === 'Mensuel' && ['Signé', 'En cours'].includes(c.statut))
-        .reduce((sum, c) => sum + (Number(c.montant) || 0), 0);
+        .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     default:
       return 0;
   }
@@ -784,6 +904,15 @@ function bindEvents() {
   $('#contract-cancel-btn').addEventListener('click', closeContractModal);
   $('#contract-save-btn').addEventListener('click', saveContract);
   $('#contract-delete-btn').addEventListener('click', deleteContract);
+  $('#ct-type').addEventListener('input', onContractTypeChange);
+  $('#ct-formule-select').addEventListener('change', () => onFormuleChange(true));
+  $('#ct-montant').addEventListener('input', updateNetDisplay);
+  $('#ct-remise-check').addEventListener('change', e => {
+    $('#ct-remise').style.display = e.target.checked ? '' : 'none';
+    if (!e.target.checked) $('#ct-remise').value = '';
+    updateNetDisplay();
+  });
+  $('#ct-remise').addEventListener('input', updateNetDisplay);
 
   // Modale Tâche
   $('#task-cancel-btn').addEventListener('click', closeTaskModal);
