@@ -34,9 +34,8 @@ a{color:inherit}
 h1,h2,h3,h4{font-family:var(--ff-disp);color:#fff;letter-spacing:-.02em}
 button{font-family:var(--ff-body)}
 
-.brand{font-family:var(--ff-disp);font-weight:800;font-size:1.3rem;color:#fff;letter-spacing:-.03em;display:flex;align-items:baseline;gap:8px;line-height:1.1;white-space:nowrap}
-.brand b{color:var(--gold)}
-.brand small{font-family:var(--ff-mono);font-size:.5rem;letter-spacing:.32em;color:var(--mut);font-weight:500}
+.brand-logo{height:42px;width:42px;object-fit:contain;border-radius:10px;display:block}
+.brand-logo-lg{height:48px;width:48px;margin:0 auto 14px;border-radius:12px}
 
 /* ---------- BUTTONS ---------- */
 .btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--ff-disp);font-weight:700;font-size:.85rem;padding:10px 18px;border-radius:11px;cursor:pointer;border:0;transition:.15s}
@@ -59,6 +58,9 @@ button{font-family:var(--ff-body)}
 .login-card .error{color:var(--alert);font-size:.85rem;margin-top:10px;min-height:1.2em}
 .error{color:var(--alert);font-size:.85rem;margin-top:8px;min-height:1.2em}
 .success{color:var(--ok);font-size:.85rem;margin-top:8px}
+.link-row{margin-top:16px;text-align:center}
+.link-muted{color:var(--accent);font-size:.85rem;text-decoration:none}
+.link-muted:hover{text-decoration:underline}
 
 /* ---------- FIELDS ---------- */
 .field{margin-bottom:14px}
@@ -111,6 +113,8 @@ button{font-family:var(--ff-body)}
 .dash-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:18px}
 .panel-block{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px}
 .panel-block h3{font-size:1rem;margin-bottom:14px}
+.alert-block{border-color:rgba(255,77,94,.4);background:rgba(255,77,94,.06);margin-bottom:22px}
+.alert-block h3{color:var(--alert)}
 .mini-list{display:flex;flex-direction:column;gap:10px}
 .mini-item{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;border-bottom:1px solid var(--line);padding-bottom:8px}
 .mini-item:last-child{border-bottom:0;padding-bottom:0}
@@ -135,6 +139,25 @@ button{font-family:var(--ff-body)}
 .tbl td{color:var(--mut-2)}
 .tbl tr:last-child td{border-bottom:0}
 .tbl tr:hover td{background:rgba(255,255,255,.02)}
+.tbl tr.row-rgpd-ko td{color:var(--alert)}
+.tbl tr.row-rgpd-ko td a{color:var(--alert)}
+.tbl tr.row-banned td{color:var(--mut);text-decoration:line-through}
+.tbl td.num,.tbl th.num{text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---------- BADGES (compléments) ---------- */
+.badge-green{background:rgba(34,197,94,.18);color:#22c55e}
+.badge-red{background:rgba(255,77,94,.18);color:var(--alert)}
+
+/* ---------- ADMINISTRATION ---------- */
+.admin-tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--line);padding-bottom:10px;flex-wrap:wrap}
+.admin-tabs .navlink{border-radius:10px;padding:8px 14px;font-size:.88rem}
+.admin-panel{margin-top:6px}
+.note-admin{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);color:var(--gold);border-radius:10px;padding:10px 14px;font-size:.85rem;margin:0 0 12px}
+
+/* ---------- POPUP MESSAGE ENTRANT ---------- */
+.incoming-message{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.3);border-radius:12px;padding:16px;margin-top:6px}
+.incoming-meta{font-size:.82rem;color:var(--mut);margin-bottom:10px}
+.incoming-content{white-space:pre-wrap;color:var(--mut-2);line-height:1.55}
 .tbl .actions{display:flex;gap:6px}
 .tbl .nowrap{white-space:nowrap}
 
@@ -217,3 +240,80 @@ button{font-family:var(--ff-body)}
   .kanban{grid-template-columns:1fr}
   .field-row{grid-template-columns:1fr}
 }
+
+/* =========================================================
+   NOUVEAUX COMPOSANTS (assistance, RGPD utilisateur, confetti)
+   ========================================================= */
+
+/* --- Cartes modales utilisant la classe .modal-card --- */
+.modal .modal-card{
+  max-width:560px;width:100%;background:var(--navy-mid);
+  border:1px solid var(--line);border-radius:18px;padding:26px;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);animation:pop .2s;
+  max-height:90vh;overflow-y:auto;position:relative;z-index:1;
+}
+
+/* --- En-tête dashboard avec bouton "Mes données" à droite --- */
+.view-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.view-head-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* --- Bouton flottant d'assistance --- */
+.help-fab{
+  position:fixed;right:20px;bottom:20px;z-index:90;
+  width:54px;height:54px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent-2),var(--accent));
+  border:0;color:#fff;cursor:pointer;
+  box-shadow:0 10px 30px rgba(37,99,235,.45);
+  display:grid;place-items:center;transition:.2s;
+}
+.help-fab:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 14px 36px rgba(37,99,235,.55)}
+.help-fab:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+
+/* --- Modale Félicitations (objectif atteint) --- */
+.felicitations-card{
+  text-align:center;
+  border:2px solid var(--gold) !important;
+  box-shadow:0 30px 80px rgba(245,158,11,.4) !important;
+  background:linear-gradient(160deg,var(--navy-mid),#1a2848) !important;
+}
+.felicitations-card h3{font-size:1.6rem;margin:6px 0 10px}
+.confetti-canvas{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+}
+
+/* --- Bouton Bon de commande PDF --- */
+#contract-pdf-btn{margin-right:auto}
+
+/* --- Modale "Mes données" RGPD --- */
+#mydata-content .note{
+  background:rgba(59,130,246,.08);
+  border:1px solid rgba(59,130,246,.35);
+  color:var(--text-body);
+  border-radius:10px;padding:12px 14px;
+  font-size:.85rem;line-height:1.55;
+}
+
+/* --- Adaptation mobile du FAB --- */
+@media(max-width:600px){
+  .help-fab{right:14px;bottom:14px;width:48px;height:48px}
+  .view-head{flex-direction:column;align-items:stretch}
+  .view-head-actions{justify-content:flex-end}
+}
+
+/* --- Signature canvas --- */
+.sig-wrap{
+  position:relative;
+  border:2px dashed rgba(245,158,11,.5);
+  border-radius:12px;
+  padding:6px;
+  background:rgba(255,255,255,.04);
+}
+#sig-canvas{
+  display:block;width:100%;height:160px;
+  background:#fff;border-radius:8px;cursor:crosshair;touch-action:none;
+}
+#sig-clear-btn{position:absolute;top:10px;right:10px;font-size:.78rem;padding:5px 10px}
+
+/* --- TOTP QR --- */
+#totp-qr canvas{background:#fff;padding:10px;border-radius:8px}
+#totp-secret{font-family:var(--ff-mono);font-size:.85rem;letter-spacing:.05em}
