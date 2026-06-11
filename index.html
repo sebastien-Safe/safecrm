@@ -317,6 +317,17 @@
       <button class="btn btn-out" id="profile-cancel-btn">Annuler</button>
       <button class="btn btn-pri" id="profile-save-btn">Enregistrer</button>
     </div>
+
+    <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
+
+    <h3 style="font-size:1rem">Changer mon mot de passe</h3>
+    <div class="field"><label>Nouveau mot de passe</label><input id="profile-new-password" type="password" autocomplete="new-password" placeholder="Au moins 6 caractères"></div>
+    <div class="field"><label>Confirmer le mot de passe</label><input id="profile-new-password-2" type="password" autocomplete="new-password"></div>
+    <p class="error" id="password-error"></p>
+    <p class="success" id="password-success" style="display:none">Mot de passe mis à jour avec succès.</p>
+    <div class="modal-actions">
+      <button class="btn btn-out" id="password-save-btn">Mettre à jour le mot de passe</button>
+    </div>
   </div>
 </div>
 
