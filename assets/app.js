@@ -133,7 +133,19 @@ const FORMULE_CUSTOM = '__custom__';
 // (taux par offre, prime à la signature, etc.), communiquez-la
 // pour un calcul plus précis par produit.
 // ---------------------------------------------------------
-const COMMISSION_RATE = 12;
+const COMMISSION_RATES = {
+  'Référencement Local': 0.12,
+  'Click & Collect': 0.10,
+  'Mise en conformité RGPD': 0.15,
+  'DPO externalisé': 0.14,
+  'Cybersécurité': 0.15,
+  'Autre': 0.12 // Défaut
+};
+
+// Ensuite, dans votre logique de calcul de commission :
+function getCommissionRate(typePrestation) {
+  return COMMISSION_RATES[typePrestation] || COMMISSION_RATES['Autre'];
+}
 
 function contactName(id) {
   const c = state.contacts.find(c => c.id === id);
