@@ -8,6 +8,8 @@
 //    - "anon / public" (eyJ...) sous l'onglet "Legacy API Keys" sur les
 //      projets plus anciens
 // 4. Collez les deux valeurs ci-dessous
+const SUPABASE_URL = "https://tqfkdwashuepzstpxdlw.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_ouatARf8Sr2FMfwYXJzEYQ_I0vHaVQO";
 //
 // Cette clé est conçue pour être publique (elle est protégée par les
 // règles RLS définies dans supabase-schema.sql) : seuls les comptes
