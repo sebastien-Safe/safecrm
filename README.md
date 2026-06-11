@@ -17,6 +17,10 @@ Outil interne tout-en-un pour S@FE : **contacts**, **contrats** et **tâches**, 
 3. Une fois le projet créé, allez dans **SQL Editor** (menu de gauche) → **New query**.
 4. Copiez-collez l'intégralité du contenu du fichier [`supabase-schema.sql`](./supabase-schema.sql) puis cliquez sur **Run**.
    - Cela crée les tables `contacts`, `contracts`, `tasks` et active la sécurité (RLS) : seules les personnes connectées peuvent lire/écrire.
+5. Faites de même avec le fichier [`supabase-schema-v2.sql`](./supabase-schema-v2.sql) (nouvelle requête → coller → **Run**).
+   - Cela ajoute la table `profiles` (prénom, photo, jours travaillés/mois), la table `objectifs` (avec des objectifs par défaut pour chaque activité) et un espace de stockage `avatars` pour les photos de profil.
+6. Faites de même avec le fichier [`supabase-schema-v3.sql`](./supabase-schema-v3.sql) (nouvelle requête → coller → **Run**).
+   - Cela ajoute une colonne `remise` sur les contrats (remise € HT déduite du tarif catalogue).
 
 ## 2. Récupérer les clés d'API
 
@@ -55,7 +59,15 @@ Par défaut, Supabase autorise n'importe qui à créer un compte. Pour un usage 
 - **Tableau de bord** : vue d'ensemble (nombre de contacts, clients actifs, contrats en cours, tâches en retard).
 - **Contacts** : fiche par prospect/client avec activités concernées (Digitalisation, RGPD, Assurance), statut, coordonnées.
 - **Contrats** : liés à un contact, type de prestation (Référencement Local, DPO externe, Audit RGPD, Courtage Assurance, etc.), montant, récurrence, dates et statut.
+  - **Formule pré-remplie** : pour les types « Référencement Local », « Click & Collect », « Mise en conformité RGPD » et « DPO externalisé », le menu "Formule" propose les offres et tarifs publiés sur safe-digitalisation.fr (Essentiel/Boost/Prestige, etc.). Sélectionner une formule remplit automatiquement le montant, la récurrence, et ajoute en note les éventuels frais de mise en place.
+  - **Autres types** (Audit RGPD, Gestion Fiche Google Business, Courtage Assurance, Autre) : pas de tarif catalogue publié → la formule reste en saisie libre ("Personnalisé / Sur devis").
+  - **Remise accordée** : case à cocher + montant (€ HT) déduit du tarif. Le montant net (après remise) s'affiche automatiquement et c'est lui qui est utilisé dans le calcul du CA récurrent (onglet Objectifs).
 - **Tâches** : organisées en colonnes (À faire / En cours / Terminé), avec échéance, priorité et personne assignée. Les tâches en retard apparaissent en rouge.
+- **Objectifs** : une jauge "compteur" par activité (Audit RGPD, Fiches Google, DPO, etc.) ainsi que des objectifs globaux (nouveaux clients, contrats signés, CA récurrent mensuel, tâches terminées).
+  - **Jauges** : rouge si < 50 % de l'objectif, orange entre 50 et 75 %, vert au-delà de 75 %.
+  - **Jours travaillés** : en début de mois, indiquez combien de jours vous comptez travailler — tous les objectifs "au prorata" sont automatiquement recalculés (objectif × jours travaillés / 20).
+  - **"Modifier mes objectifs"** : ajustez à tout moment la valeur de référence (pour un mois plein de 20 jours) de chaque indicateur.
+- **Profil** (en bas de la barre latérale) : cliquez sur votre avatar pour ajouter votre prénom et une photo de profil. Votre prénom remplace votre e-mail dans l'interface.
 
 ## 6. Évolutions possibles (sur demande)
 
