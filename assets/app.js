@@ -249,6 +249,13 @@ async function login() {
   const { error } = await sb.auth.signInWithPassword({ email, password });
   if (error) {
     $('#login-error').textContent = "Connexion impossible : " + error.message;
+    return;
+  }
+  // Si l'utilisateur a un facteur TOTP enrôlé, on lui demande le code à 6 chiffres
+  const ok = await challengeTOTPIfNeeded();
+  if (!ok) {
+    $('#login-error').textContent = "Connexion annulée (double authentification).";
+    return;
   }
 }
 
@@ -790,6 +797,7 @@ function openContractModal(id = null) {
 
   $('#contract-delete-btn').style.display = ct ? 'inline-flex' : 'none';
   $('#contract-pdf-btn').style.display = ct ? 'inline-flex' : 'none';
+  $('#contract-sign-btn').style.display = ct ? 'inline-flex' : 'none';
   $('#contract-modal').classList.add('show');
 }
 
@@ -1010,6 +1018,7 @@ function openProfileModal() {
   $('#profile-photo-input').value = '';
   $('#profile-error').textContent = '';
   $('#profile-new-password').value = '';
+  refreshTOTPStatus();
   $('#profile-new-password-2').value = '';
   $('#password-error').textContent = '';
   $('#password-success').style.display = 'none';
@@ -1676,6 +1685,150 @@ function generateContractPDF() {
   if (res) alert(`Bon de commande téléchargé : ${res.filename}`);
 }
 
+// --- Envoi du bon de commande pour signature électronique ---
+function openContractSign() {
+  const id = $('#ct-id').value;
+  if (!id) { alert('Enregistrez le contrat avant de l\'envoyer.'); return; }
+  const contract = state.contracts.find(c => c.id === id);
+  if (!contract) { alert('Contrat introuvable.'); return; }
+  const contact = state.contacts.find(c => c.id === contract.contact_id);
+  if (!contact) { alert('Contact lié introuvable.'); return; }
+  if (!contact.email) { alert("Le contact n'a pas d'e-mail renseigné — impossible d'envoyer pour signature."); return; }
+  if (!contact.siret || !contact.code_postal_ville) {
+    if (!confirm('Le SIRET ou l\'adresse de facturation du client ne sont pas renseignés. Envoyer quand même ?')) return;
+  }
+  window.ContractSign.open({
+    id: contract.id,
+    type: contract.type,
+    formule: contract.formule,
+    montant: contract.montant,
+    recurrence: contract.recurrence,
+    frais_mise_en_place: contract.frais_mise_en_place,
+    engagement_mois: contract.engagement_mois,
+    remise: contract.remise,
+  }, contact, () => {
+    closeContractModal();
+    loadContracts().then(renderContracts);
+  });
+}
+
+// =========================================================
+// DOUBLE AUTHENTIFICATION TOTP (QR code)
+// =========================================================
+
+async function refreshTOTPStatus() {
+  if (!state.user) return;
+  try {
+    const { data } = await sb.auth.mfa.listFactors();
+    const verified = (data?.totp || []).filter(f => f.status === 'verified');
+    const enrolled = verified.length > 0;
+    state._totpFactors = data?.totp || [];
+    $('#totp-status-label').textContent = enrolled
+      ? '🔒 2FA activée — appli d\'authentification requise à chaque connexion.'
+      : 'Non activée — appuyez sur le bouton pour scanner un QR code.';
+    $('#totp-enroll-btn').style.display = enrolled ? 'none' : 'inline-flex';
+    $('#totp-disable-btn').style.display = enrolled ? 'inline-flex' : 'none';
+  } catch (e) { console.warn('listFactors:', e); }
+}
+
+async function openTotpEnroll() {
+  const err = $('#totp-enroll-error'); err.style.display = 'none';
+  $('#totp-code').value = '';
+  try {
+    const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'CRM S@FE' });
+    if (error) throw error;
+    state._totpEnrollFactorId = data.id;
+    // Affichage du QR code (otpauth URI) via librairie qrcode.js
+    const otpauth = data.totp.uri;
+    const container = $('#totp-qr'); container.innerHTML = '';
+    if (window.QRCode) {
+      const canvas = document.createElement('canvas');
+      await window.QRCode.toCanvas(canvas, otpauth, { width: 200, margin: 1, color: { dark: '#0a1628', light: '#ffffff' } });
+      container.appendChild(canvas);
+    } else {
+      // Fallback : afficher le secret en grand
+      container.innerHTML = `<code style="font-family:var(--ff-mono);font-size:.9rem;color:var(--gold);word-break:break-all">${otpauth}</code>`;
+    }
+    $('#totp-secret').value = data.totp.secret;
+    $('#totp-enroll-modal').classList.add('show');
+  } catch (e) {
+    err.textContent = 'Erreur : ' + (e.message || e);
+    err.style.display = 'block';
+    alert('Impossible de démarrer l\'enrôlement TOTP. Vérifiez que la 2FA TOTP est activée dans Supabase Authentication > Providers.');
+  }
+}
+
+async function verifyTotpEnroll() {
+  const err = $('#totp-enroll-error'); err.style.display = 'none';
+  const code = $('#totp-code').value.trim();
+  const factorId = state._totpEnrollFactorId;
+  if (!factorId) { err.textContent = "Aucun enrôlement en cours."; err.style.display = 'block'; return; }
+  if (!/^\d{6}$/.test(code)) { err.textContent = "Saisissez un code à 6 chiffres."; err.style.display = 'block'; return; }
+  try {
+    const ch = await sb.auth.mfa.challenge({ factorId });
+    if (ch.error) throw ch.error;
+    const v = await sb.auth.mfa.verify({ factorId, challengeId: ch.data.id, code });
+    if (v.error) throw v.error;
+    $('#totp-enroll-modal').classList.remove('show');
+    alert('✅ Double authentification activée. Vous devrez désormais saisir un code à 6 chiffres à chaque connexion.');
+    refreshTOTPStatus();
+  } catch (e) {
+    err.textContent = 'Code refusé : ' + (e.message || e);
+    err.style.display = 'block';
+  }
+}
+
+async function disableTotp() {
+  if (!confirm("Désactiver la double authentification ? Vous pourrez la réactiver à tout moment.")) return;
+  try {
+    const factors = state._totpFactors || [];
+    for (const f of factors) {
+      await sb.auth.mfa.unenroll({ factorId: f.id });
+    }
+    alert('Double authentification désactivée.');
+    refreshTOTPStatus();
+  } catch (e) { alert('Erreur : ' + (e.message || e)); }
+}
+
+// Vérification TOTP après login (appelé depuis handleLogin)
+async function challengeTOTPIfNeeded() {
+  try {
+    const { data: aalData } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (!aalData) return true;
+    if (aalData.currentLevel === aalData.nextLevel) return true;
+    // L'utilisateur a un facteur TOTP non vérifié pour cette session — challenger
+    const { data: factorsData } = await sb.auth.mfa.listFactors();
+    const totp = (factorsData?.totp || []).find(f => f.status === 'verified');
+    if (!totp) return true;
+    return await new Promise((resolve) => {
+      const modal = $('#totp-challenge-modal');
+      const err = $('#totp-challenge-error'); err.style.display = 'none';
+      $('#totp-challenge-code').value = '';
+      modal.classList.add('show');
+      $('#totp-challenge-cancel').onclick = async () => {
+        modal.classList.remove('show');
+        await sb.auth.signOut();
+        resolve(false);
+      };
+      $('#totp-challenge-verify').onclick = async () => {
+        const code = $('#totp-challenge-code').value.trim();
+        if (!/^\d{6}$/.test(code)) { err.textContent = 'Code à 6 chiffres.'; err.style.display = 'block'; return; }
+        try {
+          const ch = await sb.auth.mfa.challenge({ factorId: totp.id });
+          if (ch.error) throw ch.error;
+          const v = await sb.auth.mfa.verify({ factorId: totp.id, challengeId: ch.data.id, code });
+          if (v.error) throw v.error;
+          modal.classList.remove('show');
+          resolve(true);
+        } catch (e) {
+          err.textContent = 'Code refusé : ' + (e.message || e);
+          err.style.display = 'block';
+        }
+      };
+    });
+  } catch (e) { console.warn('AAL check:', e); return true; }
+}
+
 // --- Registre RGPD (Article 30) ---
 const REGISTRE_RGPD = [
   {
@@ -1915,6 +2068,13 @@ function bindEvents() {
 
   // === Bon de commande PDF ===
   $('#contract-pdf-btn')?.addEventListener('click', generateContractPDF);
+  $('#contract-sign-btn')?.addEventListener('click', openContractSign);
+
+  // === Double authentification TOTP ===
+  $('#totp-enroll-btn')?.addEventListener('click', openTotpEnroll);
+  $('#totp-disable-btn')?.addEventListener('click', disableTotp);
+  $('#totp-enroll-cancel')?.addEventListener('click', () => $('#totp-enroll-modal').classList.remove('show'));
+  $('#totp-enroll-verify')?.addEventListener('click', verifyTotpEnroll);
 
   // === Onglet Registre RGPD ===
   $('#btn-export-registre')?.addEventListener('click', exportRegistrePDF);
