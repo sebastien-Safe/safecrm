@@ -133,6 +133,10 @@ async function init() {
   }
 
   sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      showResetScreen();
+      return;
+    }
     if (session) {
       state.user = session.user;
       showApp();
@@ -147,11 +151,62 @@ async function init() {
 
 function showLogin() {
   $('#login-screen').style.display = 'grid';
+  $('#reset-screen').style.display = 'none';
   $('#app').style.display = 'none';
+  showLoginPanel();
+}
+
+function showResetScreen() {
+  $('#login-screen').style.display = 'none';
+  $('#app').style.display = 'none';
+  $('#reset-error').textContent = '';
+  $('#reset-password').value = '';
+  $('#reset-password-2').value = '';
+  $('#reset-screen').style.display = 'grid';
+  // Nettoie le jeton de récupération de l'URL
+  history.replaceState({}, document.title, window.location.pathname);
+}
+
+function showLoginPanel() {
+  $('#forgot-panel').style.display = 'none';
+  $('#login-panel').style.display = 'block';
+}
+
+function showForgotPanel() {
+  $('#login-panel').style.display = 'none';
+  $('#forgot-panel').style.display = 'block';
+  $('#forgot-error').textContent = '';
+  $('#forgot-success').style.display = 'none';
+}
+
+async function sendPasswordReset() {
+  const email = $('#forgot-email').value.trim();
+  $('#forgot-error').textContent = '';
+  $('#forgot-success').style.display = 'none';
+  if (!email) { $('#forgot-error').textContent = 'Merci de renseigner votre e-mail.'; return; }
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+  if (error) { $('#forgot-error').textContent = 'Erreur : ' + error.message; return; }
+  $('#forgot-success').style.display = 'block';
+}
+
+async function submitNewPassword() {
+  const pw1 = $('#reset-password').value;
+  const pw2 = $('#reset-password-2').value;
+  $('#reset-error').textContent = '';
+  if (!pw1 || pw1.length < 6) { $('#reset-error').textContent = 'Le mot de passe doit contenir au moins 6 caractères.'; return; }
+  if (pw1 !== pw2) { $('#reset-error').textContent = 'Les deux mots de passe ne correspondent pas.'; return; }
+  const { error } = await sb.auth.updateUser({ password: pw1 });
+  if (error) { $('#reset-error').textContent = 'Erreur : ' + error.message; return; }
+  $('#reset-screen').style.display = 'none';
+  const { data: { session } } = await sb.auth.getSession();
+  state.user = session?.user || null;
+  await showApp();
 }
 
 async function showApp() {
   $('#login-screen').style.display = 'none';
+  $('#reset-screen').style.display = 'none';
   $('#app').style.display = 'flex';
   await loadAll();
 }
@@ -902,10 +957,19 @@ async function saveObjectifsModal() {
 function bindEvents() {
   // Login / logout
   $('#login-btn').addEventListener('click', login);
-  $all('#login-email, #login-password').forEach(el => {});
   $('#login-password').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
   $('#login-email').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
   $('#logout-btn').addEventListener('click', logout);
+
+  // Mot de passe oublié
+  $('#forgot-password-link').addEventListener('click', e => { e.preventDefault(); showForgotPanel(); });
+  $('#back-to-login-link').addEventListener('click', e => { e.preventDefault(); showLoginPanel(); });
+  $('#forgot-send-btn').addEventListener('click', sendPasswordReset);
+  $('#forgot-email').addEventListener('keydown', e => { if (e.key === 'Enter') sendPasswordReset(); });
+
+  // Écran de réinitialisation
+  $('#reset-submit-btn').addEventListener('click', submitNewPassword);
+  $('#reset-password-2').addEventListener('keydown', e => { if (e.key === 'Enter') submitNewPassword(); });
 
   // Navigation
   $all('.navlink').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
