@@ -8,6 +8,8 @@ const state = {
   contacts: [],
   contracts: [],
   tasks: [],
+  profile: null,
+  objectifs: [],
   user: null,
 };
 
@@ -41,6 +43,34 @@ function todayISO() {
 
 function isOverdue(dateStr, statut) {
   return dateStr && statut !== 'Terminé' && dateStr < todayISO();
+}
+
+function monthKey(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function isThisMonth(dateStr) {
+  if (!dateStr) return false;
+  return dateStr.slice(0, 7) === monthKey();
+}
+
+function gaugeColor(pct) {
+  if (pct < 50) return 'var(--alert)';
+  if (pct < 75) return 'var(--gold)';
+  return 'var(--ok)';
+}
+
+function gaugeSvg(pct) {
+  const clamped = Math.max(0, Math.min(100, pct));
+  const r = 42;
+  const c = 2 * Math.PI * r;
+  const offset = c * (1 - clamped / 100);
+  const color = gaugeColor(pct);
+  return `<svg viewBox="0 0 100 100" class="gauge-svg">
+    <circle cx="50" cy="50" r="${r}" class="gauge-track"></circle>
+    <circle cx="50" cy="50" r="${r}" class="gauge-fill" style="stroke:${color};stroke-dasharray:${c.toFixed(2)};stroke-dashoffset:${offset.toFixed(2)}"></circle>
+    <text x="50" y="50" class="gauge-text" style="fill:${color}">${Math.round(pct)}%</text>
+  </svg>`;
 }
 
 const CONTACT_STATUT_BADGE = { 'Prospect': 'badge-blue', 'Client': 'badge-green', 'Inactif': 'badge-gray' };
@@ -94,7 +124,6 @@ function showLogin() {
 async function showApp() {
   $('#login-screen').style.display = 'none';
   $('#app').style.display = 'flex';
-  $('#user-email').textContent = state.user?.email || '';
   await loadAll();
 }
 
@@ -120,7 +149,7 @@ async function logout() {
 // CHARGEMENT DES DONNÉES
 // ---------------------------------------------------------
 async function loadAll() {
-  await Promise.all([loadContacts(), loadContracts(), loadTasks()]);
+  await Promise.all([loadContacts(), loadContracts(), loadTasks(), loadProfile(), loadObjectifs()]);
   renderAll();
 }
 
@@ -142,11 +171,25 @@ async function loadTasks() {
   state.tasks = data || [];
 }
 
+async function loadProfile() {
+  const { data, error } = await sb.from('profiles').select('*').eq('id', state.user.id).maybeSingle();
+  if (error) { console.error('Erreur chargement profil :', error.message); }
+  state.profile = data || { id: state.user.id, prenom: null, photo_url: null, jours_travailles: null, jours_travailles_mois: null };
+}
+
+async function loadObjectifs() {
+  const { data, error } = await sb.from('objectifs').select('*').order('ordre', { ascending: true });
+  if (error) { console.error('Erreur chargement objectifs :', error.message); state.objectifs = []; return; }
+  state.objectifs = data || [];
+}
+
 function renderAll() {
+  renderUserBadge();
   renderDashboard();
   renderContacts();
   renderContracts();
   renderTasks();
+  renderObjectifs();
   populateContactSelects();
   populateContractSelects();
 }
@@ -260,17 +303,23 @@ async function saveContact() {
   const id = $('#c-id').value;
   const nom = $('#c-nom').value.trim();
   if (!nom) { alert('Le nom est obligatoire.'); return; }
+  const statut = $('#c-statut').value;
   const payload = {
     nom,
     entreprise: $('#c-entreprise').value.trim() || null,
     email: $('#c-email').value.trim() || null,
     telephone: $('#c-telephone').value.trim() || null,
     adresse: $('#c-adresse').value.trim() || null,
-    statut: $('#c-statut').value,
+    statut,
     source: $('#c-source').value.trim() || null,
     notes: $('#c-notes').value.trim() || null,
     activites: $all('.c-activite').filter(cb => cb.checked).map(cb => cb.value),
   };
+  // Mémorise la date de passage au statut "Client" (pour l'objectif "Nouveaux clients")
+  const existing = id ? state.contacts.find(x => x.id === id) : null;
+  if (statut === 'Client' && (!existing || existing.statut !== 'Client')) {
+    payload.devenu_client_at = new Date().toISOString();
+  }
   let error;
   if (id) {
     ({ error } = await sb.from('contacts').update(payload).eq('id', id));
@@ -464,6 +513,7 @@ async function saveTask() {
   const id = $('#t-id').value;
   const titre = $('#t-titre').value.trim();
   if (!titre) { alert('Le titre est obligatoire.'); return; }
+  const statut = $('#t-statut').value;
   const payload = {
     titre,
     description: $('#t-description').value.trim() || null,
@@ -471,9 +521,16 @@ async function saveTask() {
     contract_id: $('#t-contract').value || null,
     echeance: $('#t-echeance').value || null,
     priorite: $('#t-priorite').value,
-    statut: $('#t-statut').value,
+    statut,
     assigne_a: $('#t-assigne').value.trim() || null,
   };
+  // Mémorise la date de passage à "Terminé" (pour l'objectif "Tâches terminées")
+  const existing = id ? state.tasks.find(x => x.id === id) : null;
+  if (statut === 'Terminé') {
+    if (!existing || existing.statut !== 'Terminé') payload.termine_at = new Date().toISOString();
+  } else {
+    payload.termine_at = null;
+  }
   let error;
   if (id) {
     ({ error } = await sb.from('tasks').update(payload).eq('id', id));
@@ -496,9 +553,198 @@ async function deleteTask() {
 }
 
 async function quickSetTaskStatus(id, statut) {
-  const { error } = await sb.from('tasks').update({ statut }).eq('id', id);
+  const payload = { statut, termine_at: statut === 'Terminé' ? new Date().toISOString() : null };
+  const { error } = await sb.from('tasks').update(payload).eq('id', id);
   if (error) return alert('Erreur : ' + error.message);
   await loadAll();
+}
+
+// ---------------------------------------------------------
+// PROFIL UTILISATEUR (prénom, photo, jours travaillés)
+// ---------------------------------------------------------
+function renderUserBadge() {
+  const name = state.profile?.prenom || (state.user?.email ? state.user.email.split('@')[0] : 'Utilisateur');
+  $('#user-name').textContent = name;
+  setAvatar($('#user-avatar'), state.profile?.photo_url, name);
+}
+
+function setAvatar(el, photoUrl, name) {
+  if (photoUrl) {
+    el.style.backgroundImage = `url('${photoUrl}')`;
+    el.textContent = '';
+  } else {
+    el.style.backgroundImage = '';
+    el.textContent = (name || '?').trim().charAt(0).toUpperCase();
+  }
+}
+
+function openProfileModal() {
+  $('#profile-prenom').value = state.profile?.prenom || '';
+  $('#profile-photo-input').value = '';
+  $('#profile-error').textContent = '';
+  setAvatar($('#profile-avatar-preview'), state.profile?.photo_url, state.profile?.prenom || state.user?.email);
+  $('#profile-modal').classList.add('show');
+}
+
+function closeProfileModal() {
+  $('#profile-modal').classList.remove('show');
+}
+
+function previewProfilePhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const preview = $('#profile-avatar-preview');
+    preview.style.backgroundImage = `url('${reader.result}')`;
+    preview.textContent = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveProfile() {
+  const prenom = $('#profile-prenom').value.trim() || null;
+  const file = $('#profile-photo-input').files[0];
+  $('#profile-error').textContent = '';
+  let photo_url = state.profile?.photo_url || null;
+
+  if (file) {
+    if (file.size > 2 * 1024 * 1024) {
+      $('#profile-error').textContent = 'La photo ne doit pas dépasser 2 Mo.';
+      return;
+    }
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const path = `${state.user.id}/avatar.${ext}`;
+    const { error: uploadError } = await sb.storage.from('avatars').upload(path, file, { upsert: true, cacheControl: '3600' });
+    if (uploadError) {
+      $('#profile-error').textContent = "Erreur lors de l'envoi de la photo : " + uploadError.message;
+      return;
+    }
+    const { data } = sb.storage.from('avatars').getPublicUrl(path);
+    photo_url = data.publicUrl + '?t=' + Date.now();
+  }
+
+  const { error } = await sb.from('profiles').upsert({ id: state.user.id, prenom, photo_url });
+  if (error) { $('#profile-error').textContent = 'Erreur : ' + error.message; return; }
+
+  closeProfileModal();
+  await loadProfile();
+  renderUserBadge();
+  renderObjectifs();
+}
+
+// ---------------------------------------------------------
+// OBJECTIFS
+// ---------------------------------------------------------
+function currentJoursTravailles() {
+  if (state.profile?.jours_travailles_mois === monthKey() && state.profile?.jours_travailles != null) {
+    return state.profile.jours_travailles;
+  }
+  return null; // pas encore renseigné pour ce mois
+}
+
+function computeObjectifValue(o) {
+  switch (o.metric_type) {
+    case 'nouveaux_clients':
+      return state.contacts.filter(c => c.statut === 'Client' && isThisMonth(c.devenu_client_at || c.created_at)).length;
+    case 'contrats_total':
+      return state.contracts.filter(c => ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
+    case 'contrats_type':
+      return state.contracts.filter(c => c.type === o.contract_type_filter && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
+    case 'taches_terminees':
+      return state.tasks.filter(t => t.statut === 'Terminé' && isThisMonth(t.termine_at || t.created_at)).length;
+    case 'ca_recurrent':
+      return state.contracts
+        .filter(c => c.recurrence === 'Mensuel' && ['Signé', 'En cours'].includes(c.statut))
+        .reduce((sum, c) => sum + (Number(c.montant) || 0), 0);
+    default:
+      return 0;
+  }
+}
+
+function computeObjectifTarget(o) {
+  const jr = o.jours_reference || 20;
+  if (!o.scale_by_days) return Number(o.objectif_base) || 0;
+  const jt = currentJoursTravailles();
+  const ratio = jt === null ? 1 : (jt / jr);
+  return Math.max(Number(o.objectif_base) > 0 ? 1 : 0, Math.round(Number(o.objectif_base) * ratio));
+}
+
+function capitalize(str) {
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+}
+
+function renderObjectifs() {
+  $('#mois-courant-label').textContent = capitalize(new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }));
+
+  const input = $('#jours-travailles-input');
+  const jt = currentJoursTravailles();
+  input.value = jt === null ? '' : jt;
+
+  const grid = $('#gauges-grid');
+  if (!state.objectifs.length) {
+    grid.innerHTML = '<p class="empty">Aucun objectif configuré. Exécutez supabase-schema-v2.sql dans Supabase.</p>';
+    return;
+  }
+  grid.innerHTML = state.objectifs.map(o => {
+    const value = computeObjectifValue(o);
+    const target = computeObjectifTarget(o);
+    const pct = target > 0 ? (value / target) * 100 : (value > 0 ? 100 : 0);
+    const isMoney = o.metric_type === 'ca_recurrent';
+    const valLabel = isMoney ? formatMoney(value) : value;
+    const targetLabel = isMoney ? formatMoney(target) : target;
+    return `
+      <div class="gauge-card">
+        <div class="gauge-wrap">${gaugeSvg(pct)}</div>
+        <h4>${escapeHtml(o.label)}</h4>
+        <div class="gauge-values">${valLabel} / ${targetLabel}</div>
+      </div>`;
+  }).join('');
+}
+
+async function saveJoursTravailles() {
+  const raw = $('#jours-travailles-input').value;
+  const jours = raw === '' ? null : Math.max(0, Math.min(31, Math.round(Number(raw))));
+  const { error } = await sb.from('profiles').upsert({
+    id: state.user.id,
+    jours_travailles: jours,
+    jours_travailles_mois: monthKey(),
+  });
+  if (error) return alert('Erreur : ' + error.message);
+  await loadProfile();
+  renderObjectifs();
+}
+
+function openObjectifsModal() {
+  const list = $('#objectifs-edit-list');
+  list.innerHTML = state.objectifs.map(o => {
+    const unit = o.metric_type === 'ca_recurrent' ? '€' : (o.scale_by_days ? `/ ${o.jours_reference}j` : '');
+    return `
+    <div class="objectif-row">
+      <label>${escapeHtml(o.label)}</label>
+      <input type="number" step="0.01" min="0" data-objectif-id="${o.id}" value="${o.objectif_base}">
+      <span class="unit">${unit}</span>
+    </div>`;
+  }).join('');
+  $('#jours-ref-label').textContent = state.objectifs[0]?.jours_reference || 20;
+  $('#objectifs-modal').classList.add('show');
+}
+
+function closeObjectifsModal() {
+  $('#objectifs-modal').classList.remove('show');
+}
+
+async function saveObjectifsModal() {
+  const inputs = $all('#objectifs-edit-list input[data-objectif-id]');
+  for (const inp of inputs) {
+    const { error } = await sb.from('objectifs')
+      .update({ objectif_base: Number(inp.value) || 0 })
+      .eq('id', inp.dataset.objectifId);
+    if (error) return alert('Erreur : ' + error.message);
+  }
+  closeObjectifsModal();
+  await loadObjectifs();
+  renderObjectifs();
 }
 
 // ---------------------------------------------------------
@@ -543,6 +789,18 @@ function bindEvents() {
   $('#task-cancel-btn').addEventListener('click', closeTaskModal);
   $('#task-save-btn').addEventListener('click', saveTask);
   $('#task-delete-btn').addEventListener('click', deleteTask);
+
+  // Profil utilisateur
+  $('#profile-btn').addEventListener('click', openProfileModal);
+  $('#profile-cancel-btn').addEventListener('click', closeProfileModal);
+  $('#profile-save-btn').addEventListener('click', saveProfile);
+  $('#profile-photo-input').addEventListener('change', previewProfilePhoto);
+
+  // Objectifs
+  $('#save-jours-btn').addEventListener('click', saveJoursTravailles);
+  $('#btn-edit-objectifs').addEventListener('click', openObjectifsModal);
+  $('#objectifs-cancel-btn').addEventListener('click', closeObjectifsModal);
+  $('#objectifs-save-btn').addEventListener('click', saveObjectifsModal);
 
   // Délégation : boutons d'édition / actions rapides dans les tableaux & kanban
   document.addEventListener('click', e => {
