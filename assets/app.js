@@ -111,12 +111,25 @@ const FORMULE_PRESETS = {
     { label: 'Abonnement DPO', montant: 149, recurrence: 'Mensuel', setup: 0, engagement: 12 },
   ],
   'Cybersécurité': [
-    { label: 'Audit de vulnérabilité',  montant: 490,  recurrence: 'Ponctuel', setup: 0, engagement: 0 },
-    { label: 'Pack Sécurité Essentiel', montant: 990,  recurrence: 'Ponctuel', setup: 0, engagement: 0 },
-    { label: 'Pack Résilience Pro',     montant: 1990, recurrence: 'Ponctuel', setup: 0, engagement: 0 },
+    { label: 'Audit de vulnérabilité',  montant: 490,  recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 5 },
+    { label: 'Pack Sécurité Essentiel', montant: 990,  recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 10 },
+    { label: 'Pack Résilience Pro',     montant: 1990, recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 15 },
   ],
 };
 const FORMULE_CUSTOM = '__custom__';
+
+// ---------------------------------------------------------
+// COMMISSIONS (issu de safe-digitalisation.fr/recrutement.html)
+// La page Recrutement indique une fourchette de 10 à 15 % du CA
+// généré (source APAC France), la grille détaillée par produit
+// étant définie au cas par cas lors de l'entretien de cadrage
+// (non publiée). En l'absence de grille produit par produit,
+// on applique le taux médian de 12 % à l'ensemble du CA généré.
+// → Si vous disposez de la grille de commissionnement détaillée
+// (taux par offre, prime à la signature, etc.), communiquez-la
+// pour un calcul plus précis par produit.
+// ---------------------------------------------------------
+const COMMISSION_RATE = 12;
 
 function contactName(id) {
   const c = state.contacts.find(c => c.id === id);
@@ -329,6 +342,33 @@ function renderDashboard() {
   const name = state.profile?.prenom || (state.user?.email ? state.user.email.split('@')[0] : 'Utilisateur');
   $('#dashboard-title').textContent = `Tableau de bord de ${name}`;
   updateDashboardClock();
+
+  // Alerte échéances de contrats (en retard ou dans les 15 prochains jours)
+  const today = todayISO();
+  const limit = new Date();
+  limit.setDate(limit.getDate() + 15);
+  const limitStr = limit.toISOString().slice(0, 10);
+  const dueSoon = state.contracts
+    .filter(c => c.date_echeance && c.date_echeance <= limitStr && !['Terminé', 'Résilié'].includes(c.statut))
+    .sort((a, b) => a.date_echeance.localeCompare(b.date_echeance));
+  const alertBlock = $('#echeances-alert');
+  if (dueSoon.length) {
+    alertBlock.style.display = 'block';
+    $('#echeances-list').innerHTML = dueSoon.map(c => {
+      const days = Math.round((new Date(c.date_echeance) - new Date(today)) / 86400000);
+      const when = days < 0 ? `en retard de ${Math.abs(days)} j` : (days === 0 ? "aujourd'hui" : `dans ${days} j`);
+      return `
+        <div class="mini-item">
+          <div>
+            <div class="t">${escapeHtml(contactName(c.contact_id))} — ${escapeHtml(c.type)}${c.formule ? ' / ' + escapeHtml(c.formule) : ''}</div>
+            <div class="s">Échéance le ${formatDate(c.date_echeance)}</div>
+          </div>
+          <span class="${days < 0 ? 'overdue' : ''}">${when}</span>
+        </div>`;
+    }).join('');
+  } else {
+    alertBlock.style.display = 'none';
+  }
 
   $('#stat-contacts').textContent = state.contacts.length;
   $('#stat-clients').textContent = state.contacts.filter(c => c.statut === 'Client').length;
@@ -613,6 +653,7 @@ function onFormuleChange(applyPreset = true) {
     });
   }
   updateNetDisplay();
+  autoCalcEcheance();
 }
 
 function updateNetDisplay() {
@@ -622,6 +663,23 @@ function updateNetDisplay() {
   const net = Math.max(0, montant - remise);
   $('#ct-net-wrap').style.display = remiseActive && remise > 0 ? '' : 'none';
   $('#ct-net-display').value = formatMoney(net);
+}
+
+function autoCalcEcheance() {
+  const type = $('#ct-type').value.trim();
+  const formuleSel = $('#ct-formule-select').value;
+  const preset = (FORMULE_PRESETS[type] || []).find(f => f.label === formuleSel);
+  const dateDebut = $('#ct-date-debut').value;
+  if (!preset || !dateDebut) return;
+  const d = new Date(dateDebut + 'T00:00:00');
+  if (preset.engagement) {
+    d.setMonth(d.getMonth() + preset.engagement);
+  } else if (preset.deliveryDays) {
+    d.setDate(d.getDate() + preset.deliveryDays);
+  } else {
+    return;
+  }
+  $('#ct-date-echeance').value = d.toISOString().slice(0, 10);
 }
 
 function onContractTypeChange() {
@@ -980,8 +1038,7 @@ function computeObjectifValue(o) {
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     case 'commissions': {
       const ca = computeObjectifValue({ metric_type: 'ca_genere' });
-      const taux = Number(o.taux_commission) || 0;
-      return ca * (taux / 100);
+      return ca * (COMMISSION_RATE / 100);
     }
     default:
       return 0;
@@ -1055,9 +1112,8 @@ function openObjectifsModal() {
     if (o.metric_type === 'commissions') {
       row += `
     <div class="objectif-row" style="padding-top:0">
-      <label class="mut" style="font-size:.82rem">↳ Taux de commission appliqué au CA généré</label>
-      <input type="number" step="0.1" min="0" max="100" data-taux-id="${o.id}" value="${o.taux_commission ?? 0}">
-      <span class="unit">%</span>
+      <label class="mut" style="font-size:.82rem">↳ Taux appliqué au CA généré (fixe, non modifiable)</label>
+      <span class="unit" style="width:auto;font-family:var(--ff-mono)">${COMMISSION_RATE} %</span>
     </div>`;
     }
     return row;
@@ -1076,13 +1132,6 @@ async function saveObjectifsModal() {
     const { error } = await sb.from('objectifs')
       .update({ objectif_base: Number(inp.value) || 0 })
       .eq('id', inp.dataset.objectifId);
-    if (error) return alert('Erreur : ' + error.message);
-  }
-  const tauxInputs = $all('#objectifs-edit-list input[data-taux-id]');
-  for (const inp of tauxInputs) {
-    const { error } = await sb.from('objectifs')
-      .update({ taux_commission: Number(inp.value) || 0 })
-      .eq('id', inp.dataset.tauxId);
     if (error) return alert('Erreur : ' + error.message);
   }
   closeObjectifsModal();
@@ -1138,6 +1187,7 @@ function bindEvents() {
   $('#contract-delete-btn').addEventListener('click', deleteContract);
   $('#ct-type').addEventListener('input', onContractTypeChange);
   $('#ct-formule-select').addEventListener('change', () => onFormuleChange(true));
+  $('#ct-date-debut').addEventListener('change', autoCalcEcheance);
   $('#ct-montant').addEventListener('input', updateNetDisplay);
   $('#ct-remise-check').addEventListener('change', e => {
     $('#ct-remise').style.display = e.target.checked ? '' : 'none';
