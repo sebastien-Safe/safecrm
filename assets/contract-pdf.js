@@ -355,5 +355,108 @@ window.ContractPDF = (function () {
     return { refUnique: ref };
   }
 
-  return { generate, generateCGV };
+  // --- Génération d'un PDF Blob (pour envoi par e-mail) avec signature client optionnelle ---
+  function generateBlob(contract, contact, options = {}) {
+    if (!jsPDF) throw new Error('jsPDF non chargé');
+    const modele = MODELES[contract.type] || {
+      code: 'GEN', titre: `Bon de commande — ${contract.type || 'Prestation'}`,
+      ref: 'SAFE-BC-GEN', page: 'index.html',
+    };
+    const d = new Date();
+    const refSuffix = [d.getFullYear().toString().slice(2), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('');
+    const idShort = (contract.id || '').slice(0, 6).toUpperCase();
+    const refUnique = `${modele.ref}-${refSuffix}-${idShort}`;
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    let y = 30;
+    drawHeader(doc, modele, refUnique);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(15);
+    doc.setTextColor(10, 22, 40);
+    doc.text(modele.titre, 15, y);
+    y += 7;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Date : ${todayFr()} — Lieu : Paris`, 15, y);
+    y += 8;
+
+    y = drawParties(doc, contact, y);
+    y = drawFormule(doc, contract, modele, y);
+    if (y > 200) { doc.addPage(); y = 25; drawHeader(doc, modele, refUnique); }
+    y = drawRecap(doc, contract, y);
+
+    // Signature avec image client si fournie
+    if (options.signature) {
+      drawSignaturesWithClient(doc, options.signature, y);
+    } else {
+      drawSignatures(doc, y);
+    }
+
+    // Footer
+    const total = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= total; p++) { doc.setPage(p); drawFooter(doc); }
+
+    const blob = doc.output('blob');
+    return { blob, filename: `${refUnique}.pdf`, refUnique };
+  }
+
+  // --- Cartouche signature avec signature client image + horodatage ---
+  function drawSignaturesWithClient(doc, sig, y) {
+    if (y > 215) { doc.addPage(); y = 25; }
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(10, 22, 40);
+    doc.text('Signatures — Bon pour accord', 15, y);
+    y += 8;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text('S@FE — Le Prestataire', 15, y);
+    doc.text('Le Client', 110, y);
+    y += 5;
+
+    doc.setFontSize(8.5);
+    doc.setTextColor(60, 60, 60);
+    doc.text('Michel Sébastien Alonso, Président', 15, y);
+    doc.text(`Nom : ${sig.client_name || ''}`, 110, y);
+    y += 4.5;
+    doc.text(`Date : ${todayFr()}`, 15, y);
+    doc.text(`Signé le : ${sig.signed_at_paris || todayFr()}`, 110, y);
+    y += 5;
+
+    // Image de la signature client (PNG dataURL → jsPDF accepte directement)
+    try {
+      if (sig.signature_png) {
+        doc.addImage(sig.signature_png, 'PNG', 110, y, 75, 22);
+      }
+    } catch (e) { console.warn('Signature image non insérée :', e); }
+    doc.setFontSize(8);
+    doc.text('Cachet :', 15, y + 6);
+    doc.rect(15, y + 8, 60, 18);
+    y += 28;
+
+    doc.setFontSize(7.5);
+    doc.setTextColor(60, 60, 60);
+    doc.setFont('helvetica', 'italic');
+    doc.text(`Mention « Lu et approuvé » : ${sig.mention || ''}`, 110, y);
+    y += 4;
+
+    // Bloc de traçabilité (horodatage, hash, contrat id)
+    doc.setDrawColor(220, 220, 220);
+    doc.line(15, y + 3, 195, y + 3);
+    y += 8;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    const trace = [
+      'Signature électronique simple (art. 1367 du Code civil et art. 25 du règlement eIDAS).',
+      `Date et heure de signature : ${sig.signed_at_paris || ''} — ISO : ${sig.signed_at_iso || ''}`,
+      `Signé par : ${sig.client_name || ''} — E-mail destinataire : ${sig.client_email || ''}`,
+      'Le présent document a été généré, signé puis archivé automatiquement par le CRM S@FE.',
+    ];
+    trace.forEach((l, i) => doc.text(l, 15, y + i * 3.5));
+  }
+
+  return { generate, generateBlob, generateCGV };
 })();
