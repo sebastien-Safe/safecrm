@@ -12,6 +12,10 @@ const state = {
   profilesById: {},
   objectifs: [],
   user: null,
+  unreadMessages: [],
+  adminUsers: [],
+  adminView: 'me', // 'me' (mes chiffres) | 'all' (tous) | 'users' (gestion)
+  adminFilterUserId: null, // pour visualiser les objectifs d'un utilisateur précis (admin)
 };
 
 // ---------------------------------------------------------
@@ -256,7 +260,12 @@ async function logout() {
 // CHARGEMENT DES DONNÉES
 // ---------------------------------------------------------
 async function loadAll() {
-  await Promise.all([loadContacts(), loadContracts(), loadTasks(), loadProfile(), loadAllProfiles(), loadObjectifs()]);
+  await Promise.all([
+    loadContacts(), loadContracts(), loadTasks(),
+    loadProfile(), loadAllProfiles(), loadObjectifs(),
+    loadUnreadMessages(),
+  ]);
+  await ensureUserObjectifs();
   renderAll();
 }
 
@@ -281,14 +290,28 @@ async function loadTasks() {
 async function loadProfile() {
   const { data, error } = await sb.from('profiles').select('*').eq('id', state.user.id).maybeSingle();
   if (error) { console.error('Erreur chargement profil :', error.message); }
-  state.profile = data || { id: state.user.id, prenom: null, photo_url: null, jours_travailles: null, jours_travailles_mois: null };
+  state.profile = data || { id: state.user.id, prenom: null, photo_url: null, jours_travailles: null, jours_travailles_mois: null, is_admin: false };
 }
 
 async function loadAllProfiles() {
-  const { data, error } = await sb.from('profiles').select('id, prenom');
+  const { data, error } = await sb.from('profiles').select('id, prenom, is_admin');
   if (error) { console.error('Erreur chargement profils :', error.message); state.profilesById = {}; return; }
   state.profilesById = {};
   (data || []).forEach(p => { state.profilesById[p.id] = p; });
+}
+
+async function loadUnreadMessages() {
+  const { data, error } = await sb.from('messages')
+    .select('*')
+    .eq('recipient_id', state.user.id)
+    .eq('read', false)
+    .order('created_at', { ascending: false });
+  if (error) { console.error('Erreur chargement messages :', error.message); state.unreadMessages = []; return; }
+  state.unreadMessages = data || [];
+}
+
+function isAdmin() {
+  return !!state.profile?.is_admin;
 }
 
 function creatorName(userId) {
@@ -305,6 +328,22 @@ async function loadObjectifs() {
   const { data, error } = await sb.from('objectifs').select('*').order('ordre', { ascending: true });
   if (error) { console.error('Erreur chargement objectifs :', error.message); state.objectifs = []; return; }
   state.objectifs = data || [];
+}
+
+// Crée le jeu d'objectifs par défaut pour l'utilisateur s'il
+// n'en a pas encore. (Migration v7 : chaque utilisateur a
+// désormais ses propres objectifs.)
+async function ensureUserObjectifs() {
+  const mine = state.objectifs.filter(o => o.user_id === state.user.id);
+  if (mine.length > 0) return;
+  const defaults = [
+    { user_id: state.user.id, ordre: 1, label: 'Entrées en contact',     metric_type: 'nouveaux_contacts', contract_type_filter: null, objectif_base: 20,    jours_reference: 20, scale_by_days: true,  taux_commission: 0 },
+    { user_id: state.user.id, ordre: 2, label: 'CA généré',              metric_type: 'ca_genere',         contract_type_filter: null, objectif_base: 5000,  jours_reference: 20, scale_by_days: true,  taux_commission: 0 },
+    { user_id: state.user.id, ordre: 3, label: 'Commissions reversées (12% du CA)', metric_type: 'commissions', contract_type_filter: null, objectif_base: 600, jours_reference: 20, scale_by_days: true,  taux_commission: 12 },
+  ];
+  const { error } = await sb.from('objectifs').insert(defaults);
+  if (error) { console.error('Erreur création objectifs :', error.message); return; }
+  await loadObjectifs();
 }
 
 function renderAll() {
@@ -324,6 +363,7 @@ function renderAll() {
 function switchView(view) {
   $all('.navlink').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   $all('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
+  if (view === 'admin' && isAdmin()) renderAdmin();
 }
 
 // ---------------------------------------------------------
@@ -401,6 +441,12 @@ function renderDashboard() {
       </div>
       <span class="badge ${CONTACT_STATUT_BADGE[c.statut] || 'badge-gray'}">${escapeHtml(c.statut)}</span>
     </div>`).join('') : '<p class="empty">Aucun contact pour le moment.</p>';
+
+  // Pop-up des messages non lus (à la première ouverture du dashboard)
+  if (!state._messagesShown && state.unreadMessages.length) {
+    state._messagesShown = true;
+    showIncomingMessagesIfAny();
+  }
 }
 
 // ---------------------------------------------------------
@@ -443,15 +489,34 @@ function renderContacts() {
     </tr>`).join('');
 }
 
-const CONTACT_FIELD_IDS = ['c-nom', 'c-entreprise', 'c-email', 'c-telephone', 'c-adresse', 'c-statut', 'c-source', 'c-notes'];
+const CONTACT_FIELD_IDS = ['c-nom', 'c-entreprise', 'c-email', 'c-telephone', 'c-adresse', 'c-code-postal-ville', 'c-forme-juridique', 'c-siret', 'c-statut', 'c-source', 'c-notes'];
+const CONTACT_CONSENT_IDS = ['c-consent-telephone', 'c-consent-email', 'c-consent-courrier'];
 
 function setContactFieldsLocked(locked) {
-  CONTACT_FIELD_IDS.forEach(id => { $('#' + id).disabled = locked; });
-  $all('.c-activite').forEach(cb => { cb.disabled = locked; });
-  $('#c-rgpd-ko').disabled = locked;
-  $('#contact-save-btn').style.display = locked ? 'none' : '';
-  $('#c-rgpd-ko-field').style.display = locked ? 'none' : '';
-  $('#c-rgpd-locked-msg').style.display = locked ? 'block' : 'none';
+  // Un super-administrateur n'est jamais verrouillé.
+  const reallyLocked = locked && !isAdmin();
+  CONTACT_FIELD_IDS.forEach(id => { $('#' + id).disabled = reallyLocked; });
+  $all('.c-activite').forEach(cb => { cb.disabled = reallyLocked; });
+  CONTACT_CONSENT_IDS.forEach(id => { $('#' + id).disabled = reallyLocked; });
+  $('#c-rgpd-ko').disabled = false; // l'admin peut décocher
+  $('#contact-save-btn').style.display = reallyLocked ? 'none' : '';
+  // L'admin garde la possibilité de gérer la case RGPD KO
+  $('#c-rgpd-ko-field').style.display = (locked && !isAdmin()) ? 'none' : '';
+  $('#c-rgpd-locked-msg').style.display = reallyLocked ? 'block' : 'none';
+  // Banner admin quand on édite une fiche RGPD KO
+  let banner = $('#c-admin-rgpd-banner');
+  if (locked && isAdmin()) {
+    if (!banner) {
+      banner = document.createElement('p');
+      banner.id = 'c-admin-rgpd-banner';
+      banner.className = 'note-admin';
+      banner.textContent = "🔓 Vous modifiez une fiche RGPD KO en tant que super-administrateur.";
+      $('#c-rgpd-ko-field').parentNode.insertBefore(banner, $('#c-rgpd-ko-field'));
+    }
+    banner.style.display = '';
+  } else if (banner) {
+    banner.style.display = 'none';
+  }
 }
 
 function openContactModal(id = null) {
@@ -463,10 +528,16 @@ function openContactModal(id = null) {
   $('#c-email').value = c?.email || '';
   $('#c-telephone').value = c?.telephone || '';
   $('#c-adresse').value = c?.adresse || '';
+  $('#c-code-postal-ville').value = c?.code_postal_ville || '';
+  $('#c-forme-juridique').value = c?.forme_juridique || '';
+  $('#c-siret').value = c?.siret || '';
   $('#c-statut').value = c?.statut || 'Prospect';
   $('#c-source').value = c?.source || '';
   $('#c-notes').value = c?.notes || '';
   $('#c-rgpd-ko').checked = !!c?.rgpd_ko;
+  $('#c-consent-telephone').checked = !!c?.consent_telephone;
+  $('#c-consent-email').checked = !!c?.consent_email;
+  $('#c-consent-courrier').checked = !!c?.consent_courrier;
   $all('.c-activite').forEach(cb => cb.checked = (c?.activites || []).includes(cb.value));
   setContactFieldsLocked(!!c?.rgpd_ko);
   $('#contact-delete-btn').style.display = c ? 'inline-flex' : 'none';
@@ -490,18 +561,24 @@ async function saveContact() {
     email: $('#c-email').value.trim() || null,
     telephone: $('#c-telephone').value.trim() || null,
     adresse: $('#c-adresse').value.trim() || null,
+    code_postal_ville: $('#c-code-postal-ville').value.trim() || null,
+    forme_juridique: $('#c-forme-juridique').value.trim() || null,
+    siret: $('#c-siret').value.trim() || null,
     statut,
     source: $('#c-source').value.trim() || null,
     notes: $('#c-notes').value.trim() || null,
     activites: $all('.c-activite').filter(cb => cb.checked).map(cb => cb.value),
     rgpd_ko: rgpdKoChecked,
+    consent_telephone: $('#c-consent-telephone').checked,
+    consent_email: $('#c-consent-email').checked,
+    consent_courrier: $('#c-consent-courrier').checked,
   };
-  // Passage en RGPD KO : confirmation puis effacement des coordonnées
+  // Passage en RGPD KO : confirmation puis effacement des coordonnées + consentements
   if (rgpdKoChecked && !existing?.rgpd_ko) {
     const confirmed = confirm(
       "Confirmez-vous que ce contact ne souhaite plus être sollicité (RGPD KO) ?\n\n" +
-      "Cette action est définitive : l'e-mail, le téléphone et l'adresse vont être effacés, " +
-      "et la fiche sera verrouillée en lecture seule."
+      "Cette action est définitive : l'e-mail, le téléphone, l'adresse et tous les consentements vont être effacés, " +
+      "et la fiche sera verrouillée en lecture seule (sauf pour un super-administrateur)."
     );
     if (!confirmed) {
       $('#c-rgpd-ko').checked = false;
@@ -510,6 +587,9 @@ async function saveContact() {
       payload.email = null;
       payload.telephone = null;
       payload.adresse = null;
+      payload.consent_telephone = false;
+      payload.consent_email = false;
+      payload.consent_courrier = false;
     }
   }
   // Mémorise la date de passage au statut "Client" (pour l'objectif "Nouveaux clients")
@@ -709,6 +789,7 @@ function openContractModal(id = null) {
   updateNetDisplay();
 
   $('#contract-delete-btn').style.display = ct ? 'inline-flex' : 'none';
+  $('#contract-pdf-btn').style.display = ct ? 'inline-flex' : 'none';
   $('#contract-modal').classList.add('show');
 }
 
@@ -910,6 +991,8 @@ function renderUserBadge() {
   const name = state.profile?.prenom || (state.user?.email ? state.user.email.split('@')[0] : 'Utilisateur');
   $('#user-name').textContent = name;
   setAvatar($('#user-avatar'), state.profile?.photo_url, name);
+  // Onglet Administration visible uniquement pour les super-admins
+  $all('.admin-only').forEach(el => { el.style.display = isAdmin() ? '' : 'none'; });
 }
 
 function setAvatar(el, photoUrl, name) {
@@ -1016,28 +1099,296 @@ function currentJoursTravailles() {
   return null; // pas encore renseigné pour ce mois
 }
 
-function computeObjectifValue(o) {
+// =========================================================
+// ADMINISTRATION (super-administrateur uniquement)
+// =========================================================
+
+function switchAdminTab(tab) {
+  state.adminView = tab;
+  $all('[data-admin-tab]').forEach(b => b.classList.toggle('active', b.dataset.adminTab === tab));
+  ['overview', 'per-user', 'users', 'rgpd-ko', 'registre'].forEach(t => {
+    const el = $('#admin-panel-' + t);
+    if (el) el.style.display = (t === tab) ? '' : 'none';
+  });
+  if (tab === 'users') loadAdminUsers().then(renderAdminUsers);
+  if (tab === 'overview') renderAdminOverview();
+  if (tab === 'per-user') renderAdminPerUser();
+  if (tab === 'rgpd-ko') renderAdminRgpdKo();
+  if (tab === 'registre') renderRegistreRGPD();
+}
+
+// Liste des contacts RGPD KO pour modération admin
+function renderAdminRgpdKo() {
+  const tbody = $('#admin-rgpd-ko-table tbody');
+  if (!tbody) return;
+  const list = (state.contacts || []).filter(c => c.rgpd_ko);
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucun contact en RGPD KO.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(c => `
+    <tr class="row-rgpd-ko">
+      <td>${escapeHtml(c.nom)}</td>
+      <td>${escapeHtml(c.entreprise || '—')}</td>
+      <td class="nowrap">${escapeHtml(creatorName(c.created_by))}</td>
+      <td class="nowrap">${formatDate(c.updated_at || c.created_at)}</td>
+      <td class="actions"><button class="btn btn-out btn-sm" data-edit-contact="${c.id}">Ouvrir / modifier</button></td>
+    </tr>`).join('');
+}
+
+function renderAdmin() {
+  // (Re)rend la sous-vue active
+  switchAdminTab(state.adminView || 'overview');
+}
+
+function renderAdminOverview() {
+  // On utilise les 3 indicateurs standards du tableau de bord
+  // perso, mais en mode "all" (cumul tous utilisateurs).
+  const grid = $('#admin-totals-grid');
+  const metrics = [
+    { metric_type: 'nouveaux_contacts', label: 'Entrées en contact (tous)', money: false },
+    { metric_type: 'ca_genere',         label: 'CA généré (tous)',          money: true  },
+    { metric_type: 'commissions',       label: 'Commissions cumulées (12 %)', money: true  },
+  ];
+  grid.innerHTML = metrics.map(m => {
+    const value = computeObjectifValue(m, 'all');
+    const label = m.money ? formatMoney(value) : value;
+    return `
+      <div class="gauge-card">
+        <div class="gauge-label">${escapeHtml(m.label)}</div>
+        <div class="gauge-value-row" style="justify-content:center;margin-top:14px">
+          <span class="gauge-value" style="font-size:2.2rem;color:var(--accent)">${label}</span>
+        </div>
+        <div class="gauge-sub mut" style="text-align:center;margin-top:6px">Cumul depuis le 1ᵉʳ du mois</div>
+      </div>`;
+  }).join('');
+}
+
+function renderAdminPerUser() {
+  const tbody = $('#admin-per-user-table tbody');
+  // Tous les utilisateurs connus via les profils
+  const users = Object.values(state.profilesById);
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucun utilisateur connu.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(u => {
+    const contacts = computeObjectifValue({ metric_type: 'nouveaux_contacts' }, u.id);
+    const ca       = computeObjectifValue({ metric_type: 'ca_genere' },         u.id);
+    const comm     = ca * (COMMISSION_RATE / 100);
+    const actifs   = state.contracts.filter(c => c.created_by === u.id && ['Signé', 'En cours'].includes(c.statut)).length;
+    return `
+      <tr>
+        <td>${escapeHtml(u.prenom || '—')}${u.is_admin ? ' <span class="badge badge-gold" style="margin-left:6px">Admin</span>' : ''}</td>
+        <td class="num">${contacts}</td>
+        <td class="num">${formatMoney(ca)}</td>
+        <td class="num">${formatMoney(comm)}</td>
+        <td class="num">${actifs}</td>
+      </tr>`;
+  }).join('');
+}
+
+async function loadAdminUsers() {
+  const { data, error } = await sb.rpc('admin_list_users');
+  if (error) {
+    alert("Erreur de chargement des utilisateurs : " + error.message);
+    state.adminUsers = [];
+    return;
+  }
+  state.adminUsers = data || [];
+}
+
+function renderAdminUsers() {
+  const tbody = $('#admin-users-table tbody');
+  if (!state.adminUsers.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Aucun utilisateur.</td></tr>';
+    return;
+  }
+  const now = new Date();
+  tbody.innerHTML = state.adminUsers.map(u => {
+    const banned = u.banned_until && new Date(u.banned_until) > now;
+    const isSelf = u.id === state.user.id;
+    return `
+      <tr class="${banned ? 'row-banned' : ''}">
+        <td>${escapeHtml(u.prenom || '—')}</td>
+        <td>${escapeHtml(u.email || '—')}</td>
+        <td>${u.is_admin ? '<span class="badge badge-gold">Admin</span>' : '<span class="badge badge-gray">Utilisateur</span>'}</td>
+        <td>${banned ? '<span class="badge badge-red">Révoqué</span>' : '<span class="badge badge-green">Actif</span>'}</td>
+        <td class="nowrap mut" style="font-size:.82rem">${new Date(u.created_at).toLocaleDateString('fr-FR')}</td>
+        <td class="actions">
+          <button class="btn btn-out btn-sm" data-admin-message="${u.id}" ${isSelf ? 'disabled' : ''}>Message</button>
+          <button class="btn btn-out btn-sm" data-admin-toggle-admin="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas vous rétrograder"' : ''}>${u.is_admin ? 'Rétrograder' : 'Promouvoir'}</button>
+          <button class="btn ${banned ? 'btn-pri' : 'btn-danger'} btn-sm" data-admin-ban="${u.id}|${banned ? '0' : '1'}" ${isSelf ? 'disabled' : ''}>${banned ? 'Restaurer' : 'Révoquer'}</button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+async function adminToggleAdmin(userId) {
+  const u = state.adminUsers.find(x => x.id === userId);
+  if (!u) return;
+  if (!confirm(u.is_admin
+    ? `Rétrograder ${u.prenom || u.email} ? Il/elle ne verra plus l'onglet Administration.`
+    : `Promouvoir ${u.prenom || u.email} super-administrateur ? Il/elle aura accès à tous les chiffres et à la gestion des comptes.`)) return;
+  const { error } = await sb.rpc('admin_set_admin', { target_user_id: userId, make_admin: !u.is_admin });
+  if (error) { alert("Erreur : " + error.message); return; }
+  await loadAdminUsers();
+  renderAdminUsers();
+}
+
+async function adminToggleBan(userId, banned) {
+  const u = state.adminUsers.find(x => x.id === userId);
+  if (!u) return;
+  if (!confirm(banned
+    ? `Révoquer ${u.prenom || u.email} ? Il/elle ne pourra plus se connecter.`
+    : `Restaurer l'accès pour ${u.prenom || u.email} ?`)) return;
+  const { error } = await sb.rpc('admin_set_banned', { target_user_id: userId, banned });
+  if (error) { alert("Erreur : " + error.message); return; }
+  await loadAdminUsers();
+  renderAdminUsers();
+}
+
+function openNewUserModal() {
+  $('#nu-prenom').value = '';
+  $('#nu-email').value = '';
+  $('#nu-password').value = '';
+  $('#nu-error').textContent = '';
+  $('#new-user-modal').classList.add('show');
+}
+
+function closeNewUserModal() {
+  $('#new-user-modal').classList.remove('show');
+}
+
+async function createNewUser() {
+  const email = $('#nu-email').value.trim();
+  const password = $('#nu-password').value;
+  const prenom = $('#nu-prenom').value.trim();
+  $('#nu-error').textContent = '';
+  if (!email || !password) {
+    $('#nu-error').textContent = "L'e-mail et le mot de passe sont obligatoires.";
+    return;
+  }
+  if (password.length < 6) {
+    $('#nu-error').textContent = "Le mot de passe doit faire au moins 6 caractères.";
+    return;
+  }
+  const { error } = await sb.rpc('admin_create_user', {
+    new_email: email,
+    new_password: password,
+    new_prenom: prenom,
+  });
+  if (error) {
+    $('#nu-error').textContent = "Erreur : " + error.message
+      + " — En cas d'échec persistant, créez l'utilisateur depuis Supabase Dashboard → Authentication → Users → 'Add user'.";
+    return;
+  }
+  closeNewUserModal();
+  await Promise.all([loadAdminUsers(), loadAllProfiles()]);
+  renderAdminUsers();
+  alert("Utilisateur créé. Communiquez-lui l'e-mail et le mot de passe initial — il pourra le modifier via \"Mot de passe oublié ?\".");
+}
+
+// ---- Messages admin → utilisateur ----
+let _sendMessageTargetId = null;
+function openSendMessageModal(userId) {
+  const u = state.adminUsers.find(x => x.id === userId);
+  if (!u) return;
+  _sendMessageTargetId = userId;
+  $('#sm-recipient-name').textContent = u.prenom || u.email;
+  $('#sm-content').value = '';
+  $('#sm-error').textContent = '';
+  $('#send-message-modal').classList.add('show');
+}
+
+function closeSendMessageModal() {
+  $('#send-message-modal').classList.remove('show');
+  _sendMessageTargetId = null;
+}
+
+async function sendAdminMessage() {
+  const content = $('#sm-content').value.trim();
+  $('#sm-error').textContent = '';
+  if (!content) { $('#sm-error').textContent = "Le message ne peut pas être vide."; return; }
+  if (!_sendMessageTargetId) { $('#sm-error').textContent = "Destinataire introuvable."; return; }
+  const { error } = await sb.from('messages').insert({
+    sender_id: state.user.id,
+    recipient_id: _sendMessageTargetId,
+    content,
+  });
+  if (error) { $('#sm-error').textContent = "Erreur : " + error.message; return; }
+  closeSendMessageModal();
+  alert("Message envoyé. Il s'affichera en pop-up sur le tableau de bord du destinataire à sa prochaine connexion.");
+}
+
+// =========================================================
+// MESSAGES ENTRANTS (pop-up à l'ouverture du dashboard)
+// =========================================================
+let _incomingQueue = [];
+
+function showIncomingMessagesIfAny() {
+  _incomingQueue = [...state.unreadMessages];
+  if (_incomingQueue.length) showNextIncomingMessage();
+}
+
+function showNextIncomingMessage() {
+  const msg = _incomingQueue.shift();
+  if (!msg) {
+    $('#incoming-message-modal').classList.remove('show');
+    return;
+  }
+  const sender = state.profilesById?.[msg.sender_id]?.prenom || 'Administrateur';
+  $('#im-sender').textContent = sender;
+  $('#im-date').textContent = new Date(msg.created_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+  $('#im-content').textContent = msg.content;
+  $('#im-remaining').textContent = _incomingQueue.length
+    ? `${_incomingQueue.length} autre(s) message(s) à lire.`
+    : '';
+  $('#im-next-btn').dataset.messageId = msg.id;
+  $('#im-next-btn').textContent = _incomingQueue.length ? "Suivant →" : "J'ai lu — fermer";
+  $('#incoming-message-modal').classList.add('show');
+}
+
+async function markCurrentMessageRead() {
+  const id = $('#im-next-btn').dataset.messageId;
+  if (id) {
+    await sb.from('messages').update({ read: true }).eq('id', id);
+  }
+  showNextIncomingMessage();
+}
+
+
+// userId : id de l'utilisateur dont on calcule les chiffres.
+//   - Si non précisé : utilisateur courant (state.user.id)
+//   - Si === 'all'  : tous les utilisateurs cumulés (vue admin)
+function computeObjectifValue(o, userId) {
+  if (userId === undefined) userId = state.user?.id;
+  const filterContact = c => userId === 'all' ? true : (c.created_by === userId);
+  const filterContract = c => userId === 'all' ? true : (c.created_by === userId);
+
   switch (o.metric_type) {
     case 'nouveaux_clients':
-      return state.contacts.filter(c => c.statut === 'Client' && isThisMonth(c.devenu_client_at || c.created_at)).length;
+      return state.contacts.filter(c => filterContact(c) && c.statut === 'Client' && isThisMonth(c.devenu_client_at || c.created_at)).length;
     case 'nouveaux_contacts':
-      return state.contacts.filter(c => isThisMonth(c.created_at)).length;
+      return state.contacts.filter(c => filterContact(c) && isThisMonth(c.created_at)).length;
     case 'contrats_total':
-      return state.contracts.filter(c => ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
+      return state.contracts.filter(c => filterContract(c) && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
     case 'contrats_type':
-      return state.contracts.filter(c => c.type === o.contract_type_filter && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
+      return state.contracts.filter(c => filterContract(c) && c.type === o.contract_type_filter && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
     case 'taches_terminees':
+      // Pas de created_by sur tasks : on retombe sur l'utilisateur courant uniquement
+      if (userId === 'all') return state.tasks.filter(t => t.statut === 'Terminé' && isThisMonth(t.termine_at || t.created_at)).length;
       return state.tasks.filter(t => t.statut === 'Terminé' && isThisMonth(t.termine_at || t.created_at)).length;
     case 'ca_recurrent':
       return state.contracts
-        .filter(c => c.recurrence === 'Mensuel' && ['Signé', 'En cours'].includes(c.statut))
+        .filter(c => filterContract(c) && c.recurrence === 'Mensuel' && ['Signé', 'En cours'].includes(c.statut))
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     case 'ca_genere':
       return state.contracts
-        .filter(c => ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at))
+        .filter(c => filterContract(c) && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at))
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     case 'commissions': {
-      const ca = computeObjectifValue({ metric_type: 'ca_genere' });
+      const ca = computeObjectifValue({ metric_type: 'ca_genere' }, userId);
       return ca * (COMMISSION_RATE / 100);
     }
     default:
@@ -1064,12 +1415,14 @@ function renderObjectifs() {
   const jt = currentJoursTravailles();
   input.value = jt === null ? '' : jt;
 
+  // N'affiche QUE les objectifs de l'utilisateur courant.
+  const mine = state.objectifs.filter(o => o.user_id === state.user.id);
   const grid = $('#gauges-grid');
-  if (!state.objectifs.length) {
-    grid.innerHTML = '<p class="empty">Aucun objectif configuré. Exécutez supabase-schema-v2.sql dans Supabase.</p>';
+  if (!mine.length) {
+    grid.innerHTML = '<p class="empty">Aucun objectif configuré. Si vous venez d\'arriver, rechargez la page : vos objectifs par défaut seront créés automatiquement.</p>';
     return;
   }
-  grid.innerHTML = state.objectifs.map(o => {
+  grid.innerHTML = mine.map(o => {
     const value = computeObjectifValue(o);
     const target = computeObjectifTarget(o);
     const pct = target > 0 ? (value / target) * 100 : (value > 0 ? 100 : 0);
@@ -1083,6 +1436,9 @@ function renderObjectifs() {
         <div class="gauge-values">${valLabel} / ${targetLabel}</div>
       </div>`;
   }).join('');
+
+  // 🏆 Si l'objectif commission est atteint ce mois-ci, on lance le feu d'artifice
+  checkAndCelebrateCommissions();
 }
 
 async function saveJoursTravailles() {
@@ -1100,7 +1456,8 @@ async function saveJoursTravailles() {
 
 function openObjectifsModal() {
   const list = $('#objectifs-edit-list');
-  list.innerHTML = state.objectifs.map(o => {
+  const mine = state.objectifs.filter(o => o.user_id === state.user.id);
+  list.innerHTML = mine.map(o => {
     const isMoney = ['ca_recurrent', 'ca_genere', 'commissions'].includes(o.metric_type);
     const unit = (isMoney ? '€ ' : '') + (o.scale_by_days ? `/ ${o.jours_reference}j` : '');
     let row = `
@@ -1142,6 +1499,286 @@ async function saveObjectifsModal() {
 // ---------------------------------------------------------
 // ÉVÉNEMENTS
 // ---------------------------------------------------------
+// =========================================================
+// FONCTIONNALITÉS COMPLÉMENTAIRES
+// (assistance, RGPD utilisateur, confetti, inactivité,
+//  bons de commande PDF, registre RGPD)
+// =========================================================
+
+// --- Bouton d'assistance ---
+function openHelpModal() {
+  $('#help-message').value = '';
+  $('#help-modal').classList.add('show');
+}
+
+function sendHelp() {
+  const subject = $('#help-subject').value;
+  const message = $('#help-message').value.trim();
+  if (!message) { alert('Décrivez votre demande.'); return; }
+  const userInfo = state.user
+    ? `${state.profile?.prenom || ''} <${state.user.email}> (id ${state.user.id.slice(0, 8)})`
+    : 'anonyme';
+  const body = `${message}\n\n— Envoyé depuis le CRM S@FE par ${userInfo} le ${new Date().toLocaleString('fr-FR')}.`;
+  const href = `mailto:contact@safe-digitalisation.fr?subject=${encodeURIComponent('[CRM Assistance] ' + subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = href;
+  $('#help-modal').classList.remove('show');
+}
+
+// --- Mes données (droits RGPD de l'utilisateur sur le CRM) ---
+function openMyDataModal() {
+  if (!state.user) return;
+  const p = state.profile || {};
+  const html = `
+    <div class="field"><label>Prénom</label><input id="myd-prenom" type="text" value="${escapeHtml(p.prenom || '')}"></div>
+    <div class="field-row">
+      <div class="field"><label>E-mail (modifiable depuis votre profil)</label><input type="email" value="${escapeHtml(state.user.email || '')}" disabled></div>
+      <div class="field"><label>Identifiant utilisateur</label><input type="text" value="${escapeHtml(state.user.id || '')}" disabled></div>
+    </div>
+    <div class="note" style="margin-top:6px">
+      <b>Données traitées par S@FE pour le compte du CRM</b> :
+      e-mail (authentification), prénom et photo de profil (interface), contacts/contrats/tâches/objectifs créés (responsabilité du CRM).
+      Base légale : exécution du contrat de travail / mission (art. 6.1.b RGPD).
+      Conservation : durée de la mission + 5 ans (obligations comptables).
+      Vous disposez d'un droit d'accès, de rectification, d'effacement, d'opposition, de limitation et de portabilité.
+    </div>`;
+  $('#mydata-content').innerHTML = html;
+  $('#mydata-modal').classList.add('show');
+}
+
+async function saveMyData() {
+  const prenom = $('#myd-prenom')?.value.trim() || null;
+  const { error } = await sb.from('profiles')
+    .update({ prenom })
+    .eq('id', state.user.id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  state.profile.prenom = prenom;
+  $('#mydata-modal').classList.remove('show');
+  renderDashboard();
+  if (typeof renderSidebarProfile === 'function') renderSidebarProfile();
+}
+
+function requestMyDataExport() {
+  const subject = '[CRM RGPD] Demande sur mes données personnelles';
+  const body = `Bonjour,\n\nJe souhaite exercer un de mes droits RGPD sur les données me concernant traitées par S@FE dans le CRM :\n\n  ☐ Accès (copie complète de mes données)\n  ☐ Rectification\n  ☐ Effacement (clôture de mon compte)\n  ☐ Portabilité (export structuré)\n  ☐ Opposition / limitation\n\nMon identifiant : ${state.user?.id || ''}\nMon e-mail : ${state.user?.email || ''}\n\nMerci de me confirmer la réception de cette demande et le délai de traitement (1 mois maximum prévu par l'article 12 du RGPD).\n\nCordialement.`;
+  window.location.href = `mailto:contact@safe-digitalisation.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+// --- Confetti + félicitations objectif commission atteint ---
+function fireConfetti() {
+  const c = $('#confetti-canvas');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+  const colors = ['#f59e0b', '#fbbf24', '#3b82f6', '#22c55e', '#ef4444', '#a855f7'];
+  const N = 180;
+  const parts = Array.from({ length: N }, () => ({
+    x: c.width / 2 + (Math.random() - 0.5) * 60,
+    y: c.height / 2 + (Math.random() - 0.5) * 60,
+    vx: (Math.random() - 0.5) * 12,
+    vy: -Math.random() * 14 - 4,
+    g: 0.35,
+    r: Math.random() * 5 + 3,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    rot: Math.random() * Math.PI,
+    vr: (Math.random() - 0.5) * 0.3,
+  }));
+  const start = performance.now();
+  function frame(t) {
+    const elapsed = t - start;
+    ctx.clearRect(0, 0, c.width, c.height);
+    parts.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += p.g; p.rot += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.r, -p.r * 0.5, p.r * 2, p.r);
+      ctx.restore();
+    });
+    if (elapsed < 3000) requestAnimationFrame(frame);
+    else ctx.clearRect(0, 0, c.width, c.height);
+  }
+  requestAnimationFrame(frame);
+}
+
+function checkAndCelebrateCommissions() {
+  const o = state.objectifs?.find(o => o.metric_type === 'commissions');
+  if (!o) return;
+  const actual = computeObjectifValue(o);
+  const target = computeObjectifTarget(o);
+  if (target <= 0 || actual < target) return;
+  // N'afficher qu'une fois par mois calendaire et par utilisateur
+  const ym = new Date().toISOString().slice(0, 7);
+  const key = `safecrm.celebrated.${state.user?.id}.${ym}`;
+  if (localStorage.getItem(key)) return;
+  localStorage.setItem(key, '1');
+  $('#felicitations-detail').textContent =
+    `Vous avez atteint ${Math.round(actual).toLocaleString('fr-FR')} € sur ${Math.round(target).toLocaleString('fr-FR')} € d'objectif. Bravo !`;
+  $('#felicitations-modal').classList.add('show');
+  fireConfetti();
+}
+
+// --- Déconnexion par inactivité (5 minutes) ---
+let _inactivityTimer = null;
+const INACTIVITY_MS = 5 * 60 * 1000;
+function resetInactivity() {
+  clearTimeout(_inactivityTimer);
+  if (!state.user) return;
+  _inactivityTimer = setTimeout(async () => {
+    await sb.auth.signOut();
+    alert('Session expirée après 5 minutes d\'inactivité. Veuillez vous reconnecter.');
+    location.reload();
+  }, INACTIVITY_MS);
+}
+function setupInactivityTimeout() {
+  ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(evt => {
+    window.addEventListener(evt, resetInactivity, { passive: true });
+  });
+  // Si l'utilisateur ferme l'onglet → la session reste valide côté Supabase
+  // mais on déclenche un signOut quand il revient si > 5 min d'inactivité
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && state.user) {
+      const last = Number(localStorage.getItem('safecrm.lastActivity') || 0);
+      if (last && Date.now() - last > INACTIVITY_MS) {
+        sb.auth.signOut().then(() => {
+          alert('Session expirée. Veuillez vous reconnecter.');
+          location.reload();
+        });
+        return;
+      }
+    }
+  });
+  ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(evt => {
+    window.addEventListener(evt, () => localStorage.setItem('safecrm.lastActivity', Date.now()), { passive: true });
+  });
+  resetInactivity();
+}
+
+// --- Bon de commande PDF ---
+function generateContractPDF() {
+  const id = $('#ct-id').value;
+  if (!id) { alert('Enregistrez le contrat avant de générer le bon de commande.'); return; }
+  const contract = state.contracts.find(c => c.id === id);
+  if (!contract) { alert('Contrat introuvable.'); return; }
+  const contact = state.contacts.find(c => c.id === contract.contact_id);
+  if (!contact) { alert('Contact lié introuvable.'); return; }
+  if (!contact.siret || !contact.code_postal_ville) {
+    if (!confirm('Le SIRET ou l\'adresse de facturation (code postal + ville) du client ne sont pas renseignés. Les bons de commande doivent comporter ces mentions obligatoires.\n\nGénérer quand même un PDF avec lignes à compléter manuellement ?')) return;
+  }
+  const res = window.ContractPDF.generate({
+    id: contract.id,
+    type: contract.type,
+    formule: contract.formule,
+    montant: contract.montant,
+    recurrence: contract.recurrence,
+    frais_mise_en_place: contract.frais_mise_en_place,
+    engagement_mois: contract.engagement_mois,
+    remise: contract.remise,
+  }, contact);
+  if (res) alert(`Bon de commande téléchargé : ${res.filename}`);
+}
+
+// --- Registre RGPD (Article 30) ---
+const REGISTRE_RGPD = [
+  {
+    traitement: 'Gestion des comptes utilisateurs du CRM',
+    finalite: "Permettre l'authentification et l'usage du CRM par les commerciaux S@FE",
+    base: "Exécution du contrat de travail / mission (art. 6.1.b RGPD)",
+    categories: "E-mail, prénom, photo de profil, journaux de connexion",
+    destinataires: "Direction S@FE, hébergeur Supabase (sous-traitant)",
+    duree: "Durée du contrat + 5 ans (obligations comptables)",
+    securite: "Authentification chiffrée, RLS Postgres, chiffrement en transit (TLS), MFA optionnelle"
+  },
+  {
+    traitement: 'Gestion des contacts (prospects et clients)',
+    finalite: "Suivi commercial, mise en relation, exécution des contrats",
+    base: "Intérêt légitime (prospection BtoB) / exécution du contrat (clients) (art. 6.1.f et 6.1.b)",
+    categories: "Nom, prénom, entreprise, e-mail, téléphone, adresse, SIRET, consentements, notes commerciales",
+    destinataires: "Commerciaux S@FE habilités, hébergeur Supabase",
+    duree: "3 ans après dernier contact (prospects) — durée du contrat + 5 ans (clients)",
+    securite: "RLS par rôle, journalisation des accès, droit d'opposition (RGPD KO) avec effacement immédiat des coordonnées"
+  },
+  {
+    traitement: 'Gestion des contrats commerciaux',
+    finalite: "Suivi de la relation contractuelle et facturation",
+    base: "Exécution du contrat (art. 6.1.b)",
+    categories: "Type de prestation, formule, montant, dates, statut, lien vers le contact",
+    destinataires: "Commerciaux S@FE, direction, comptabilité",
+    duree: "Durée du contrat + 10 ans (pièces comptables)",
+    securite: "RLS, sauvegardes chiffrées Supabase, historique des modifications"
+  },
+  {
+    traitement: 'Suivi des objectifs commerciaux',
+    finalite: "Pilotage individuel de la performance commerciale",
+    base: "Intérêt légitime de l'employeur (art. 6.1.f)",
+    categories: "Identifiant utilisateur, métriques agrégées (nb contacts, CA généré, commissions)",
+    destinataires: "Commercial concerné (ses propres chiffres) et super-administrateur S@FE",
+    duree: "5 ans glissants",
+    securite: "RLS stricte (un utilisateur ne voit que ses propres chiffres ; seul l'admin voit l'ensemble)"
+  },
+  {
+    traitement: 'Messagerie interne (notifications admin)',
+    finalite: "Information ponctuelle des utilisateurs par la direction",
+    base: "Intérêt légitime",
+    categories: "Identifiant émetteur, identifiant destinataire, contenu du message",
+    destinataires: "Destinataire et émetteur uniquement",
+    duree: "1 an après lecture",
+    securite: "RLS, accès journalisé"
+  },
+];
+
+function renderRegistreRGPD() {
+  const tbody = $('#registre-rgpd-body');
+  if (!tbody) return;
+  tbody.innerHTML = REGISTRE_RGPD.map(r => `
+    <tr>
+      <td><b>${escapeHtml(r.traitement)}</b></td>
+      <td>${escapeHtml(r.finalite)}</td>
+      <td>${escapeHtml(r.base)}</td>
+      <td>${escapeHtml(r.categories)}</td>
+      <td>${escapeHtml(r.destinataires)}</td>
+      <td>${escapeHtml(r.duree)}</td>
+      <td>${escapeHtml(r.securite)}</td>
+    </tr>`).join('');
+}
+
+function exportRegistrePDF() {
+  if (!window.jspdf) { alert('jsPDF non chargé.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(10, 22, 40);
+  doc.text('Registre des activités de traitement — S@FE SAS (CRM)', 15, 18);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(80, 80, 80);
+  doc.text(`Édité le ${new Date().toLocaleDateString('fr-FR')} — Responsable de traitement : S@FE SAS — SIRET 104 699 558 00011`, 15, 24);
+  let y = 32;
+  REGISTRE_RGPD.forEach((r, i) => {
+    if (y > 180) { doc.addPage(); y = 20; }
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(10, 22, 40);
+    doc.text(`${i + 1}. ${r.traitement}`, 15, y);
+    y += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(40, 40, 40);
+    [
+      ['Finalité', r.finalite],
+      ['Base légale', r.base],
+      ['Catégories de données', r.categories],
+      ['Destinataires', r.destinataires],
+      ['Durée de conservation', r.duree],
+      ['Mesures de sécurité', r.securite],
+    ].forEach(([k, v]) => {
+      const lines = doc.splitTextToSize(`${k} : ${v}`, 260);
+      lines.forEach(l => { doc.text(l, 18, y); y += 4.2; });
+    });
+    y += 3;
+  });
+  doc.save(`registre-rgpd-safe-${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
 function bindEvents() {
   // Login / logout
   $('#login-btn').addEventListener('click', login);
@@ -1215,6 +1852,15 @@ function bindEvents() {
   $('#objectifs-cancel-btn').addEventListener('click', closeObjectifsModal);
   $('#objectifs-save-btn').addEventListener('click', saveObjectifsModal);
 
+  // --- Administration ---
+  $all('[data-admin-tab]').forEach(b => b.addEventListener('click', () => switchAdminTab(b.dataset.adminTab)));
+  $('#btn-new-user').addEventListener('click', openNewUserModal);
+  $('#new-user-cancel-btn').addEventListener('click', closeNewUserModal);
+  $('#new-user-save-btn').addEventListener('click', createNewUser);
+  $('#send-message-cancel-btn').addEventListener('click', closeSendMessageModal);
+  $('#send-message-send-btn').addEventListener('click', sendAdminMessage);
+  $('#im-next-btn').addEventListener('click', markCurrentMessageRead);
+
   // Délégation : boutons d'édition / actions rapides dans les tableaux & kanban
   document.addEventListener('click', e => {
     const editContact = e.target.closest('[data-edit-contact]');
@@ -1231,6 +1877,18 @@ function bindEvents() {
       const [id, statut] = taskStatus.dataset.taskStatus.split('|');
       return quickSetTaskStatus(id, statut);
     }
+
+    const msgBtn = e.target.closest('[data-admin-message]');
+    if (msgBtn) return openSendMessageModal(msgBtn.dataset.adminMessage);
+
+    const banBtn = e.target.closest('[data-admin-ban]');
+    if (banBtn) {
+      const [uid, flag] = banBtn.dataset.adminBan.split('|');
+      return adminToggleBan(uid, flag === '1');
+    }
+
+    const toggleAdmBtn = e.target.closest('[data-admin-toggle-admin]');
+    if (toggleAdmBtn) return adminToggleAdmin(toggleAdmBtn.dataset.adminToggleAdmin);
   });
 
   // Fermeture des modales en cliquant en dehors
@@ -1240,6 +1898,29 @@ function bindEvents() {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') $all('.modal.show').forEach(m => m.classList.remove('show'));
   });
+
+  // === Bouton flottant d'assistance ===
+  $('#help-fab')?.addEventListener('click', openHelpModal);
+  $('#help-cancel-btn')?.addEventListener('click', () => $('#help-modal').classList.remove('show'));
+  $('#help-send-btn')?.addEventListener('click', sendHelp);
+
+  // === Mes données (RGPD utilisateur) ===
+  $('#open-mydata-btn')?.addEventListener('click', openMyDataModal);
+  $('#mydata-cancel-btn')?.addEventListener('click', () => $('#mydata-modal').classList.remove('show'));
+  $('#mydata-save-btn')?.addEventListener('click', saveMyData);
+  $('#mydata-request-btn')?.addEventListener('click', requestMyDataExport);
+
+  // === Félicitations objectif atteint ===
+  $('#felicitations-close-btn')?.addEventListener('click', () => $('#felicitations-modal').classList.remove('show'));
+
+  // === Bon de commande PDF ===
+  $('#contract-pdf-btn')?.addEventListener('click', generateContractPDF);
+
+  // === Onglet Registre RGPD ===
+  $('#btn-export-registre')?.addEventListener('click', exportRegistrePDF);
+
+  // === Déconnexion par inactivité (5 min) ===
+  setupInactivityTimeout();
 }
 
 init();
