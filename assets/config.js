@@ -20,4 +20,4 @@
 // =========================================================
 
 const SUPABASE_URL = "https://VOTRE-PROJET.supabase.co";
-const SUPABASE_ANON_KEY = "VOTRE_CLE_ANON_PUBLIC";
+const SUPABASE_ANON_KEY = "sb_publishable_ouatARf8Sr2FMfwYXJzEYQ_I0vHaVQO";
