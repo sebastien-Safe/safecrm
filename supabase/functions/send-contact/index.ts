@@ -1,5 +1,7 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { SMTPClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts"
+// COMMENTEZ L'IMPORT SMTP POUR LE TEST
+// import { SMTPClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,9 +14,26 @@ serve(async (req) => {
   }
 
   try {
-    const { pdf_base64, filename, client_email, client_name, subject, body, ref_unique } = await req.json()
+    console.log("=== DÉBUT DU DÉBOGAGE ===") // Ce log DOIT apparaître
 
-    console.log("=== DÉBUT DU DÉBOGAGE ===")
+    const { pdf_base64, filename, client_email, client_name, subject, body, ref_unique } = await req.json()
+    
+    // ... (Gardez tout le code de vérification des variables et d'upload kDrive) ...
+    // ... (Commentez toute la partie SMTP pour l'instant) ...
+
+    // Simulez une réussite pour tester
+    return new Response(JSON.stringify({ success: true, message: "Test réussi (SMTP désactivé)" }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
+    });
+
+  } catch (error) {
+    console.error("=== ERREUR GLOBALE ===", error)
+    return new Response(JSON.stringify({ error: error.message }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 
+    })
+  }
+})
+
 
     // --- 1. LECTURE ET VÉRIFICATION DES VARIABLES ---
     const kdriveId = Deno.env.get('KDRIVE_ID')
