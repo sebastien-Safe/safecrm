@@ -242,6 +242,60 @@ window.ContractPDF = (function () {
     doc.text('Précédée de la mention « Lu et approuvé »', 110, y);
   }
 
+  // --- Articles des CGV (référence SAFE-CGV-2026-001) ---
+  const CGV_REF = 'SAFE-CGV-2026-001';
+  const CGV_ARTICLES = [
+    ['Article 1 — Objet', "Les présentes CGV définissent les droits et obligations des parties dans le cadre de la fourniture par S@FE SASU des services suivants : référencement local Google Business Profile, conformité RGPD et DPO externalisé, cybersécurité, et solution Click & Collect. Chaque prestation fait l'objet d'un bon de commande spécifique qui précise la nature exacte des services, le tarif applicable, la durée d'engagement et les modalités propres à la formule choisie."],
+    ['Article 2 — Entrée en vigueur et durée', "Le contrat prend effet à compter de la date de signature du bon de commande par les deux parties. Prestations ponctuelles : le contrat prend fin à la livraison du livrable final. Abonnements mensuels : durée initiale d'engagement stipulée sur le bon de commande (3 ou 6 mois selon la formule), puis renouvellement tacite mois par mois, résiliation par e-mail avec confirmation de lecture, préavis de 30 jours."],
+    ['Article 3 — Tarifs et conditions financières', "Les tarifs sont exprimés en euros hors taxes (HT). La TVA au taux en vigueur (20 %) est applicable. Frais de mise en place : facturés dès le premier mois et non remboursables. Modalités de paiement : factures payables à réception par virement bancaire. Pour les abonnements, facturation mensuelle à terme échu. Retards de paiement : pénalités au taux BCE + 10 points et indemnité forfaitaire de 40 € (art. L.441-10 C. com.)."],
+    ['Article 4 — Obligations du Prestataire', "Obligation de moyens. Le Prestataire s'engage à exécuter les prestations avec le soin et la diligence d'un professionnel compétent. Confidentialité des informations communiquées par le Client pendant 5 ans après la fin du contrat. Respect du RGPD pour les missions impliquant un accès à des données personnelles."],
+    ['Article 5 — Obligations du Client', "Fournir en temps utile l'ensemble des informations, accès, identifiants et documents nécessaires. Désigner un référent unique, disponible pour répondre aux sollicitations dans un délai de 48h ouvrables. Ne pas diffuser les livrables à des tiers sans accord préalable écrit, sauf usage interne."],
+    ['Article 6 — Responsabilité et limitation', "Responsabilité limitée aux dommages directs résultant d'une faute prouvée. Aucune responsabilité pour les dommages indirects (perte de CA, perte de clientèle, atteinte à l'image). Plafond : sommes HT effectivement encaissées au titre du contrat concerné au cours des 12 derniers mois. Les résultats présentés (positions Google, impressions, clics) sont des estimations indicatives."],
+    ['Article 7 — Propriété intellectuelle', "Les livrables produits sont la propriété du Client après paiement intégral. Les méthodes, processus et outils du Prestataire restent sa propriété exclusive."],
+    ['Article 8 — Protection des données personnelles (RGPD)', "Collecte et traitement des données personnelles du représentant du Client (nom, prénom, e-mail, téléphone) aux fins de gestion du contrat. Base légale : exécution du contrat (art. 6.1.b RGPD). Conservation : durée du contrat + 5 ans. Droit d'accès, de rectification et d'effacement à l'adresse contact@safe-digitalisation.fr. Lorsque le Prestataire agit en qualité de sous-traitant, un DPA (art. 28 RGPD) est conclu en complément."],
+    ['Article 9 — Force majeure', "Pas de responsabilité en cas de force majeure (art. 1218 C. civ.) : catastrophe naturelle, cyberattaque externe de grande ampleur, pannes des plateformes tierces, défaillance des réseaux télécoms. Si la force majeure dure plus de 30 jours consécutifs, chaque partie peut résilier sans indemnité."],
+    ['Article 10 — Résiliation', "Pour les abonnements : résiliation par e-mail avec confirmation de lecture, préavis 30 jours. Frais de mise en place non remboursés. En cas de manquement grave non remédié dans 15 jours suivant mise en demeure, résiliation de plein droit. Résiliation anticipée du Client pendant l'engagement initial : mensualités restantes dues à titre d'indemnité."],
+    ['Article 11 — Droit applicable et règlement des litiges', "Droit français. Recherche d'une solution amiable dans les 30 jours. À défaut, compétence exclusive du Tribunal de Commerce de Paris."],
+    ['Article 12 — Dispositions diverses', "La nullité d'une clause n'entraîne pas la nullité du contrat. Le Client reconnaît avoir reçu un exemplaire des présentes CGV avant la signature du bon de commande."],
+  ];
+
+  // Ajoute les pages CGV à un document existant (utilisé par generate + generateCGV)
+  function appendCGVPages(doc) {
+    doc.addPage();
+    const cgvHeader = { titre: 'Conditions Générales de Vente' };
+    drawHeader(doc, cgvHeader, CGV_REF);
+    let y = 28;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(15);
+    doc.setTextColor(10, 22, 40);
+    doc.text('Conditions Générales de Vente', 15, y);
+    y += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Réf. : ${CGV_REF} — Version en vigueur au 10 juin 2026`, 15, y);
+    y += 8;
+
+    CGV_ARTICLES.forEach(([titre, contenu]) => {
+      if (y > 260) { doc.addPage(); y = 25; drawHeader(doc, cgvHeader, CGV_REF); }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(10, 22, 40);
+      doc.text(titre, 15, y);
+      y += 5;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(40, 40, 40);
+      const lines = doc.splitTextToSize(contenu, 180);
+      lines.forEach(l => {
+        if (y > 275) { doc.addPage(); y = 25; drawHeader(doc, cgvHeader, CGV_REF); }
+        doc.text(l, 15, y);
+        y += 4.2;
+      });
+      y += 3;
+    });
+  }
+
   // --- Génération complète du PDF ---
   function generate(contract, contact, options = {}) {
     if (!jsPDF) {
@@ -280,6 +334,9 @@ window.ContractPDF = (function () {
     y = drawRecap(doc, contract, y);
     drawSignatures(doc, y);
 
+    // Ajout des CGV en pages suivantes
+    appendCGVPages(doc);
+
     // Footer sur toutes les pages
     const total = doc.internal.getNumberOfPages();
     for (let p = 1; p <= total; p++) {
@@ -297,62 +354,19 @@ window.ContractPDF = (function () {
     return { refUnique, filename };
   }
 
-  // --- Génération des CGV (référence unique 2026-001) ---
+  // --- Génération des CGV seules (rarement utilisé : le bon de commande inclut déjà les CGV) ---
   function generateCGV() {
     if (!jsPDF) { alert('jsPDF non chargé'); return; }
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const ref = 'SAFE-CGV-2026-001';
-    drawHeader(doc, { titre: 'Conditions Générales de Vente' }, ref);
-    let y = 28;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(15);
-    doc.setTextColor(10, 22, 40);
-    doc.text('Conditions Générales de Vente', 15, y);
-    y += 6;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(80, 80, 80);
-    doc.text(`Réf. : ${ref} — Version en vigueur au 10 juin 2026`, 15, y);
-    y += 8;
-
-    const articles = [
-      ['Article 1 — Objet', "Les présentes CGV définissent les droits et obligations des parties dans le cadre de la fourniture par S@FE SASU des services suivants : référencement local Google Business Profile, conformité RGPD et DPO externalisé, cybersécurité, et solution Click & Collect. Chaque prestation fait l'objet d'un bon de commande spécifique qui précise la nature exacte des services, le tarif applicable, la durée d'engagement et les modalités propres à la formule choisie."],
-      ['Article 2 — Entrée en vigueur et durée', "Le contrat prend effet à compter de la date de signature du bon de commande par les deux parties. Prestations ponctuelles : le contrat prend fin à la livraison du livrable final. Abonnements mensuels : durée initiale d'engagement stipulée sur le bon de commande (3 ou 6 mois selon la formule), puis renouvellement tacite mois par mois, résiliation par e-mail avec confirmation de lecture, préavis de 30 jours."],
-      ['Article 3 — Tarifs et conditions financières', "Les tarifs sont exprimés en euros hors taxes (HT). La TVA au taux en vigueur (20 %) est applicable. Frais de mise en place : facturés dès le premier mois et non remboursables. Modalités de paiement : factures payables à réception par virement bancaire. Pour les abonnements, facturation mensuelle à terme échu. Retards de paiement : pénalités au taux BCE + 10 points et indemnité forfaitaire de 40 € (art. L.441-10 C. com.)."],
-      ['Article 4 — Obligations du Prestataire', "Obligation de moyens. Le Prestataire s'engage à exécuter les prestations avec le soin et la diligence d'un professionnel compétent. Confidentialité des informations communiquées par le Client pendant 5 ans après la fin du contrat. Respect du RGPD pour les missions impliquant un accès à des données personnelles."],
-      ['Article 5 — Obligations du Client', "Fournir en temps utile l'ensemble des informations, accès, identifiants et documents nécessaires. Désigner un référent unique, disponible pour répondre aux sollicitations dans un délai de 48h ouvrables. Ne pas diffuser les livrables à des tiers sans accord préalable écrit, sauf usage interne."],
-      ['Article 6 — Responsabilité et limitation', "Responsabilité limitée aux dommages directs résultant d'une faute prouvée. Aucune responsabilité pour les dommages indirects (perte de CA, perte de clientèle, atteinte à l'image). Plafond : sommes HT effectivement encaissées au titre du contrat concerné au cours des 12 derniers mois. Les résultats présentés (positions Google, impressions, clics) sont des estimations indicatives."],
-      ['Article 7 — Propriété intellectuelle', "Les livrables produits sont la propriété du Client après paiement intégral. Les méthodes, processus et outils du Prestataire restent sa propriété exclusive."],
-      ['Article 8 — Protection des données personnelles (RGPD)', "Collecte et traitement des données personnelles du représentant du Client (nom, prénom, e-mail, téléphone) aux fins de gestion du contrat. Base légale : exécution du contrat (art. 6.1.b RGPD). Conservation : durée du contrat + 5 ans. Droit d'accès, de rectification et d'effacement à l'adresse contact@safe-digitalisation.fr. Lorsque le Prestataire agit en qualité de sous-traitant, un DPA (art. 28 RGPD) est conclu en complément."],
-      ['Article 9 — Force majeure', "Pas de responsabilité en cas de force majeure (art. 1218 C. civ.) : catastrophe naturelle, cyberattaque externe de grande ampleur, pannes des plateformes tierces, défaillance des réseaux télécoms. Si la force majeure dure plus de 30 jours consécutifs, chaque partie peut résilier sans indemnité."],
-      ['Article 10 — Résiliation', "Pour les abonnements : résiliation par e-mail avec confirmation de lecture, préavis 30 jours. Frais de mise en place non remboursés. En cas de manquement grave non remédié dans 15 jours suivant mise en demeure, résiliation de plein droit. Résiliation anticipée du Client pendant l'engagement initial : mensualités restantes dues à titre d'indemnité."],
-      ['Article 11 — Droit applicable et règlement des litiges', "Droit français. Recherche d'une solution amiable dans les 30 jours. À défaut, compétence exclusive du Tribunal de Commerce de Paris."],
-      ['Article 12 — Dispositions diverses', "La nullité d'une clause n'entraîne pas la nullité du contrat. Le Client reconnaît avoir reçu un exemplaire des présentes CGV avant la signature du bon de commande."],
-    ];
-
-    articles.forEach(([titre, contenu]) => {
-      if (y > 260) { doc.addPage(); y = 25; drawHeader(doc, { titre: 'Conditions Générales de Vente' }, ref); }
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.setTextColor(10, 22, 40);
-      doc.text(titre, 15, y);
-      y += 5;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.5);
-      doc.setTextColor(40, 40, 40);
-      const lines = doc.splitTextToSize(contenu, 180);
-      lines.forEach(l => {
-        if (y > 275) { doc.addPage(); y = 25; drawHeader(doc, { titre: 'Conditions Générales de Vente' }, ref); }
-        doc.text(l, 15, y);
-        y += 4.2;
-      });
-      y += 3;
-    });
-
+    // Page d'accueil minimale puis CGV
+    drawHeader(doc, { titre: 'Conditions Générales de Vente' }, CGV_REF);
+    appendCGVPages(doc);
+    // Supprimer la première page vide créée par jsPDF par défaut
+    doc.deletePage(1);
     const total = doc.internal.getNumberOfPages();
     for (let p = 1; p <= total; p++) { doc.setPage(p); drawFooter(doc); }
-    doc.save(`${ref}.pdf`);
-    return { refUnique: ref };
+    doc.save(`${CGV_REF}.pdf`);
+    return { refUnique: CGV_REF };
   }
 
   // --- Génération d'un PDF Blob (pour envoi par e-mail) avec signature client optionnelle ---

@@ -368,7 +368,8 @@ function renderAll() {
 // NAVIGATION
 // ---------------------------------------------------------
 function switchView(view) {
-  $all('.navlink').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  if (!view) return; // ignore les clics sur des navlink sans data-view (sous-onglets admin)
+  $all('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   $all('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
   if (view === 'admin' && isAdmin()) renderAdmin();
 }
@@ -481,9 +482,12 @@ function renderContacts() {
     tbody.innerHTML = `<tr><td colspan="8" class="empty">Aucun contact ne correspond aux filtres.</td></tr>`;
     return;
   }
-  tbody.innerHTML = list.map(c => `
+  tbody.innerHTML = list.map(c => {
+    const editable = canEditContact(c);
+    const label = c.rgpd_ko ? 'Voir' : (editable ? 'Modifier' : 'Voir');
+    return `
     <tr class="${c.rgpd_ko ? 'row-rgpd-ko' : ''}">
-      <td>${escapeHtml(c.nom)}</td>
+      <td>${escapeHtml(c.nom)}${!editable && !c.rgpd_ko ? ' <span class="badge badge-gray" title="Fiche d\'un autre utilisateur" style="margin-left:4px">🔒</span>' : ''}</td>
       <td>${escapeHtml(c.entreprise || '—')}</td>
       <td><div class="tag-row">${(c.activites || []).map(a => `<span class="badge ${ACTIVITE_BADGE[a] || 'badge-gray'}">${escapeHtml(a)}</span>`).join('') || '—'}</div></td>
       <td>${c.rgpd_ko ? '<span class="badge badge-red">🚫 RGPD KO</span>' : `<span class="badge ${CONTACT_STATUT_BADGE[c.statut] || 'badge-gray'}">${escapeHtml(c.statut)}</span>`}</td>
@@ -491,9 +495,10 @@ function renderContacts() {
       <td>${c.email ? `<a href="mailto:${escapeHtml(c.email)}" style="color:var(--accent)">${escapeHtml(c.email)}</a>` : '—'}</td>
       <td class="nowrap">${escapeHtml(creatorName(c.created_by))}</td>
       <td class="actions">
-        <button class="btn btn-out btn-sm" data-edit-contact="${c.id}">${c.rgpd_ko ? 'Voir' : 'Modifier'}</button>
+        <button class="btn btn-out btn-sm" data-edit-contact="${c.id}">${label}</button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 const CONTACT_FIELD_IDS = ['c-nom', 'c-entreprise', 'c-email', 'c-telephone', 'c-adresse', 'c-code-postal-ville', 'c-forme-juridique', 'c-siret', 'c-statut', 'c-source', 'c-notes'];
@@ -526,6 +531,13 @@ function setContactFieldsLocked(locked) {
   }
 }
 
+// Détermine si l'utilisateur courant peut modifier ce contact
+function canEditContact(contact) {
+  if (!contact) return true; // nouveau contact (création)
+  if (isAdmin()) return true;
+  return contact.created_by === state.user?.id;
+}
+
 function openContactModal(id = null) {
   const c = id ? state.contacts.find(x => x.id === id) : null;
   $('#contact-modal-title').textContent = c ? 'Modifier le contact' : 'Nouveau contact';
@@ -546,8 +558,28 @@ function openContactModal(id = null) {
   $('#c-consent-email').checked = !!c?.consent_email;
   $('#c-consent-courrier').checked = !!c?.consent_courrier;
   $all('.c-activite').forEach(cb => cb.checked = (c?.activites || []).includes(cb.value));
-  setContactFieldsLocked(!!c?.rgpd_ko);
-  $('#contact-delete-btn').style.display = c ? 'inline-flex' : 'none';
+
+  // Verrouillage : RGPD KO OU pas le propriétaire
+  const editable = canEditContact(c);
+  setContactFieldsLocked(!!c?.rgpd_ko || !editable);
+
+  // Bandeau "fiche d'un collègue"
+  if (c && !editable && !c.rgpd_ko) {
+    const owner = state.profilesById?.[c.created_by];
+    $('#c-owner-name').textContent = owner?.prenom || owner?.email || '—';
+    $('#c-readonly-msg').style.display = 'block';
+    $('#contact-save-btn').style.display = 'none';
+    $('#contact-delete-btn').style.display = 'none';
+  } else {
+    $('#c-readonly-msg').style.display = 'none';
+    $('#contact-save-btn').style.display = '';
+    $('#contact-delete-btn').style.display = (c && editable) ? 'inline-flex' : 'none';
+  }
+
+  // Bouton transfert : propriétaire ou admin uniquement, et fiche existante non RGPD KO
+  const canTransfer = c && editable && !c.rgpd_ko;
+  $('#contact-transfer-btn').style.display = canTransfer ? 'inline-flex' : 'none';
+
   $('#contact-modal').classList.add('show');
 }
 
@@ -775,6 +807,10 @@ function onContractTypeChange() {
 }
 
 function openContractModal(id = null) {
+  // Toujours rafraîchir les selects avant ouverture (les contacts peuvent
+  // avoir été ajoutés/modifiés depuis le dernier rendu)
+  populateContactSelects();
+
   const ct = id ? state.contracts.find(x => x.id === id) : null;
   $('#contract-modal-title').textContent = ct ? 'Modifier le contrat' : 'Nouveau contrat';
   $('#ct-id').value = ct?.id || '';
@@ -785,6 +821,14 @@ function openContractModal(id = null) {
   $('#ct-date-debut').value = ct?.date_debut || '';
   $('#ct-date-echeance').value = ct?.date_echeance || '';
   $('#ct-statut').value = ct?.statut || 'Devis envoyé';
+  // Restriction du statut "Terminé"/"Résilié" aux super-administrateurs
+  const statutSelect = $('#ct-statut');
+  $all('option', statutSelect).forEach(opt => {
+    if (opt.value === 'Terminé' || opt.value === 'Résilié') {
+      opt.disabled = !isAdmin();
+      opt.title = isAdmin() ? '' : 'Seul un super-administrateur peut clôturer un contrat';
+    }
+  });
   $('#ct-notes').value = ct?.notes || '';
 
   populateFormuleSelect(ct?.type || '', ct?.formule || null);
@@ -795,9 +839,13 @@ function openContractModal(id = null) {
   $('#ct-remise').style.display = remise > 0 ? '' : 'none';
   updateNetDisplay();
 
-  $('#contract-delete-btn').style.display = ct ? 'inline-flex' : 'none';
+  // Verrouillage si l'utilisateur n'est pas propriétaire du contrat
+  const editable = !ct || isAdmin() || ct.created_by === state.user?.id;
+  const fieldIds = ['ct-contact', 'ct-type', 'ct-formule-select', 'ct-formule-custom', 'ct-montant', 'ct-recurrence', 'ct-frais-mise-en-place', 'ct-engagement-mois', 'ct-date-debut', 'ct-date-echeance', 'ct-statut', 'ct-notes', 'ct-remise-check', 'ct-remise'];
+  fieldIds.forEach(fid => { const el = $('#' + fid); if (el) el.disabled = !editable; });
+  $('#contract-save-btn').style.display = editable ? '' : 'none';
+  $('#contract-delete-btn').style.display = (ct && editable) ? 'inline-flex' : 'none';
   $('#contract-pdf-btn').style.display = ct ? 'inline-flex' : 'none';
-  $('#contract-sign-btn').style.display = ct ? 'inline-flex' : 'none';
   $('#contract-modal').classList.add('show');
 }
 
@@ -910,6 +958,10 @@ function onTaskTypeChange() {
 }
 
 function openTaskModal(id = null) {
+  // Rafraîchir les selects (contacts et contrats) à chaque ouverture
+  populateContactSelects();
+  populateContractSelects();
+
   const t = id ? state.tasks.find(x => x.id === id) : null;
   $('#task-modal-title').textContent = t ? 'Modifier la tâche' : 'Nouvelle tâche';
   $('#t-id').value = t?.id || '';
@@ -1189,27 +1241,22 @@ function miniGauge(label, value, target, unit) {
     </div>`;
 }
 
-function renderAdminPerUser() {
-  const grid = $('#admin-per-user-grid');
-  if (!grid) return;
-  // Tous les utilisateurs connus (limite affichage à 10 pour rester lisible)
-  const allUsers = Object.values(state.profilesById)
-    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
-  $('#admin-per-user-count').textContent = allUsers.length;
-  if (!allUsers.length) {
-    grid.innerHTML = '<p class="empty">Aucun utilisateur connu.</p>';
+// Rend une grille de blocs nominatifs (photo + jauges) pour la liste d'utilisateurs donnée.
+// Utilisé à la fois par l'onglet Objectifs (admin) et l'onglet Administration > Par utilisateur.
+function renderTeamGauges(containerEl, users, options = {}) {
+  if (!containerEl) return;
+  const limit = options.limit || 10;
+  if (!users.length) {
+    containerEl.innerHTML = '<p class="empty">Aucun utilisateur connu.</p>';
     return;
   }
-  const users = allUsers.slice(0, 10);
-  const truncated = allUsers.length > 10;
-
-  // On récupère les objectifs cibles de chaque utilisateur (depuis state.objectifs)
+  const shown = users.slice(0, limit);
+  const truncated = users.length > limit;
   const targetFor = (uid, metric) => {
     const o = state.objectifs.find(o => o.user_id === uid && o.metric_type === metric);
     return o ? computeObjectifTarget(o) : 0;
   };
-
-  grid.innerHTML = users.map(u => {
+  containerEl.innerHTML = shown.map(u => {
     const contacts = computeObjectifValue({ metric_type: 'nouveaux_contacts' }, u.id);
     const ca       = computeObjectifValue({ metric_type: 'ca_genere' }, u.id);
     const comm     = ca * (COMMISSION_RATE / 100);
@@ -1235,7 +1282,18 @@ function renderAdminPerUser() {
           ${miniGauge('Commissions (12 %)', comm, tComm, '€')}
         </div>
       </div>`;
-  }).join('') + (truncated ? `<p class="mut" style="font-size:.82rem;margin-top:10px">⚠️ ${allUsers.length - 10} utilisateur(s) supplémentaire(s) non affiché(s) — affichage limité à 10.</p>` : '');
+  }).join('') + (truncated
+    ? `<p class="mut" style="font-size:.82rem;margin-top:10px">⚠️ ${users.length - limit} utilisateur(s) supplémentaire(s) non affiché(s) — affichage limité à ${limit}.</p>`
+    : '');
+}
+
+function renderAdminPerUser() {
+  const grid = $('#admin-per-user-grid');
+  if (!grid) return;
+  const allUsers = Object.values(state.profilesById)
+    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
+  $('#admin-per-user-count').textContent = allUsers.length;
+  renderTeamGauges(grid, allUsers);
 }
 
 async function loadAdminUsers() {
@@ -1268,7 +1326,8 @@ function renderAdminUsers() {
         <td class="actions">
           <button class="btn btn-out btn-sm" data-admin-message="${u.id}" ${isSelf ? 'disabled' : ''}>Message</button>
           <button class="btn btn-out btn-sm" data-admin-toggle-admin="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas vous rétrograder"' : ''}>${u.is_admin ? 'Rétrograder' : 'Promouvoir'}</button>
-          <button class="btn ${banned ? 'btn-pri' : 'btn-danger'} btn-sm" data-admin-ban="${u.id}|${banned ? '0' : '1'}" ${isSelf ? 'disabled' : ''}>${banned ? 'Restaurer' : 'Révoquer'}</button>
+          <button class="btn ${banned ? 'btn-pri' : 'btn-out'} btn-sm" data-admin-ban="${u.id}|${banned ? '0' : '1'}" ${isSelf ? 'disabled' : ''}>${banned ? 'Restaurer' : 'Révoquer'}</button>
+          <button class="btn btn-danger btn-sm" data-admin-delete="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas supprimer votre propre compte"' : ''}>Supprimer</button>
         </td>
       </tr>`;
   }).join('');
@@ -1284,6 +1343,37 @@ async function adminToggleAdmin(userId) {
   if (error) { alert("Erreur : " + error.message); return; }
   await loadAdminUsers();
   renderAdminUsers();
+}
+
+async function adminDeleteUser(userId) {
+  const u = state.adminUsers.find(x => x.id === userId);
+  if (!u) return;
+  const label = u.prenom || u.email;
+  // Double confirmation pour une action irréversible
+  if (!confirm(
+    `⚠️ SUPPRESSION DÉFINITIVE\n\n` +
+    `Vous êtes sur le point de supprimer définitivement le compte de ${label} (${u.email}).\n\n` +
+    `Cette action est IRRÉVERSIBLE :\n` +
+    `• Le compte et son profil seront supprimés\n` +
+    `• Les contacts, contrats et tâches qu'il/elle a créés seront conservés mais perdront leur auteur\n` +
+    `• Pour seulement bloquer la connexion (réversible), utilisez plutôt "Révoquer"\n\n` +
+    `Continuer ?`
+  )) return;
+  // Confirmation explicite par saisie du prénom/email
+  const typed = prompt(`Pour confirmer, tapez exactement : ${label}`);
+  if (typed !== label) {
+    alert("Suppression annulée (texte non identique).");
+    return;
+  }
+  const { error } = await sb.rpc('admin_delete_user', { target_user_id: userId });
+  if (error) { alert("Erreur : " + error.message); return; }
+  alert(`✅ Compte ${label} supprimé définitivement.`);
+  await loadAdminUsers();
+  renderAdminUsers();
+  // Recharger les profils pour mettre à jour "Ajouté par" dans les listes
+  await loadAllProfiles();
+  renderContacts();
+  renderContracts();
 }
 
 async function adminToggleBan(userId, banned) {
@@ -1489,6 +1579,18 @@ function renderObjectifs() {
 
   // 🏆 Si l'objectif commission est atteint ce mois-ci, on lance le feu d'artifice
   checkAndCelebrateCommissions();
+
+  // 👥 Pour les super-admins : afficher en plus la grille nominative de toute l'équipe
+  const teamBlock = $('#team-perf-block');
+  const teamGrid  = $('#team-perf-grid');
+  if (isAdmin() && teamBlock && teamGrid) {
+    teamBlock.style.display = 'block';
+    const allUsers = Object.values(state.profilesById)
+      .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
+    renderTeamGauges(teamGrid, allUsers);
+  } else if (teamBlock) {
+    teamBlock.style.display = 'none';
+  }
 }
 
 async function saveJoursTravailles() {
@@ -1702,7 +1804,62 @@ function setupInactivityTimeout() {
   resetInactivity();
 }
 
-// --- Bon de commande PDF ---
+// =========================================================
+// TRANSFERT DE CLIENT (propriétaire ou admin)
+// =========================================================
+
+function openTransferModal() {
+  const id = $('#c-id').value;
+  if (!id) return;
+  const c = state.contacts.find(x => x.id === id);
+  if (!c) return;
+  if (!canEditContact(c)) {
+    alert("Vous ne pouvez transférer que les clients dont vous êtes propriétaire.");
+    return;
+  }
+  // Construction de la liste des destinataires (exclut le propriétaire actuel)
+  const candidates = Object.values(state.profilesById || {})
+    .filter(u => u.id !== c.created_by)
+    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
+  if (!candidates.length) {
+    alert("Aucun autre utilisateur disponible pour le transfert.");
+    return;
+  }
+  const sel = $('#transfer-target');
+  sel.innerHTML = candidates.map(u =>
+    `<option value="${u.id}">${escapeHtml(u.prenom || u.email || u.id.slice(0, 8))}${u.is_admin ? ' (admin)' : ''}</option>`
+  ).join('');
+  $('#transfer-error').style.display = 'none';
+  state._transferContactId = id;
+  $('#transfer-modal').classList.add('show');
+}
+
+async function confirmTransferContact() {
+  const contactId = state._transferContactId;
+  const targetUserId = $('#transfer-target').value;
+  if (!contactId || !targetUserId) return;
+  const c = state.contacts.find(x => x.id === contactId);
+  const target = state.profilesById?.[targetUserId];
+  if (!confirm(
+    `Transférer définitivement le client « ${c?.nom || ''} » à ${target?.prenom || target?.email || 'cet utilisateur'} ?\n\n` +
+    `Tous les contrats et tâches liés à ce client seront également réassignés.`
+  )) return;
+  const { error } = await sb.rpc('transfer_contact', {
+    p_contact_id: contactId,
+    p_target_user_id: targetUserId,
+  });
+  if (error) {
+    $('#transfer-error').textContent = "Erreur : " + (error.message || JSON.stringify(error));
+    $('#transfer-error').style.display = 'block';
+    return;
+  }
+  $('#transfer-modal').classList.remove('show');
+  closeContactModal();
+  // Recharge complète pour refléter les nouvelles propriétés
+  await loadAll();
+}
+
+// --- Bon de commande PDF (Bon de commande + CGV combinés) ---
 function generateContractPDF() {
   const id = $('#ct-id').value;
   if (!id) { alert('Enregistrez le contrat avant de générer le bon de commande.'); return; }
@@ -1724,33 +1881,6 @@ function generateContractPDF() {
     remise: contract.remise,
   }, contact);
   if (res) alert(`Bon de commande téléchargé : ${res.filename}`);
-}
-
-// --- Envoi du bon de commande pour signature électronique ---
-function openContractSign() {
-  const id = $('#ct-id').value;
-  if (!id) { alert('Enregistrez le contrat avant de l\'envoyer.'); return; }
-  const contract = state.contracts.find(c => c.id === id);
-  if (!contract) { alert('Contrat introuvable.'); return; }
-  const contact = state.contacts.find(c => c.id === contract.contact_id);
-  if (!contact) { alert('Contact lié introuvable.'); return; }
-  if (!contact.email) { alert("Le contact n'a pas d'e-mail renseigné — impossible d'envoyer pour signature."); return; }
-  if (!contact.siret || !contact.code_postal_ville) {
-    if (!confirm('Le SIRET ou l\'adresse de facturation du client ne sont pas renseignés. Envoyer quand même ?')) return;
-  }
-  window.ContractSign.open({
-    id: contract.id,
-    type: contract.type,
-    formule: contract.formule,
-    montant: contract.montant,
-    recurrence: contract.recurrence,
-    frais_mise_en_place: contract.frais_mise_en_place,
-    engagement_mois: contract.engagement_mois,
-    remise: contract.remise,
-  }, contact, () => {
-    closeContractModal();
-    loadContracts().then(renderContracts);
-  });
 }
 
 // =========================================================
@@ -2046,8 +2176,9 @@ function bindEvents() {
   $('#reset-submit-btn').addEventListener('click', submitNewPassword);
   $('#reset-password-2').addEventListener('keydown', e => { if (e.key === 'Enter') submitNewPassword(); });
 
-  // Navigation
-  $all('.navlink').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
+  // Navigation (uniquement les liens de la sidebar — pas les sous-onglets admin
+  // qui ont `data-admin-tab` mais portent aussi la classe .navlink pour le style)
+  $all('.navlink[data-view]').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
 
   // Filtres
   ['contacts-search', 'contacts-filter-statut', 'contacts-filter-activite'].forEach(id => {
@@ -2139,6 +2270,9 @@ function bindEvents() {
 
     const toggleAdmBtn = e.target.closest('[data-admin-toggle-admin]');
     if (toggleAdmBtn) return adminToggleAdmin(toggleAdmBtn.dataset.adminToggleAdmin);
+
+    const deleteBtn = e.target.closest('[data-admin-delete]');
+    if (deleteBtn) return adminDeleteUser(deleteBtn.dataset.adminDelete);
   });
 
   // Fermeture des modales en cliquant en dehors
@@ -2165,7 +2299,11 @@ function bindEvents() {
 
   // === Bon de commande PDF ===
   $('#contract-pdf-btn')?.addEventListener('click', generateContractPDF);
-  $('#contract-sign-btn')?.addEventListener('click', openContractSign);
+
+  // === Transfert de client ===
+  $('#contact-transfer-btn')?.addEventListener('click', openTransferModal);
+  $('#transfer-cancel-btn')?.addEventListener('click', () => $('#transfer-modal').classList.remove('show'));
+  $('#transfer-confirm-btn')?.addEventListener('click', confirmTransferContact);
 
   // === Double authentification TOTP ===
   $('#totp-enroll-btn')?.addEventListener('click', openTotpEnroll);
