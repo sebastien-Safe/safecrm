@@ -85,11 +85,24 @@ serve(async (req) => {
     return json({ error: "kdrive_not_configured" }, 500);
   }
 
-  const kdriveUrl = `https://api.infomaniak.com/2/drive/${kdriveId}/upload`
-    + `?directory_id=${kdriveFolder}`
-    + `&file_name=${encodeURIComponent(payload.filename)}`
-    + `&total_size=${pdfBytes.length}`
-    + `&conflict=rename`;
+  //////MODIFICATIONS APPORTEES
+  
+// Construction de l'URL WebDAV
+// Important : encodeURIComponent gère les espaces et accents dans le nom du dossier/fichier
+const webdavUrl = `https://${kdriveId}.connect.kdrive.infomaniak.com/${encodeURIComponent(folderName)}/${encodeURIComponent(fileName)}`;
+
+// Ensuite, vous faites la requête PUT vers cette URL
+const response = await fetch(webdavUrl, {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Basic ${btoa(`${user}:${pass}`)}`,
+    'Content-Type': 'application/pdf',
+  },
+  body: pdfBlob
+});
+
+  /////////FIN DES MODIFICATIONS
+
 
   let kdriveResponse: { id?: string; name?: string; url?: string } | null = null;
   try {
@@ -122,9 +135,9 @@ serve(async (req) => {
   }
 
   // ---- Étape 2 : Envoi par e-mail au client ----
-  const smtpHost = Deno.env.get("SMTP_HOST") ?? "smtp.mail.me.com";
-  const smtpPort = Number(Deno.env.get("SMTP_PORT") ?? 587);
-  const smtpUser = Deno.env.get("SMTP_USER");
+  const smtpHost = Deno.env.get("SMTP_HOST") ?? "smtp.ionos.fr";
+  const smtpPort = Number(Deno.env.get("SMTP_PORT") ?? 465);
+  const smtpUser = Deno.env.get("SMTP_USER") ?? "contrats@safe-digitalisation.fr";
   const smtpPassword = Deno.env.get("SMTP_PASSWORD");
   const fromName = Deno.env.get("SMTP_FROM_NAME") ?? "S@FE Digitalisation";
 
