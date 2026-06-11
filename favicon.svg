@@ -1,0 +1,21 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2a2a2a"/>
+      <stop offset="1" stop-color="#0e0e0e"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="14" y1="11" x2="50" y2="54" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#cfcfcf"/>
+      <stop offset="1" stop-color="#7a7a7a"/>
+    </linearGradient>
+  </defs>
+  <!-- fond arrondi -->
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- bouclier -->
+  <path d="M32 11 L50 18 V34 C50 45 42 51 32 54 C22 51 14 45 14 34 V18 Z"
+        fill="rgba(207,207,207,.12)" stroke="url(#shield)" stroke-width="3"
+        stroke-linejoin="round"/>
+  <!-- coche rouge -->
+  <path d="M23 33 L29 39.5 L42 25.5" fill="none" stroke="#dc2626"
+        stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
