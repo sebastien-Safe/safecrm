@@ -32,9 +32,13 @@
       <button data-view="contacts" class="navlink">Contacts</button>
       <button data-view="contracts" class="navlink">Contrats</button>
       <button data-view="tasks" class="navlink">Tâches</button>
+      <button data-view="objectifs" class="navlink">Objectifs</button>
     </nav>
     <div class="sidebar-footer">
-      <span id="user-email"></span>
+      <button class="profile-btn" id="profile-btn" title="Modifier mon profil">
+        <div class="avatar" id="user-avatar"></div>
+        <span id="user-name"></span>
+      </button>
       <button id="logout-btn" class="btn btn-out btn-sm">Déconnexion</button>
     </div>
   </aside>
@@ -143,6 +147,29 @@
         <div class="kanban-col"><h4>En cours</h4><div id="kanban-inprogress"></div></div>
         <div class="kanban-col"><h4>Terminé</h4><div id="kanban-done"></div></div>
       </div>
+    </section>
+
+    <!-- ---------- OBJECTIFS ---------- -->
+    <section id="view-objectifs" class="view">
+      <div class="view-head">
+        <div>
+          <h2>Objectifs</h2>
+          <p>Suivi en temps réel, ajusté selon vos jours travaillés ce mois-ci</p>
+        </div>
+        <button class="btn btn-out" id="btn-edit-objectifs">Modifier mes objectifs</button>
+      </div>
+      <div class="panel-block jours-block">
+        <div>
+          <h3>Jours travaillés ce mois-ci — <span id="mois-courant-label"></span></h3>
+          <p class="mut" style="font-size:.85rem;margin-top:4px">Indiquez en début de mois le nombre de jours que vous prévoyez de travailler : vos objectifs seront ajustés automatiquement.</p>
+        </div>
+        <div class="jours-form">
+          <input type="number" id="jours-travailles-input" min="0" max="31" placeholder="20">
+          <span class="mut" style="font-size:.85rem">jours</span>
+          <button class="btn btn-pri btn-sm" id="save-jours-btn">Enregistrer</button>
+        </div>
+      </div>
+      <div class="gauges-grid" id="gauges-grid"><p class="empty">Chargement…</p></div>
     </section>
 
   </main>
@@ -258,6 +285,40 @@
       <button class="btn btn-danger" id="task-delete-btn" style="display:none;margin-right:auto">Supprimer</button>
       <button class="btn btn-out" id="task-cancel-btn">Annuler</button>
       <button class="btn btn-pri" id="task-save-btn">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODALE PROFIL ================= -->
+<div class="modal" id="profile-modal">
+  <div class="box">
+    <h3>Mon profil</h3>
+    <div class="field" style="text-align:center">
+      <div class="avatar avatar-lg" id="profile-avatar-preview" style="margin:0 auto 14px"></div>
+      <input type="file" id="profile-photo-input" accept="image/*">
+      <p class="mut" style="font-size:.78rem;margin-top:8px">Photo carrée recommandée (JPG/PNG, &lt; 2 Mo)</p>
+    </div>
+    <div class="field"><label>Prénom</label><input id="profile-prenom" type="text" placeholder="Votre prénom"></div>
+    <p class="error" id="profile-error"></p>
+    <div class="modal-actions">
+      <button class="btn btn-out" id="profile-cancel-btn">Annuler</button>
+      <button class="btn btn-pri" id="profile-save-btn">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODALE OBJECTIFS ================= -->
+<div class="modal" id="objectifs-modal">
+  <div class="box" style="max-width:640px">
+    <h3>Modifier mes objectifs mensuels</h3>
+    <p class="mut" style="font-size:.85rem;margin-bottom:14px">
+      Valeurs de référence pour un mois "plein" (<span id="jours-ref-label">20</span> jours travaillés).
+      Elles sont automatiquement ajustées au prorata des jours travaillés que vous avez renseignés.
+    </p>
+    <div id="objectifs-edit-list"></div>
+    <div class="modal-actions">
+      <button class="btn btn-out" id="objectifs-cancel-btn">Annuler</button>
+      <button class="btn btn-pri" id="objectifs-save-btn">Enregistrer</button>
     </div>
   </div>
 </div>
