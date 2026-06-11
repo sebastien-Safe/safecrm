@@ -234,12 +234,25 @@
           <option value="Autre">
         </datalist>
       </div>
-      <div class="field"><label>Formule</label><input id="ct-formule" type="text" placeholder="Ex : Boost, Premium…"></div>
+      <div class="field"><label>Formule</label>
+        <select id="ct-formule-select"></select>
+        <input id="ct-formule-custom" type="text" placeholder="Nom de la formule (sur devis)" style="margin-top:8px">
+      </div>
     </div>
     <div class="field-row">
       <div class="field"><label>Montant (€ HT)</label><input id="ct-montant" type="number" step="0.01" min="0"></div>
       <div class="field"><label>Récurrence</label>
         <select id="ct-recurrence"><option>Ponctuel</option><option>Mensuel</option><option>Annuel</option></select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label class="checkbox-label"><input type="checkbox" id="ct-remise-check"> Remise accordée</label>
+        <input id="ct-remise" type="number" step="0.01" min="0" placeholder="Montant de la remise (€ HT)" style="margin-top:8px;display:none">
+      </div>
+      <div class="field" id="ct-net-wrap" style="display:none">
+        <label>Montant net (après remise)</label>
+        <input id="ct-net-display" type="text" disabled>
       </div>
     </div>
     <div class="field-row">
