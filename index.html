@@ -14,7 +14,7 @@
 <!-- ================= ÉCRAN DE CONNEXION ================= -->
 <div id="login-screen" class="login-screen">
   <div class="login-card">
-    <div class="brand">S<b>@</b>FE<small>CRM</small></div>
+    <img src="assets/logo.png" alt="S@FE" class="brand-logo brand-logo-lg">
 
     <div id="login-panel">
       <h1>Connexion</h1>
@@ -40,7 +40,7 @@
 <!-- ================= ÉCRAN RÉINITIALISATION MOT DE PASSE ================= -->
 <div id="reset-screen" class="login-screen" style="display:none">
   <div class="login-card">
-    <div class="brand">S<b>@</b>FE<small>CRM</small></div>
+    <img src="assets/logo.png" alt="S@FE" class="brand-logo brand-logo-lg">
     <h1>Nouveau mot de passe</h1>
     <p class="mut" style="font-size:.85rem;margin-bottom:14px">Choisissez un nouveau mot de passe pour votre compte S@FE CRM.</p>
     <div class="field"><label>Nouveau mot de passe</label><input id="reset-password" type="password" autocomplete="new-password" placeholder="Au moins 6 caractères"></div>
@@ -53,7 +53,7 @@
 <!-- ================= APPLICATION ================= -->
 <div id="app" class="app" style="display:none">
   <aside class="sidebar">
-    <div class="brand">S<b>@</b>FE<small>CRM</small></div>
+    <img src="assets/logo.png" alt="S@FE" class="brand-logo">
     <nav class="navlinks">
       <button data-view="dashboard" class="navlink active">Tableau de bord</button>
       <button data-view="contacts" class="navlink">Contacts</button>
@@ -76,8 +76,8 @@
     <section id="view-dashboard" class="view active">
       <div class="view-head">
         <div>
-          <h2>Tableau de bord</h2>
-          <p>Vue d'ensemble de votre activité S@FE</p>
+          <h2 id="dashboard-title">Tableau de bord</h2>
+          <p id="dashboard-clock" class="mut"></p>
         </div>
       </div>
       <div class="stats-grid">
@@ -231,6 +231,11 @@
       </div>
     </div>
     <div class="field"><label>Notes</label><textarea id="c-notes"></textarea></div>
+    <div class="field" id="c-rgpd-ko-field">
+      <label class="checkbox-label"><input type="checkbox" id="c-rgpd-ko"> RGPD KO — ce contact ne souhaite plus être sollicité</label>
+      <p class="mut" style="font-size:.78rem;margin-top:6px">⚠️ Action définitive : en cochant et en enregistrant, l'e-mail, le téléphone et l'adresse seront effacés, et la fiche sera verrouillée (lecture seule).</p>
+    </div>
+    <p class="error" id="c-rgpd-locked-msg" style="display:none">🔒 Fiche verrouillée (RGPD KO) — coordonnées effacées, champs non modifiables.</p>
     <div class="modal-actions">
       <button class="btn btn-danger" id="contact-delete-btn" style="display:none;margin-right:auto">Supprimer</button>
       <button class="btn btn-out" id="contact-cancel-btn">Annuler</button>
@@ -304,14 +309,29 @@
   <div class="box">
     <h3 id="task-modal-title">Nouvelle tâche</h3>
     <input type="hidden" id="t-id">
+    <div class="field"><label>Type de tâche *</label>
+      <select id="t-type">
+        <option>Premier contact</option>
+        <option>RDV visio</option>
+        <option>RDV terrain</option>
+        <option>Autre</option>
+      </select>
+    </div>
     <div class="field"><label>Titre *</label><input id="t-titre" type="text" placeholder="Ex : Relancer le devis RGPD"></div>
     <div class="field"><label>Description</label><textarea id="t-description"></textarea></div>
     <div class="field-row">
       <div class="field"><label>Contact lié</label><select id="t-contact"><option value="">— Aucun —</option></select></div>
       <div class="field"><label>Contrat lié</label><select id="t-contract"><option value="">— Aucun —</option></select></div>
     </div>
-    <div class="field-row">
-      <div class="field"><label>Échéance</label><input id="t-echeance" type="date"></div>
+    <div id="t-rdv-fields" style="display:none">
+      <div class="field-row">
+        <div class="field"><label>Date du RDV</label><input id="t-rdv-date" type="date"></div>
+        <div class="field"><label>Heure du RDV</label><input id="t-rdv-heure" type="time"></div>
+      </div>
+      <div class="field"><label id="t-rdv-lieu-label">Lieu / Lien visio</label><input id="t-rdv-lieu" type="text" placeholder="Ex : lien Google Meet, ou adresse du RDV"></div>
+    </div>
+    <div class="field-row" id="t-echeance-row">
+      <div class="field" id="t-echeance-field"><label>Échéance</label><input id="t-echeance" type="date"></div>
       <div class="field"><label>Priorité</label>
         <select id="t-priorite"><option>Basse</option><option selected>Normale</option><option>Haute</option></select>
       </div>
