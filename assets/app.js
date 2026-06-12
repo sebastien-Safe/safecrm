@@ -1699,7 +1699,7 @@ function renderObjectifs() {
     return `
       <div class="gauge-card">
         <div class="gauge-wrap">${gaugeSvg(pct)}</div>
-        <h4>${escapeHtml(o.label)}</h4>
+        <h4>${escapeHtml(o.metric_type === 'commissions' ? 'Commissions' : o.label)}</h4>
         <div class="gauge-values">${valLabel} / ${targetLabel}</div>
       </div>`;
   }).join('');
@@ -1741,7 +1741,7 @@ function openObjectifsModal() {
     const unit = (isMoney ? '€ ' : '') + (o.scale_by_days ? `/ ${o.jours_reference}j` : '');
     let row = `
     <div class="objectif-row">
-      <label>${escapeHtml(o.label)}</label>
+      <label>${escapeHtml(o.metric_type === 'commissions' ? 'Commissions' : o.label)}</label>
       <input type="number" step="0.01" min="0" data-objectif-id="${o.id}" value="${o.objectif_base}">
       <span class="unit">${unit}</span>
     </div>`;
