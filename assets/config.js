@@ -20,4 +20,4 @@
 // =========================================================
 
 const SUPABASE_URL = "https://qdjmzietysukediqkebg.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_G1vRTrnTnUdYNOwm3QifRg_gV5E8BML";
+const SUPABASE_ANON_KEY = "sb_publishable_8uD3m60n9GfMt2h_GkmB7w_MpdFN5_s";
