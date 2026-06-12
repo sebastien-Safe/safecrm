@@ -11,5 +11,4 @@
 
 update objectifs
 set label = 'Commissions reversées',
-    taux_commission = 
 where metric_type = 'commissions';
