@@ -358,7 +358,7 @@ async function ensureUserObjectifs() {
   const defaults = [
     { user_id: state.user.id, ordre: 1, label: 'Entrées en contact',     metric_type: 'nouveaux_contacts', contract_type_filter: null, objectif_base: 20,    jours_reference: 20, scale_by_days: true,  taux_commission: 0 },
     { user_id: state.user.id, ordre: 2, label: 'CA généré',              metric_type: 'ca_genere',         contract_type_filter: null, objectif_base: 5000,  jours_reference: 20, scale_by_days: true,  taux_commission: 0 },
-    { user_id: state.user.id, ordre: 3, label: 'Commissions reversées (12% du CA)', metric_type: 'commissions', contract_type_filter: null, objectif_base: 600, jours_reference: 20, scale_by_days: true,  taux_commission: 12 },
+    { user_id: state.user.id, ordre: 3, label: 'Commissions reversées', metric_type: 'commissions', contract_type_filter: null, objectif_base: 600, jours_reference: 20, scale_by_days: true,  taux_commission: 12 },
   ];
   const { error } = await sb.from('objectifs').insert(defaults);
   if (error) { console.error('Erreur création objectifs :', error.message); return; }
