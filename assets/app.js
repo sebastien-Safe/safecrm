@@ -863,6 +863,7 @@ function openContractModal(id = null) {
   $('#contract-save-btn').style.display = editable ? '' : 'none';
   $('#contract-delete-btn').style.display = (ct && editable) ? 'inline-flex' : 'none';
   $('#contract-pdf-btn').style.display = ct ? 'inline-flex' : 'none';
+  $('#contract-send-btn').style.display = (ct && editable) ? 'inline-flex' : 'none';
   $('#contract-modal').classList.add('show');
 }
 
@@ -1986,6 +1987,76 @@ async function confirmTransferContact() {
   await loadAll();
 }
 
+// --- Envoi du bon de commande au client (lien de paiement Stripe) ---
+async function sendOrderLink() {
+  const id = $('#ct-id').value;
+  if (!id) { alert('Enregistrez le contrat avant de l\'envoyer.'); return; }
+  const contract = state.contracts.find(c => c.id === id);
+  if (!contract) { alert('Contrat introuvable.'); return; }
+  const contact = state.contacts.find(c => c.id === contract.contact_id);
+  if (!contact) { alert('Contact lié introuvable.'); return; }
+  if (!contact.email) { alert("Le contact n'a pas d'e-mail. Ajoutez-le avant d'envoyer le bon de commande."); return; }
+
+  if (!confirm(
+    `Créer un lien de paiement pour ${contact.nom || '—'} (${contact.email}) ?\n\n` +
+    `Produit : ${contract.type || '—'} — ${contract.formule || '—'}\n` +
+    `Montant : ${Number(contract.montant || 0).toFixed(2)} € HT${contract.recurrence === 'Mensuel' ? ' / mois' : ''}\n` +
+    `Frais MeP : ${Number(contract.frais_mise_en_place || 0).toFixed(2)} €\n` +
+    `Remise : ${Number(contract.remise || 0).toFixed(2)} €\n\n` +
+    `Un lien valable 7 jours sera généré. Vous pourrez l'envoyer au client par e-mail ou WhatsApp.`
+  )) return;
+
+  // Insertion dans order_links (snapshot du contrat)
+  const { data, error } = await sb.from('order_links').insert({
+    contract_id: contract.id,
+    created_by: state.user.id,
+    client_name: contact.nom,
+    client_email: contact.email,
+    client_entreprise: contact.entreprise,
+    client_siret: contact.siret,
+    produit: contract.type,
+    formule: contract.formule,
+    montant: contract.montant,
+    frais_mise_en_place: contract.frais_mise_en_place || 0,
+    remise: contract.remise || 0,
+    recurrence: contract.recurrence,
+    engagement_mois: contract.engagement_mois || 0,
+  }).select('token').single();
+
+  if (error) { alert("Erreur : " + error.message); return; }
+
+  const orderUrl = `${location.origin}/order.html?token=${data.token}`;
+
+  // Copie dans le presse-papier
+  try { await navigator.clipboard.writeText(orderUrl); } catch (_) {}
+
+  // Ouvre le client mail avec le lien pré-rempli
+  const subject = encodeURIComponent(`Votre bon de commande S@FE — ${contract.type}${contract.formule ? ' ' + contract.formule : ''}`);
+  const body = encodeURIComponent(
+    `Bonjour ${contact.nom || ''},\n\n` +
+    `Veuillez trouver ci-dessous le lien vers votre bon de commande S@FE :\n\n` +
+    `${orderUrl}\n\n` +
+    `Ce lien vous permettra de :\n` +
+    `• Consulter le récapitulatif de votre commande\n` +
+    `• Lire et accepter nos Conditions Générales de Vente\n` +
+    `• Procéder au paiement sécurisé en ligne (CB / SEPA)\n\n` +
+    `Le lien est valable 7 jours.\n\n` +
+    `Pour toute question, n'hésitez pas à me contacter.\n\n` +
+    `Cordialement,\n` +
+    `${state.profile?.prenom || 'L\'équipe S@FE'}\n` +
+    `S@FE Digitalisation\n` +
+    `01 84 16 26 29 — contact@safe-digitalisation.fr`
+  );
+  window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
+
+  alert(
+    `✅ Lien de paiement créé et copié dans le presse-papier !\n\n` +
+    `Votre client mail s'est ouvert avec le lien pré-rempli. ` +
+    `Vous pouvez aussi coller le lien dans WhatsApp ou un SMS.\n\n` +
+    `Lien : ${orderUrl}`
+  );
+}
+
 // --- Bon de commande PDF (Bon de commande + CGV combinés) ---
 function generateContractPDF() {
   const id = $('#ct-id').value;
@@ -2426,6 +2497,7 @@ function bindEvents() {
 
   // === Bon de commande PDF ===
   $('#contract-pdf-btn')?.addEventListener('click', generateContractPDF);
+  $('#contract-send-btn')?.addEventListener('click', sendOrderLink);
 
   // === Transfert de client ===
   $('#contact-transfer-btn')?.addEventListener('click', openTransferModal);
