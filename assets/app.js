@@ -96,44 +96,56 @@ const TASK_TYPE_BADGE = { 'Premier contact': 'badge-blue', 'RDV visio': 'badge-g
 // Autre) n'ont pas de tarif catalogue publié : la formule reste
 // "Personnalisé / Sur devis" avec saisie libre.
 // ---------------------------------------------------------
+// ---------------------------------------------------------
+// FORMULES & COMMISSIONS
+// Taux issus de l'Annexe 1 (Grille de commissionnement)
+// Réf. SAFE-AC-2026 — Version en vigueur au 10 juin 2026.
+//   • SEO Local & Click & Collect : 15 % sur les frais de
+//     mise en place + 12 % sur l'abonnement mensuel.
+//   • Audits RGPD / Cybersécurité / Options à la carte :
+//     10 % à la signature (one-shot).
+//   • Veille menaces / Pack Résilience Pro / DPO : à confirmer
+//     (non spécifié dans l'annexe — on applique 10 % par défaut).
+// ---------------------------------------------------------
 const FORMULE_PRESETS = {
   'Référencement Local': [
-    { label: 'Essentiel', montant: 79,  recurrence: 'Mensuel', setup: 150, engagement: 6 },
-    { label: 'Boost',     montant: 149, recurrence: 'Mensuel', setup: 250, engagement: 6 },
-    { label: 'Prestige',  montant: 249, recurrence: 'Mensuel', setup: 0,   engagement: 3 },
+    { label: 'Essentiel', montant: 79,  recurrence: 'Mensuel',  setup: 190, engagement: 6, comm_signature: 0.15, comm_recurrent: 0.12 },
+    { label: 'Boost',     montant: 149, recurrence: 'Mensuel',  setup: 290, engagement: 6, comm_signature: 0.15, comm_recurrent: 0.12 },
+    { label: 'Prestige',  montant: 249, recurrence: 'Mensuel',  setup: 0,   engagement: 3, comm_signature: 0,    comm_recurrent: 0.12 },
   ],
   'Click & Collect': [
-    { label: 'Essentiel', montant: 39,  recurrence: 'Mensuel', setup: 150, engagement: 6 },
-    { label: 'Pro',       montant: 79,  recurrence: 'Mensuel', setup: 250, engagement: 6 },
-    { label: 'Premium',   montant: 129, recurrence: 'Mensuel', setup: 0,   engagement: 3 },
+    { label: 'Essentiel', montant: 49,  recurrence: 'Mensuel',  setup: 150, engagement: 6, comm_signature: 0.15, comm_recurrent: 0.12 },
+    { label: 'Pro',       montant: 79,  recurrence: 'Mensuel',  setup: 250, engagement: 6, comm_signature: 0.15, comm_recurrent: 0.12 },
+    { label: 'Premium',   montant: 129, recurrence: 'Mensuel',  setup: 0,   engagement: 3, comm_signature: 0,    comm_recurrent: 0.12 },
   ],
   'Mise en conformité RGPD': [
-    { label: 'Diagnostic (offert)',          montant: 0,    recurrence: 'Ponctuel', setup: 0, engagement: 0 },
-    { label: 'Mise en conformité (forfait)', montant: 1490, recurrence: 'Ponctuel', setup: 0, engagement: 0 },
+    { label: 'Diagnostic (offert)',     montant: 0,    recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0,    comm_recurrent: 0 },
+    { label: 'Audit RGPD TPE',          montant: 1490, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
+    { label: 'Audit RGPD+ PME',         montant: 2990, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
+    { label: 'Audit ETI (sur devis)',   montant: 5500, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
   ],
   'DPO externalisé': [
-    { label: 'Abonnement DPO', montant: 149, recurrence: 'Mensuel', setup: 0, engagement: 12 },
+    { label: 'Abonnement DPO', montant: 189, recurrence: 'Mensuel', setup: 0, engagement: 12, comm_signature: 0, comm_recurrent: 0.10 },
   ],
   'Cybersécurité': [
-    { label: 'Audit de vulnérabilité',  montant: 490,  recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 5 },
-    { label: 'Pack Sécurité Essentiel', montant: 990,  recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 10 },
-    { label: 'Pack Résilience Pro',     montant: 1990, recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 15 },
+    { label: 'Audit de vulnérabilité',  montant: 490,  recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 5,  comm_signature: 0.10, comm_recurrent: 0 },
+    { label: 'Pack Sécurité Essentiel', montant: 990,  recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 10, comm_signature: 0.10, comm_recurrent: 0 },
+    { label: 'Pack Résilience Pro',     montant: 1990, recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 15, comm_signature: 0.10, comm_recurrent: 0 },
+  ],
+  'Options à la carte': [
+    { label: 'Landing page SEO',         montant: 390, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
+    { label: 'Google Ads setup',         montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
+    { label: 'Formation GBP 2h',         montant: 220, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
+    { label: 'Audit concurrentiel',      montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
+    { label: 'Sensibilisation phishing', montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
+    { label: 'Veille menaces',           montant: 89,  recurrence: 'Mensuel',  setup: 0, engagement: 0, comm_signature: 0,    comm_recurrent: 0.10 },
   ],
 };
 const FORMULE_CUSTOM = '__custom__';
 
-// ---------------------------------------------------------
-// COMMISSIONS (issu de safe-digitalisation.fr/recrutement.html)
-// La page Recrutement indique une fourchette de 10 à 15 % du CA
-// généré (source APAC France), la grille détaillée par produit
-// étant définie au cas par cas lors de l'entretien de cadrage
-// (non publiée). En l'absence de grille produit par produit,
-// on applique le taux médian de 12 % à l'ensemble du CA généré.
-// → Si vous disposez de la grille de commissionnement détaillée
-// (taux par offre, prime à la signature, etc.), communiquez-la
-// pour un calcul plus précis par produit.
-// ---------------------------------------------------------
-const COMMISSION_RATE = 12;
+// Taux par défaut si la formule sélectionnée n'a pas de taux explicite
+// (formules personnalisées ou anciennes données sans grille rattachée).
+const COMMISSION_FALLBACK = { comm_signature: 0.10, comm_recurrent: 0.10 };
 
 function contactName(id) {
   const c = state.contacts.find(c => c.id === id);
@@ -756,6 +768,8 @@ function onFormuleChange(applyPreset = true) {
   if (preset) {
     $('#ct-montant').value = preset.montant;
     $('#ct-recurrence').value = preset.recurrence;
+    $('#ct-frais-mise-en-place').value = preset.setup || 0;
+    $('#ct-engagement-mois').value = preset.engagement || 0;
     const note = $('#ct-notes');
     const extraNotes = [];
     if (preset.setup) {
@@ -818,6 +832,8 @@ function openContractModal(id = null) {
   $('#ct-type').value = ct?.type || '';
   $('#ct-montant').value = ct?.montant ?? '';
   $('#ct-recurrence').value = ct?.recurrence || 'Ponctuel';
+  $('#ct-frais-mise-en-place').value = ct?.frais_mise_en_place ?? '';
+  $('#ct-engagement-mois').value = ct?.engagement_mois ?? '';
   $('#ct-date-debut').value = ct?.date_debut || '';
   $('#ct-date-echeance').value = ct?.date_echeance || '';
   $('#ct-statut').value = ct?.statut || 'Devis envoyé';
@@ -864,12 +880,16 @@ async function saveContract() {
     ? ($('#ct-formule-custom').value.trim() || null)
     : formuleSel;
   const remise = $('#ct-remise-check').checked ? (Number($('#ct-remise').value) || 0) : 0;
+  const fraisMep = $('#ct-frais-mise-en-place').value;
+  const engagement = $('#ct-engagement-mois').value;
   const payload = {
     contact_id,
     type,
     formule,
     montant: montant === '' ? null : Number(montant),
     remise,
+    frais_mise_en_place: fraisMep === '' ? null : Number(fraisMep),
+    engagement_mois: engagement === '' ? null : Number(engagement),
     recurrence: $('#ct-recurrence').value,
     date_debut: $('#ct-date-debut').value || null,
     date_echeance: $('#ct-date-echeance').value || null,
@@ -1259,7 +1279,7 @@ function renderTeamGauges(containerEl, users, options = {}) {
   containerEl.innerHTML = shown.map(u => {
     const contacts = computeObjectifValue({ metric_type: 'nouveaux_contacts' }, u.id);
     const ca       = computeObjectifValue({ metric_type: 'ca_genere' }, u.id);
-    const comm     = ca * (COMMISSION_RATE / 100);
+    const comm     = computeMonthlyCommission(u.id);
     const tContacts = targetFor(u.id, 'nouveaux_contacts');
     const tCa       = targetFor(u.id, 'ca_genere');
     const tComm     = targetFor(u.id, 'commissions');
@@ -1404,29 +1424,66 @@ async function createNewUser() {
   const email = $('#nu-email').value.trim();
   const password = $('#nu-password').value;
   const prenom = $('#nu-prenom').value.trim();
+  const makeAdmin = $('#nu-is-admin')?.checked || false;
   $('#nu-error').textContent = '';
   if (!email || !password) {
     $('#nu-error').textContent = "L'e-mail et le mot de passe sont obligatoires.";
     return;
   }
-  if (password.length < 6) {
-    $('#nu-error').textContent = "Le mot de passe doit faire au moins 6 caractères.";
+  if (password.length < 8) {
+    $('#nu-error').textContent = "Le mot de passe doit faire au moins 8 caractères.";
     return;
   }
-  const { error } = await sb.rpc('admin_create_user', {
-    new_email: email,
-    new_password: password,
-    new_prenom: prenom,
-  });
-  if (error) {
-    $('#nu-error').textContent = "Erreur : " + error.message
-      + " — En cas d'échec persistant, créez l'utilisateur depuis Supabase Dashboard → Authentication → Users → 'Add user'.";
-    return;
+
+  // Appel de l'Edge Function admin-create-user (qui utilise l'API Auth Admin Supabase)
+  $('#nu-error').textContent = 'Création en cours…';
+  try {
+    const { data: sessionData } = await sb.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) throw new Error("Session expirée — reconnectez-vous.");
+
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/admin-create-user`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ email, password, prenom, is_admin: makeAdmin }),
+    });
+
+    let body = null;
+    try { body = await resp.json(); } catch (_) {}
+
+    if (resp.status === 404 || !body) {
+      $('#nu-error').innerHTML =
+        "❌ L'Edge Function <code>admin-create-user</code> n'est pas déployée." +
+        "<br>Deux options :" +
+        "<br>• Déployez la fonction (voir <code>supabase/functions/admin-create-user/README.md</code>)" +
+        "<br>• Ou créez l'utilisateur manuellement : Supabase Dashboard → Authentication → Users → Add user, puis revenez ici pour le promouvoir.";
+      return;
+    }
+
+    if (!resp.ok || body.error) {
+      const code = body?.error || `HTTP ${resp.status}`;
+      const details = body?.details || body?.reason || '';
+      const map = {
+        forbidden: "Accès refusé : votre compte n'a pas les droits super-administrateur.",
+        invalid_email: "Format d'e-mail invalide.",
+        password_too_short: "Mot de passe trop court (8 caractères minimum).",
+        create_failed: `Création refusée par Supabase : ${details}`,
+        missing_supabase_env: "Edge Function mal déployée (variables d'environnement manquantes).",
+      };
+      $('#nu-error').textContent = "❌ " + (map[code] || `${code} — ${details}`);
+      return;
+    }
+
+    closeNewUserModal();
+    await Promise.all([loadAdminUsers(), loadAllProfiles()]);
+    renderAdminUsers();
+    alert(`✅ Utilisateur ${email} créé avec succès.\n\nCommuniquez-lui ses identifiants. Il pourra changer son mot de passe via "Mot de passe oublié ?" depuis l'écran de connexion.`);
+  } catch (e) {
+    $('#nu-error').textContent = "❌ Erreur : " + (e.message || e);
   }
-  closeNewUserModal();
-  await Promise.all([loadAdminUsers(), loadAllProfiles()]);
-  renderAdminUsers();
-  alert("Utilisateur créé. Communiquez-lui l'e-mail et le mot de passe initial — il pourra le modifier via \"Mot de passe oublié ?\".");
 }
 
 // ---- Messages admin → utilisateur ----
@@ -1528,12 +1585,63 @@ function computeObjectifValue(o, userId) {
         .filter(c => filterContract(c) && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at))
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     case 'commissions': {
-      const ca = computeObjectifValue({ metric_type: 'ca_genere' }, userId);
-      return ca * (COMMISSION_RATE / 100);
+      return computeMonthlyCommission(userId);
     }
     default:
       return 0;
   }
+}
+
+// Calcul des commissions du mois courant pour un utilisateur, selon la
+// grille SAFE-AC-2026 :
+//   • Commission signature = taux_signature × frais_mise_en_place (ou
+//     × montant pour les contrats ponctuels sans MeP — audits, packs…),
+//     versée le mois de signature.
+//   • Commission récurrente = taux_recurrent × montant mensuel pour tous
+//     les contrats actifs ce mois-ci.
+function computeMonthlyCommission(userId) {
+  if (userId === undefined) userId = state.user?.id;
+  const now = new Date();
+  const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endMonth   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+  const contracts = state.contracts.filter(c =>
+    (userId === 'all' || c.created_by === userId) &&
+    ['Signé', 'En cours', 'Terminé'].includes(c.statut)
+  );
+
+  let total = 0;
+  for (const c of contracts) {
+    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
+    const sigPct = preset?.comm_signature ?? COMMISSION_FALLBACK.comm_signature;
+    const recPct = preset?.comm_recurrent ?? COMMISSION_FALLBACK.comm_recurrent;
+
+    const setup   = Number(c.frais_mise_en_place) || 0;
+    const montant = Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0));
+    const dateDebut = c.date_debut ? new Date(c.date_debut + 'T00:00:00') : null;
+    const signedThisMonth = dateDebut && dateDebut >= startMonth && dateDebut <= endMonth;
+
+    // 1. Commission à la signature (one-shot, sur le mois de signature)
+    if (signedThisMonth) {
+      if (setup > 0) {
+        // SEO Local, Click & Collect : 15 % des MeP
+        total += setup * sigPct;
+      } else if (c.recurrence === 'Ponctuel' && montant > 0) {
+        // Audits RGPD/Cyber, Options à la carte : 10 % du montant
+        total += montant * sigPct;
+      }
+    }
+
+    // 2. Commission récurrente (versée chaque mois actif)
+    if (c.recurrence === 'Mensuel' && recPct > 0 && dateDebut && dateDebut <= endMonth) {
+      const dateEch = c.date_echeance ? new Date(c.date_echeance + 'T23:59:59') : null;
+      // Le contrat est-il actif pendant le mois courant ?
+      if (!dateEch || dateEch >= startMonth) {
+        total += montant * recPct;
+      }
+    }
+  }
+  return total;
 }
 
 function computeObjectifTarget(o) {
@@ -1621,8 +1729,8 @@ function openObjectifsModal() {
     if (o.metric_type === 'commissions') {
       row += `
     <div class="objectif-row" style="padding-top:0">
-      <label class="mut" style="font-size:.82rem">↳ Taux appliqué au CA généré (fixe, non modifiable)</label>
-      <span class="unit" style="width:auto;font-family:var(--ff-mono)">${COMMISSION_RATE} %</span>
+      <label class="mut" style="font-size:.82rem">↳ Calcul automatique selon la grille SAFE-AC-2026 (15 % MeP / 12 % récurrent SEO &amp; C&amp;C ; 10 % audits, cyber, options)</label>
+      <span class="unit" style="width:auto;font-family:var(--ff-mono)">grille</span>
     </div>`;
     }
     return row;
