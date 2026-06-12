@@ -98,54 +98,55 @@ const TASK_TYPE_BADGE = { 'Premier contact': 'badge-blue', 'RDV visio': 'badge-g
 // ---------------------------------------------------------
 // ---------------------------------------------------------
 // FORMULES & COMMISSIONS
-// Taux issus de l'Annexe 1 (Grille de commissionnement)
-// Réf. SAFE-AC-2026 — Version en vigueur au 10 juin 2026.
-//   • SEO Local & Click & Collect : 15 % sur les frais de
-//     mise en place + 12 % sur l'abonnement mensuel.
-//   • Audits RGPD / Cybersécurité / Options à la carte :
-//     10 % à la signature (one-shot).
-//   • Veille menaces / Pack Résilience Pro / DPO : à confirmer
-//     (non spécifié dans l'annexe — on applique 10 % par défaut).
+// Barème : SAFEDIRCOM-2026-V1 — En vigueur au 12 juin 2026
+//
+// Structure par formule :
+//   comm_signature_fix : montant fixe versé le mois de signature
+//   comm_bonus_fidelite: montant fixe versé au mois 4 si client
+//                        toujours actif (clause anti-churn 90j)
+//   comm_recurrent_pct : taux mensuel sur le montant HT
+//   comm_signature_pct : taux one-shot (audits/cyber/options)
+//                        appliqué au montant HT — utilisé quand
+//                        comm_signature_fix n'est pas défini
 // ---------------------------------------------------------
 const FORMULE_PRESETS = {
   'Référencement Local': [
-    { label: 'Essentiel', montant: 79,  recurrence: 'Mensuel',  setup: 190, engagement: 6, comm_signature: 0.15, comm_recurrent: 0.12 },
-    { label: 'Boost',     montant: 149, recurrence: 'Mensuel',  setup: 290, engagement: 6, comm_signature: 0.15, comm_recurrent: 0.12 },
-    { label: 'Prestige',  montant: 249, recurrence: 'Mensuel',  setup: 0,   engagement: 3, comm_signature: 0,    comm_recurrent: 0.12 },
+    { label: 'Essentiel', montant: 79,  recurrence: 'Mensuel',  setup: 190, engagement: 6, comm_signature_fix: 75,  comm_bonus_fidelite: 75,  comm_recurrent_pct: 0.15 },
+    { label: 'Boost',     montant: 149, recurrence: 'Mensuel',  setup: 290, engagement: 6, comm_signature_fix: 100, comm_bonus_fidelite: 100, comm_recurrent_pct: 0.15 },
+    { label: 'Prestige',  montant: 249, recurrence: 'Mensuel',  setup: 0,   engagement: 3, comm_signature_fix: 0,   comm_bonus_fidelite: 0,   comm_recurrent_pct: 0.15 },
   ],
   'Click & Collect': [
-    { label: 'Essentiel', montant: 49,  recurrence: 'Mensuel',  setup: 150, engagement: 6, comm_signature: 0.15, comm_recurrent: 0.12 },
-    { label: 'Pro',       montant: 79,  recurrence: 'Mensuel',  setup: 250, engagement: 6, comm_signature: 0.15, comm_recurrent: 0.12 },
-    { label: 'Premium',   montant: 129, recurrence: 'Mensuel',  setup: 0,   engagement: 3, comm_signature: 0,    comm_recurrent: 0.12 },
+    { label: 'Essentiel', montant: 49,  recurrence: 'Mensuel',  setup: 150, engagement: 6, comm_signature_fix: 50,  comm_bonus_fidelite: 50,  comm_recurrent_pct: 0.15 },
+    { label: 'Pro',       montant: 79,  recurrence: 'Mensuel',  setup: 250, engagement: 6, comm_signature_fix: 100, comm_bonus_fidelite: 100, comm_recurrent_pct: 0.15 },
+    { label: 'Premium',   montant: 129, recurrence: 'Mensuel',  setup: 0,   engagement: 3, comm_signature_fix: 0,   comm_bonus_fidelite: 0,   comm_recurrent_pct: 0.15 },
   ],
   'Mise en conformité RGPD': [
-    { label: 'Diagnostic (offert)',     montant: 0,    recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0,    comm_recurrent: 0 },
-    { label: 'Audit RGPD TPE',          montant: 1490, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
-    { label: 'Audit RGPD+ PME',         montant: 2990, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
-    { label: 'Audit ETI (sur devis)',   montant: 5500, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
+    { label: 'Diagnostic (offert)',     montant: 0,    recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0,    comm_recurrent_pct: 0 },
+    { label: 'Audit RGPD TPE',          montant: 1490, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_fix: 298,  comm_recurrent_pct: 0 },
+    { label: 'Audit RGPD+ PME',         montant: 2990, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_fix: 598,  comm_recurrent_pct: 0 },
+    { label: 'Audit ETI (sur devis)',   montant: 5500, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.20, comm_recurrent_pct: 0 },
   ],
   'DPO externalisé': [
-    { label: 'Abonnement DPO', montant: 189, recurrence: 'Mensuel', setup: 0, engagement: 12, comm_signature: 0, comm_recurrent: 0.10 },
+    { label: 'Abonnement DPO', montant: 189, recurrence: 'Mensuel', setup: 0, engagement: 12, comm_signature_fix: 50, comm_recurrent_pct: 0.10 },
   ],
   'Cybersécurité': [
-    { label: 'Audit de vulnérabilité',  montant: 490,  recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 5,  comm_signature: 0.10, comm_recurrent: 0 },
-    { label: 'Pack Sécurité Essentiel', montant: 990,  recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 10, comm_signature: 0.10, comm_recurrent: 0 },
-    { label: 'Pack Résilience Pro',     montant: 1990, recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 15, comm_signature: 0.10, comm_recurrent: 0 },
+    { label: 'Audit de vulnérabilité',  montant: 490,  recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 5,  comm_signature_fix: 98,  comm_recurrent_pct: 0 },
+    { label: 'Pack Sécurité Essentiel', montant: 990,  recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 10, comm_signature_fix: 198, comm_recurrent_pct: 0 },
+    { label: 'Pack Résilience Pro',     montant: 1990, recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 15, comm_signature_fix: 398, comm_recurrent_pct: 0 },
   ],
   'Options à la carte': [
-    { label: 'Landing page SEO',         montant: 390, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
-    { label: 'Google Ads setup',         montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
-    { label: 'Formation GBP 2h',         montant: 220, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
-    { label: 'Audit concurrentiel',      montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
-    { label: 'Sensibilisation phishing', montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature: 0.10, comm_recurrent: 0 },
-    { label: 'Veille menaces',           montant: 89,  recurrence: 'Mensuel',  setup: 0, engagement: 0, comm_signature: 0,    comm_recurrent: 0.10 },
+    { label: 'Landing page SEO',         montant: 390, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.10, comm_recurrent_pct: 0 },
+    { label: 'Google Ads setup',         montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.10, comm_recurrent_pct: 0 },
+    { label: 'Formation GBP 2h',         montant: 220, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.10, comm_recurrent_pct: 0 },
+    { label: 'Audit concurrentiel',      montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.10, comm_recurrent_pct: 0 },
+    { label: 'Sensibilisation phishing', montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.10, comm_recurrent_pct: 0 },
+    { label: 'Veille menaces',           montant: 89,  recurrence: 'Mensuel',  setup: 0, engagement: 0, comm_signature_pct: 0,    comm_recurrent_pct: 0.10 },
   ],
 };
 const FORMULE_CUSTOM = '__custom__';
 
-// Taux par défaut si la formule sélectionnée n'a pas de taux explicite
-// (formules personnalisées ou anciennes données sans grille rattachée).
-const COMMISSION_FALLBACK = { comm_signature: 0.10, comm_recurrent: 0.10 };
+// Fallback pour les formules personnalisées ou sans grille rattachée
+const COMMISSION_FALLBACK = { comm_signature_pct: 0.10, comm_recurrent_pct: 0.10 };
 
 function contactName(id) {
   const c = state.contacts.find(c => c.id === id);
@@ -358,7 +359,7 @@ async function ensureUserObjectifs() {
   const defaults = [
     { user_id: state.user.id, ordre: 1, label: 'Entrées en contact',     metric_type: 'nouveaux_contacts', contract_type_filter: null, objectif_base: 20,    jours_reference: 20, scale_by_days: true,  taux_commission: 0 },
     { user_id: state.user.id, ordre: 2, label: 'CA généré',              metric_type: 'ca_genere',         contract_type_filter: null, objectif_base: 5000,  jours_reference: 20, scale_by_days: true,  taux_commission: 0 },
-    { user_id: state.user.id, ordre: 3, label: 'Commissions reversées', metric_type: 'commissions', contract_type_filter: null, objectif_base: 600, jours_reference: 20, scale_by_days: true,  taux_commission: 12 },
+    { user_id: state.user.id, ordre: 3, label: 'Commissions reversées (12% du CA)', metric_type: 'commissions', contract_type_filter: null, objectif_base: 600, jours_reference: 20, scale_by_days: true,  taux_commission: 12 },
   ];
   const { error } = await sb.from('objectifs').insert(defaults);
   if (error) { console.error('Erreur création objectifs :', error.message); return; }
@@ -1299,7 +1300,7 @@ function renderTeamGauges(containerEl, users, options = {}) {
         <div class="pu-gauges">
           ${miniGauge('Entrées en contact', contacts, tContacts, '')}
           ${miniGauge('CA généré', ca, tCa, '€')}
-          ${miniGauge('Commissions (12 %)', comm, tComm, '€')}
+          ${miniGauge('Commissions', comm, tComm, '€')}
         </div>
       </div>`;
   }).join('') + (truncated
@@ -1592,13 +1593,21 @@ function computeObjectifValue(o, userId) {
   }
 }
 
-// Calcul des commissions du mois courant pour un utilisateur, selon la
-// grille SAFE-AC-2026 :
-//   • Commission signature = taux_signature × frais_mise_en_place (ou
-//     × montant pour les contrats ponctuels sans MeP — audits, packs…),
-//     versée le mois de signature.
-//   • Commission récurrente = taux_recurrent × montant mensuel pour tous
-//     les contrats actifs ce mois-ci.
+// Calcul des commissions du mois courant pour un utilisateur.
+// Barème SAFEDIRCOM-2026-V1 (12 juin 2026) :
+//
+//   1. Commission à la signature (mois 1) :
+//      → montant fixe (comm_signature_fix) si défini,
+//      → sinon pourcentage du montant HT (comm_signature_pct).
+//
+//   2. Bonus fidélité (mois 4) :
+//      → montant fixe (comm_bonus_fidelite) versé si le client
+//        est toujours actif 3 mois après la date de début.
+//        Clause anti-churn : pas de bonus si résiliation < 90j.
+//
+//   3. Commission récurrente (tous les mois actifs) :
+//      → pourcentage du montant mensuel HT (comm_recurrent_pct).
+//
 function computeMonthlyCommission(userId) {
   if (userId === undefined) userId = state.user?.id;
   const now = new Date();
@@ -1613,29 +1622,39 @@ function computeMonthlyCommission(userId) {
   let total = 0;
   for (const c of contracts) {
     const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
-    const sigPct = preset?.comm_signature ?? COMMISSION_FALLBACK.comm_signature;
-    const recPct = preset?.comm_recurrent ?? COMMISSION_FALLBACK.comm_recurrent;
-
-    const setup   = Number(c.frais_mise_en_place) || 0;
     const montant = Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0));
     const dateDebut = c.date_debut ? new Date(c.date_debut + 'T00:00:00') : null;
     const signedThisMonth = dateDebut && dateDebut >= startMonth && dateDebut <= endMonth;
 
-    // 1. Commission à la signature (one-shot, sur le mois de signature)
+    // --- 1. Commission à la signature (mois de signature uniquement) ---
     if (signedThisMonth) {
-      if (setup > 0) {
-        // SEO Local, Click & Collect : 15 % des MeP
-        total += setup * sigPct;
-      } else if (c.recurrence === 'Ponctuel' && montant > 0) {
-        // Audits RGPD/Cyber, Options à la carte : 10 % du montant
-        total += montant * sigPct;
+      if (preset?.comm_signature_fix != null && preset.comm_signature_fix > 0) {
+        // Montant fixe (SEO, C&C, Cyber, DPO, Audits RGPD TPE/PME)
+        total += preset.comm_signature_fix;
+      } else if (preset?.comm_signature_pct > 0) {
+        // Pourcentage du montant HT (Audit ETI sur devis, options à la carte)
+        total += montant * preset.comm_signature_pct;
+      } else if (!preset && montant > 0) {
+        // Formule personnalisée : fallback 10 %
+        total += montant * COMMISSION_FALLBACK.comm_signature_pct;
       }
     }
 
-    // 2. Commission récurrente (versée chaque mois actif)
+    // --- 2. Bonus fidélité (mois 4 = 3 mois après date_debut) ---
+    if (dateDebut && preset?.comm_bonus_fidelite > 0) {
+      const month4Start = new Date(dateDebut.getFullYear(), dateDebut.getMonth() + 3, 1);
+      const month4End   = new Date(month4Start.getFullYear(), month4Start.getMonth() + 1, 0, 23, 59, 59);
+      const isMonth4 = (startMonth <= month4End && endMonth >= month4Start);
+      // Le contrat doit toujours être actif (pas résilié)
+      if (isMonth4 && c.statut !== 'Résilié') {
+        total += preset.comm_bonus_fidelite;
+      }
+    }
+
+    // --- 3. Commission récurrente (tous les mois actifs) ---
+    const recPct = preset?.comm_recurrent_pct ?? COMMISSION_FALLBACK.comm_recurrent_pct;
     if (c.recurrence === 'Mensuel' && recPct > 0 && dateDebut && dateDebut <= endMonth) {
       const dateEch = c.date_echeance ? new Date(c.date_echeance + 'T23:59:59') : null;
-      // Le contrat est-il actif pendant le mois courant ?
       if (!dateEch || dateEch >= startMonth) {
         total += montant * recPct;
       }
@@ -1729,7 +1748,7 @@ function openObjectifsModal() {
     if (o.metric_type === 'commissions') {
       row += `
     <div class="objectif-row" style="padding-top:0">
-      <label class="mut" style="font-size:.82rem">↳ Calcul automatique selon la grille SAFE-AC-2026 (15 % MeP / 12 % récurrent SEO &amp; C&amp;C ; 10 % audits, cyber, options)</label>
+      <label class="mut" style="font-size:.82rem">↳ Calcul automatique selon barème SAFEDIRCOM-2026-V1 : signature fixe + bonus fidélité mois 4 + 15 % récurrent SEO/C&amp;C, 10 % DPO, 20 % audits</label>
       <span class="unit" style="width:auto;font-family:var(--ff-mono)">grille</span>
     </div>`;
     }
