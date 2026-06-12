@@ -10,6 +10,6 @@
 -- =========================================================
 
 update objectifs
-set label = 'Commissions reversées (12% du CA)',
-    taux_commission = 12
+set label = 'Commissions reversées',
+    taux_commission = 
 where metric_type = 'commissions';
