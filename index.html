@@ -420,6 +420,10 @@
       </div>
     </div>
     <div class="field-row">
+      <div class="field"><label>Frais de mise en service (€ HT) <span class="mut" style="font-weight:400;text-transform:none;letter-spacing:0">facturés au 1ᵉʳ mois</span></label><input id="ct-frais-mise-en-place" type="number" step="0.01" min="0" placeholder="0"></div>
+      <div class="field"><label>Engagement (mois) <span class="mut" style="font-weight:400;text-transform:none;letter-spacing:0">durée minimale</span></label><input id="ct-engagement-mois" type="number" step="1" min="0" placeholder="0"></div>
+    </div>
+    <div class="field-row">
       <div class="field">
         <label class="checkbox-label"><input type="checkbox" id="ct-remise-check"> Remise accordée</label>
         <input id="ct-remise" type="number" step="0.01" min="0" placeholder="Montant de la remise (€ HT)" style="margin-top:8px;display:none">
@@ -556,7 +560,8 @@
     </p>
     <div class="field"><label>Prénom</label><input id="nu-prenom" type="text" placeholder="Prénom de l'utilisateur"></div>
     <div class="field"><label>E-mail *</label><input id="nu-email" type="email" placeholder="prenom@safe-digitalisation.fr"></div>
-    <div class="field"><label>Mot de passe initial * (6 caractères min.)</label><input id="nu-password" type="text" placeholder="À transmettre à l'utilisateur"></div>
+    <div class="field"><label>Mot de passe initial * (8 caractères min.)</label><input id="nu-password" type="text" placeholder="À transmettre à l'utilisateur"></div>
+    <div class="field"><label class="checkbox-label"><input type="checkbox" id="nu-is-admin"> Donner les droits de super-administrateur dès la création</label></div>
     <p class="error" id="nu-error"></p>
     <div class="modal-actions">
       <button class="btn btn-out" id="new-user-cancel-btn">Annuler</button>
