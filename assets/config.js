@@ -19,5 +19,5 @@
 // du code public (GitHub, site déployé, etc.).
 // =========================================================
 
-const SUPABASE_URL = "https://lqszpfutlwyhctpnbdna.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_nHxTlOqfHRHfmeKPB4iajg_43R-tP4J";
+const SUPABASE_URL = "https://tqfkdwashuepzstpxdlw.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_WKbwCZ3aU5KUMVkrZp8Bgw_PcYZDwJk";
