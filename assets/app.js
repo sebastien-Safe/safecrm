@@ -1498,123 +1498,133 @@ function generateBordereauCommission() {
   doc.setDrawColor(200); doc.line(15, y, 195, y); y += 6;
 
   // === SECTION 1 : NOUVELLES AFFAIRES DU MOIS ===
-  const now = new Date();
-  const moisLabel = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
-  // En-tête
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.setTextColor(10, 22, 40);
-  doc.text('BORDEREAU DE COMMISSION', 15, 20);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(80, 80, 80);
-  doc.text(`S@FE Digitalisation — ${moisLabel}`, 15, 27);
-  doc.text(`Commercial : ${u.prenom || '—'}`, 15, 33);
-  doc.text(`Généré le : ${now.toLocaleDateString('fr-FR')}`, 15, 39);
-  doc.line(15, 42, 195, 42);
-
-  let y = 50;
-
-  // Section 1 : Nouvelles affaires du mois
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(10, 22, 40);
   doc.text('1. Commissions à la signature (mois en cours)', 15, y);
   y += 8;
 
-  const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  const newC = state.contracts.filter(c =>
-    c.created_by === userId && c.date_debut &&
-    new Date(c.date_debut) >= startMonth && new Date(c.date_debut) <= endMonth &&
-    ['Contrat en cours', 'Envoyé', 'En attente de signature'].includes(c.statut)
-  );
-
-  doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'bold');
-  ['Contact', 'Prestation', 'Formule', 'Montant HT', 'Commission'].forEach((h, i) => {
-    doc.text(h, 15 + i * 36, y);
+  var startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  var endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  var newC = state.contracts.filter(function(c) {
+    return c.created_by === userId && c.date_debut &&
+      new Date(c.date_debut) >= startMonth && new Date(c.date_debut) <= endMonth &&
+      ['Contrat en cours', 'Envoyé', 'En attente de signature'].includes(c.statut);
   });
-  y += 5;
+
+  // En-tête tableau
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setFillColor(240, 240, 245);
+  doc.rect(15, y - 3.5, W, 5, 'F');
+  var cols1 = [15, 50, 82, 110, 133, 153, 175];
+  var heads1 = ['Contact', 'Prestation', 'Formule', 'Montant HT', 'MeP HT', 'Remise', 'Commission'];
+  heads1.forEach(function(h, i) { doc.text(h, cols1[i], y); });
+  y += 6;
+
   doc.setFont('helvetica', 'normal');
-  let totalSig = 0;
-  newC.forEach(c => {
+  var totalSig = 0;
+  newC.forEach(function(c) {
     if (y > 270) { doc.addPage(); y = 20; }
-    const contact = state.contacts.find(x => x.id === c.contact_id);
-    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
-    const commSig = preset?.comm_signature_fix || (preset?.comm_signature_pct ? Number(c.montant || 0) * preset.comm_signature_pct : 0);
+    var contact = state.contacts.find(function(x) { return x.id === c.contact_id; });
+    var preset = (FORMULE_PRESETS[c.type] || []).find(function(f) { return f.label === c.formule; });
+    var commSig = (preset && preset.comm_signature_fix) || ((preset && preset.comm_signature_pct) ? Math.round(Number(c.montant || 0) * preset.comm_signature_pct * 100) / 100 : 0);
     totalSig += commSig;
-    doc.text((contact?.nom || '—').slice(0, 18), 15, y);
-    doc.text((c.type || '—').slice(0, 18), 51, y);
-    doc.text((c.formule || '—').slice(0, 18), 87, y);
-    doc.text(formatMoney(c.montant), 123, y);
-    doc.text(formatMoney(commSig), 159, y);
+    doc.text(((contact && contact.nom) || '—').slice(0, 20), cols1[0], y);
+    doc.text((c.type || '—').slice(0, 18), cols1[1], y);
+    doc.text((c.formule || '—').slice(0, 16), cols1[2], y);
+    doc.text(formatMoney(c.montant), cols1[3], y);
+    doc.text(formatMoney(c.frais_mise_en_place || 0), cols1[4], y);
+    doc.text(formatMoney(c.remise || 0), cols1[5], y);
+    doc.setTextColor(37, 99, 235);
+    doc.text(formatMoney(commSig), cols1[6], y);
+    doc.setTextColor(80, 80, 80);
     y += 5;
   });
   if (!newC.length) { doc.text('Aucune nouvelle affaire ce mois-ci.', 15, y); y += 5; }
   y += 3;
   doc.setFont('helvetica', 'bold');
-  doc.text(`Sous-total commissions signature : ${formatMoney(totalSig)}`, 15, y);
+  doc.setTextColor(10, 22, 40);
+  doc.text('Sous-total commissions signature HT : ' + formatMoney(totalSig), 15, y);
   y += 10;
 
-  // Section 2 : Récurrent
+  // === SECTION 2 : RÉCURRENT ===
   doc.setFontSize(12);
   doc.text('2. Commissions récurrentes (abonnements actifs)', 15, y);
   y += 8;
-  const recC = state.contracts.filter(c =>
-    c.created_by === userId && c.recurrence === 'Mensuel' && c.statut === 'Contrat en cours'
-  );
-  doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'bold');
-  ['Contact', 'Prestation', 'Formule', 'Mensuel HT', 'Commission/mois'].forEach((h, i) => {
-    doc.text(h, 15 + i * 36, y);
+
+  var recC = state.contracts.filter(function(c) {
+    return c.created_by === userId && c.recurrence === 'Mensuel' && c.statut === 'Contrat en cours';
   });
-  y += 5;
+
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setFillColor(240, 240, 245);
+  doc.rect(15, y - 3.5, W, 5, 'F');
+  var cols2 = [15, 50, 82, 115, 145, 175];
+  var heads2 = ['Contact', 'Prestation', 'Formule', 'Mensuel HT', 'Commission/mois', 'Depuis'];
+  heads2.forEach(function(h, i) { doc.text(h, cols2[i], y); });
+  y += 6;
+
   doc.setFont('helvetica', 'normal');
-  let totalRec = 0;
-  recC.forEach(c => {
+  var totalRec = 0;
+  recC.forEach(function(c) {
     if (y > 270) { doc.addPage(); y = 20; }
-    const contact = state.contacts.find(x => x.id === c.contact_id);
-    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
-    const commRec = preset?.comm_recurrent_pct ? Number(c.montant || 0) * preset.comm_recurrent_pct : 0;
+    var contact = state.contacts.find(function(x) { return x.id === c.contact_id; });
+    var preset = (FORMULE_PRESETS[c.type] || []).find(function(f) { return f.label === c.formule; });
+    var commRec = (preset && preset.comm_recurrent_pct) ? Math.round(Number(c.montant || 0) * preset.comm_recurrent_pct * 100) / 100 : 0;
     totalRec += commRec;
-    doc.text((contact?.nom || '—').slice(0, 18), 15, y);
-    doc.text((c.type || '—').slice(0, 18), 51, y);
-    doc.text((c.formule || '—').slice(0, 18), 87, y);
-    doc.text(formatMoney(c.montant) + '/mois', 123, y);
-    doc.text(formatMoney(commRec) + '/mois', 159, y);
+    doc.text(((contact && contact.nom) || '—').slice(0, 20), cols2[0], y);
+    doc.text((c.type || '—').slice(0, 18), cols2[1], y);
+    doc.text((c.formule || '—').slice(0, 16), cols2[2], y);
+    doc.text(formatMoney(c.montant) + '/mois', cols2[3], y);
+    doc.setTextColor(37, 99, 235);
+    doc.text(formatMoney(commRec) + '/mois', cols2[4], y);
+    doc.setTextColor(80, 80, 80);
+    doc.text(formatDate(c.date_debut), cols2[5], y);
     y += 5;
   });
   if (!recC.length) { doc.text('Aucun abonnement récurrent actif.', 15, y); y += 5; }
   y += 3;
   doc.setFont('helvetica', 'bold');
-  doc.text(`Sous-total commissions récurrentes : ${formatMoney(totalRec)} /mois`, 15, y);
+  doc.setTextColor(10, 22, 40);
+  doc.text('Sous-total commissions récurrentes HT : ' + formatMoney(totalRec) + ' /mois', 15, y);
   y += 12;
 
-  // Total
-  doc.setFontSize(13);
+  // === TOTAL TTC ===
+  var totalHT = totalSig + totalRec;
+  var totalTVA = Math.round(totalHT * 0.2 * 100) / 100;
+  var totalTTC = Math.round((totalHT + totalTVA) * 100) / 100;
+
+  doc.setFontSize(11);
+  doc.setTextColor(10, 22, 40);
+  doc.text('Total commissions HT : ' + formatMoney(totalHT), 15, y);
+  y += 6;
+  doc.text('TVA 20 % : ' + formatMoney(totalTVA), 15, y);
+  y += 6;
+  doc.setFontSize(14);
   doc.setTextColor(37, 99, 235);
-  doc.text(`TOTAL COMMISSIONS DU MOIS : ${formatMoney(totalSig + totalRec)}`, 15, y);
-  y += 8;
+  doc.text('TOTAL TTC À VERSER : ' + formatMoney(totalTTC), 15, y);
+  y += 10;
+
   doc.setFontSize(8);
   doc.setTextColor(100, 100, 100);
-  doc.text('Montants bruts avant charges. Versement dans les 15 jours suivant la clôture du mois.', 15, y);
+  doc.text('Versement dans les 15 jours suivant la clôture du mois.', 15, y);
   y += 4;
-  doc.text(`Barème : SAFEDIRCOM-2026-V1 — En vigueur au 12 juin 2026.`, 15, y);
+  doc.text('Barème : SAFEDIRCOM-2026-V1 — En vigueur au 12 juin 2026.', 15, y);
 
-  // Footer
-  const pages = doc.internal.getNumberOfPages();
-  for (let p = 1; p <= pages; p++) {
+  // === FOOTER ===
+  var pages = doc.internal.getNumberOfPages();
+  for (var p = 1; p <= pages; p++) {
     doc.setPage(p);
     doc.setFontSize(7);
     doc.setTextColor(150, 150, 150);
     doc.text('S@FE Digitalisation — SIRET 104 699 558 00011 — Document confidentiel', 15, 290);
-    doc.text(`Page ${p}/${pages}`, 190, 290, { align: 'right' });
+    doc.text('Page ' + p + '/' + pages, 190, 290, { align: 'right' });
   }
 
-  doc.save(`Bordereau_Commission_${(u.prenom || 'user').replace(/\s+/g, '_')}_${moisLabel.replace(/\s+/g, '_')}.pdf`);
+  var filename = 'Bordereau_Commission_' + (u.prenom || 'user').replace(/\s+/g, '_') + '_' + moisLabel.replace(/\s+/g, '_') + '.pdf';
+  doc.save(filename);
 }
 
 async function loadAdminUsers() {
