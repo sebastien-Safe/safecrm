@@ -834,16 +834,16 @@ function openContractModal(id = null) {
   $('#ct-date-echeance').value = ct?.date_echeance || '';
   $('#ct-statut').value = ct?.statut || 'En attente de signature';
   // Restriction du statut "Terminé"/"Résilié" aux super-administrateurs
-  const statutSelect = $('#ct-statut');
-  statutSelect.disabled = true;
-  if (isAdmin()) {
-    $all('option', statutSelect).forEach(opt => {
-      if (opt.value === 'Résilié') {
-        opt.disabled = false;
-      }
-    });
-    statutSelect.disabled = false;
-    statutSelect.title = 'Admin : seul le statut "Résilié" peut être sélectionné manuellement';
+  // Statut en lecture seule — affiché en texte
+  $('#ct-statut').value = ct?.statut || 'En attente de signature';
+  $('#ct-statut-display').value = ct?.statut || 'En attente de signature';
+  // Bouton Résilier visible uniquement pour les admins
+  const resilierWrap = $('#ct-resilier-wrap');
+  const resilierCheck = $('#ct-resilier');
+  if (resilierWrap) {
+    const canResilier = isAdmin() && ct && ct.statut !== 'Résilié' && ct.statut !== 'Terminé';
+    resilierWrap.style.display = canResilier ? '' : 'none';
+    resilierCheck.checked = false;
   }
   $('#ct-notes').value = ct?.notes || '';
 
@@ -893,7 +893,7 @@ async function saveContract() {
     recurrence: $('#ct-recurrence').value,
     date_debut: $('#ct-date-debut').value || null,
     date_echeance: $('#ct-date-echeance').value || null,
-    statut: $('#ct-statut').value,
+    statut: ($('#ct-resilier')?.checked) ? 'Résilié' : ($('#ct-statut').value || 'En attente de signature'),
     notes: $('#ct-notes').value.trim() || null,
   };
   // Colonnes ajoutées en v13 — on ne les envoie que si elles existent dans le HTML ET en base

@@ -438,7 +438,11 @@
       <div class="field"><label>Échéance / renouvellement <span class="mut" style="font-weight:400;text-transform:none;letter-spacing:0">(auto, modifiable)</span></label><input id="ct-date-echeance" type="date"></div>
     </div>
     <div class="field"><label>Statut</label>
-<select id="ct-statut"><option>En attente de signature</option><option>Envoyé</option><option>Contrat en cours</option><option>Paiement échoué</option><option>Terminé</option><option>Résilié</option></select>
+      <input id="ct-statut-display" type="text" readonly style="font-weight:600">
+      <input id="ct-statut" type="hidden">
+    </div>
+    <div class="field admin-only" id="ct-resilier-wrap" style="display:none">
+      <label class="checkbox-label"><input type="checkbox" id="ct-resilier"> Résilier ce contrat (admin uniquement — action irréversible)</label>
     </div>  
     <div class="field"><label>Notes</label><textarea id="ct-notes"></textarea></div>
     <div class="modal-actions">
