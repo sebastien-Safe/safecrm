@@ -796,11 +796,13 @@ function onFormuleChange(applyPreset = true) {
 
 function updateNetDisplay() {
   const montant = Number($('#ct-montant').value) || 0;
+  const setup = Number($('#ct-frais-mise-en-place')?.value) || 0;
   const remiseActive = $('#ct-remise-check').checked;
   const remise = remiseActive ? (Number($('#ct-remise').value) || 0) : 0;
-  const net = Math.max(0, montant - remise);
+  const setupNet = Math.max(0, setup - remise);
+  const total = setupNet + montant;
   $('#ct-net-wrap').style.display = remiseActive && remise > 0 ? '' : 'none';
-  $('#ct-net-display').value = formatMoney(net);
+  $('#ct-net-display').value = formatMoney(total) + ' (1er mois HT)';
 }
 
 function autoCalcEcheance() {
