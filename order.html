@@ -168,7 +168,7 @@ async function init() {
   // Lecture du contrat par son order_token (accès anon via RLS)
   const { data, error } = await sb
     .from('contracts')
-    .select('id, type, formule, montant, frais_mise_en_place, remise, recurrence, statut')
+    .select('id, type, formule, montant, remise, recurrence, statut')
     .eq('id', ORDER_ID)
     .single();
 
@@ -186,21 +186,21 @@ async function init() {
   const clientName = params.get('name') || '';
   const clientEmail = params.get('email') || '';
 
-  ORDER = {
+ ORDER = {
     id: data.id,
     token: data.id,
-    client_name: clientName,
-    client_email: clientEmail,
+    client_name: params.get('name') || '',
+    client_email: params.get('email') || '',
     client_entreprise: '',
     client_siret: '',
     produit: data.type,
     formule: data.formule,
     montant: data.montant,
+    frais_mise_en_place: 0,
     remise: data.remise,
     recurrence: data.recurrence,
   };
-  render();
-}
+
 function render() {
   const o = ORDER;
   const montant = Number(o.montant || 0);
@@ -283,7 +283,7 @@ async function pay() {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify({ token: ORDER_TOKEN, consent_cgv: true, consent_rgpd: true }),
+      body: JSON.stringify({ contract_id: ORDER_ID, consent_cgv: true, consent_rgpd: true }),
     });
     const data = await resp.json();
     if (!resp.ok || data.error) throw new Error(data.error + (data.details ? ' — ' + data.details : ''));
