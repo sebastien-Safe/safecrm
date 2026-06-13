@@ -160,12 +160,7 @@ if (SUPABASE_ANON_KEY.includes('test') || location.hostname === 'localhost') {
 }
 
 async function init() {
-  if (!ORDER_ID) { 
-    show('#state-error'); 
-    $('#err-title').textContent = 'Lien invalide'; 
-    $('#err-msg').textContent = 'Ce lien ne contient pas de référence de commande.'; 
-    return; 
-  }
+  if (!ORDER_ID) { show('#state-error'); $('#err-title').textContent = 'Lien invalide'; $('#err-msg').textContent = 'Ce lien ne contient pas de référence de commande.'; return; }
 
   if (STATUS === 'success') { show('#state-success'); return; }
   if (STATUS === 'cancel')  { show('#state-cancel');  return; }
@@ -178,10 +173,6 @@ async function init() {
 
   ORDER = data;
   render();
-}
-
-function checkConsent() {
-  $('#btn-pay').disabled = !($('#consent-cgv').checked && $('#consent-rgpd').checked);
 }
 
 function render() {
@@ -230,11 +221,10 @@ function render() {
 
   // Libellé du bouton payer
   if (isRecurrent) {
-    $('#btn-pay').dataset.defaultText = `Accepter et payer ${money(setup + net)} (1ᵉʳ mois) puis ${money(net)}/mois`;
+    $('#btn-pay').textContent = `Accepter et payer ${money(setup + net)} (1ᵉʳ mois) puis ${money(net)}/mois`;
   } else {
-    $('#btn-pay').dataset.defaultText = `Accepter et payer ${money(net)}`;
+    $('#btn-pay').textContent = `Accepter et payer ${money(net)}`;
   }
-  $('#btn-pay').textContent = $('#btn-pay').dataset.defaultText;
 
   // Horodatage
   function updateTime() {
@@ -247,6 +237,9 @@ function render() {
   setInterval(updateTime, 30000);
 
   // Activation du bouton quand les 2 cases sont cochées
+  function checkConsent() {
+    $('#btn-pay').disabled = !($('#consent-cgv').checked && $('#consent-rgpd').checked);
+  }
   $('#consent-cgv').addEventListener('change', checkConsent);
   $('#consent-rgpd').addEventListener('change', checkConsent);
 
@@ -273,14 +266,12 @@ async function pay() {
   } catch (e) {
     err.textContent = 'Erreur : ' + e.message;
     err.style.display = 'block';
-    
-    // On réinitialise proprement le bouton et on vérifie à nouveau l'état des cases à cocher
-    btn.textContent = btn.dataset.defaultText || 'Réessayer le paiement';
-    checkConsent(); 
+    btn.disabled = false;
+    btn.textContent = 'Réessayer le paiement';
   }
 }
 
-init();
+init()
 </script>
 </body>
 </html>
