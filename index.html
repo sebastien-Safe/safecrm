@@ -62,7 +62,7 @@
       <button data-view="contacts" class="navlink">Contacts</button>
       <button data-view="contracts" class="navlink">Contrats</button>
       <button data-view="tasks" class="navlink">Tâches</button>
-      <button data-view="objectifs" class="navlink">Objectifs</button>
+      <button data-view="objectifs" class="navlink">Résultats</button>
       <button data-view="admin" class="navlink admin-only" style="display:none">Administration</button>
     </nav>
     <div class="sidebar-footer">
@@ -120,10 +120,6 @@
       </div>
       <div class="filters">
         <input type="text" id="contacts-search" placeholder="Rechercher (nom, entreprise, e-mail…)">
-        <select id="contacts-filter-statut">
-          <option value="">Tous statuts</option>
-          <option>Prospect</option><option>Client</option><option>Inactif</option>
-        </select>
         <select id="contacts-filter-activite">
           <option value="">Toutes activités</option>
           <option>Digitalisation</option><option>RGPD</option><option>Assurance</option><option>Autre</option>
@@ -132,9 +128,9 @@
       <div class="scrollx">
         <table class="tbl">
           <thead><tr>
-            <th>Nom</th><th>Entreprise</th><th>Activités</th><th>Statut</th><th>Téléphone</th><th>E-mail</th><th>Ajouté par</th><th>Actions</th>
+            <th>Nom</th><th>Entreprise</th><th>Activités</th><th>Téléphone</th><th>E-mail</th><th>Ajouté par</th><th>Actions</th>
           </tr></thead>
-          <tbody id="contacts-tbody"><tr><td colspan="8" class="empty">Chargement…</td></tr></tbody>
+          <tbody id="contacts-tbody"><tr><td colspan="7" class="empty">Chargement…</td></tr></tbody>
         </table>
       </div>
     </section>
@@ -191,10 +187,10 @@
     <section id="view-objectifs" class="view">
       <div class="view-head">
         <div>
-          <h2>Objectifs</h2>
+          <h2>Résultats</h2>
           <p>Suivi en temps réel, ajusté selon vos jours travaillés ce mois-ci</p>
         </div>
-        <button class="btn btn-out" id="btn-edit-objectifs">Modifier mes objectifs</button>
+        
       </div>
       <div class="panel-block jours-block">
         <div>
@@ -208,17 +204,6 @@
         </div>
       </div>
       <div class="gauges-grid" id="gauges-grid"><p class="empty">Chargement…</p></div>
-
-      <!-- Section "Performance de l'équipe" — visible uniquement par les super-administrateurs -->
-      <div class="admin-only" id="team-perf-block" style="display:none;margin-top:32px">
-        <div class="view-head" style="margin-bottom:14px">
-          <div>
-            <h3 style="font-family:var(--ff-disp);font-weight:700;color:#fff;font-size:1.3rem">Performance de l'équipe</h3>
-            <p class="mut" style="margin-top:4px">Jauges nominatives — une ligne par commercial. Visible uniquement pour vous (super-administrateur).</p>
-          </div>
-        </div>
-        <div id="team-perf-grid" class="per-user-grid"></div>
-      </div>
     </section>
 
     <section id="view-admin" class="view">
@@ -230,6 +215,7 @@
       </div>
       <div class="admin-tabs">
         <button class="navlink active" data-admin-tab="overview">Vue d'ensemble</button>
+        <button class="navlink" data-admin-tab="resultats">Résultats</button>
         <button class="navlink" data-admin-tab="per-user">Par utilisateur</button>
         <button class="navlink" data-admin-tab="users">Gestion des utilisateurs</button>
         <button class="navlink" data-admin-tab="rgpd-ko">Contacts RGPD KO</button>
@@ -240,6 +226,38 @@
         <div class="panel-block">
           <h3>Total cumulé — tous utilisateurs</h3>
           <div class="gauges-grid" id="admin-totals-grid"><p class="empty">Chargement…</p></div>
+        </div>
+      </div>
+
+      <div class="admin-panel" id="admin-panel-resultats" style="display:none">
+        <div class="panel-block" id="resultats-team-view">
+          <h3 style="margin-bottom:14px">Performance de l'équipe</h3>
+          <p class="mut" style="margin-bottom:18px">Cliquez sur un utilisateur pour voir le détail de sa production et générer son bordereau de commission.</p>
+          <div id="resultats-team-grid" class="per-user-grid"></div>
+        </div>
+        <div class="panel-block" id="resultats-detail-view" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+            <div>
+              <button class="btn btn-out btn-sm" id="resultats-back-btn">← Retour à l'équipe</button>
+              <span id="resultats-detail-name" style="font-family:var(--ff-disp);font-weight:700;color:#fff;font-size:1.2rem;margin-left:14px"></span>
+            </div>
+            <button class="btn btn-pri btn-sm" id="resultats-bordereau-btn">📄 Bordereau de commission</button>
+          </div>
+          <div id="resultats-detail-gauges" class="gauges-grid" style="margin-bottom:22px"></div>
+          <h4 style="color:#fff;margin-bottom:10px">Affaires du mois en cours</h4>
+          <div class="scrollx">
+            <table class="tbl" id="resultats-detail-new-table">
+              <thead><tr><th>Contact</th><th>Prestation</th><th>Formule</th><th>Montant HT</th><th>MeP</th><th>Remise</th><th>Commission signature</th><th>Date</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <h4 style="color:#fff;margin:18px 0 10px">Abonnements récurrents actifs</h4>
+          <div class="scrollx">
+            <table class="tbl" id="resultats-detail-recurrent-table">
+              <thead><tr><th>Contact</th><th>Prestation</th><th>Formule</th><th>Mensuel HT</th><th>Commission /mois</th><th>Depuis</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -346,12 +364,7 @@
       <div class="field"><label>Forme juridique</label><input id="c-forme-juridique" type="text" placeholder="Ex : SAS, SARL, EI…"></div>
     </div>
     <div class="field"><label>SIRET du client <span class="mut" style="font-weight:400;text-transform:none;letter-spacing:0">(14 chiffres — pour les bons de commande)</span></label><input id="c-siret" type="text" placeholder="14 chiffres" maxlength="20"></div>
-    <div class="field-row">
-      <div class="field"><label>Statut</label>
-        <select id="c-statut"><option>Prospect</option><option>Client</option><option>Inactif</option></select>
-      </div>
-      <div class="field"><label>Source</label><input id="c-source" type="text" placeholder="Ex : GBP, bouche-à-oreille…"></div>
-    </div>
+    <div class="field"><label>Source</label><input id="c-source" type="text" readonly style="opacity:.7"></div>
     <div class="field"><label>Activités concernées</label>
       <div class="checks">
         <label><input type="checkbox" value="Digitalisation" class="c-activite"> Digitalisation / SEO local</label>
@@ -438,7 +451,11 @@
       <div class="field"><label>Échéance / renouvellement <span class="mut" style="font-weight:400;text-transform:none;letter-spacing:0">(auto, modifiable)</span></label><input id="ct-date-echeance" type="date"></div>
     </div>
     <div class="field"><label>Statut</label>
-      <select id="ct-statut"><option>Devis envoyé</option><option>Signé</option><option>En cours</option><option>Terminé</option><option>Résilié</option></select>
+      <input id="ct-statut-display" type="text" readonly style="font-weight:600">
+      <input id="ct-statut" type="hidden">
+    </div>
+    <div class="field admin-only" id="ct-resilier-wrap" style="display:none">
+      <label class="checkbox-label"><input type="checkbox" id="ct-resilier"> Résilier ce contrat (admin uniquement)</label>
     </div>
     <div class="field"><label>Notes</label><textarea id="ct-notes"></textarea></div>
     <div class="modal-actions">
@@ -487,7 +504,7 @@
       <div class="field"><label>Statut</label>
         <select id="t-statut"><option>À faire</option><option>En cours</option><option>Terminé</option></select>
       </div>
-      <div class="field"><label>Assigné à</label><input id="t-assigne" type="text" placeholder="Ex : Sébastien"></div>
+      <div class="field"><label>Assigné à</label><select id="t-assigne"><option value="">— Non assigné —</option></select></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="task-delete-btn" style="display:none;margin-right:auto">Supprimer</button>
