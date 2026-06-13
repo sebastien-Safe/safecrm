@@ -169,7 +169,7 @@ async function init() {
   const { data, error } = await sb
     .from('contracts')
     .select('id, type, formule, montant, frais_mise_en_place, remise, recurrence, engagement_mois, order_token, order_expires_at, order_consent_cgv_at, statut')
-    .eq('order_token', ORDER_TOKEN)
+    .eq('id', ORDER_ID)
     .single();
 
   if (error || !data) {
@@ -178,7 +178,7 @@ async function init() {
     $('#err-msg').textContent = 'Ce lien n\'est associé à aucun bon de commande. Vérifiez auprès de votre chargé de clientèle.';
     return;
   }
-  if (data.order_expires_at && new Date(data.order_expires_at) < new Date()) {
+  {
     show('#state-error');
     $('#err-title').textContent = 'Lien expiré';
     $('#err-msg').textContent = 'Ce bon de commande a expiré. Contactez votre chargé de clientèle pour en recevoir un nouveau.';
