@@ -210,6 +210,8 @@ function render() {
   const remise = Number(o.remise || 0);
   const setupNet = Math.max(0, setup - remise);
   const net = montant;
+  const setupTTC = Math.round(setupNet * 1.2 * 100) / 100;
+  const netTTC = Math.round(net * 1.2 * 100) / 100;
   const isRecurrent = o.recurrence === 'Mensuel';
 
   $('#order-ref').textContent = `Réf. : BON-${o.token.slice(0,8).toUpperCase()} — Valable 7 jours`;
@@ -250,9 +252,9 @@ function render() {
 
   // Libellé du bouton payer
   if (isRecurrent) {
-    $('#btn-pay').textContent = `Accepter et payer ${money(setupNet + net)} (1ᵉʳ mois) puis ${money(net)}/mois`;
+    $('#btn-pay').textContent = `Accepter et payer ${money(setupTTC + netTTC)} TTC (1ᵉʳ mois) puis ${money(netTTC)} TTC/mois`;
   } else {
-    $('#btn-pay').textContent = `Accepter et payer ${money(net)}`;
+    $('#btn-pay').textContent = `Accepter et payer ${money(netTTC)} TTC`;
   }
 
   // Horodatage
