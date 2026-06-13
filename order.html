@@ -165,13 +165,36 @@ async function init() {
   if (STATUS === 'success') { show('#state-success'); return; }
   if (STATUS === 'cancel')  { show('#state-cancel');  return; }
 
-  const { data, error } = await sb.rpc('get_order_by_token', { p_token: ORDER_TOKEN });
-  if (error || !data) { show('#state-error'); $('#err-title').textContent = 'Erreur technique'; $('#err-msg').textContent = error?.message || 'Impossible de charger la commande.'; return; }
-  if (data.error === 'not_found')    { show('#state-error'); $('#err-title').textContent = 'Commande introuvable'; $('#err-msg').textContent = 'Ce lien n\'est associé à aucun bon de commande. Vérifiez auprès de votre chargé de clientèle.'; return; }
-  if (data.error === 'expired')      { show('#state-error'); $('#err-title').textContent = 'Lien expiré'; $('#err-msg').textContent = 'Ce bon de commande a expiré. Contactez votre chargé de clientèle pour en recevoir un nouveau.'; return; }
-  if (data.error === 'already_paid') { show('#state-paid'); return; }
+  const { data, error } = await sb
+    .from('contracts')
+    .select('id, type, formule, montant, remise, recurrence, statut')
+    .eq('id', ORDER_ID)
+    .single();
 
-  ORDER = data;
+  if (error || !data) {
+    show('#state-error');
+    $('#err-title').textContent = 'Commande introuvable';
+    $('#err-msg').textContent = 'Ce lien n\'est associé à aucun bon de commande, ou la commande a déjà été validée.';
+    return;
+  }
+  if (data.statut !== 'En attente de signature' && data.statut !== 'Envoyé') {
+    show('#state-paid');
+    return;
+  }
+
+  ORDER = {
+    id: data.id,
+    client_name: params.get('name') || '',
+    client_email: params.get('email') || '',
+    client_entreprise: params.get('entreprise') || '',
+    client_siret: params.get('siret') || '',
+    produit: data.type,
+    formule: data.formule,
+    montant: data.montant,
+    frais_mise_en_place: data.frais_mise_en_place || 0,
+    remise: data.remise,
+    recurrence: data.recurrence,
+  };
   render();
 }
 

@@ -2338,7 +2338,7 @@ async function sendOrderLink() {
   )) return;
 
   // L'UUID du contrat sert de token (déjà aléatoire et indevinable)
-  const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}`;
+  const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}&entreprise=${encodeURIComponent(contact.entreprise || '')}&siret=${encodeURIComponent(contact.siret || '')}`;
 
   // Copie dans le presse-papier
   try { await navigator.clipboard.writeText(orderUrl); } catch (_) {}
