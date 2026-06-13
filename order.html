@@ -145,8 +145,7 @@ footer a{color:var(--blue)}
 <script>
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const params = new URLSearchParams(location.search);
-const ORDER_ID = params.get('id');
-const ORDER_TOKEN = ORDER_ID;
+const ORDER_TOKEN = params.get('token');
 const STATUS = params.get('status');
 let ORDER = null;
 
@@ -165,53 +164,22 @@ async function init() {
   if (STATUS === 'success') { show('#state-success'); return; }
   if (STATUS === 'cancel')  { show('#state-cancel');  return; }
 
-  // Lecture du contrat par son order_token (accès anon via RLS)
-  const { data, error } = await sb
-    .from('contracts')
-    .select('*')
-    .eq('id', ORDER_ID)
-    .single();
+  const { data, error } = await sb.rpc('get_order_by_token', { p_token: ORDER_TOKEN });
+  if (error || !data) { show('#state-error'); $('#err-title').textContent = 'Erreur technique'; $('#err-msg').textContent = error?.message || 'Impossible de charger la commande.'; return; }
+  if (data.error === 'not_found')    { show('#state-error'); $('#err-title').textContent = 'Commande introuvable'; $('#err-msg').textContent = 'Ce lien n\'est associé à aucun bon de commande. Vérifiez auprès de votre chargé de clientèle.'; return; }
+  if (data.error === 'expired')      { show('#state-error'); $('#err-title').textContent = 'Lien expiré'; $('#err-msg').textContent = 'Ce bon de commande a expiré. Contactez votre chargé de clientèle pour en recevoir un nouveau.'; return; }
+  if (data.error === 'already_paid') { show('#state-paid'); return; }
 
-  if (error || !data) {
-    show('#state-error');
-    $('#err-title').textContent = 'Commande introuvable';
-    $('#err-msg').textContent = 'Ce lien n\'est associé à aucun bon de commande. Vérifiez auprès de votre chargé de clientèle.';
-    return;
-  }
-  if (data.statut !== 'En attente de signature' && data.statut !== 'Envoyé') {
-    show('#state-paid');
-    return;
-  }
-
-  const clientName = params.get('name') || '';
-  const clientEmail = params.get('email') || '';
-
- ORDER = {
-    id: data.id,
-    token: data.id,
-    client_name: params.get('name') || '',
-    client_email: params.get('email') || '',
-    client_entreprise: params.get('entreprise') || '',
-    client_siret: params.get('siret') || '',
-    produit: data.type,
-    formule: data.formule,
-    montant: data.montant,
-    frais_mise_en_place: data.frais_mise_en_place || 0,
-    engagement_mois: data.engagement_mois || 0,
-    remise: data.remise,
-    recurrence: data.recurrence,
-  };
- render();
+  ORDER = data;
+  render();
 }
+
 function render() {
   const o = ORDER;
   const montant = Number(o.montant || 0);
   const setup = Number(o.frais_mise_en_place || 0);
   const remise = Number(o.remise || 0);
-  const setupNet = setup > 0 ? Math.max(0, setup - remise) : 0;
-  const net = setup > 0 ? montant : Math.max(0, montant - remise);
-  const setupTTC = Math.round(setupNet * 1.2 * 100) / 100;
-  const netTTC = Math.round(net * 1.2 * 100) / 100;
+  const net = montant - remise;
   const isRecurrent = o.recurrence === 'Mensuel';
 
   $('#order-ref').textContent = `Réf. : BON-${o.token.slice(0,8).toUpperCase()} — Valable 7 jours`;
@@ -242,8 +210,8 @@ function render() {
   // Total : pour le récurrent, on affiche le 1er mois (setup + net) puis le mensuel
   if (isRecurrent && setup > 0) {
     $('#o-total-label').textContent = '1ᵉʳ mois HT (mise en service + abonnement)';
-    $('#o-total').textContent = money(setupNet + net);
-    $('#o-total-ttc').textContent = money((setupNet + net) * 1.2);
+    $('#o-total').textContent = money(setup + net);
+    $('#o-total-ttc').textContent = money((setup + net) * 1.2);
   } else {
     $('#o-total-label').textContent = isRecurrent ? 'Mensuel HT' : 'Total HT';
     $('#o-total').textContent = money(net) + (isRecurrent ? ' / mois' : '');
@@ -252,9 +220,9 @@ function render() {
 
   // Libellé du bouton payer
   if (isRecurrent) {
-    $('#btn-pay').textContent = `Accepter et payer ${money(setupTTC + netTTC)} TTC (1ᵉʳ mois) puis ${money(netTTC)} TTC/mois`;
+    $('#btn-pay').textContent = `Accepter et payer ${money(setup + net)} (1ᵉʳ mois) puis ${money(net)}/mois`;
   } else {
-    $('#btn-pay').textContent = `Accepter et payer ${money(netTTC)} TTC`;
+    $('#btn-pay').textContent = `Accepter et payer ${money(net)}`;
   }
 
   // Horodatage
@@ -288,7 +256,7 @@ async function pay() {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify({ contract_id: ORDER_ID, consent_cgv: true, consent_rgpd: true }),
+      body: JSON.stringify({ token: ORDER_TOKEN, consent_cgv: true, consent_rgpd: true }),
     });
     const data = await resp.json();
     if (!resp.ok || data.error) throw new Error(data.error + (data.details ? ' — ' + data.details : ''));

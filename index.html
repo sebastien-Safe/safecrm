@@ -94,7 +94,7 @@
       <div class="stats-grid">
         <div class="stat-card"><div class="n" id="stat-contacts">–</div><div class="l">Contacts au total</div></div>
         <div class="stat-card"><div class="n" id="stat-clients">–</div><div class="l">Clients actifs</div></div>
-        <div class="stat-card"><div class="n" id="stat-contracts">–</div><div class="l">Contrat en cours</div></div>
+        <div class="stat-card"><div class="n" id="stat-contracts">–</div><div class="l">Contrats en cours</div></div>
         <div class="stat-card"><div class="n" id="stat-tasks-late">–</div><div class="l">Tâches en retard</div></div>
       </div>
       <div class="dash-grid">
@@ -151,7 +151,7 @@
       <div class="filters">
         <select id="contracts-filter-statut">
           <option value="">Tous statuts</option>
-          <option>Devis envoyé</option><option>Signé</option><option>Contrat en cours</option><option>Terminé</option><option>Résilié</option>
+          <option>Devis envoyé</option><option>Signé</option><option>En cours</option><option>Terminé</option><option>Résilié</option>
         </select>
         <select id="contracts-filter-recurrence">
           <option value="">Toutes récurrences</option>
@@ -208,6 +208,17 @@
         </div>
       </div>
       <div class="gauges-grid" id="gauges-grid"><p class="empty">Chargement…</p></div>
+
+      <!-- Section "Performance de l'équipe" — visible uniquement par les super-administrateurs -->
+      <div class="admin-only" id="team-perf-block" style="display:none;margin-top:32px">
+        <div class="view-head" style="margin-bottom:14px">
+          <div>
+            <h3 style="font-family:var(--ff-disp);font-weight:700;color:#fff;font-size:1.3rem">Performance de l'équipe</h3>
+            <p class="mut" style="margin-top:4px">Jauges nominatives — une ligne par commercial. Visible uniquement pour vous (super-administrateur).</p>
+          </div>
+        </div>
+        <div id="team-perf-grid" class="per-user-grid"></div>
+      </div>
     </section>
 
     <section id="view-admin" class="view">
@@ -219,7 +230,6 @@
       </div>
       <div class="admin-tabs">
         <button class="navlink active" data-admin-tab="overview">Vue d'ensemble</button>
-        <button class="navlink" data-admin-tab="resultats">Résultats</button>
         <button class="navlink" data-admin-tab="per-user">Par utilisateur</button>
         <button class="navlink" data-admin-tab="users">Gestion des utilisateurs</button>
         <button class="navlink" data-admin-tab="rgpd-ko">Contacts RGPD KO</button>
@@ -230,38 +240,6 @@
         <div class="panel-block">
           <h3>Total cumulé — tous utilisateurs</h3>
           <div class="gauges-grid" id="admin-totals-grid"><p class="empty">Chargement…</p></div>
-        </div>
-      </div>
-
-      <div class="admin-panel" id="admin-panel-resultats" style="display:none">
-        <div class="panel-block" id="resultats-team-view">
-          <h3 style="margin-bottom:14px">Performance de l'équipe</h3>
-          <p class="mut" style="margin-bottom:18px">Cliquez sur un utilisateur pour voir le détail de sa production et générer son bordereau de commission.</p>
-          <div id="resultats-team-grid" class="per-user-grid"></div>
-        </div>
-        <div class="panel-block" id="resultats-detail-view" style="display:none">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
-            <div>
-              <button class="btn btn-out btn-sm" id="resultats-back-btn">← Retour à l'équipe</button>
-              <span id="resultats-detail-name" style="font-family:var(--ff-disp);font-weight:700;color:#fff;font-size:1.2rem;margin-left:14px"></span>
-            </div>
-            <button class="btn btn-pri btn-sm" id="resultats-bordereau-btn">📄 Bordereau de commission</button>
-          </div>
-          <div id="resultats-detail-gauges" class="gauges-grid" style="margin-bottom:22px"></div>
-          <h4 style="color:#fff;margin-bottom:10px">Affaires du mois en cours</h4>
-          <div class="scrollx">
-            <table class="tbl" id="resultats-detail-new-table">
-              <thead><tr><th>Contact</th><th>Prestation</th><th>Formule</th><th>Montant HT</th><th>MeP</th><th>Remise</th><th>Commission signature</th><th>Date</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <h4 style="color:#fff;margin:18px 0 10px">Abonnements récurrents actifs</h4>
-          <div class="scrollx">
-            <table class="tbl" id="resultats-detail-recurrent-table">
-              <thead><tr><th>Contact</th><th>Prestation</th><th>Formule</th><th>Mensuel HT</th><th>Commission /mois</th><th>Depuis</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
         </div>
       </div>
 
@@ -460,7 +438,7 @@
       <div class="field"><label>Échéance / renouvellement <span class="mut" style="font-weight:400;text-transform:none;letter-spacing:0">(auto, modifiable)</span></label><input id="ct-date-echeance" type="date"></div>
     </div>
     <div class="field"><label>Statut</label>
-      <select id="ct-statut"><option>Devis envoyé</option><option>Signé</option><option>Contrat en cours</option><option>Terminé</option><option>Résilié</option></select>
+      <select id="ct-statut"><option>Devis envoyé</option><option>Signé</option><option>En cours</option><option>Terminé</option><option>Résilié</option></select>
     </div>
     <div class="field"><label>Notes</label><textarea id="ct-notes"></textarea></div>
     <div class="modal-actions">
