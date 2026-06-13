@@ -1765,7 +1765,8 @@ async function createNewUser() {
         siret: $('#nu-siret')?.value?.trim() || null,
         adresse_pro: $('#nu-adresse')?.value?.trim() || null,
         tva: $('#nu-tva')?.value?.trim() || null,
-    });
+     }),
+      });
 
     let body = null;
     try { body = await resp.json(); } catch (_) {}
