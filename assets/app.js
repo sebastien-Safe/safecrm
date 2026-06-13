@@ -769,8 +769,10 @@ function onFormuleChange(applyPreset = true) {
   if (preset) {
     $('#ct-montant').value = preset.montant;
     $('#ct-recurrence').value = preset.recurrence;
-    $('#ct-frais-mise-en-place').value = preset.setup || 0;
-    $('#ct-engagement-mois').value = preset.engagement || 0;
+    const mepEl = $('#ct-frais-mise-en-place');
+    const engEl = $('#ct-engagement-mois');
+    if (mepEl) mepEl.value = preset.setup || 0;
+    if (engEl) engEl.value = preset.engagement || 0;
     const note = $('#ct-notes');
     const extraNotes = [];
     if (preset.setup) {
@@ -833,8 +835,10 @@ function openContractModal(id = null) {
   $('#ct-type').value = ct?.type || '';
   $('#ct-montant').value = ct?.montant ?? '';
   $('#ct-recurrence').value = ct?.recurrence || 'Ponctuel';
-  $('#ct-frais-mise-en-place').value = ct?.frais_mise_en_place ?? '';
-  $('#ct-engagement-mois').value = ct?.engagement_mois ?? '';
+  const mepField = $('#ct-frais-mise-en-place');
+  const engField = $('#ct-engagement-mois');
+  if (mepField) mepField.value = ct?.frais_mise_en_place ?? '';
+  if (engField) engField.value = ct?.engagement_mois ?? '';
   $('#ct-date-debut').value = ct?.date_debut || '';
   $('#ct-date-echeance').value = ct?.date_echeance || '';
   $('#ct-statut').value = ct?.statut || 'Devis envoyé';
@@ -882,22 +886,23 @@ async function saveContract() {
     ? ($('#ct-formule-custom').value.trim() || null)
     : formuleSel;
   const remise = $('#ct-remise-check').checked ? (Number($('#ct-remise').value) || 0) : 0;
-  const fraisMep = $('#ct-frais-mise-en-place').value;
-  const engagement = $('#ct-engagement-mois').value;
+  const fraisMep = $('#ct-frais-mise-en-place')?.value;
+  const engagement = $('#ct-engagement-mois')?.value;
   const payload = {
     contact_id,
     type,
     formule,
     montant: montant === '' ? null : Number(montant),
     remise,
-    frais_mise_en_place: fraisMep === '' ? null : Number(fraisMep),
-    engagement_mois: engagement === '' ? null : Number(engagement),
     recurrence: $('#ct-recurrence').value,
     date_debut: $('#ct-date-debut').value || null,
     date_echeance: $('#ct-date-echeance').value || null,
     statut: $('#ct-statut').value,
     notes: $('#ct-notes').value.trim() || null,
   };
+  // Colonnes ajoutées en v13 — on ne les envoie que si elles existent dans le HTML ET en base
+  if (fraisMep !== undefined) payload.frais_mise_en_place = fraisMep === '' ? null : Number(fraisMep);
+  if (engagement !== undefined) payload.engagement_mois = engagement === '' ? null : Number(engagement);
   let error;
   if (id) {
     ({ error } = await sb.from('contracts').update(payload).eq('id', id));
