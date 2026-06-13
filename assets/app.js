@@ -835,12 +835,16 @@ function openContractModal(id = null) {
   $('#ct-statut').value = ct?.statut || 'En attente de signature';
   // Restriction du statut "Terminé"/"Résilié" aux super-administrateurs
   const statutSelect = $('#ct-statut');
-  $all('option', statutSelect).forEach(opt => {
-    if (opt.value === 'Terminé' || opt.value === 'Résilié') {
-      opt.disabled = !isAdmin();
-      opt.title = isAdmin() ? '' : 'Seul un super-administrateur peut clôturer un contrat';
-    }
-  });
+  statutSelect.disabled = true;
+  if (isAdmin()) {
+    $all('option', statutSelect).forEach(opt => {
+      if (opt.value === 'Résilié') {
+        opt.disabled = false;
+      }
+    });
+    statutSelect.disabled = false;
+    statutSelect.title = 'Admin : seul le statut "Résilié" peut être sélectionné manuellement';
+  }
   $('#ct-notes').value = ct?.notes || '';
 
   populateFormuleSelect(ct?.type || '', ct?.formule || null);
