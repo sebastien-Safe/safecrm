@@ -176,7 +176,11 @@ async function init() {
   if (data.error === 'expired')      { show('#state-error'); $('#err-title').textContent = 'Lien expiré'; $('#err-msg').textContent = 'Ce bon de commande a expiré. Contactez votre chargé de clientèle pour en recevoir un nouveau.'; return; }
   if (data.error === 'already_paid') { show('#state-paid'); return; }
 
-  ORDER = data;
+  ORDER = data;ORDER = data;
+  console.log("=== DEBUG CONTRAT REÇU ===");
+  console.log(ORDER); 
+  console.log("==========================");
+  render();
   render();
 }
 
