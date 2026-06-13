@@ -4,7 +4,7 @@
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const state = {
+const state
   contacts: [],
   contracts: [],
   tasks: [],
@@ -2017,26 +2017,7 @@ async function sendOrderLink() {
   const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}`;
 
   // Copie dans le presse-papier
-  try { await navigator.clipboard.writeText(orderUrl); } catch (_) {}
-
-  // Ouvre le client mail avec le lien pré-rempli
-  const subject = encodeURIComponent(`Votre bon de commande S@FE — ${contract.type}${contract.formule ? ' ' + contract.formule : ''}`);
-  const body = encodeURIComponent(
-    `Bonjour ${contact.nom || ''},\n\n` +
-    `Veuillez trouver ci-dessous le lien vers votre bon de commande S@FE :\n\n` +
-    `${orderUrl}\n\n` +
-    `Ce lien vous permettra de :\n` +
-    `• Consulter le récapitulatif de votre commande\n` +
-    `• Lire et accepter nos Conditions Générales de Vente\n` +
-    `• Procéder au paiement sécurisé en ligne (CB / SEPA)\n\n` +
-    `Pour toute question, n'hésitez pas à me contacter.\n\n` +
-    `Cordialement,\n` +
-    `${state.profile?.prenom || 'L\'équipe S@FE'}\n` +
-    `S@FE Digitalisation\n` +
-    `01 84 16 26 29 — contact@safe-digitalisation.fr`
-  );
-  window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
-
+  const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}`;
   alert(
     `✅ Lien créé et copié dans le presse-papier !\n\n` +
     `Votre client mail s'est ouvert avec le lien pré-rempli.\n` +
