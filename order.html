@@ -208,7 +208,8 @@ function render() {
   const montant = Number(o.montant || 0);
   const setup = Number(o.frais_mise_en_place || 0);
   const remise = Number(o.remise || 0);
-  const net = montant - remise;
+  const setupNet = Math.max(0, setup - remise);
+  const net = montant;
   const isRecurrent = o.recurrence === 'Mensuel';
 
   $('#order-ref').textContent = `Réf. : BON-${o.token.slice(0,8).toUpperCase()} — Valable 7 jours`;
