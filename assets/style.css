@@ -361,3 +361,7 @@ button{font-family:var(--ff-body)}
 
 /* Modales TOTP au-dessus de la modale Profil (de laquelle elles sont ouvertes) */
 #totp-enroll-modal, #totp-challenge-modal{z-index:110}
+
+/* --- Blocs utilisateurs cliquables (onglet Résultats) --- */
+.per-user-row.clickable{cursor:pointer}
+.per-user-row.clickable:hover{border-color:var(--gold);box-shadow:0 4px 16px rgba(245,158,11,.15)}

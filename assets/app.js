@@ -60,9 +60,9 @@ function isThisMonth(dateStr) {
 }
 
 function gaugeColor(pct) {
-  if (pct < 50) return 'var(--alert)';
-  if (pct < 75) return 'var(--gold)';
-  return 'var(--ok)';
+  if (pct < 50) return '#2563eb';
+  if (pct < 75) return '#3b82f6';
+  return '#f59e0b';
 }
 
 function gaugeSvg(pct) {
@@ -70,17 +70,23 @@ function gaugeSvg(pct) {
   const r = 42;
   const c = 2 * Math.PI * r;
   const offset = c * (1 - clamped / 100);
-  const color = gaugeColor(pct);
   return `<svg viewBox="0 0 100 100" class="gauge-svg">
+    <defs>
+      <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0a1628"/>
+        <stop offset="40%" stop-color="#2563eb"/>
+        <stop offset="100%" stop-color="#f59e0b"/>
+      </linearGradient>
+    </defs>
     <circle cx="50" cy="50" r="${r}" class="gauge-track"></circle>
-    <circle cx="50" cy="50" r="${r}" class="gauge-fill" style="stroke:${color};stroke-dasharray:${c.toFixed(2)};stroke-dashoffset:${offset.toFixed(2)}"></circle>
-    <text x="50" y="50" class="gauge-text" style="fill:${color}">${Math.round(pct)}%</text>
+    <circle cx="50" cy="50" r="${r}" class="gauge-fill" style="stroke:url(#gaugeGrad);stroke-dasharray:${c.toFixed(2)};stroke-dashoffset:${offset.toFixed(2)}"></circle>
+    <text x="50" y="50" class="gauge-text" style="fill:#fff">${Math.round(pct)}%</text>
   </svg>`;
 }
 
 const CONTACT_STATUT_BADGE = { 'Prospect': 'badge-blue', 'Client': 'badge-green', 'Inactif': 'badge-gray' };
 const CONTRACT_STATUT_BADGE = {
-  'En attente de signature': 'badge-gray', 'Contrat en cours': 'badge-blue', 'Contrat en cours': 'badge-gold',
+  'Devis envoyé': 'badge-gray', 'Signé': 'badge-blue', 'En cours': 'badge-gold',
   'Terminé': 'badge-green', 'Résilié': 'badge-red'
 };
 const PRIORITY_BADGE = { 'Basse': 'badge-gray', 'Normale': 'badge-blue', 'Haute': 'badge-red' };
@@ -433,7 +439,7 @@ function renderDashboard() {
 
   $('#stat-contacts').textContent = state.contacts.length;
   $('#stat-clients').textContent = state.contacts.filter(c => c.statut === 'Client').length;
-  $('#stat-contracts').textContent = state.contracts.filter(c => ['Contrat en cours', 'Contrat en cours'].includes(c.statut)).length;
+  $('#stat-contracts').textContent = state.contracts.filter(c => ['Signé', 'En cours'].includes(c.statut)).length;
   $('#stat-tasks-late').textContent = state.tasks.filter(t => isOverdue(t.echeance, t.statut)).length;
 
   // Tâches à venir / en retard
@@ -775,7 +781,20 @@ function onFormuleChange(applyPreset = true) {
     const engEl = $('#ct-engagement-mois');
     if (mepEl) mepEl.value = preset.setup || 0;
     if (engEl) engEl.value = preset.engagement || 0;
-    ;
+    const note = $('#ct-notes');
+    const extraNotes = [];
+    if (preset.setup) {
+      extraNotes.push(`Frais de mise en place : ${preset.setup} € HT (facturés au 1er mois, non remboursables).`);
+    }
+    if (preset.engagement) {
+      extraNotes.push(`Engagement minimum : ${preset.engagement} mois.`);
+    }
+    extraNotes.forEach(n => {
+      const key = n.split(' :')[0];
+      if (!note.value.includes(key)) {
+        note.value = note.value ? note.value + '\n' + n : n;
+      }
+    });
   }
   updateNetDisplay();
   autoCalcEcheance();
@@ -783,13 +802,11 @@ function onFormuleChange(applyPreset = true) {
 
 function updateNetDisplay() {
   const montant = Number($('#ct-montant').value) || 0;
-  const setup = Number($('#ct-frais-mise-en-place')?.value) || 0;
   const remiseActive = $('#ct-remise-check').checked;
   const remise = remiseActive ? (Number($('#ct-remise').value) || 0) : 0;
-  const setupNet = Math.max(0, setup - remise);
-  const total = setupNet + montant;
+  const net = Math.max(0, montant - remise);
   $('#ct-net-wrap').style.display = remiseActive && remise > 0 ? '' : 'none';
-  $('#ct-net-display').value = formatMoney(total) + ' (1er mois HT)';
+  $('#ct-net-display').value = formatMoney(net);
 }
 
 function autoCalcEcheance() {
@@ -832,19 +849,15 @@ function openContractModal(id = null) {
   if (engField) engField.value = ct?.engagement_mois ?? '';
   $('#ct-date-debut').value = ct?.date_debut || '';
   $('#ct-date-echeance').value = ct?.date_echeance || '';
-  $('#ct-statut').value = ct?.statut || 'En attente de signature';
+  $('#ct-statut').value = ct?.statut || 'Devis envoyé';
   // Restriction du statut "Terminé"/"Résilié" aux super-administrateurs
-  // Statut en lecture seule — affiché en texte
-  $('#ct-statut').value = ct?.statut || 'En attente de signature';
-  $('#ct-statut-display').value = ct?.statut || 'En attente de signature';
-  // Bouton Résilier visible uniquement pour les admins
-  const resilierWrap = $('#ct-resilier-wrap');
-  const resilierCheck = $('#ct-resilier');
-  if (resilierWrap) {
-    const canResilier = isAdmin() && ct && ct.statut !== 'Résilié' && ct.statut !== 'Terminé';
-    resilierWrap.style.display = canResilier ? '' : 'none';
-    resilierCheck.checked = false;
-  }
+  const statutSelect = $('#ct-statut');
+  $all('option', statutSelect).forEach(opt => {
+    if (opt.value === 'Terminé' || opt.value === 'Résilié') {
+      opt.disabled = !isAdmin();
+      opt.title = isAdmin() ? '' : 'Seul un super-administrateur peut clôturer un contrat';
+    }
+  });
   $('#ct-notes').value = ct?.notes || '';
 
   populateFormuleSelect(ct?.type || '', ct?.formule || null);
@@ -893,7 +906,7 @@ async function saveContract() {
     recurrence: $('#ct-recurrence').value,
     date_debut: $('#ct-date-debut').value || null,
     date_echeance: $('#ct-date-echeance').value || null,
-    statut: ($('#ct-resilier')?.checked) ? 'Résilié' : ($('#ct-statut').value || 'En attente de signature'),
+    statut: $('#ct-statut').value,
     notes: $('#ct-notes').value.trim() || null,
   };
   // Colonnes ajoutées en v13 — on ne les envoie que si elles existent dans le HTML ET en base
@@ -935,7 +948,7 @@ function taskCardHtml(t) {
   const overdue = isOverdue(t.echeance, t.statut);
   let nextBtn = '';
   if (t.statut === 'À faire') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|En cours">→ En cours</button>`;
-  if (t.statut === 'Contrat en cours') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|Terminé">→ Terminé</button>`;
+  if (t.statut === 'En cours') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|Terminé">→ Terminé</button>`;
   if (t.statut === 'Terminé') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|À faire">↺ Réouvrir</button>`;
   const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
   const rdvLine = isRdv && (t.rdv_date || t.rdv_heure || t.rdv_lieu)
@@ -961,10 +974,10 @@ function taskCardHtml(t) {
 
 function renderTasks() {
   const list = getFilteredTasks();
-  const cols = { 'À faire': [], 'Contrat en cours': [], 'Terminé': [] };
+  const cols = { 'À faire': [], 'En cours': [], 'Terminé': [] };
   list.forEach(t => { (cols[t.statut] || cols['À faire']).push(t); });
   $('#kanban-todo').innerHTML = cols['À faire'].length ? cols['À faire'].map(taskCardHtml).join('') : '<p class="empty">Aucune tâche.</p>';
-  $('#kanban-inprogress').innerHTML = cols['Contrat en cours'].length ? cols['Contrat en cours'].map(taskCardHtml).join('') : '<p class="empty">Aucune tâche.</p>';
+  $('#kanban-inprogress').innerHTML = cols['En cours'].length ? cols['En cours'].map(taskCardHtml).join('') : '<p class="empty">Aucune tâche.</p>';
   $('#kanban-done').innerHTML = cols['Terminé'].length ? cols['Terminé'].map(taskCardHtml).join('') : '<p class="empty">Aucune tâche.</p>';
 }
 
@@ -1190,12 +1203,13 @@ function currentJoursTravailles() {
 function switchAdminTab(tab) {
   state.adminView = tab;
   $all('[data-admin-tab]').forEach(b => b.classList.toggle('active', b.dataset.adminTab === tab));
-  ['overview', 'per-user', 'users', 'rgpd-ko', 'registre'].forEach(t => {
+  ['overview', 'resultats', 'per-user', 'users', 'rgpd-ko', 'registre'].forEach(t => {
     const el = $('#admin-panel-' + t);
     if (el) el.style.display = (t === tab) ? '' : 'none';
   });
   if (tab === 'users') loadAdminUsers().then(renderAdminUsers);
   if (tab === 'overview') renderAdminOverview();
+  if (tab === 'resultats') renderResultats();
   if (tab === 'per-user') renderAdminPerUser();
   if (tab === 'rgpd-ko') renderAdminRgpdKo();
   if (tab === 'registre') renderRegistreRGPD();
@@ -1251,16 +1265,15 @@ function renderAdminOverview() {
 // Mini-jauge horizontale (barre) pour la vue admin par utilisateur
 function miniGauge(label, value, target, unit) {
   const pct = target > 0 ? Math.min(100, (value / target) * 100) : (value > 0 ? 100 : 0);
-  const color = gaugeColor(pct);
   const valLabel = unit === '€' ? formatMoney(value) : value;
   const tgtLabel = unit === '€' ? formatMoney(target) : target;
   return `
     <div class="mini-gauge">
       <div class="mg-head">
         <span class="mg-label">${escapeHtml(label)}</span>
-        <span class="mg-values" style="color:${color}">${valLabel} <span class="mut">/ ${tgtLabel}</span></span>
+        <span class="mg-values" style="color:#f59e0b">${valLabel} <span class="mut">/ ${tgtLabel}</span></span>
       </div>
-      <div class="mg-bar"><div class="mg-fill" style="width:${pct.toFixed(0)}%;background:${color}"></div></div>
+      <div class="mg-bar"><div class="mg-fill" style="width:${pct.toFixed(0)}%;background:linear-gradient(90deg,#0a1628,#2563eb,#f59e0b)"></div></div>
     </div>`;
 }
 
@@ -1269,6 +1282,7 @@ function miniGauge(label, value, target, unit) {
 function renderTeamGauges(containerEl, users, options = {}) {
   if (!containerEl) return;
   const limit = options.limit || 10;
+  const clickable = options.clickable || false;
   if (!users.length) {
     containerEl.innerHTML = '<p class="empty">Aucun utilisateur connu.</p>';
     return;
@@ -1286,12 +1300,12 @@ function renderTeamGauges(containerEl, users, options = {}) {
     const tContacts = targetFor(u.id, 'nouveaux_contacts');
     const tCa       = targetFor(u.id, 'ca_genere');
     const tComm     = targetFor(u.id, 'commissions');
-    const actifs   = state.contracts.filter(c => c.created_by === u.id && ['Contrat en cours', 'Contrat en cours'].includes(c.statut)).length;
+    const actifs   = state.contracts.filter(c => c.created_by === u.id && ['Contrat en cours', 'Envoyé'].includes(c.statut)).length;
     const photo = u.photo_url
       ? `<div class="pu-avatar" style="background-image:url('${escapeHtml(u.photo_url)}')"></div>`
       : `<div class="pu-avatar pu-avatar-letter">${escapeHtml((u.prenom || '?').charAt(0).toUpperCase())}</div>`;
     return `
-      <div class="per-user-row">
+      <div class="per-user-row${clickable ? ' clickable' : ''}" ${clickable ? `data-user-id="${u.id}"` : ''}>
         <div class="pu-identity">
           ${photo}
           <div>
@@ -1308,6 +1322,13 @@ function renderTeamGauges(containerEl, users, options = {}) {
   }).join('') + (truncated
     ? `<p class="mut" style="font-size:.82rem;margin-top:10px">⚠️ ${users.length - limit} utilisateur(s) supplémentaire(s) non affiché(s) — affichage limité à ${limit}.</p>`
     : '');
+
+  // Gestion du clic sur les blocs utilisateurs
+  if (clickable) {
+    containerEl.querySelectorAll('.per-user-row.clickable').forEach(row => {
+      row.addEventListener('click', () => openResultatsDetail(row.dataset.userId));
+    });
+  }
 }
 
 function renderAdminPerUser() {
@@ -1318,6 +1339,230 @@ function renderAdminPerUser() {
   const countEl = $('#admin-per-user-count');
   if (countEl) countEl.textContent = allUsers.length;
   renderTeamGauges(grid, allUsers);
+}
+
+// =========================================================
+// ONGLET RÉSULTATS (admin) — blocs cliquables + détail + bordereau
+// =========================================================
+
+function renderResultats() {
+  const grid = $('#resultats-team-grid');
+  if (!grid) return;
+  $('#resultats-team-view').style.display = '';
+  $('#resultats-detail-view').style.display = 'none';
+  const allUsers = Object.values(state.profilesById)
+    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
+  renderTeamGauges(grid, allUsers, { clickable: true });
+}
+
+function openResultatsDetail(userId) {
+  const u = state.profilesById[userId];
+  if (!u) return;
+  $('#resultats-team-view').style.display = 'none';
+  $('#resultats-detail-view').style.display = '';
+  $('#resultats-detail-name').textContent = u.prenom || u.email || '—';
+
+  // Jauges individuelles
+  const gaugesEl = $('#resultats-detail-gauges');
+  const contacts = computeObjectifValue({ metric_type: 'nouveaux_contacts' }, userId);
+  const ca = computeObjectifValue({ metric_type: 'ca_genere' }, userId);
+  const comm = computeMonthlyCommission(userId);
+  const tContacts = getObjectifTarget(userId, 'nouveaux_contacts');
+  const tCa = getObjectifTarget(userId, 'ca_genere');
+  const tComm = getObjectifTarget(userId, 'commissions');
+  gaugesEl.innerHTML = [
+    { label: 'Entrées en contact', val: contacts, tgt: tContacts, unit: '' },
+    { label: 'CA généré', val: ca, tgt: tCa, unit: '€' },
+    { label: 'Commissions', val: comm, tgt: tComm, unit: '€' },
+  ].map(g => {
+    const pct = g.tgt > 0 ? Math.min(100, (g.val / g.tgt) * 100) : (g.val > 0 ? 100 : 0);
+    return `<div class="gauge-card">
+      <div class="gauge-wrap">${gaugeSvg(pct)}</div>
+      <h4>${escapeHtml(g.label)}</h4>
+      <p class="mut">${g.unit === '€' ? formatMoney(g.val) : g.val} / ${g.unit === '€' ? formatMoney(g.tgt) : g.tgt}</p>
+    </div>`;
+  }).join('');
+
+  // Contrats du mois en cours (nouvelles affaires)
+  const now = new Date();
+  const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  const newContracts = state.contracts.filter(c =>
+    c.created_by === userId &&
+    c.date_debut &&
+    new Date(c.date_debut + 'T00:00:00') >= startMonth &&
+    new Date(c.date_debut + 'T00:00:00') <= endMonth &&
+    ['Contrat en cours', 'Envoyé', 'En attente de signature'].includes(c.statut)
+  );
+  const newTbody = $('#resultats-detail-new-table tbody');
+  newTbody.innerHTML = newContracts.length ? newContracts.map(c => {
+    const contact = state.contacts.find(x => x.id === c.contact_id);
+    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
+    const commSig = preset?.comm_signature_fix || (preset?.comm_signature_pct ? Math.round(Number(c.montant || 0) * preset.comm_signature_pct * 100) / 100 : 0);
+    return `<tr>
+      <td>${escapeHtml(contact?.nom || '—')}</td>
+      <td>${escapeHtml(c.type || '—')}</td>
+      <td>${escapeHtml(c.formule || '—')}</td>
+      <td class="num">${formatMoney(c.montant)}</td>
+      <td class="num">${formatMoney(c.frais_mise_en_place || 0)}</td>
+      <td class="num">${formatMoney(c.remise || 0)}</td>
+      <td class="num" style="color:#f59e0b;font-weight:600">${formatMoney(commSig)}</td>
+      <td class="nowrap">${formatDate(c.date_debut)}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="8" class="empty">Aucune nouvelle affaire ce mois-ci</td></tr>';
+
+  // Abonnements récurrents actifs
+  const recurContracts = state.contracts.filter(c =>
+    c.created_by === userId &&
+    c.recurrence === 'Mensuel' &&
+    ['Contrat en cours'].includes(c.statut)
+  );
+  const recTbody = $('#resultats-detail-recurrent-table tbody');
+  recTbody.innerHTML = recurContracts.length ? recurContracts.map(c => {
+    const contact = state.contacts.find(x => x.id === c.contact_id);
+    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
+    const commRec = preset?.comm_recurrent_pct ? Math.round(Number(c.montant || 0) * preset.comm_recurrent_pct * 100) / 100 : 0;
+    return `<tr>
+      <td>${escapeHtml(contact?.nom || '—')}</td>
+      <td>${escapeHtml(c.type || '—')}</td>
+      <td>${escapeHtml(c.formule || '—')}</td>
+      <td class="num">${formatMoney(c.montant)}/mois</td>
+      <td class="num" style="color:#f59e0b;font-weight:600">${formatMoney(commRec)}/mois</td>
+      <td class="nowrap">${formatDate(c.date_debut)}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="6" class="empty">Aucun abonnement récurrent actif</td></tr>';
+
+  // Stocker l'userId pour le bordereau
+  state._resultatsUserId = userId;
+}
+
+function getObjectifTarget(userId, metricType) {
+  const o = state.objectifs.find(o => o.user_id === userId && o.metric_type === metricType);
+  return o ? computeObjectifTarget(o) : 0;
+}
+
+function generateBordereauCommission() {
+  const userId = state._resultatsUserId;
+  const u = state.profilesById[userId];
+  if (!u || !jsPDF) { alert('Données insuffisantes ou jsPDF non chargé.'); return; }
+
+  const now = new Date();
+  const moisLabel = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+  // En-tête
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(10, 22, 40);
+  doc.text('BORDEREAU DE COMMISSION', 15, 20);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.text(`S@FE Digitalisation — ${moisLabel}`, 15, 27);
+  doc.text(`Commercial : ${u.prenom || '—'}`, 15, 33);
+  doc.text(`Généré le : ${now.toLocaleDateString('fr-FR')}`, 15, 39);
+  doc.line(15, 42, 195, 42);
+
+  let y = 50;
+
+  // Section 1 : Nouvelles affaires du mois
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(10, 22, 40);
+  doc.text('1. Commissions à la signature (mois en cours)', 15, y);
+  y += 8;
+
+  const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const newC = state.contracts.filter(c =>
+    c.created_by === userId && c.date_debut &&
+    new Date(c.date_debut) >= startMonth && new Date(c.date_debut) <= endMonth &&
+    ['Contrat en cours', 'Envoyé', 'En attente de signature'].includes(c.statut)
+  );
+
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'bold');
+  ['Contact', 'Prestation', 'Formule', 'Montant HT', 'Commission'].forEach((h, i) => {
+    doc.text(h, 15 + i * 36, y);
+  });
+  y += 5;
+  doc.setFont('helvetica', 'normal');
+  let totalSig = 0;
+  newC.forEach(c => {
+    if (y > 270) { doc.addPage(); y = 20; }
+    const contact = state.contacts.find(x => x.id === c.contact_id);
+    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
+    const commSig = preset?.comm_signature_fix || (preset?.comm_signature_pct ? Number(c.montant || 0) * preset.comm_signature_pct : 0);
+    totalSig += commSig;
+    doc.text((contact?.nom || '—').slice(0, 18), 15, y);
+    doc.text((c.type || '—').slice(0, 18), 51, y);
+    doc.text((c.formule || '—').slice(0, 18), 87, y);
+    doc.text(formatMoney(c.montant), 123, y);
+    doc.text(formatMoney(commSig), 159, y);
+    y += 5;
+  });
+  if (!newC.length) { doc.text('Aucune nouvelle affaire ce mois-ci.', 15, y); y += 5; }
+  y += 3;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Sous-total commissions signature : ${formatMoney(totalSig)}`, 15, y);
+  y += 10;
+
+  // Section 2 : Récurrent
+  doc.setFontSize(12);
+  doc.text('2. Commissions récurrentes (abonnements actifs)', 15, y);
+  y += 8;
+  const recC = state.contracts.filter(c =>
+    c.created_by === userId && c.recurrence === 'Mensuel' && c.statut === 'Contrat en cours'
+  );
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'bold');
+  ['Contact', 'Prestation', 'Formule', 'Mensuel HT', 'Commission/mois'].forEach((h, i) => {
+    doc.text(h, 15 + i * 36, y);
+  });
+  y += 5;
+  doc.setFont('helvetica', 'normal');
+  let totalRec = 0;
+  recC.forEach(c => {
+    if (y > 270) { doc.addPage(); y = 20; }
+    const contact = state.contacts.find(x => x.id === c.contact_id);
+    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
+    const commRec = preset?.comm_recurrent_pct ? Number(c.montant || 0) * preset.comm_recurrent_pct : 0;
+    totalRec += commRec;
+    doc.text((contact?.nom || '—').slice(0, 18), 15, y);
+    doc.text((c.type || '—').slice(0, 18), 51, y);
+    doc.text((c.formule || '—').slice(0, 18), 87, y);
+    doc.text(formatMoney(c.montant) + '/mois', 123, y);
+    doc.text(formatMoney(commRec) + '/mois', 159, y);
+    y += 5;
+  });
+  if (!recC.length) { doc.text('Aucun abonnement récurrent actif.', 15, y); y += 5; }
+  y += 3;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Sous-total commissions récurrentes : ${formatMoney(totalRec)} /mois`, 15, y);
+  y += 12;
+
+  // Total
+  doc.setFontSize(13);
+  doc.setTextColor(37, 99, 235);
+  doc.text(`TOTAL COMMISSIONS DU MOIS : ${formatMoney(totalSig + totalRec)}`, 15, y);
+  y += 8;
+  doc.setFontSize(8);
+  doc.setTextColor(100, 100, 100);
+  doc.text('Montants bruts avant charges. Versement dans les 15 jours suivant la clôture du mois.', 15, y);
+  y += 4;
+  doc.text(`Barème : SAFEDIRCOM-2026-V1 — En vigueur au 12 juin 2026.`, 15, y);
+
+  // Footer
+  const pages = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p);
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 150);
+    doc.text('S@FE Digitalisation — SIRET 104 699 558 00011 — Document confidentiel', 15, 290);
+    doc.text(`Page ${p}/${pages}`, 190, 290, { align: 'right' });
+  }
+
+  doc.save(`Bordereau_Commission_${(u.prenom || 'user').replace(/\s+/g, '_')}_${moisLabel.replace(/\s+/g, '_')}.pdf`);
 }
 
 async function loadAdminUsers() {
@@ -1573,20 +1818,20 @@ function computeObjectifValue(o, userId) {
     case 'nouveaux_contacts':
       return state.contacts.filter(c => filterContact(c) && isThisMonth(c.created_at)).length;
     case 'contrats_total':
-      return state.contracts.filter(c => filterContract(c) && ['Contrat en cours', 'Contrat en cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
+      return state.contracts.filter(c => filterContract(c) && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
     case 'contrats_type':
-      return state.contracts.filter(c => filterContract(c) && c.type === o.contract_type_filter && ['Contrat en cours', 'Contrat en cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
+      return state.contracts.filter(c => filterContract(c) && c.type === o.contract_type_filter && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
     case 'taches_terminees':
       // Pas de created_by sur tasks : on retombe sur l'utilisateur courant uniquement
       if (userId === 'all') return state.tasks.filter(t => t.statut === 'Terminé' && isThisMonth(t.termine_at || t.created_at)).length;
       return state.tasks.filter(t => t.statut === 'Terminé' && isThisMonth(t.termine_at || t.created_at)).length;
     case 'ca_recurrent':
       return state.contracts
-        .filter(c => filterContract(c) && c.recurrence === 'Mensuel' && ['Contrat en cours', 'Contrat en cours'].includes(c.statut))
+        .filter(c => filterContract(c) && c.recurrence === 'Mensuel' && ['Signé', 'En cours'].includes(c.statut))
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     case 'ca_genere':
       return state.contracts
-        .filter(c => filterContract(c) && ['Contrat en cours', 'Contrat en cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at))
+        .filter(c => filterContract(c) && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at))
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     case 'commissions': {
       return computeMonthlyCommission(userId);
@@ -1619,7 +1864,7 @@ function computeMonthlyCommission(userId) {
 
   const contracts = state.contracts.filter(c =>
     (userId === 'all' || c.created_by === userId) &&
-    ['Contrat en cours', 'Contrat en cours', 'Terminé'].includes(c.statut)
+    ['Signé', 'En cours', 'Terminé'].includes(c.statut)
   );
 
   let total = 0;
@@ -1709,18 +1954,6 @@ function renderObjectifs() {
 
   // 🏆 Si l'objectif commission est atteint ce mois-ci, on lance le feu d'artifice
   checkAndCelebrateCommissions();
-
-  // 👥 Pour les super-admins : afficher en plus la grille nominative de toute l'équipe
-  const teamBlock = $('#team-perf-block');
-  const teamGrid  = $('#team-perf-grid');
-  if (isAdmin() && teamBlock && teamGrid) {
-    teamBlock.style.display = 'block';
-    const allUsers = Object.values(state.profilesById)
-      .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
-    renderTeamGauges(teamGrid, allUsers);
-  } else if (teamBlock) {
-    teamBlock.style.display = 'none';
-  }
 }
 
 async function saveJoursTravailles() {
@@ -2003,11 +2236,12 @@ async function sendOrderLink() {
     `Créer un lien de paiement pour ${contact.nom || '—'} (${contact.email}) ?\n\n` +
     `Produit : ${contract.type || '—'} — ${contract.formule || '—'}\n` +
     `Montant : ${Number(contract.montant || 0).toFixed(2)} € HT${contract.recurrence === 'Mensuel' ? ' / mois' : ''}\n\n` +
-    `Un lien sera généré. Le contrat doit rester en statut "En attente de signature" pour que le client puisse y accéder.`
+    `Un lien sera généré. Le contrat doit rester en statut "Devis envoyé" pour que le client puisse y accéder.`
   )) return;
 
   // L'UUID du contrat sert de token (déjà aléatoire et indevinable)
-const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}&entreprise=${encodeURIComponent(contact.entreprise || '')}&siret=${encodeURIComponent(contact.siret || '')}`;
+  const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}`;
+
   // Copie dans le presse-papier
   try { await navigator.clipboard.writeText(orderUrl); } catch (_) {}
 
@@ -2028,7 +2262,7 @@ const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeU
     `01 84 16 26 29 — contact@safe-digitalisation.fr`
   );
   window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
-await sb.from('contracts').update({ statut: 'Envoyé' }).eq('id', contract.id);
+
   alert(
     `✅ Lien créé et copié dans le presse-papier !\n\n` +
     `Votre client mail s'est ouvert avec le lien pré-rempli.\n` +
@@ -2385,28 +2619,12 @@ function bindEvents() {
   $('#ct-formule-select').addEventListener('change', () => onFormuleChange(true));
   $('#ct-date-debut').addEventListener('change', autoCalcEcheance);
   $('#ct-montant').addEventListener('input', updateNetDisplay);
-  $('#ct-frais-mise-en-place')?.addEventListener('input', updateNetDisplay);
   $('#ct-remise-check').addEventListener('change', e => {
     $('#ct-remise').style.display = e.target.checked ? '' : 'none';
     if (!e.target.checked) $('#ct-remise').value = '';
     updateNetDisplay();
   });
-  $('#ct-remise').addEventListener('input', function updateNetDisplay() {
-  const montant = Number($('#ct-montant').value) || 0;
-  const setup = Number($('#ct-frais-mise-en-place')?.value) || 0;
-  const remiseActive = $('#ct-remise-check').checked;
-  const remise = remiseActive ? (Number($('#ct-remise').value) || 0) : 0;
-  if (setup > 0) {
-    const setupNet = Math.max(0, setup - remise);
-    const total = setupNet + montant;
-    $('#ct-net-wrap').style.display = remiseActive && remise > 0 ? '' : 'none';
-    $('#ct-net-display').value = formatMoney(total) + ' (1er mois HT)';
-  } else {
-    const net = Math.max(0, montant - remise);
-    $('#ct-net-wrap').style.display = remiseActive && remise > 0 ? '' : 'none';
-    $('#ct-net-display').value = formatMoney(net) + ' HT';
-  }
-});
+  $('#ct-remise').addEventListener('input', updateNetDisplay);
 
   // Modale Tâche
   $('#task-cancel-btn').addEventListener('click', closeTaskModal);
@@ -2508,6 +2726,10 @@ function bindEvents() {
 
   // === Onglet Registre RGPD ===
   $('#btn-export-registre')?.addEventListener('click', exportRegistrePDF);
+
+  // === Onglet Résultats ===
+  $('#resultats-back-btn')?.addEventListener('click', renderResultats);
+  $('#resultats-bordereau-btn')?.addEventListener('click', generateBordereauCommission);
 
   // === Déconnexion par inactivité (5 min) ===
   setupInactivityTimeout();
