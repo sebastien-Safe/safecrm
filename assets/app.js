@@ -60,9 +60,9 @@ function isThisMonth(dateStr) {
 }
 
 function gaugeColor(pct) {
-  if (pct < 50) return 'var(--alert)';
-  if (pct < 75) return 'var(--gold)';
-  return 'var(--ok)';
+  if (pct < 50) return '#2563eb';
+  if (pct < 75) return '#3b82f6';
+  return '#f59e0b';
 }
 
 function gaugeSvg(pct) {
@@ -70,18 +70,24 @@ function gaugeSvg(pct) {
   const r = 42;
   const c = 2 * Math.PI * r;
   const offset = c * (1 - clamped / 100);
-  const color = gaugeColor(pct);
   return `<svg viewBox="0 0 100 100" class="gauge-svg">
+    <defs>
+      <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0a1628"/>
+        <stop offset="40%" stop-color="#2563eb"/>
+        <stop offset="100%" stop-color="#f59e0b"/>
+      </linearGradient>
+    </defs>
     <circle cx="50" cy="50" r="${r}" class="gauge-track"></circle>
-    <circle cx="50" cy="50" r="${r}" class="gauge-fill" style="stroke:${color};stroke-dasharray:${c.toFixed(2)};stroke-dashoffset:${offset.toFixed(2)}"></circle>
-    <text x="50" y="50" class="gauge-text" style="fill:${color}">${Math.round(pct)}%</text>
+    <circle cx="50" cy="50" r="${r}" class="gauge-fill" style="stroke:url(#gaugeGrad);stroke-dasharray:${c.toFixed(2)};stroke-dashoffset:${offset.toFixed(2)}"></circle>
+    <text x="50" y="50" class="gauge-text" style="fill:#fff">${Math.round(pct)}%</text>
   </svg>`;
 }
 
 const CONTACT_STATUT_BADGE = { 'Prospect': 'badge-blue', 'Client': 'badge-green', 'Inactif': 'badge-gray' };
 const CONTRACT_STATUT_BADGE = {
-  'Devis envoyé': 'badge-gray', 'Signé': 'badge-blue', 'En cours': 'badge-gold',
-  'Terminé': 'badge-green', 'Résilié': 'badge-red'
+  'En attente de signature': 'badge-gray', 'Envoyé': 'badge-blue', 'Contrat en cours': 'badge-gold',
+  'Paiement échoué': 'badge-red', 'Terminé': 'badge-green', 'Résilié': 'badge-red'
 };
 const PRIORITY_BADGE = { 'Basse': 'badge-gray', 'Normale': 'badge-blue', 'Haute': 'badge-red' };
 const ACTIVITE_BADGE = { 'Digitalisation': 'badge-blue', 'RGPD': 'badge-gold', 'Assurance': 'badge-green', 'Autre': 'badge-gray' };
@@ -399,6 +405,13 @@ function updateDashboardClock() {
   el.textContent = `${capitalize(dateStr)} — ${timeStr} (heure de Paris)`;
 }
 
+function dismissAlert(contractId) {
+  const dismissed = JSON.parse(localStorage.getItem('safe_dismissed_alerts') || '[]');
+  if (!dismissed.includes(contractId)) dismissed.push(contractId);
+  localStorage.setItem('safe_dismissed_alerts', JSON.stringify(dismissed));
+  renderDashboard();
+}
+
 function renderDashboard() {
   const name = state.profile?.prenom || (state.user?.email ? state.user.email.split('@')[0] : 'Utilisateur');
   $('#dashboard-title').textContent = `Tableau de bord de ${name}`;
@@ -409,8 +422,12 @@ function renderDashboard() {
   const limit = new Date();
   limit.setDate(limit.getDate() + 15);
   const limitStr = limit.toISOString().slice(0, 10);
+  const dismissed = JSON.parse(localStorage.getItem('safe_dismissed_alerts') || '[]');
   const dueSoon = state.contracts
-    .filter(c => c.date_echeance && c.date_echeance <= limitStr && !['Terminé', 'Résilié'].includes(c.statut))
+    .filter(c => c.date_echeance && c.date_echeance <= limitStr
+      && !['Terminé', 'Résilié'].includes(c.statut)
+      && c.created_by === state.user?.id
+      && !dismissed.includes(c.id))
     .sort((a, b) => a.date_echeance.localeCompare(b.date_echeance));
   const alertBlock = $('#echeances-alert');
   if (dueSoon.length) {
@@ -425,6 +442,7 @@ function renderDashboard() {
             <div class="s">Échéance le ${formatDate(c.date_echeance)}</div>
           </div>
           <span class="${days < 0 ? 'overdue' : ''}">${when}</span>
+          <button class="btn btn-out btn-sm" style="margin-left:8px;font-size:.72rem" onclick="dismissAlert('${c.id}')">Corrigé</button>
         </div>`;
     }).join('');
   } else {
@@ -433,7 +451,7 @@ function renderDashboard() {
 
   $('#stat-contacts').textContent = state.contacts.length;
   $('#stat-clients').textContent = state.contacts.filter(c => c.statut === 'Client').length;
-  $('#stat-contracts').textContent = state.contracts.filter(c => ['Signé', 'En cours'].includes(c.statut)).length;
+  $('#stat-contracts').textContent = state.contracts.filter(c => ['Contrat en cours', 'Envoyé'].includes(c.statut)).length;
   $('#stat-tasks-late').textContent = state.tasks.filter(t => isOverdue(t.echeance, t.statut)).length;
 
   // Tâches à venir / en retard
@@ -475,10 +493,8 @@ function renderDashboard() {
 // ---------------------------------------------------------
 function getFilteredContacts() {
   const search = $('#contacts-search').value.trim().toLowerCase();
-  const statut = $('#contacts-filter-statut').value;
   const activite = $('#contacts-filter-activite').value;
   return state.contacts.filter(c => {
-    if (statut && c.statut !== statut) return false;
     if (activite && !(c.activites || []).includes(activite)) return false;
     if (search) {
       const hay = [c.nom, c.entreprise, c.email, c.telephone].join(' ').toLowerCase();
@@ -498,23 +514,20 @@ function renderContacts() {
   tbody.innerHTML = list.map(c => {
     const editable = canEditContact(c);
     const label = c.rgpd_ko ? 'Voir' : (editable ? 'Modifier' : 'Voir');
-    return `
-    <tr class="${c.rgpd_ko ? 'row-rgpd-ko' : ''}">
-      <td>${escapeHtml(c.nom)}${!editable && !c.rgpd_ko ? ' <span class="badge badge-gray" title="Fiche d\'un autre utilisateur" style="margin-left:4px">🔒</span>' : ''}</td>
+    const lockBadge = (!editable && !c.rgpd_ko) ? ' <span class="badge badge-gray">🔒</span>' : '';
+    return `<tr class="${c.rgpd_ko ? 'row-rgpd-ko' : ''}">
+      <td>${escapeHtml(c.nom)}${lockBadge}</td>
       <td>${escapeHtml(c.entreprise || '—')}</td>
       <td><div class="tag-row">${(c.activites || []).map(a => `<span class="badge ${ACTIVITE_BADGE[a] || 'badge-gray'}">${escapeHtml(a)}</span>`).join('') || '—'}</div></td>
-      <td>${c.rgpd_ko ? '<span class="badge badge-red">🚫 RGPD KO</span>' : `<span class="badge ${CONTACT_STATUT_BADGE[c.statut] || 'badge-gray'}">${escapeHtml(c.statut)}</span>`}</td>
       <td class="nowrap">${escapeHtml(c.telephone || '—')}</td>
       <td>${c.email ? `<a href="mailto:${escapeHtml(c.email)}" style="color:var(--accent)">${escapeHtml(c.email)}</a>` : '—'}</td>
       <td class="nowrap">${escapeHtml(creatorName(c.created_by))}</td>
-      <td class="actions">
-        <button class="btn btn-out btn-sm" data-edit-contact="${c.id}">${label}</button>
-      </td>
+      <td class="actions"><button class="btn btn-out btn-sm" data-edit-contact="${c.id}">${label}</button></td>
     </tr>`;
   }).join('');
 }
 
-const CONTACT_FIELD_IDS = ['c-nom', 'c-entreprise', 'c-email', 'c-telephone', 'c-adresse', 'c-code-postal-ville', 'c-forme-juridique', 'c-siret', 'c-statut', 'c-source', 'c-notes'];
+const CONTACT_FIELD_IDS = ['c-nom', 'c-entreprise', 'c-email', 'c-telephone', 'c-adresse', 'c-code-postal-ville', 'c-forme-juridique', 'c-siret', 'c-source', 'c-notes'];
 const CONTACT_CONSENT_IDS = ['c-consent-telephone', 'c-consent-email', 'c-consent-courrier'];
 
 function setContactFieldsLocked(locked) {
@@ -563,8 +576,7 @@ function openContactModal(id = null) {
   $('#c-code-postal-ville').value = c?.code_postal_ville || '';
   $('#c-forme-juridique').value = c?.forme_juridique || '';
   $('#c-siret').value = c?.siret || '';
-  $('#c-statut').value = c?.statut || 'Prospect';
-  $('#c-source').value = c?.source || '';
+  $('#c-source').value = c?.source || state.profile?.prenom || '';
   $('#c-notes').value = c?.notes || '';
   $('#c-rgpd-ko').checked = !!c?.rgpd_ko;
   $('#c-consent-telephone').checked = !!c?.consent_telephone;
@@ -609,7 +621,6 @@ async function saveContact() {
   const existing = id ? state.contacts.find(x => x.id === id) : null;
   const nom = $('#c-nom').value.trim();
   if (!nom) { alert('Le nom est obligatoire.'); return; }
-  const statut = $('#c-statut').value;
   const rgpdKoChecked = $('#c-rgpd-ko').checked;
   const payload = {
     nom,
@@ -620,8 +631,8 @@ async function saveContact() {
     code_postal_ville: $('#c-code-postal-ville').value.trim() || null,
     forme_juridique: $('#c-forme-juridique').value.trim() || null,
     siret: $('#c-siret').value.trim() || null,
-    statut,
-    source: $('#c-source').value.trim() || null,
+    statut: existing?.statut || 'Client',
+    source: $('#c-source').value.trim() || state.profile?.prenom || null,
     notes: $('#c-notes').value.trim() || null,
     activites: $all('.c-activite').filter(cb => cb.checked).map(cb => cb.value),
     rgpd_ko: rgpdKoChecked,
@@ -845,15 +856,17 @@ function openContractModal(id = null) {
   if (engField) engField.value = ct?.engagement_mois ?? '';
   $('#ct-date-debut').value = ct?.date_debut || '';
   $('#ct-date-echeance').value = ct?.date_echeance || '';
-  $('#ct-statut').value = ct?.statut || 'Devis envoyé';
-  // Restriction du statut "Terminé"/"Résilié" aux super-administrateurs
-  const statutSelect = $('#ct-statut');
-  $all('option', statutSelect).forEach(opt => {
-    if (opt.value === 'Terminé' || opt.value === 'Résilié') {
-      opt.disabled = !isAdmin();
-      opt.title = isAdmin() ? '' : 'Seul un super-administrateur peut clôturer un contrat';
-    }
-  });
+  $('#ct-statut').value = ct?.statut || 'En attente de signature';
+  const statutDisplay = $('#ct-statut-display');
+  if (statutDisplay) statutDisplay.value = ct?.statut || 'En attente de signature';
+  // Case Résilier visible uniquement pour les admins
+  const resilierWrap = $('#ct-resilier-wrap');
+  const resilierCheck = $('#ct-resilier');
+  if (resilierWrap && resilierCheck) {
+    const canResilier = isAdmin() && ct && ct.statut !== 'Résilié' && ct.statut !== 'Terminé';
+    resilierWrap.style.display = canResilier ? '' : 'none';
+    resilierCheck.checked = false;
+  }
   $('#ct-notes').value = ct?.notes || '';
 
   populateFormuleSelect(ct?.type || '', ct?.formule || null);
@@ -902,7 +915,7 @@ async function saveContract() {
     recurrence: $('#ct-recurrence').value,
     date_debut: $('#ct-date-debut').value || null,
     date_echeance: $('#ct-date-echeance').value || null,
-    statut: $('#ct-statut').value,
+    statut: ($('#ct-resilier')?.checked) ? 'Résilié' : ($('#ct-statut').value || 'En attente de signature'),
     notes: $('#ct-notes').value.trim() || null,
   };
   // Colonnes ajoutées en v13 — on ne les envoie que si elles existent dans le HTML ET en base
@@ -1008,7 +1021,13 @@ function openTaskModal(id = null) {
   $('#t-echeance').value = t?.echeance || '';
   $('#t-priorite').value = t?.priorite || 'Normale';
   $('#t-statut').value = t?.statut || 'À faire';
-  $('#t-assigne').value = t?.assigne_a || '';
+  // Populate assigné dropdown with users
+  const assigneSelect = $('#t-assigne');
+  const userOpts = Object.values(state.profilesById || {})
+    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''))
+    .map(u => `<option value="${escapeHtml(u.prenom || u.id)}">${escapeHtml(u.prenom || '—')}</option>`).join('');
+  assigneSelect.innerHTML = '<option value="">— Non assigné —</option>' + userOpts;
+  assigneSelect.value = t?.assigne_a || '';
   onTaskTypeChange();
   $('#task-delete-btn').style.display = t ? 'inline-flex' : 'none';
   $('#task-modal').classList.add('show');
@@ -1199,12 +1218,13 @@ function currentJoursTravailles() {
 function switchAdminTab(tab) {
   state.adminView = tab;
   $all('[data-admin-tab]').forEach(b => b.classList.toggle('active', b.dataset.adminTab === tab));
-  ['overview', 'per-user', 'users', 'rgpd-ko', 'registre'].forEach(t => {
+  ['overview', 'resultats', 'per-user', 'users', 'rgpd-ko', 'registre'].forEach(t => {
     const el = $('#admin-panel-' + t);
     if (el) el.style.display = (t === tab) ? '' : 'none';
   });
   if (tab === 'users') loadAdminUsers().then(renderAdminUsers);
   if (tab === 'overview') renderAdminOverview();
+  if (tab === 'resultats') renderResultats();
   if (tab === 'per-user') renderAdminPerUser();
   if (tab === 'rgpd-ko') renderAdminRgpdKo();
   if (tab === 'registre') renderRegistreRGPD();
@@ -1260,16 +1280,15 @@ function renderAdminOverview() {
 // Mini-jauge horizontale (barre) pour la vue admin par utilisateur
 function miniGauge(label, value, target, unit) {
   const pct = target > 0 ? Math.min(100, (value / target) * 100) : (value > 0 ? 100 : 0);
-  const color = gaugeColor(pct);
   const valLabel = unit === '€' ? formatMoney(value) : value;
   const tgtLabel = unit === '€' ? formatMoney(target) : target;
   return `
     <div class="mini-gauge">
       <div class="mg-head">
         <span class="mg-label">${escapeHtml(label)}</span>
-        <span class="mg-values" style="color:${color}">${valLabel} <span class="mut">/ ${tgtLabel}</span></span>
+        <span class="mg-values" style="color:#f59e0b">${valLabel} <span class="mut">/ ${tgtLabel}</span></span>
       </div>
-      <div class="mg-bar"><div class="mg-fill" style="width:${pct.toFixed(0)}%;background:${color}"></div></div>
+      <div class="mg-bar"><div class="mg-fill" style="width:${pct.toFixed(0)}%;background:linear-gradient(90deg,#0a1628,#2563eb,#f59e0b)"></div></div>
     </div>`;
 }
 
@@ -1278,6 +1297,7 @@ function miniGauge(label, value, target, unit) {
 function renderTeamGauges(containerEl, users, options = {}) {
   if (!containerEl) return;
   const limit = options.limit || 10;
+  const clickable = options.clickable || false;
   if (!users.length) {
     containerEl.innerHTML = '<p class="empty">Aucun utilisateur connu.</p>';
     return;
@@ -1295,12 +1315,12 @@ function renderTeamGauges(containerEl, users, options = {}) {
     const tContacts = targetFor(u.id, 'nouveaux_contacts');
     const tCa       = targetFor(u.id, 'ca_genere');
     const tComm     = targetFor(u.id, 'commissions');
-    const actifs   = state.contracts.filter(c => c.created_by === u.id && ['Signé', 'En cours'].includes(c.statut)).length;
+    const actifs   = state.contracts.filter(c => c.created_by === u.id && ['Contrat en cours', 'Envoyé'].includes(c.statut)).length;
     const photo = u.photo_url
       ? `<div class="pu-avatar" style="background-image:url('${escapeHtml(u.photo_url)}')"></div>`
       : `<div class="pu-avatar pu-avatar-letter">${escapeHtml((u.prenom || '?').charAt(0).toUpperCase())}</div>`;
     return `
-      <div class="per-user-row">
+      <div class="per-user-row${clickable ? ' clickable' : ''}" ${clickable ? `data-user-id="${u.id}"` : ''}>
         <div class="pu-identity">
           ${photo}
           <div>
@@ -1317,6 +1337,13 @@ function renderTeamGauges(containerEl, users, options = {}) {
   }).join('') + (truncated
     ? `<p class="mut" style="font-size:.82rem;margin-top:10px">⚠️ ${users.length - limit} utilisateur(s) supplémentaire(s) non affiché(s) — affichage limité à ${limit}.</p>`
     : '');
+
+  // Gestion du clic sur les blocs utilisateurs
+  if (clickable) {
+    containerEl.querySelectorAll('.per-user-row.clickable').forEach(row => {
+      row.addEventListener('click', () => openResultatsDetail(row.dataset.userId));
+    });
+  }
 }
 
 function renderAdminPerUser() {
@@ -1327,6 +1354,230 @@ function renderAdminPerUser() {
   const countEl = $('#admin-per-user-count');
   if (countEl) countEl.textContent = allUsers.length;
   renderTeamGauges(grid, allUsers);
+}
+
+// =========================================================
+// ONGLET RÉSULTATS (admin) — blocs cliquables + détail + bordereau
+// =========================================================
+
+function renderResultats() {
+  const grid = $('#resultats-team-grid');
+  if (!grid) return;
+  $('#resultats-team-view').style.display = '';
+  $('#resultats-detail-view').style.display = 'none';
+  const allUsers = Object.values(state.profilesById)
+    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
+  renderTeamGauges(grid, allUsers, { clickable: true });
+}
+
+function openResultatsDetail(userId) {
+  const u = state.profilesById[userId];
+  if (!u) return;
+  $('#resultats-team-view').style.display = 'none';
+  $('#resultats-detail-view').style.display = '';
+  $('#resultats-detail-name').textContent = u.prenom || u.email || '—';
+
+  // Jauges individuelles
+  const gaugesEl = $('#resultats-detail-gauges');
+  const contacts = computeObjectifValue({ metric_type: 'nouveaux_contacts' }, userId);
+  const ca = computeObjectifValue({ metric_type: 'ca_genere' }, userId);
+  const comm = computeMonthlyCommission(userId);
+  const tContacts = getObjectifTarget(userId, 'nouveaux_contacts');
+  const tCa = getObjectifTarget(userId, 'ca_genere');
+  const tComm = getObjectifTarget(userId, 'commissions');
+  gaugesEl.innerHTML = [
+    { label: 'Entrées en contact', val: contacts, tgt: tContacts, unit: '' },
+    { label: 'CA généré', val: ca, tgt: tCa, unit: '€' },
+    { label: 'Commissions', val: comm, tgt: tComm, unit: '€' },
+  ].map(g => {
+    const pct = g.tgt > 0 ? Math.min(100, (g.val / g.tgt) * 100) : (g.val > 0 ? 100 : 0);
+    return `<div class="gauge-card">
+      <div class="gauge-wrap">${gaugeSvg(pct)}</div>
+      <h4>${escapeHtml(g.label)}</h4>
+      <p class="mut">${g.unit === '€' ? formatMoney(g.val) : g.val} / ${g.unit === '€' ? formatMoney(g.tgt) : g.tgt}</p>
+    </div>`;
+  }).join('');
+
+  // Contrats du mois en cours (nouvelles affaires)
+  const now = new Date();
+  const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  const newContracts = state.contracts.filter(c =>
+    c.created_by === userId &&
+    c.date_debut &&
+    new Date(c.date_debut + 'T00:00:00') >= startMonth &&
+    new Date(c.date_debut + 'T00:00:00') <= endMonth &&
+    ['Contrat en cours', 'Envoyé', 'En attente de signature'].includes(c.statut)
+  );
+  const newTbody = $('#resultats-detail-new-table tbody');
+  newTbody.innerHTML = newContracts.length ? newContracts.map(c => {
+    const contact = state.contacts.find(x => x.id === c.contact_id);
+    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
+    const commSig = preset?.comm_signature_fix || (preset?.comm_signature_pct ? Math.round(Number(c.montant || 0) * preset.comm_signature_pct * 100) / 100 : 0);
+    return `<tr>
+      <td>${escapeHtml(contact?.nom || '—')}</td>
+      <td>${escapeHtml(c.type || '—')}</td>
+      <td>${escapeHtml(c.formule || '—')}</td>
+      <td class="num">${formatMoney(c.montant)}</td>
+      <td class="num">${formatMoney(c.frais_mise_en_place || 0)}</td>
+      <td class="num">${formatMoney(c.remise || 0)}</td>
+      <td class="num" style="color:#f59e0b;font-weight:600">${formatMoney(commSig)}</td>
+      <td class="nowrap">${formatDate(c.date_debut)}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="8" class="empty">Aucune nouvelle affaire ce mois-ci</td></tr>';
+
+  // Abonnements récurrents actifs
+  const recurContracts = state.contracts.filter(c =>
+    c.created_by === userId &&
+    c.recurrence === 'Mensuel' &&
+    ['Contrat en cours'].includes(c.statut)
+  );
+  const recTbody = $('#resultats-detail-recurrent-table tbody');
+  recTbody.innerHTML = recurContracts.length ? recurContracts.map(c => {
+    const contact = state.contacts.find(x => x.id === c.contact_id);
+    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
+    const commRec = preset?.comm_recurrent_pct ? Math.round(Number(c.montant || 0) * preset.comm_recurrent_pct * 100) / 100 : 0;
+    return `<tr>
+      <td>${escapeHtml(contact?.nom || '—')}</td>
+      <td>${escapeHtml(c.type || '—')}</td>
+      <td>${escapeHtml(c.formule || '—')}</td>
+      <td class="num">${formatMoney(c.montant)}/mois</td>
+      <td class="num" style="color:#f59e0b;font-weight:600">${formatMoney(commRec)}/mois</td>
+      <td class="nowrap">${formatDate(c.date_debut)}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="6" class="empty">Aucun abonnement récurrent actif</td></tr>';
+
+  // Stocker l'userId pour le bordereau
+  state._resultatsUserId = userId;
+}
+
+function getObjectifTarget(userId, metricType) {
+  const o = state.objectifs.find(o => o.user_id === userId && o.metric_type === metricType);
+  return o ? computeObjectifTarget(o) : 0;
+}
+
+function generateBordereauCommission() {
+  const userId = state._resultatsUserId;
+  const u = state.profilesById[userId];
+  if (!u || !jsPDF) { alert('Données insuffisantes ou jsPDF non chargé.'); return; }
+
+  const now = new Date();
+  const moisLabel = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+  // En-tête
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(10, 22, 40);
+  doc.text('BORDEREAU DE COMMISSION', 15, 20);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.text(`S@FE Digitalisation — ${moisLabel}`, 15, 27);
+  doc.text(`Commercial : ${u.prenom || '—'}`, 15, 33);
+  doc.text(`Généré le : ${now.toLocaleDateString('fr-FR')}`, 15, 39);
+  doc.line(15, 42, 195, 42);
+
+  let y = 50;
+
+  // Section 1 : Nouvelles affaires du mois
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(10, 22, 40);
+  doc.text('1. Commissions à la signature (mois en cours)', 15, y);
+  y += 8;
+
+  const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const newC = state.contracts.filter(c =>
+    c.created_by === userId && c.date_debut &&
+    new Date(c.date_debut) >= startMonth && new Date(c.date_debut) <= endMonth &&
+    ['Contrat en cours', 'Envoyé', 'En attente de signature'].includes(c.statut)
+  );
+
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'bold');
+  ['Contact', 'Prestation', 'Formule', 'Montant HT', 'Commission'].forEach((h, i) => {
+    doc.text(h, 15 + i * 36, y);
+  });
+  y += 5;
+  doc.setFont('helvetica', 'normal');
+  let totalSig = 0;
+  newC.forEach(c => {
+    if (y > 270) { doc.addPage(); y = 20; }
+    const contact = state.contacts.find(x => x.id === c.contact_id);
+    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
+    const commSig = preset?.comm_signature_fix || (preset?.comm_signature_pct ? Number(c.montant || 0) * preset.comm_signature_pct : 0);
+    totalSig += commSig;
+    doc.text((contact?.nom || '—').slice(0, 18), 15, y);
+    doc.text((c.type || '—').slice(0, 18), 51, y);
+    doc.text((c.formule || '—').slice(0, 18), 87, y);
+    doc.text(formatMoney(c.montant), 123, y);
+    doc.text(formatMoney(commSig), 159, y);
+    y += 5;
+  });
+  if (!newC.length) { doc.text('Aucune nouvelle affaire ce mois-ci.', 15, y); y += 5; }
+  y += 3;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Sous-total commissions signature : ${formatMoney(totalSig)}`, 15, y);
+  y += 10;
+
+  // Section 2 : Récurrent
+  doc.setFontSize(12);
+  doc.text('2. Commissions récurrentes (abonnements actifs)', 15, y);
+  y += 8;
+  const recC = state.contracts.filter(c =>
+    c.created_by === userId && c.recurrence === 'Mensuel' && c.statut === 'Contrat en cours'
+  );
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'bold');
+  ['Contact', 'Prestation', 'Formule', 'Mensuel HT', 'Commission/mois'].forEach((h, i) => {
+    doc.text(h, 15 + i * 36, y);
+  });
+  y += 5;
+  doc.setFont('helvetica', 'normal');
+  let totalRec = 0;
+  recC.forEach(c => {
+    if (y > 270) { doc.addPage(); y = 20; }
+    const contact = state.contacts.find(x => x.id === c.contact_id);
+    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
+    const commRec = preset?.comm_recurrent_pct ? Number(c.montant || 0) * preset.comm_recurrent_pct : 0;
+    totalRec += commRec;
+    doc.text((contact?.nom || '—').slice(0, 18), 15, y);
+    doc.text((c.type || '—').slice(0, 18), 51, y);
+    doc.text((c.formule || '—').slice(0, 18), 87, y);
+    doc.text(formatMoney(c.montant) + '/mois', 123, y);
+    doc.text(formatMoney(commRec) + '/mois', 159, y);
+    y += 5;
+  });
+  if (!recC.length) { doc.text('Aucun abonnement récurrent actif.', 15, y); y += 5; }
+  y += 3;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Sous-total commissions récurrentes : ${formatMoney(totalRec)} /mois`, 15, y);
+  y += 12;
+
+  // Total
+  doc.setFontSize(13);
+  doc.setTextColor(37, 99, 235);
+  doc.text(`TOTAL COMMISSIONS DU MOIS : ${formatMoney(totalSig + totalRec)}`, 15, y);
+  y += 8;
+  doc.setFontSize(8);
+  doc.setTextColor(100, 100, 100);
+  doc.text('Montants bruts avant charges. Versement dans les 15 jours suivant la clôture du mois.', 15, y);
+  y += 4;
+  doc.text(`Barème : SAFEDIRCOM-2026-V1 — En vigueur au 12 juin 2026.`, 15, y);
+
+  // Footer
+  const pages = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p);
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 150);
+    doc.text('S@FE Digitalisation — SIRET 104 699 558 00011 — Document confidentiel', 15, 290);
+    doc.text(`Page ${p}/${pages}`, 190, 290, { align: 'right' });
+  }
+
+  doc.save(`Bordereau_Commission_${(u.prenom || 'user').replace(/\s+/g, '_')}_${moisLabel.replace(/\s+/g, '_')}.pdf`);
 }
 
 async function loadAdminUsers() {
@@ -1582,20 +1833,20 @@ function computeObjectifValue(o, userId) {
     case 'nouveaux_contacts':
       return state.contacts.filter(c => filterContact(c) && isThisMonth(c.created_at)).length;
     case 'contrats_total':
-      return state.contracts.filter(c => filterContract(c) && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
+      return state.contracts.filter(c => filterContract(c) && ['Contrat en cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
     case 'contrats_type':
-      return state.contracts.filter(c => filterContract(c) && c.type === o.contract_type_filter && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
+      return state.contracts.filter(c => filterContract(c) && c.type === o.contract_type_filter && ['Contrat en cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
     case 'taches_terminees':
       // Pas de created_by sur tasks : on retombe sur l'utilisateur courant uniquement
       if (userId === 'all') return state.tasks.filter(t => t.statut === 'Terminé' && isThisMonth(t.termine_at || t.created_at)).length;
       return state.tasks.filter(t => t.statut === 'Terminé' && isThisMonth(t.termine_at || t.created_at)).length;
     case 'ca_recurrent':
       return state.contracts
-        .filter(c => filterContract(c) && c.recurrence === 'Mensuel' && ['Signé', 'En cours'].includes(c.statut))
+        .filter(c => filterContract(c) && c.recurrence === 'Mensuel' && ['Contrat en cours'].includes(c.statut))
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     case 'ca_genere':
       return state.contracts
-        .filter(c => filterContract(c) && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at))
+        .filter(c => filterContract(c) && ['Contrat en cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at))
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     case 'commissions': {
       return computeMonthlyCommission(userId);
@@ -1628,7 +1879,7 @@ function computeMonthlyCommission(userId) {
 
   const contracts = state.contracts.filter(c =>
     (userId === 'all' || c.created_by === userId) &&
-    ['Signé', 'En cours', 'Terminé'].includes(c.statut)
+    ['Contrat en cours', 'Terminé'].includes(c.statut)
   );
 
   let total = 0;
@@ -1718,18 +1969,6 @@ function renderObjectifs() {
 
   // 🏆 Si l'objectif commission est atteint ce mois-ci, on lance le feu d'artifice
   checkAndCelebrateCommissions();
-
-  // 👥 Pour les super-admins : afficher en plus la grille nominative de toute l'équipe
-  const teamBlock = $('#team-perf-block');
-  const teamGrid  = $('#team-perf-grid');
-  if (isAdmin() && teamBlock && teamGrid) {
-    teamBlock.style.display = 'block';
-    const allUsers = Object.values(state.profilesById)
-      .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
-    renderTeamGauges(teamGrid, allUsers);
-  } else if (teamBlock) {
-    teamBlock.style.display = 'none';
-  }
 }
 
 async function saveJoursTravailles() {
@@ -1748,19 +1987,22 @@ async function saveJoursTravailles() {
 function openObjectifsModal() {
   const list = $('#objectifs-edit-list');
   const mine = state.objectifs.filter(o => o.user_id === state.user.id);
+  // Seul l'objectif commission est modifiable par l'utilisateur
+  const commObj = mine.find(o => o.metric_type === 'commissions');
   list.innerHTML = mine.map(o => {
     const isMoney = ['ca_recurrent', 'ca_genere', 'commissions'].includes(o.metric_type);
     const unit = (isMoney ? '€ ' : '') + (o.scale_by_days ? `/ ${o.jours_reference}j` : '');
+    const editable = o.metric_type === 'commissions';
     let row = `
     <div class="objectif-row">
       <label>${escapeHtml(o.metric_type === 'commissions' ? 'Commissions' : o.label)}</label>
-      <input type="number" step="0.01" min="0" data-objectif-id="${o.id}" value="${o.objectif_base}">
+      <input type="number" step="0.01" min="0" data-objectif-id="${o.id}" value="${o.objectif_base}" ${editable ? '' : 'disabled style="opacity:.5"'}>
       <span class="unit">${unit}</span>
     </div>`;
     if (o.metric_type === 'commissions') {
       row += `
     <div class="objectif-row" style="padding-top:0">
-      <label class="mut" style="font-size:.82rem">↳ Calcul automatique selon barème SAFEDIRCOM-2026-V1 : signature fixe + bonus fidélité mois 4 + 15 % récurrent SEO/C&amp;C, 10 % DPO, 20 % audits</label>
+      <label class="mut" style="font-size:.82rem">↳ Calcul automatique selon barème SAFEDIRCOM-2026-V1</label>
       <span class="unit" style="width:auto;font-family:var(--ff-mono)">grille</span>
     </div>`;
     }
@@ -1775,7 +2017,7 @@ function closeObjectifsModal() {
 }
 
 async function saveObjectifsModal() {
-  const inputs = $all('#objectifs-edit-list input[data-objectif-id]');
+  const inputs = $all('#objectifs-edit-list input[data-objectif-id]:not(:disabled)');
   for (const inp of inputs) {
     const { error } = await sb.from('objectifs')
       .update({ objectif_base: Number(inp.value) || 0 })
@@ -1785,6 +2027,32 @@ async function saveObjectifsModal() {
   closeObjectifsModal();
   await loadObjectifs();
   renderObjectifs();
+}
+
+// =========================================================
+// SÉCURITÉ — Protections côté navigateur
+// (la vraie sécurité est côté serveur : RLS Supabase,
+//  triggers, Edge Functions. Ces protections client sont
+//  des barrières supplémentaires, pas des garanties.)
+// =========================================================
+
+// Empêcher l'accès direct aux variables globales via la console
+Object.defineProperty(window, 'sb', { configurable: false, writable: false });
+Object.defineProperty(window, 'state', { configurable: false, writable: false });
+
+// Bloquer certains raccourcis DevTools en production
+if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', e => {
+    // F12
+    if (e.key === 'F12') { e.preventDefault(); return; }
+    // Ctrl+Shift+I / Cmd+Opt+I (Inspecteur)
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') { e.preventDefault(); return; }
+    // Ctrl+Shift+J / Cmd+Opt+J (Console)
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'J') { e.preventDefault(); return; }
+    // Ctrl+U / Cmd+U (View Source)
+    if ((e.ctrlKey || e.metaKey) && e.key === 'u') { e.preventDefault(); return; }
+  });
 }
 
 // ---------------------------------------------------------
@@ -2011,32 +2279,12 @@ async function sendOrderLink() {
   if (!confirm(
     `Créer un lien de paiement pour ${contact.nom || '—'} (${contact.email}) ?\n\n` +
     `Produit : ${contract.type || '—'} — ${contract.formule || '—'}\n` +
-    `Montant : ${Number(contract.montant || 0).toFixed(2)} € HT${contract.recurrence === 'Mensuel' ? ' / mois' : ''}\n` +
-    `Frais MeP : ${Number(contract.frais_mise_en_place || 0).toFixed(2)} €\n` +
-    `Remise : ${Number(contract.remise || 0).toFixed(2)} €\n\n` +
-    `Un lien valable 7 jours sera généré. Vous pourrez l'envoyer au client par e-mail ou WhatsApp.`
+    `Montant : ${Number(contract.montant || 0).toFixed(2)} € HT${contract.recurrence === 'Mensuel' ? ' / mois' : ''}\n\n` +
+    `Un lien sera généré. Le contrat doit rester en statut "Devis envoyé" pour que le client puisse y accéder.`
   )) return;
 
-  // Insertion dans order_links (snapshot du contrat)
-  const { data, error } = await sb.from('order_links').insert({
-    contract_id: contract.id,
-    created_by: state.user.id,
-    client_name: contact.nom,
-    client_email: contact.email,
-    client_entreprise: contact.entreprise,
-    client_siret: contact.siret,
-    produit: contract.type,
-    formule: contract.formule,
-    montant: contract.montant,
-    frais_mise_en_place: contract.frais_mise_en_place || 0,
-    remise: contract.remise || 0,
-    recurrence: contract.recurrence,
-    engagement_mois: contract.engagement_mois || 0,
-  }).select('token').single();
-
-  if (error) { alert("Erreur : " + error.message); return; }
-
-  const orderUrl = `${location.origin}/order.html?token=${data.token}`;
+  // L'UUID du contrat sert de token (déjà aléatoire et indevinable)
+  const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}`;
 
   // Copie dans le presse-papier
   try { await navigator.clipboard.writeText(orderUrl); } catch (_) {}
@@ -2051,7 +2299,6 @@ async function sendOrderLink() {
     `• Consulter le récapitulatif de votre commande\n` +
     `• Lire et accepter nos Conditions Générales de Vente\n` +
     `• Procéder au paiement sécurisé en ligne (CB / SEPA)\n\n` +
-    `Le lien est valable 7 jours.\n\n` +
     `Pour toute question, n'hésitez pas à me contacter.\n\n` +
     `Cordialement,\n` +
     `${state.profile?.prenom || 'L\'équipe S@FE'}\n` +
@@ -2060,9 +2307,11 @@ async function sendOrderLink() {
   );
   window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
 
+  await sb.from('contracts').update({ statut: 'Envoyé' }).eq('id', contract.id);
+
   alert(
-    `✅ Lien de paiement créé et copié dans le presse-papier !\n\n` +
-    `Votre client mail s'est ouvert avec le lien pré-rempli. ` +
+    `✅ Lien créé et copié dans le presse-papier !\n\n` +
+    `Votre client mail s'est ouvert avec le lien pré-rempli.\n` +
     `Vous pouvez aussi coller le lien dans WhatsApp ou un SMS.\n\n` +
     `Lien : ${orderUrl}`
   );
@@ -2390,7 +2639,7 @@ function bindEvents() {
   $all('.navlink[data-view]').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
 
   // Filtres
-  ['contacts-search', 'contacts-filter-statut', 'contacts-filter-activite'].forEach(id => {
+  ['contacts-search', 'contacts-filter-activite'].forEach(id => {
     $('#' + id).addEventListener('input', renderContacts);
   });
   ['contracts-filter-statut', 'contracts-filter-recurrence'].forEach(id => {
@@ -2523,6 +2772,10 @@ function bindEvents() {
 
   // === Onglet Registre RGPD ===
   $('#btn-export-registre')?.addEventListener('click', exportRegistrePDF);
+
+  // === Onglet Résultats ===
+  $('#resultats-back-btn')?.addEventListener('click', renderResultats);
+  $('#resultats-bordereau-btn')?.addEventListener('click', generateBordereauCommission);
 
   // === Déconnexion par inactivité (5 min) ===
   setupInactivityTimeout();
