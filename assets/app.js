@@ -2374,16 +2374,33 @@ async function sendOrderLink() {
 // --- Bon de commande PDF (Bon de commande + CGV combinés) ---
 function generateContractPDF() {
   const id = $('#ct-id').value;
-  if (!id) { alert('Enregistrez le contrat avant de générer le bon de commande.'); return; }
-  const contract = state.contracts.find(c => c.id === id);
-  if (!contract) { alert('Contrat introuvable.'); return; }
-  const contact = state.contacts.find(c => c.id === contract.contact_id);
-  if (!contact) { alert('Contact lié introuvable.'); return; }
-  if (!contact.siret || !contact.code_postal_ville) {
-    if (!confirm('Le SIRET ou l\'adresse de facturation (code postal + ville) du client ne sont pas renseignés. Les bons de commande doivent comporter ces mentions obligatoires.\n\nGénérer quand même un PDF avec lignes à compléter manuellement ?')) return;
+  if (!id) { 
+    alert('Enregistrez le contrat avant de générer le bon de commande.'); 
+    return; 
   }
+  
+  const contract = state.contracts.find(c => c.id === id);
+  if (!contract) { 
+    alert('Contrat introuvable.'); 
+    return; 
+  }
+  
+  const contact = state.contacts.find(c => c.id === contract.contact_id);
+  if (!contact) { 
+    alert('Contact lié introuvable.'); 
+    return; 
+  }
+  
+  // Validation des mentions légales obligatoires sur une facture/bon de commande (Facturation)
+  if (!contact.siret || !contact.code_postal_ville) {
+    if (!confirm("Le SIRET ou l'adresse de facturation (code postal + ville) du client ne sont pas renseignés. Les bons de commande doivent comporter ces mentions obligatoires.\n\nGénérer quand même un PDF avec lignes à compléter manuellement ?")) {
+      return;
+    }
+  }
+  
+  // Appel du générateur de PDF (Vérifiez bien que votre fichier contract-pdf.js attend les mêmes propriétés)
   const res = window.ContractPDF.generate({
-    id: contract.id,
+    id: contract.id, // Transmet l'UUID qui sera utilisé par slice(0,8) pour la Réf BON-XXXXXXXX
     type: contract.type,
     formule: contract.formule,
     montant: contract.montant,
@@ -2392,9 +2409,11 @@ function generateContractPDF() {
     engagement_mois: contract.engagement_mois,
     remise: contract.remise,
   }, contact);
-  if (res) alert(`Bon de commande téléchargé : ${res.filename}`);
+  
+  if (res && res.filename) {
+    alert(`Bon de commande téléchargé : ${res.filename}`);
+  }
 }
-
 // =========================================================
 // DOUBLE AUTHENTIFICATION TOTP (QR code)
 // =========================================================
