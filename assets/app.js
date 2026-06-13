@@ -80,7 +80,7 @@ function gaugeSvg(pct) {
 
 const CONTACT_STATUT_BADGE = { 'Prospect': 'badge-blue', 'Client': 'badge-green', 'Inactif': 'badge-gray' };
 const CONTRACT_STATUT_BADGE = {
-  'Devis envoyé': 'badge-gray', 'Signé': 'badge-blue', 'En cours': 'badge-gold',
+  'En attente de signature': 'badge-gray', 'Contrat en cours': 'badge-blue', 'Contrat en cours': 'badge-gold',
   'Terminé': 'badge-green', 'Résilié': 'badge-red'
 };
 const PRIORITY_BADGE = { 'Basse': 'badge-gray', 'Normale': 'badge-blue', 'Haute': 'badge-red' };
@@ -433,7 +433,7 @@ function renderDashboard() {
 
   $('#stat-contacts').textContent = state.contacts.length;
   $('#stat-clients').textContent = state.contacts.filter(c => c.statut === 'Client').length;
-  $('#stat-contracts').textContent = state.contracts.filter(c => ['Signé', 'En cours'].includes(c.statut)).length;
+  $('#stat-contracts').textContent = state.contracts.filter(c => ['Contrat en cours', 'Contrat en cours'].includes(c.statut)).length;
   $('#stat-tasks-late').textContent = state.tasks.filter(t => isOverdue(t.echeance, t.statut)).length;
 
   // Tâches à venir / en retard
@@ -845,7 +845,7 @@ function openContractModal(id = null) {
   if (engField) engField.value = ct?.engagement_mois ?? '';
   $('#ct-date-debut').value = ct?.date_debut || '';
   $('#ct-date-echeance').value = ct?.date_echeance || '';
-  $('#ct-statut').value = ct?.statut || 'Devis envoyé';
+  $('#ct-statut').value = ct?.statut || 'En attente de signature';
   // Restriction du statut "Terminé"/"Résilié" aux super-administrateurs
   const statutSelect = $('#ct-statut');
   $all('option', statutSelect).forEach(opt => {
@@ -944,7 +944,7 @@ function taskCardHtml(t) {
   const overdue = isOverdue(t.echeance, t.statut);
   let nextBtn = '';
   if (t.statut === 'À faire') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|En cours">→ En cours</button>`;
-  if (t.statut === 'En cours') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|Terminé">→ Terminé</button>`;
+  if (t.statut === 'Contrat en cours') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|Terminé">→ Terminé</button>`;
   if (t.statut === 'Terminé') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|À faire">↺ Réouvrir</button>`;
   const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
   const rdvLine = isRdv && (t.rdv_date || t.rdv_heure || t.rdv_lieu)
@@ -970,10 +970,10 @@ function taskCardHtml(t) {
 
 function renderTasks() {
   const list = getFilteredTasks();
-  const cols = { 'À faire': [], 'En cours': [], 'Terminé': [] };
+  const cols = { 'À faire': [], 'Contrat en cours': [], 'Terminé': [] };
   list.forEach(t => { (cols[t.statut] || cols['À faire']).push(t); });
   $('#kanban-todo').innerHTML = cols['À faire'].length ? cols['À faire'].map(taskCardHtml).join('') : '<p class="empty">Aucune tâche.</p>';
-  $('#kanban-inprogress').innerHTML = cols['En cours'].length ? cols['En cours'].map(taskCardHtml).join('') : '<p class="empty">Aucune tâche.</p>';
+  $('#kanban-inprogress').innerHTML = cols['Contrat en cours'].length ? cols['Contrat en cours'].map(taskCardHtml).join('') : '<p class="empty">Aucune tâche.</p>';
   $('#kanban-done').innerHTML = cols['Terminé'].length ? cols['Terminé'].map(taskCardHtml).join('') : '<p class="empty">Aucune tâche.</p>';
 }
 
@@ -1295,7 +1295,7 @@ function renderTeamGauges(containerEl, users, options = {}) {
     const tContacts = targetFor(u.id, 'nouveaux_contacts');
     const tCa       = targetFor(u.id, 'ca_genere');
     const tComm     = targetFor(u.id, 'commissions');
-    const actifs   = state.contracts.filter(c => c.created_by === u.id && ['Signé', 'En cours'].includes(c.statut)).length;
+    const actifs   = state.contracts.filter(c => c.created_by === u.id && ['Contrat en cours', 'Contrat en cours'].includes(c.statut)).length;
     const photo = u.photo_url
       ? `<div class="pu-avatar" style="background-image:url('${escapeHtml(u.photo_url)}')"></div>`
       : `<div class="pu-avatar pu-avatar-letter">${escapeHtml((u.prenom || '?').charAt(0).toUpperCase())}</div>`;
@@ -1582,20 +1582,20 @@ function computeObjectifValue(o, userId) {
     case 'nouveaux_contacts':
       return state.contacts.filter(c => filterContact(c) && isThisMonth(c.created_at)).length;
     case 'contrats_total':
-      return state.contracts.filter(c => filterContract(c) && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
+      return state.contracts.filter(c => filterContract(c) && ['Contrat en cours', 'Contrat en cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
     case 'contrats_type':
-      return state.contracts.filter(c => filterContract(c) && c.type === o.contract_type_filter && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
+      return state.contracts.filter(c => filterContract(c) && c.type === o.contract_type_filter && ['Contrat en cours', 'Contrat en cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
     case 'taches_terminees':
       // Pas de created_by sur tasks : on retombe sur l'utilisateur courant uniquement
       if (userId === 'all') return state.tasks.filter(t => t.statut === 'Terminé' && isThisMonth(t.termine_at || t.created_at)).length;
       return state.tasks.filter(t => t.statut === 'Terminé' && isThisMonth(t.termine_at || t.created_at)).length;
     case 'ca_recurrent':
       return state.contracts
-        .filter(c => filterContract(c) && c.recurrence === 'Mensuel' && ['Signé', 'En cours'].includes(c.statut))
+        .filter(c => filterContract(c) && c.recurrence === 'Mensuel' && ['Contrat en cours', 'Contrat en cours'].includes(c.statut))
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     case 'ca_genere':
       return state.contracts
-        .filter(c => filterContract(c) && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at))
+        .filter(c => filterContract(c) && ['Contrat en cours', 'Contrat en cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at))
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     case 'commissions': {
       return computeMonthlyCommission(userId);
@@ -1628,7 +1628,7 @@ function computeMonthlyCommission(userId) {
 
   const contracts = state.contracts.filter(c =>
     (userId === 'all' || c.created_by === userId) &&
-    ['Signé', 'En cours', 'Terminé'].includes(c.statut)
+    ['Contrat en cours', 'Contrat en cours', 'Terminé'].includes(c.statut)
   );
 
   let total = 0;
@@ -2012,7 +2012,7 @@ async function sendOrderLink() {
     `Créer un lien de paiement pour ${contact.nom || '—'} (${contact.email}) ?\n\n` +
     `Produit : ${contract.type || '—'} — ${contract.formule || '—'}\n` +
     `Montant : ${Number(contract.montant || 0).toFixed(2)} € HT${contract.recurrence === 'Mensuel' ? ' / mois' : ''}\n\n` +
-    `Un lien sera généré. Le contrat doit rester en statut "Devis envoyé" pour que le client puisse y accéder.`
+    `Un lien sera généré. Le contrat doit rester en statut "En attente de signature" pour que le client puisse y accéder.`
   )) return;
 
   // L'UUID du contrat sert de token (déjà aléatoire et indevinable)
@@ -2037,7 +2037,7 @@ const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeU
     `01 84 16 26 29 — contact@safe-digitalisation.fr`
   );
   window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
-
+await sb.from('contracts').update({ statut: 'Envoyé' }).eq('id', contract.id);
   alert(
     `✅ Lien créé et copié dans le presse-papier !\n\n` +
     `Votre client mail s'est ouvert avec le lien pré-rempli.\n` +

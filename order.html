@@ -178,7 +178,7 @@ async function init() {
     $('#err-msg').textContent = 'Ce lien n\'est associé à aucun bon de commande. Vérifiez auprès de votre chargé de clientèle.';
     return;
   }
-  if (data.statut !== 'Devis envoyé') {
+  if (data.statut !== 'En attente de signature' && data.statut !== 'Envoyé') {
     show('#state-paid');
     return;
   }
