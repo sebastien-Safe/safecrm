@@ -2009,27 +2009,12 @@ async function sendOrderLink() {
   if (!confirm(
     `Créer un lien de paiement pour ${contact.nom || '—'} (${contact.email}) ?\n\n` +
     `Produit : ${contract.type || '—'} — ${contract.formule || '—'}\n` +
-    `Montant : ${Number(contract.montant || 0).toFixed(2)} € HT${contract.recurrence === 'Mensuel' ? ' / mois' : ''}\n` +
-    `Frais MeP : ${Number(contract.frais_mise_en_place || 0).toFixed(2)} €\n` +
-    `Remise : ${Number(contract.remise || 0).toFixed(2)} €\n\n` +
-    `Un lien valable 7 jours sera généré.`
+    `Montant : ${Number(contract.montant || 0).toFixed(2)} € HT${contract.recurrence === 'Mensuel' ? ' / mois' : ''}\n\n` +
+    `Un lien sera généré. Le contrat doit rester en statut "Devis envoyé" pour que le client puisse y accéder.`
   )) return;
 
-  // Génération d'un token unique côté client
-  const token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-    .map(b => b.toString(16).padStart(2, '0')).join('');
-  const expires = new Date();
-  expires.setDate(expires.getDate() + 7);
-
-  // Mise à jour du contrat avec le token (colonnes déjà connues de PostgREST)
-  const { error } = await sb.from('contracts').update({
-    order_token: token,
-    order_expires_at: expires.toISOString(),
-  }).eq('id', contract.id);
-
-  if (error) { alert("Erreur : " + error.message); return; }
-
-  const orderUrl = `${location.origin}/order.html?token=${token}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}`;
+  // L'UUID du contrat sert de token (déjà aléatoire et indevinable)
+  const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}`;
 
   // Copie dans le presse-papier
   try { await navigator.clipboard.writeText(orderUrl); } catch (_) {}
@@ -2044,7 +2029,6 @@ async function sendOrderLink() {
     `• Consulter le récapitulatif de votre commande\n` +
     `• Lire et accepter nos Conditions Générales de Vente\n` +
     `• Procéder au paiement sécurisé en ligne (CB / SEPA)\n\n` +
-    `Le lien est valable 7 jours.\n\n` +
     `Pour toute question, n'hésitez pas à me contacter.\n\n` +
     `Cordialement,\n` +
     `${state.profile?.prenom || 'L\'équipe S@FE'}\n` +
@@ -2059,8 +2043,6 @@ async function sendOrderLink() {
     `Vous pouvez aussi coller le lien dans WhatsApp ou un SMS.\n\n` +
     `Lien : ${orderUrl}`
   );
-
-  await loadAll();
 }
 
 // --- Bon de commande PDF (Bon de commande + CGV combinés) ---
