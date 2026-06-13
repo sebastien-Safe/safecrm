@@ -86,8 +86,8 @@ function gaugeSvg(pct) {
 
 const CONTACT_STATUT_BADGE = { 'Prospect': 'badge-blue', 'Client': 'badge-green', 'Inactif': 'badge-gray' };
 const CONTRACT_STATUT_BADGE = {
-  'Devis envoyé': 'badge-gray', 'Signé': 'badge-blue', 'En cours': 'badge-gold',
-  'Terminé': 'badge-green', 'Résilié': 'badge-red'
+  'En attente de signature': 'badge-gray', 'Envoyé': 'badge-blue', 'Contrat en cours': 'badge-gold',
+  'Paiement échoué': 'badge-red', 'Terminé': 'badge-green', 'Résilié': 'badge-red'
 };
 const PRIORITY_BADGE = { 'Basse': 'badge-gray', 'Normale': 'badge-blue', 'Haute': 'badge-red' };
 const ACTIVITE_BADGE = { 'Digitalisation': 'badge-blue', 'RGPD': 'badge-gold', 'Assurance': 'badge-green', 'Autre': 'badge-gray' };
@@ -439,7 +439,7 @@ function renderDashboard() {
 
   $('#stat-contacts').textContent = state.contacts.length;
   $('#stat-clients').textContent = state.contacts.filter(c => c.statut === 'Client').length;
-  $('#stat-contracts').textContent = state.contracts.filter(c => ['Signé', 'En cours'].includes(c.statut)).length;
+  $('#stat-contracts').textContent = state.contracts.filter(c => ['Contrat en cours', 'Envoyé'].includes(c.statut)).length;
   $('#stat-tasks-late').textContent = state.tasks.filter(t => isOverdue(t.echeance, t.statut)).length;
 
   // Tâches à venir / en retard
@@ -849,15 +849,17 @@ function openContractModal(id = null) {
   if (engField) engField.value = ct?.engagement_mois ?? '';
   $('#ct-date-debut').value = ct?.date_debut || '';
   $('#ct-date-echeance').value = ct?.date_echeance || '';
-  $('#ct-statut').value = ct?.statut || 'Devis envoyé';
-  // Restriction du statut "Terminé"/"Résilié" aux super-administrateurs
-  const statutSelect = $('#ct-statut');
-  $all('option', statutSelect).forEach(opt => {
-    if (opt.value === 'Terminé' || opt.value === 'Résilié') {
-      opt.disabled = !isAdmin();
-      opt.title = isAdmin() ? '' : 'Seul un super-administrateur peut clôturer un contrat';
-    }
-  });
+  $('#ct-statut').value = ct?.statut || 'En attente de signature';
+  const statutDisplay = $('#ct-statut-display');
+  if (statutDisplay) statutDisplay.value = ct?.statut || 'En attente de signature';
+  // Case Résilier visible uniquement pour les admins
+  const resilierWrap = $('#ct-resilier-wrap');
+  const resilierCheck = $('#ct-resilier');
+  if (resilierWrap && resilierCheck) {
+    const canResilier = isAdmin() && ct && ct.statut !== 'Résilié' && ct.statut !== 'Terminé';
+    resilierWrap.style.display = canResilier ? '' : 'none';
+    resilierCheck.checked = false;
+  }
   $('#ct-notes').value = ct?.notes || '';
 
   populateFormuleSelect(ct?.type || '', ct?.formule || null);
@@ -906,7 +908,7 @@ async function saveContract() {
     recurrence: $('#ct-recurrence').value,
     date_debut: $('#ct-date-debut').value || null,
     date_echeance: $('#ct-date-echeance').value || null,
-    statut: $('#ct-statut').value,
+    statut: ($('#ct-resilier')?.checked) ? 'Résilié' : ($('#ct-statut').value || 'En attente de signature'),
     notes: $('#ct-notes').value.trim() || null,
   };
   // Colonnes ajoutées en v13 — on ne les envoie que si elles existent dans le HTML ET en base
@@ -1818,20 +1820,20 @@ function computeObjectifValue(o, userId) {
     case 'nouveaux_contacts':
       return state.contacts.filter(c => filterContact(c) && isThisMonth(c.created_at)).length;
     case 'contrats_total':
-      return state.contracts.filter(c => filterContract(c) && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
+      return state.contracts.filter(c => filterContract(c) && ['Contrat en cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
     case 'contrats_type':
-      return state.contracts.filter(c => filterContract(c) && c.type === o.contract_type_filter && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
+      return state.contracts.filter(c => filterContract(c) && c.type === o.contract_type_filter && ['Contrat en cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at)).length;
     case 'taches_terminees':
       // Pas de created_by sur tasks : on retombe sur l'utilisateur courant uniquement
       if (userId === 'all') return state.tasks.filter(t => t.statut === 'Terminé' && isThisMonth(t.termine_at || t.created_at)).length;
       return state.tasks.filter(t => t.statut === 'Terminé' && isThisMonth(t.termine_at || t.created_at)).length;
     case 'ca_recurrent':
       return state.contracts
-        .filter(c => filterContract(c) && c.recurrence === 'Mensuel' && ['Signé', 'En cours'].includes(c.statut))
+        .filter(c => filterContract(c) && c.recurrence === 'Mensuel' && ['Contrat en cours'].includes(c.statut))
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     case 'ca_genere':
       return state.contracts
-        .filter(c => filterContract(c) && ['Signé', 'En cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at))
+        .filter(c => filterContract(c) && ['Contrat en cours', 'Terminé'].includes(c.statut) && isThisMonth(c.date_debut || c.created_at))
         .reduce((sum, c) => sum + Math.max(0, (Number(c.montant) || 0) - (Number(c.remise) || 0)), 0);
     case 'commissions': {
       return computeMonthlyCommission(userId);
@@ -1864,7 +1866,7 @@ function computeMonthlyCommission(userId) {
 
   const contracts = state.contracts.filter(c =>
     (userId === 'all' || c.created_by === userId) &&
-    ['Signé', 'En cours', 'Terminé'].includes(c.statut)
+    ['Contrat en cours', 'Terminé'].includes(c.statut)
   );
 
   let total = 0;
@@ -2265,6 +2267,8 @@ async function sendOrderLink() {
     `01 84 16 26 29 — contact@safe-digitalisation.fr`
   );
   window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
+
+  await sb.from('contracts').update({ statut: 'Envoyé' }).eq('id', contract.id);
 
   alert(
     `✅ Lien créé et copié dans le presse-papier !\n\n` +
