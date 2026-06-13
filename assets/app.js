@@ -579,19 +579,23 @@ function openContactModal(id = null) {
   // Bandeau "fiche d'un collègue"
   if (c && !editable && !c.rgpd_ko) {
     const owner = state.profilesById?.[c.created_by];
-    $('#c-owner-name').textContent = owner?.prenom || owner?.email || '—';
-    $('#c-readonly-msg').style.display = 'block';
+    const ownerEl = $('#c-owner-name');
+    if (ownerEl) ownerEl.textContent = owner?.prenom || owner?.email || '—';
+    const readonlyEl = $('#c-readonly-msg');
+    if (readonlyEl) readonlyEl.style.display = 'block';
     $('#contact-save-btn').style.display = 'none';
     $('#contact-delete-btn').style.display = 'none';
   } else {
-    $('#c-readonly-msg').style.display = 'none';
+    const readonlyEl = $('#c-readonly-msg');
+    if (readonlyEl) readonlyEl.style.display = 'none';
     $('#contact-save-btn').style.display = '';
     $('#contact-delete-btn').style.display = (c && editable) ? 'inline-flex' : 'none';
   }
 
   // Bouton transfert : propriétaire ou admin uniquement, et fiche existante non RGPD KO
   const canTransfer = c && editable && !c.rgpd_ko;
-  $('#contact-transfer-btn').style.display = canTransfer ? 'inline-flex' : 'none';
+  const transferBtn = $('#contact-transfer-btn');
+  if (transferBtn) transferBtn.style.display = canTransfer ? 'inline-flex' : 'none';
 
   $('#contact-modal').classList.add('show');
 }
@@ -867,7 +871,8 @@ function openContractModal(id = null) {
   $('#contract-save-btn').style.display = editable ? '' : 'none';
   $('#contract-delete-btn').style.display = (ct && editable) ? 'inline-flex' : 'none';
   $('#contract-pdf-btn').style.display = ct ? 'inline-flex' : 'none';
-  $('#contract-send-btn').style.display = (ct && editable) ? 'inline-flex' : 'none';
+  const sendBtn = $('#contract-send-btn');
+  if (sendBtn) sendBtn.style.display = (ct && editable) ? 'inline-flex' : 'none';
   $('#contract-modal').classList.add('show');
 }
 
@@ -1319,7 +1324,8 @@ function renderAdminPerUser() {
   if (!grid) return;
   const allUsers = Object.values(state.profilesById)
     .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
-  $('#admin-per-user-count').textContent = allUsers.length;
+  const countEl = $('#admin-per-user-count');
+  if (countEl) countEl.textContent = allUsers.length;
   renderTeamGauges(grid, allUsers);
 }
 
