@@ -2017,26 +2017,26 @@ async function sendOrderLink() {
     `Un lien valable 7 jours sera généré. Vous pourrez l'envoyer au client par e-mail ou WhatsApp.`
   )) return;
 
-  // Insertion dans order_links (snapshot du contrat)
-  const { data, error } = await sb.from('order_links').insert({
-    contract_id: contract.id,
-    created_by: state.user.id,
-    client_name: contact.nom,
-    client_email: contact.email,
-    client_entreprise: contact.entreprise,
-    client_siret: contact.siret,
-    produit: contract.type,
-    formule: contract.formule,
-    montant: contract.montant,
-    frais_mise_en_place: contract.frais_mise_en_place || 0,
-    remise: contract.remise || 0,
-    recurrence: contract.recurrence,
-    engagement_mois: contract.engagement_mois || 0,
-  }).select('token').single();
+  // Insertion via RPC (contourne le cache schéma PostgREST)
+  const { data, error } = await sb.rpc('create_order_link', {
+    p_contract_id: contract.id,
+    p_client_name: contact.nom,
+    p_client_email: contact.email,
+    p_client_entreprise: contact.entreprise,
+    p_client_siret: contact.siret,
+    p_produit: contract.type,
+    p_formule: contract.formule,
+    p_montant: contract.montant || 0,
+    p_frais_mise_en_place: contract.frais_mise_en_place || 0,
+    p_remise: contract.remise || 0,
+    p_recurrence: contract.recurrence,
+    p_engagement_mois: contract.engagement_mois || 0,
+  });
 
   if (error) { alert("Erreur : " + error.message); return; }
 
-  const orderUrl = `${location.origin}/order.html?token=${data.token}`;
+  const token = data; // la RPC retourne directement le token
+  const orderUrl = `${location.origin}/order.html?token=${token}`;
 
   // Copie dans le presse-papier
   try { await navigator.clipboard.writeText(orderUrl); } catch (_) {}
