@@ -145,7 +145,8 @@ footer a{color:var(--blue)}
 <script>
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const params = new URLSearchParams(location.search);
-const ORDER_TOKEN = params.get('token');
+const ORDER_ID = params.get('id');
+const ORDER_TOKEN = ORDER_ID;
 const STATUS = params.get('status');
 let ORDER = null;
 
