@@ -2013,7 +2013,37 @@ async function sendOrderLink() {
     `Un lien sera généré. Le contrat doit rester en statut "Devis envoyé" pour que le client puisse y accéder.`
   )) return;
 
-  
+  // L'UUID du contrat sert de token (déjà aléatoire et indevinable)
+  const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}`;
+
+  // Copie dans le presse-papier
+  try { await navigator.clipboard.writeText(orderUrl); } catch (_) {}
+
+  // Ouvre le client mail avec le lien pré-rempli
+  const subject = encodeURIComponent(`Votre bon de commande S@FE — ${contract.type}${contract.formule ? ' ' + contract.formule : ''}`);
+  const body = encodeURIComponent(
+    `Bonjour ${contact.nom || ''},\n\n` +
+    `Veuillez trouver ci-dessous le lien vers votre bon de commande S@FE :\n\n` +
+    `${orderUrl}\n\n` +
+    `Ce lien vous permettra de :\n` +
+    `• Consulter le récapitulatif de votre commande\n` +
+    `• Lire et accepter nos Conditions Générales de Vente\n` +
+    `• Procéder au paiement sécurisé en ligne (CB / SEPA)\n\n` +
+    `Pour toute question, n'hésitez pas à me contacter.\n\n` +
+    `Cordialement,\n` +
+    `${state.profile?.prenom || 'L\'équipe S@FE'}\n` +
+    `S@FE Digitalisation\n` +
+    `01 84 16 26 29 — contact@safe-digitalisation.fr`
+  );
+  window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
+
+  alert(
+    `✅ Lien créé et copié dans le presse-papier !\n\n` +
+    `Votre client mail s'est ouvert avec le lien pré-rempli.\n` +
+    `Vous pouvez aussi coller le lien dans WhatsApp ou un SMS.\n\n` +
+    `Lien : ${orderUrl}`
+  );
+}
 
 // --- Bon de commande PDF (Bon de commande + CGV combinés) ---
 function generateContractPDF() {
