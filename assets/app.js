@@ -2015,25 +2015,56 @@ async function sendOrderLink() {
     `Un lien valable 7 jours sera généré. Vous pourrez l'envoyer au client par e-mail ou WhatsApp.`
   )) return;
 
-  // Insertion via RPC (contourne le cache schéma PostgREST)
-  const { data, error } = await sb.rpc('create_order_link', {
-    p_contract_id: contract.id,
-    p_client_name: contact.nom,
-    p_client_email: contact.email,
-    p_client_entreprise: contact.entreprise,
-    p_client_siret: contact.siret,
-    p_produit: contract.type,
-    p_formule: contract.formule,
-    p_montant: contract.montant || 0,
-    p_frais_mise_en_place: contract.frais_mise_en_place || 0,
-    p_remise: contract.remise || 0,
-    p_recurrence: contract.recurrence,
-    p_engagement_mois: contract.engagement_mois || 0,
-  });
+  // Insertion dans order_links (double tentative : client JS puis fetch direct)
+  const orderPayload = {
+    contract_id: contract.id,
+    created_by: state.user.id,
+    client_name: contact.nom,
+    client_email: contact.email,
+    client_entreprise: contact.entreprise || null,
+    client_siret: contact.siret || null,
+    produit: contract.type,
+    formule: contract.formule,
+    montant: contract.montant || 0,
+    frais_mise_en_place: contract.frais_mise_en_place || 0,
+    remise: contract.remise || 0,
+    recurrence: contract.recurrence,
+    engagement_mois: contract.engagement_mois || 0,
+  };
 
-  if (error) { alert("Erreur : " + error.message); return; }
+  let token = null;
+  // Tentative 1 : via le client Supabase
+  const r1 = await sb.from('order_links').insert(orderPayload).select('token').single();
+  if (!r1.error && r1.data?.token) {
+    token = r1.data.token;
+  } else {
+    // Tentative 2 : fetch direct sur l'API REST PostgREST
+    try {
+      const { data: sess } = await sb.auth.getSession();
+      const resp = await fetch(`${SUPABASE_URL}/rest/v1/order_links?select=token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${sess?.session?.access_token}`,
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify(orderPayload),
+      });
+      if (!resp.ok) {
+        const txt = await resp.text();
+        alert("Erreur création du lien :\n" + (r1.error?.message || '') + "\n\nFallback REST :\n" + txt);
+        return;
+      }
+      const rows = await resp.json();
+      token = rows?.[0]?.token;
+    } catch (e) {
+      alert("Erreur : " + (r1.error?.message || e.message));
+      return;
+    }
+  }
 
-  const token = data; // la RPC retourne directement le token
+  if (!token) { alert("Erreur : le token n'a pas été généré."); return; }
   const orderUrl = `${location.origin}/order.html?token=${token}`;
 
   // Copie dans le presse-papier
