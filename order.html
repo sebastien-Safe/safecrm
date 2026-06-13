@@ -178,17 +178,10 @@ async function init() {
     $('#err-msg').textContent = 'Ce lien n\'est associé à aucun bon de commande. Vérifiez auprès de votre chargé de clientèle.';
     return;
   }
-  {
-    show('#state-error');
-    $('#err-title').textContent = 'Lien expiré';
-    $('#err-msg').textContent = 'Ce bon de commande a expiré. Contactez votre chargé de clientèle pour en recevoir un nouveau.';
-    return;
-  }
-  if (data.statut === 'Signé' || data.order_consent_cgv_at) {
+  {if (data.statut !== 'Devis envoyé') {
     show('#state-paid');
     return;
   }
-
   // Nom et email du client passés dans l'URL (pas stockés en base)
   const clientName = params.get('name') || '';
   const clientEmail = params.get('email') || '';
