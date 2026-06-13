@@ -1722,7 +1722,12 @@ async function createNewUser() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ email, password, prenom, is_admin: makeAdmin }),
+      body: JSON.stringify({
+        email, password, prenom, is_admin: makeAdmin,
+        denomination: $('#nu-denomination')?.value?.trim() || null,
+        siret: $('#nu-siret')?.value?.trim() || null,
+        adresse_pro: $('#nu-adresse')?.value?.trim() || null,
+        tva: $('#nu-tva')?.value?.trim() || null,
     });
 
     let body = null;
