@@ -2722,7 +2722,7 @@ function bindEvents() {
 
   // Objectifs
   $('#save-jours-btn').addEventListener('click', saveJoursTravailles);
-  $('#btn-edit-objectifs').addEventListener('click', openObjectifsModal);
+  $('#btn-edit-objectifs')?.addEventListener('click', openObjectifsModal);
   $('#objectifs-cancel-btn').addEventListener('click', closeObjectifsModal);
   $('#objectifs-save-btn').addEventListener('click', saveObjectifsModal);
 
