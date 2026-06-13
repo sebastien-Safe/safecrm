@@ -2021,19 +2021,15 @@ async function sendOrderLink() {
   const expires = new Date();
   expires.setDate(expires.getDate() + 7);
 
-  // Mise à jour du contrat avec le token + snapshot client
+  // Mise à jour du contrat avec le token (colonnes déjà connues de PostgREST)
   const { error } = await sb.from('contracts').update({
     order_token: token,
     order_expires_at: expires.toISOString(),
-    order_client_name: contact.nom,
-    order_client_email: contact.email,
-    order_client_entreprise: contact.entreprise || null,
-    order_client_siret: contact.siret || null,
   }).eq('id', contract.id);
 
   if (error) { alert("Erreur : " + error.message); return; }
 
-  const orderUrl = `${location.origin}/order.html?token=${token}`;
+  const orderUrl = `${location.origin}/order.html?token=${token}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}`;
 
   // Copie dans le presse-papier
   try { await navigator.clipboard.writeText(orderUrl); } catch (_) {}
