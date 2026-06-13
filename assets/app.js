@@ -2394,6 +2394,7 @@ function bindEvents() {
   $('#ct-formule-select').addEventListener('change', () => onFormuleChange(true));
   $('#ct-date-debut').addEventListener('change', autoCalcEcheance);
   $('#ct-montant').addEventListener('input', updateNetDisplay);
+  $('#ct-frais-mise-en-place')?.addEventListener('input', updateNetDisplay);
   $('#ct-remise-check').addEventListener('change', e => {
     $('#ct-remise').style.display = e.target.checked ? '' : 'none';
     if (!e.target.checked) $('#ct-remise').value = '';
