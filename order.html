@@ -167,7 +167,7 @@ async function init() {
   // Lecture du contrat par son order_token (accès anon via RLS)
   const { data, error } = await sb
     .from('contracts')
-    .select('id, type, formule, montant, frais_mise_en_place, remise, recurrence, engagement_mois, order_token, order_expires_at, order_client_name, order_client_email, order_client_entreprise, order_client_siret, order_consent_cgv_at, order_stripe_session_id, statut')
+    .select('id, type, formule, montant, frais_mise_en_place, remise, recurrence, engagement_mois, order_token, order_expires_at, order_consent_cgv_at, statut')
     .eq('order_token', ORDER_TOKEN)
     .single();
 
@@ -188,14 +188,17 @@ async function init() {
     return;
   }
 
-  // Mapping vers le format attendu par render()
+  // Nom et email du client passés dans l'URL (pas stockés en base)
+  const clientName = params.get('name') || '';
+  const clientEmail = params.get('email') || '';
+
   ORDER = {
     id: data.id,
     token: data.order_token,
-    client_name: data.order_client_name,
-    client_email: data.order_client_email,
-    client_entreprise: data.order_client_entreprise,
-    client_siret: data.order_client_siret,
+    client_name: clientName,
+    client_email: clientEmail,
+    client_entreprise: '',
+    client_siret: '',
     produit: data.type,
     formule: data.formule,
     montant: data.montant,
