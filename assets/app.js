@@ -2013,18 +2013,7 @@ async function sendOrderLink() {
     `Un lien sera généré. Le contrat doit rester en statut "Devis envoyé" pour que le client puisse y accéder.`
   )) return;
 
-  // L'UUID du contrat sert de token (déjà aléatoire et indevinable)
-  const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}`;
-
-  // Copie dans le presse-papier
-  const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}`;
-  alert(
-    `✅ Lien créé et copié dans le presse-papier !\n\n` +
-    `Votre client mail s'est ouvert avec le lien pré-rempli.\n` +
-    `Vous pouvez aussi coller le lien dans WhatsApp ou un SMS.\n\n` +
-    `Lien : ${orderUrl}`
-  );
-}
+  
 
 // --- Bon de commande PDF (Bon de commande + CGV combinés) ---
 function generateContractPDF() {
