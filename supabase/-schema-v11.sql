@@ -18,7 +18,7 @@
 --   3. Le passage d'un contrat au statut "Terminé" (ou
 --      "Résilié") est RÉSERVÉ aux super-administrateurs.
 --      Un commercial peut faire évoluer son contrat jusqu'à
---      "Signé" / "En cours" mais c'est l'admin qui valide
+--      "Signé" / "Contrat en cours" mais c'est l'admin qui valide
 --      la clôture définitive.
 -- =========================================================
 

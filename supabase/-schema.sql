@@ -35,7 +35,7 @@ create table if not exists contracts (
   recurrence    text default 'Ponctuel' check (recurrence in ('Ponctuel','Mensuel','Annuel')),
   date_debut    date,
   date_echeance date,
-  statut        text default 'Devis envoyé' check (statut in ('Devis envoyé','Signé','En cours','Terminé','Résilié')),
+  statut        text default 'Devis envoyé' check (statut in ('Devis envoyé','Signé','Contrat en cours','Terminé','Résilié')),
   notes         text
 );
 
