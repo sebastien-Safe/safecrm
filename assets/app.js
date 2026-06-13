@@ -498,18 +498,16 @@ function renderContacts() {
   tbody.innerHTML = list.map(c => {
     const editable = canEditContact(c);
     const label = c.rgpd_ko ? 'Voir' : (editable ? 'Modifier' : 'Voir');
-    return `
-    <tr class="${c.rgpd_ko ? 'row-rgpd-ko' : ''}">
-      <td>${escapeHtml(c.nom)}${!editable && !c.rgpd_ko ? ' <span class="badge badge-gray" title="Fiche d\'un autre utilisateur" style="margin-left:4px">🔒</span>' : ''}</td>
+    const lockBadge = (!editable && !c.rgpd_ko) ? ' <span class="badge badge-gray">🔒</span>' : '';
+    return `<tr class="${c.rgpd_ko ? 'row-rgpd-ko' : ''}">
+      <td>${escapeHtml(c.nom)}${lockBadge}</td>
       <td>${escapeHtml(c.entreprise || '—')}</td>
       <td><div class="tag-row">${(c.activites || []).map(a => `<span class="badge ${ACTIVITE_BADGE[a] || 'badge-gray'}">${escapeHtml(a)}</span>`).join('') || '—'}</div></td>
-      <td>${c.rgpd_ko ? '<span class="badge badge-red">🚫 RGPD KO</span>' : `<span class="badge ${CONTACT_STATUT_BADGE[c.statut] || 'badge-gray'}">${escapeHtml(c.statut)}</span>`}</td>
+      <td>${c.rgpd_ko ? '<span class="badge badge-red">RGPD KO</span>' : `<span class="badge ${CONTACT_STATUT_BADGE[c.statut] || 'badge-gray'}">${escapeHtml(c.statut)}</span>`}</td>
       <td class="nowrap">${escapeHtml(c.telephone || '—')}</td>
       <td>${c.email ? `<a href="mailto:${escapeHtml(c.email)}" style="color:var(--accent)">${escapeHtml(c.email)}</a>` : '—'}</td>
       <td class="nowrap">${escapeHtml(creatorName(c.created_by))}</td>
-      <td class="actions">
-        <button class="btn btn-out btn-sm" data-edit-contact="${c.id}">${label}</button>
-      </td>
+      <td class="actions"><button class="btn btn-out btn-sm" data-edit-contact="${c.id}">${label}</button></td>
     </tr>`;
   }).join('');
 }
