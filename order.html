@@ -160,7 +160,7 @@ if (SUPABASE_ANON_KEY.includes('test') || location.hostname === 'localhost') {
 }
 
 async function init() {
-  if (!ORDER_ID) { { show('#state-error'); $('#err-title').textContent = 'Lien invalide'; $('#err-msg').textContent = 'Ce lien ne contient pas de référence de commande.'; return; }
+  if (!ORDER_ID) { show('#state-error'); $('#err-title').textContent = 'Lien invalide'; $('#err-msg').textContent = 'Ce lien ne contient pas de référence de commande.'; return; }
 
   if (STATUS === 'success') { show('#state-success'); return; }
   if (STATUS === 'cancel')  { show('#state-cancel');  return; }
