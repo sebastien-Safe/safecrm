@@ -669,8 +669,8 @@ async function saveContact() {
       payload.consent_courrier = false;
     }
   }
-  // Mémorise la date de passage au statut "Client" (pour l'objectif "Nouveaux clients")
-  if (statut === 'Client' && (!existing || existing.statut !== 'Client')) {
+  // Tout nouveau contact est automatiquement "Client"
+  if (!existing) {
     payload.devenu_client_at = new Date().toISOString();
   }
   let error;
