@@ -49,7 +49,10 @@ serve(async (req) => {
   if (e1 || !ct) return json({ error: "not_found" }, 404);
 
   const m = Number(ct.montant || 0);
-  const s = Math.max(0, Number(ct.frais_mise_en_place || 0) - Number(ct.remise || 0));
+  const s = Math.max(
+    0,
+    Number(ct.frais_mise_en_place || 0) - Number(ct.remise || 0)
+  );
   const r = ct.recurrence === "Mensuel";
   const n = (ct.type || "Prestation") +
     (ct.formule ? " - " + ct.formule : "");
@@ -65,8 +68,8 @@ serve(async (req) => {
         {
           price_data: {
             currency: "eur",
-            product_data: { name: n + " - Mensuel" },
-            unit_amount: Math.round(m * 100),
+            product_data: { name: n + " - Mensuel TTC" },
+            unit_amount: Math.round(m * 120),
             recurring: { interval: "month" }
           },
           quantity: 1
@@ -76,8 +79,8 @@ serve(async (req) => {
         li.push({
           price_data: {
             currency: "eur",
-            product_data: { name: n + " - MeP" },
-            unit_amount: Math.round(s * 100)
+            product_data: { name: n + " - MeP TTC" },
+            unit_amount: Math.round(s * 120)
           },
           quantity: 1
         });
@@ -96,8 +99,8 @@ serve(async (req) => {
           {
             price_data: {
               currency: "eur",
-              product_data: { name: n },
-              unit_amount: Math.round((m + s) * 100)
+              product_data: { name: n + " TTC" },
+              unit_amount: Math.round((m + s) * 120)
             },
             quantity: 1
           }
