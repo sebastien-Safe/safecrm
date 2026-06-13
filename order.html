@@ -178,17 +178,17 @@ async function init() {
     $('#err-msg').textContent = 'Ce lien n\'est associé à aucun bon de commande. Vérifiez auprès de votre chargé de clientèle.';
     return;
   }
-  {if (data.statut !== 'Devis envoyé') {
+  if (data.statut !== 'Devis envoyé') {
     show('#state-paid');
     return;
   }
-  // Nom et email du client passés dans l'URL (pas stockés en base)
+
   const clientName = params.get('name') || '';
   const clientEmail = params.get('email') || '';
 
   ORDER = {
     id: data.id,
-    token: data.order_token,
+    token: data.id,
     client_name: clientName,
     client_email: clientEmail,
     client_entreprise: '',
@@ -196,14 +196,11 @@ async function init() {
     produit: data.type,
     formule: data.formule,
     montant: data.montant,
-    frais_mise_en_place: data.frais_mise_en_place,
     remise: data.remise,
     recurrence: data.recurrence,
-    engagement_mois: data.engagement_mois,
   };
   render();
 }
-
 function render() {
   const o = ORDER;
   const montant = Number(o.montant || 0);
