@@ -1469,7 +1469,7 @@ function generateBordereauCommission() {
   const userId = state._resultatsUserId;
   const u = state.profilesById[userId];
   const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
-  if (!u || !jsPDF) { { alert('Données insuffisantes ou jsPDF non chargé.'); return; }
+  if (!u || !jsPDF) { alert('Données insuffisantes ou jsPDF non chargé.'); return; }
 
   const now = new Date();
   const moisLabel = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
