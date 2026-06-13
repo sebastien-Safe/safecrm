@@ -4,7 +4,7 @@
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const state
+const state = {
   contacts: [],
   contracts: [],
   tasks: [],
