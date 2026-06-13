@@ -208,8 +208,8 @@ function render() {
   const montant = Number(o.montant || 0);
   const setup = Number(o.frais_mise_en_place || 0);
   const remise = Number(o.remise || 0);
-  const setupNet = Math.max(0, setup - remise);
-  const net = montant;
+  const setupNet = setup > 0 ? Math.max(0, setup - remise) : 0;
+  const net = setup > 0 ? montant : Math.max(0, montant - remise);
   const setupTTC = Math.round(setupNet * 1.2 * 100) / 100;
   const netTTC = Math.round(net * 1.2 * 100) / 100;
   const isRecurrent = o.recurrence === 'Mensuel';

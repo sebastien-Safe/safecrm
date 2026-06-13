@@ -48,11 +48,11 @@ serve(async (req) => {
     .single();
   if (e1 || !ct) return json({ error: "not_found" }, 404);
 
-  const m = Number(ct.montant || 0);
-  const s = Math.max(
-    0,
-    Number(ct.frais_mise_en_place || 0) - Number(ct.remise || 0)
-  );
+  const raw = Number(ct.montant || 0);
+  const setup = Number(ct.frais_mise_en_place || 0);
+  const rem = Number(ct.remise || 0);
+  const m = setup > 0 ? raw : Math.max(0, raw - rem);
+  const s = setup > 0 ? Math.max(0, setup - rem) : 0;
   const r = ct.recurrence === "Mensuel";
   const n = (ct.type || "Prestation") +
     (ct.formule ? " - " + ct.formule : "");
