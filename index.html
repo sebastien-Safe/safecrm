@@ -360,7 +360,11 @@
     </div>
     <div class="field"><label>Adresse</label><input id="c-adresse" type="text"></div>
     <div class="field-row">
-      <div class="field"><label>Code postal et ville</label><input id="c-code-postal-ville" type="text" placeholder="Ex : 75008 Paris"></div>
+     <div class="field-row">
+        <div class="field" style="flex:0 0 140px"><label>Code postal</label><input id="c-code-postal" type="text" maxlength="5" placeholder="01000"></div>
+        <div class="field" style="flex:1"><label>Ville</label><select id="c-ville"><option value="">Saisissez un code postal</option></select></div>
+      </div>
+      <input id="c-code-postal-ville" type="hidden">
       <div class="field"><label>Forme juridique</label><input id="c-forme-juridique" type="text" placeholder="Ex : SAS, SARL, EI…"></div>
     </div>
     <div class="field"><label>SIRET du client <span class="mut" style="font-weight:400;text-transform:none;letter-spacing:0">(14 chiffres — pour les bons de commande)</span></label><input id="c-siret" type="text" placeholder="14 chiffres" maxlength="20"></div>
