@@ -1465,12 +1465,39 @@ function getObjectifTarget(userId, metricType) {
   const o = state.objectifs.find(o => o.user_id === userId && o.metric_type === metricType);
   return o ? computeObjectifTarget(o) : 0;
 }
-
 function generateBordereauCommission() {
   const userId = state._resultatsUserId;
   const u = state.profilesById[userId];
-  if (!u || !jsPDF) { alert('Données insuffisantes ou jsPDF non chargé.'); return; }
+  if (!u || typeof jsPDF === 'undefined') { alert('Données insuffisantes ou jsPDF non chargé.'); return; }
 
+  const now = new Date();
+  const moisLabel = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 190;
+  let y = 15;
+
+  // === EN-TÊTE ===
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(10, 22, 40);
+  doc.text('BORDEREAU DE COMMISSION', 15, y);
+  y += 7;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.text('S@FE Digitalisation — ' + moisLabel, 15, y);
+  y += 6;
+  doc.text('Commercial : ' + (u.prenom || '—'), 15, y);
+  if (u.denomination) { y += 5; doc.text('Société : ' + u.denomination, 15, y); }
+  if (u.siret) { y += 5; doc.text('SIRET : ' + u.siret, 15, y); }
+  if (u.tva) { y += 5; doc.text('TVA : ' + u.tva, 15, y); }
+  if (u.adresse_pro) { y += 5; doc.text('Adresse : ' + u.adresse_pro, 15, y); }
+  y += 5;
+  doc.text('Généré le : ' + now.toLocaleDateString('fr-FR'), 15, y);
+  y += 4;
+  doc.setDrawColor(200); doc.line(15, y, 195, y); y += 6;
+
+  // === SECTION 1 : NOUVELLES AFFAIRES DU MOIS ===
   const now = new Date();
   const moisLabel = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
