@@ -240,8 +240,8 @@ function render() {
   // Total : pour le récurrent, on affiche le 1er mois (setup + net) puis le mensuel
   if (isRecurrent && setup > 0) {
     $('#o-total-label').textContent = '1ᵉʳ mois HT (mise en service + abonnement)';
-    $('#o-total').textContent = money(setup + net);
-    $('#o-total-ttc').textContent = money((setup + net) * 1.2);
+    $('#o-total').textContent = money(setupNet + net);
+    $('#o-total-ttc').textContent = money((setupNet + net) * 1.2);
   } else {
     $('#o-total-label').textContent = isRecurrent ? 'Mensuel HT' : 'Total HT';
     $('#o-total').textContent = money(net) + (isRecurrent ? ' / mois' : '');
@@ -250,7 +250,7 @@ function render() {
 
   // Libellé du bouton payer
   if (isRecurrent) {
-    $('#btn-pay').textContent = `Accepter et payer ${money(setup + net)} (1ᵉʳ mois) puis ${money(net)}/mois`;
+    $('#btn-pay').textContent = `Accepter et payer ${money(setupNet + net)} (1ᵉʳ mois) puis ${money(net)}/mois`;
   } else {
     $('#btn-pay').textContent = `Accepter et payer ${money(net)}`;
   }
