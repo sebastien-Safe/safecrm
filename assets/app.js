@@ -573,7 +573,17 @@ function openContactModal(id = null) {
   $('#c-email').value = c?.email || '';
   $('#c-telephone').value = c?.telephone || '';
   $('#c-adresse').value = c?.adresse || '';
-  $('#c-code-postal-ville').value = c?.code_postal_ville || '';
+  // Split code_postal_ville en deux champs
+  const cpv = c?.code_postal_ville || '';
+  const cpMatch = cpv.match(/^(\d{5})\s*(.*)$/);
+  $('#c-code-postal').value = cpMatch ? cpMatch[1] : '';
+  const villeSelect = $('#c-ville');
+  if (cpMatch && cpMatch[2]) {
+    villeSelect.innerHTML = `<option value="${escapeHtml(cpMatch[2])}">${escapeHtml(cpMatch[2])}</option>`;
+    villeSelect.value = cpMatch[2];
+  } else {
+    villeSelect.innerHTML = '<option value="">Saisissez un code postal</option>';
+  }
   $('#c-forme-juridique').value = c?.forme_juridique || '';
   $('#c-siret').value = c?.siret || '';
   $('#c-source').value = c?.source || state.profile?.prenom || '';
@@ -2646,7 +2656,32 @@ function bindEvents() {
     $('#' + id).addEventListener('input', renderContracts);
   });
   $('#tasks-filter-assigne').addEventListener('input', renderTasks);
-
+// Auto-complétion ville par code postal (API Géo gouv.fr)
+  $('#c-code-postal')?.addEventListener('input', async function() {
+    const cp = this.value.trim();
+    const sel = $('#c-ville');
+    if (cp.length !== 5 || !/^\d{5}$/.test(cp)) {
+      sel.innerHTML = '<option value="">Saisissez un code postal (5 chiffres)</option>';
+      return;
+    }
+    sel.innerHTML = '<option value="">Recherche…</option>';
+    try {
+      const resp = await fetch('https://geo.api.gouv.fr/communes?codePostal=' + cp + '&fields=nom&format=json');
+      const communes = await resp.json();
+      if (!communes.length) {
+        sel.innerHTML = '<option value="">Aucune commune trouvée</option>';
+        return;
+      }
+      sel.innerHTML = communes.map(function(c) { return '<option value="' + c.nom + '">' + c.nom + '</option>'; }).join('');
+      $('#c-code-postal-ville').value = cp + ' ' + sel.value;
+    } catch (e) {
+      sel.innerHTML = '<option value="">Erreur de recherche</option>';
+    }
+  });
+  $('#c-ville')?.addEventListener('change', function() {
+    var cp = $('#c-code-postal').value.trim();
+    $('#c-code-postal-ville').value = cp + ' ' + this.value;
+  });
   // Nouveaux éléments
   $('#btn-new-contact').addEventListener('click', () => openContactModal());
   $('#btn-new-contract').addEventListener('click', () => openContractModal());
