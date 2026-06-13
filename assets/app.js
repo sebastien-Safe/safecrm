@@ -2860,4 +2860,4 @@ function bindEvents() {
   setupInactivityTimeout();
 }
 
-init();
+init()
