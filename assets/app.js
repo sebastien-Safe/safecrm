@@ -2400,7 +2400,22 @@ function bindEvents() {
     if (!e.target.checked) $('#ct-remise').value = '';
     updateNetDisplay();
   });
-  $('#ct-remise').addEventListener('input', updateNetDisplay);
+  $('#ct-remise').addEventListener('input', function updateNetDisplay() {
+  const montant = Number($('#ct-montant').value) || 0;
+  const setup = Number($('#ct-frais-mise-en-place')?.value) || 0;
+  const remiseActive = $('#ct-remise-check').checked;
+  const remise = remiseActive ? (Number($('#ct-remise').value) || 0) : 0;
+  if (setup > 0) {
+    const setupNet = Math.max(0, setup - remise);
+    const total = setupNet + montant;
+    $('#ct-net-wrap').style.display = remiseActive && remise > 0 ? '' : 'none';
+    $('#ct-net-display').value = formatMoney(total) + ' (1er mois HT)';
+  } else {
+    const net = Math.max(0, montant - remise);
+    $('#ct-net-wrap').style.display = remiseActive && remise > 0 ? '' : 'none';
+    $('#ct-net-display').value = formatMoney(net) + ' HT';
+  }
+});
 
   // Modale Tâche
   $('#task-cancel-btn').addEventListener('click', closeTaskModal);
