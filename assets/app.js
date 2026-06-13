@@ -1972,19 +1972,22 @@ async function saveJoursTravailles() {
 function openObjectifsModal() {
   const list = $('#objectifs-edit-list');
   const mine = state.objectifs.filter(o => o.user_id === state.user.id);
+  // Seul l'objectif commission est modifiable par l'utilisateur
+  const commObj = mine.find(o => o.metric_type === 'commissions');
   list.innerHTML = mine.map(o => {
     const isMoney = ['ca_recurrent', 'ca_genere', 'commissions'].includes(o.metric_type);
     const unit = (isMoney ? '€ ' : '') + (o.scale_by_days ? `/ ${o.jours_reference}j` : '');
+    const editable = o.metric_type === 'commissions';
     let row = `
     <div class="objectif-row">
       <label>${escapeHtml(o.metric_type === 'commissions' ? 'Commissions' : o.label)}</label>
-      <input type="number" step="0.01" min="0" data-objectif-id="${o.id}" value="${o.objectif_base}">
+      <input type="number" step="0.01" min="0" data-objectif-id="${o.id}" value="${o.objectif_base}" ${editable ? '' : 'disabled style="opacity:.5"'}>
       <span class="unit">${unit}</span>
     </div>`;
     if (o.metric_type === 'commissions') {
       row += `
     <div class="objectif-row" style="padding-top:0">
-      <label class="mut" style="font-size:.82rem">↳ Calcul automatique selon barème SAFEDIRCOM-2026-V1 : signature fixe + bonus fidélité mois 4 + 15 % récurrent SEO/C&amp;C, 10 % DPO, 20 % audits</label>
+      <label class="mut" style="font-size:.82rem">↳ Calcul automatique selon barème SAFEDIRCOM-2026-V1</label>
       <span class="unit" style="width:auto;font-family:var(--ff-mono)">grille</span>
     </div>`;
     }
@@ -1999,7 +2002,7 @@ function closeObjectifsModal() {
 }
 
 async function saveObjectifsModal() {
-  const inputs = $all('#objectifs-edit-list input[data-objectif-id]');
+  const inputs = $all('#objectifs-edit-list input[data-objectif-id]:not(:disabled)');
   for (const inp of inputs) {
     const { error } = await sb.from('objectifs')
       .update({ objectif_base: Number(inp.value) || 0 })
