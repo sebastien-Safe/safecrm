@@ -775,20 +775,7 @@ function onFormuleChange(applyPreset = true) {
     const engEl = $('#ct-engagement-mois');
     if (mepEl) mepEl.value = preset.setup || 0;
     if (engEl) engEl.value = preset.engagement || 0;
-    const note = $('#ct-notes');
-    const extraNotes = [];
-    if (preset.setup) {
-      extraNotes.push(`Frais de mise en place : ${preset.setup} € HT (facturés au 1er mois, non remboursables).`);
-    }
-    if (preset.engagement) {
-      extraNotes.push(`Engagement minimum : ${preset.engagement} mois.`);
-    }
-    extraNotes.forEach(n => {
-      const key = n.split(' :')[0];
-      if (!note.value.includes(key)) {
-        note.value = note.value ? note.value + '\n' + n : n;
-      }
-    });
+    ;
   }
   updateNetDisplay();
   autoCalcEcheance();
