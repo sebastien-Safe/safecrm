@@ -168,7 +168,7 @@ async function init() {
   // Lecture du contrat par son order_token (accès anon via RLS)
   const { data, error } = await sb
     .from('contracts')
-    .select('id, type, formule, montant, remise, recurrence, statut')
+    .select('*')
     .eq('id', ORDER_ID)
     .single();
 
@@ -196,7 +196,8 @@ async function init() {
     produit: data.type,
     formule: data.formule,
     montant: data.montant,
-    frais_mise_en_place: 0,
+    frais_mise_en_place: data.frais_mise_en_place || 0,
+    engagement_mois: data.engagement_mois || 0,
     remise: data.remise,
     recurrence: data.recurrence,
   };
