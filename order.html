@@ -283,8 +283,7 @@ async function pay() {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify({ token: ORDER_ID, consent_cgv: true, consent_rgpd: true }),
-    });
+body: JSON.stringify({ contract_id: ORDER_ID, consent_cgv: true, consent_rgpd: true }),    });
     const data = await resp.json();
     if (!resp.ok || data.error) throw new Error(data.error + (data.details ? ' — ' + data.details : ''));
     if (!data.url) throw new Error('URL de paiement manquante dans la réponse.');

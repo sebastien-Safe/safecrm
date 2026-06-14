@@ -1,6 +1,7 @@
 // deno-lint-ignore-file
 // 1. Suppression du module 'serve' obsolète et ajout de ?target=deno sur Supabase
 // On cible "denonext" pour que esm.sh s'adapte à Deno v2
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.0?target=denonext";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2?target=denonext";
 import Stripe from "https://esm.sh/stripe@14?target=denonext";
 
