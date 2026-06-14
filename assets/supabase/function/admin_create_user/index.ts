@@ -16,11 +16,10 @@
 // Déploiement :
 //   supabase functions deploy admin-create-user
 // =========================================================
-
-deno-lint-ignore-file
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+// deno-lint-ignore-file
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// 1. Définition des en-têtes CORS pour autoriser les requêtes depuis votre application (web, mobile, etc.)
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
