@@ -644,7 +644,29 @@ function renderQuickAutomations(){
 /* ============================================================
    WORKFLOW ENGINE
    ============================================================ */
+/* MAPPING WORKFLOWS -> PAGES DE MISSION */
+const MISSION_PAGES = {
+  'seo_onboarding':  'mission-seo.html',
+  'seo_rapport':     'mission-seo.html',
+  'dig_onboarding':  'mission-onboarding.html',
+  'generic_onboard': 'mission-onboarding.html',
+  'rgpd_audit':      'mission-onboarding.html',  // à remplacer par mission-rgpd.html
+  'rgpd_dpo':        'mission-onboarding.html',
+  'cyber_audit':     'mission-onboarding.html',  // à remplacer par mission-cyber.html
+};
+
 function openWorkflow(wfId, contactId, contractId){
+  const page = MISSION_PAGES[wfId];
+  if(page){
+    // Redirection vers la page de mission avec les paramètres
+    window.location.href = `${page}?contact=${contactId}&contract=${contractId}&wf=${wfId}`;
+    return;
+  }
+  // Fallback modale pour les workflows sans page dédiée
+  _openWorkflowModal(wfId, contactId, contractId);
+}
+
+function _openWorkflowModal(wfId, contactId, contractId){
   const contact  = allContacts.find(c=>c.id===contactId);
   const contract = allContracts.find(ct=>ct.id===contractId);
   const allWFs   = Object.values(WORKFLOWS).flat();
