@@ -1,6 +1,3 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
 const H = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -14,7 +11,8 @@ function json(b: unknown, s = 200) {
   );
 }
 
-serve(async (req) => {
+// Changement ici : Deno.serve au lieu de serve
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: H });
   }
