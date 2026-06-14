@@ -1,6 +1,7 @@
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import Stripe from "https://esm.sh/stripe@14?target=deno";
+// On cible "denonext" pour que esm.sh s'adapte à Deno v2
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2?target=denonext";
+import Stripe from "https://esm.sh/stripe@14?target=denonext";
 
 const H = {
   "Access-Control-Allow-Origin": "*",
