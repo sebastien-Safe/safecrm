@@ -1,5 +1,6 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// deno-lint-ignore-file
+// 1. Suppression du module 'serve' obsolète et ajout de ?target=deno sur Supabase
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2?target=deno";
 import Stripe from "https://esm.sh/stripe@14?target=deno";
 
 const cors = {
@@ -9,7 +10,8 @@ const cors = {
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 
-serve(async (req) => {
+// 2. Utilisation de Deno.serve au lieu de serve
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
