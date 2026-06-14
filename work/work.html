@@ -377,22 +377,30 @@ async function doLogin(){
   const email = document.getElementById('l-email').value.trim();
   const pass  = document.getElementById('l-pass').value;
   const btn   = document.getElementById('btn-login');
-  document.getElementById('login-err').textContent = '';
-  if(!email||!pass){document.getElementById('login-err').textContent='Renseignez e-mail et mot de passe.';return;}
+  const errEl = document.getElementById('login-err');
+  errEl.textContent = '';
+  if(!email||!pass){errEl.textContent='Renseignez e-mail et mot de passe.';return;}
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
   try {
     const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method:'POST', headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
       body:JSON.stringify({email,password:pass})
     });
-    const d = await r.json();
-    if(!r.ok) throw new Error(d.error_description||d.msg||'Identifiants incorrects');
+    let d;
+    try { d = await r.json(); } catch(je){ throw new Error('Réponse serveur invalide ('+r.status+')'); }
+    if(!r.ok){
+      const msg = d.error_description||d.msg||d.message||d.error||JSON.stringify(d);
+      throw new Error(msg);
+    }
+    if(!d.access_token) throw new Error('Token manquant dans la réponse Supabase.');
     localStorage.setItem('safe_work_token', d.access_token);
     localStorage.setItem('safe_work_uid', d.user.id);
     localStorage.setItem('safe_work_email', d.user.email);
     await initApp(d.access_token, d.user);
   } catch(e){
-    document.getElementById('login-err').textContent = e.message;
+    errEl.textContent = e.message;
+    console.error('[Work login]', e);
   }
   btn.disabled=false; btn.innerHTML='Se connecter';
 }
@@ -416,14 +424,16 @@ let currentWF = null;
 let currentWFStep = 0;
 
 async function initApp(token, user){
-  // Vérifier is_admin
   H['Authorization'] = 'Bearer '+token;
+  // Récupérer le profil — non bloquant en phase test
   try {
     const profiles = await sbGet('profiles', `id=eq.${user.id}&select=prenom,is_admin`);
     const p = profiles[0]||{};
-    if(!p.is_admin){ doLogout(); showToast('Accès réservé aux administrateurs.','err'); return; }
-    currentUser = {...user, prenom: p.prenom||user.email.split('@')[0]};
-  } catch(e){ currentUser = {id:user.id, email:user.email, prenom:user.email.split('@')[0]}; }
+    currentUser = {...user, prenom: p.prenom||user.email.split('@')[0], is_admin: p.is_admin};
+  } catch(e){
+    // Profil inaccessible (RLS) — on continue avec les infos auth de base
+    currentUser = {id:user.id, email:user.email, prenom:user.email.split('@')[0]};
+  }
 
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
@@ -921,8 +931,8 @@ async function loadTasks(){
     if(!tasks.length){ tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--mut)">Aucune tâche</td></tr>'; return; }
     tbody.innerHTML = tasks.map(t=>{
       const contact = allContacts.find(c=>c.id===t.contact_id);
-      const prio = {Haute:'pill-alert',Normale:'pill-blue',Basse:'pill-mut'};
-      const stat = {À faire:'pill-gold','En cours':'pill-blue',Terminé:'pill-ok'};
+      const prio = {'Haute':'pill-alert','Normale':'pill-blue','Basse':'pill-mut'};
+      const stat = {'À faire':'pill-gold','En cours':'pill-blue','Terminé':'pill-ok'};
       return `<tr>
         <td style="color:#fff;max-width:260px">${t.titre}</td>
         <td style="font-size:.82rem">${contact?contact.nom:'—'}</td>
@@ -966,20 +976,30 @@ function showToast(msg, type='info'){
 /* ============================================================
    BOOTSTRAP
    ============================================================ */
-(function(){
-  const token = localStorage.getItem('safe_work_token');
-  const uid   = localStorage.getItem('safe_work_uid');
-  const email = localStorage.getItem('safe_work_email');
-  if(token && uid){
-    H['Authorization'] = 'Bearer '+token;
-    initApp(token, {id:uid, email:email||''});
-  }
-})();
-
-// Fermer le workflow au clic sur l'overlay
 document.getElementById('wf-overlay').addEventListener('click', function(e){
   if(e.target.id==='wf-overlay') closeWorkflow();
 });
+
+// Reprise de session — enveloppé pour ne jamais bloquer le chargement
+(function(){
+  var token, uid, email;
+  try {
+    token = localStorage.getItem('safe_work_token');
+    uid   = localStorage.getItem('safe_work_uid');
+    email = localStorage.getItem('safe_work_email');
+  } catch(e){ return; }
+  if(token && uid){
+    H['Authorization'] = 'Bearer '+token;
+    initApp(token, {id:uid, email:email||''}).catch(function(err){
+      console.warn('[Work bootstrap] session invalide, nettoyage.', err);
+      try {
+        localStorage.removeItem('safe_work_token');
+        localStorage.removeItem('safe_work_uid');
+        localStorage.removeItem('safe_work_email');
+      } catch(e2){}
+    });
+  }
+})();
 </script>
 </body>
 </html>
