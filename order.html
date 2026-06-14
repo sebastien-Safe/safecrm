@@ -143,6 +143,9 @@ footer a{color:var(--blue)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/config.js"></script>
 <script>
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // ...
+<script>
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const params = new URLSearchParams(location.search);
 const ORDER_ID = params.get('id');
