@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S@FE Work — Mission RGPD</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<style>
+:root{
+  --navy:#0a1628;--navy-mid:#142240;--line:rgba(255,255,255,.08);
+  --mut:#94a3b8;--mut-2:#cbd5e1;--accent:#3b82f6;--accent-2:#2563eb;
+  --gold:#f59e0b;--ok:#22c55e;--alert:#ff4d5e;--warn:#f59e0b;--purple:#8b5cf6;
+  --r:14px;--ff-disp:'Sora',sans-serif;--ff-body:'IBM Plex Sans',sans-serif;--ff-mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--ff-body);background:var(--navy);color:var(--mut-2);min-height:100vh;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(800px 500px at 80% 0%,rgba(139,92,246,.12),transparent 60%),
+    radial-gradient(600px 400px at 0% 30%,rgba(245,158,11,.07),transparent 55%),
+    linear-gradient(180deg,var(--navy),var(--navy-mid));}
+h1,h2,h3,h4{font-family:var(--ff-disp);color:#fff;line-height:1.15;letter-spacing:-.02em}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;backdrop-filter:blur(14px);background:rgba(10,17,36,.85);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 24px;height:60px}
+.brand{font-family:var(--ff-disp);font-weight:800;font-size:1.2rem;color:#fff}.brand b{color:var(--gold)}
+.mission-label{font-family:var(--ff-mono);font-size:.7rem;letter-spacing:.15em;color:var(--purple);text-transform:uppercase;border:1px solid rgba(139,92,246,.35);padding:3px 10px;border-radius:20px}
+.formule-badge{font-family:var(--ff-mono);font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid}
+.topbar-right{margin-left:auto;display:flex;gap:10px;align-items:center}
+.btn-back{background:transparent;border:1px solid var(--line);color:var(--mut);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem;font-family:var(--ff-body);transition:.15s}
+.btn-back:hover{border-color:var(--purple);color:var(--purple)}
+
+/* LAYOUT */
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 24px}
+
+/* CLIENT HERO */
+.client-hero{background:rgba(20,34,64,.8);border:1px solid var(--line);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+.client-avatar{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#4c1d95,var(--purple));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.client-info h2{font-size:1.1rem;margin-bottom:2px}
+.client-info .sub{font-size:.82rem;color:var(--mut)}
+.client-meta{display:flex;gap:22px;flex-wrap:wrap}
+.cmi .lbl{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.1em;color:var(--mut);text-transform:uppercase;display:block}
+.cmi .val{font-size:.85rem;color:#fff;font-weight:500}
+
+/* FORMULE INFO */
+.formule-info{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);border-radius:var(--r);padding:16px 20px;margin-bottom:24px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.formule-info .fi-label{font-family:var(--ff-mono);font-size:.65rem;letter-spacing:.12em;color:var(--purple);text-transform:uppercase;margin-bottom:4px}
+.formule-info h3{font-size:1rem;color:#fff;margin-bottom:6px}
+.formule-info ul{list-style:none;display:flex;flex-direction:column;gap:3px}
+.formule-info ul li{font-size:.8rem;color:var(--mut-2);display:flex;align-items:center;gap:7px}
+.formule-info ul li::before{content:"✓";color:var(--purple);font-weight:700;font-size:.75rem}
+.fi-price{font-family:var(--ff-disp);font-size:1.3rem;font-weight:800;color:var(--gold);white-space:nowrap}
+.fi-price small{font-size:.7rem;color:var(--mut);font-weight:400;display:block}
+
+/* PROGRESS */
+.progress-wrap{margin-bottom:24px}
+.progress-labels{display:flex;justify-content:space-between;margin-bottom:6px;font-family:var(--ff-mono);font-size:.65rem;color:var(--mut)}
+.progress-bar{background:rgba(255,255,255,.06);border-radius:99px;height:6px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--purple),var(--accent));transition:width .4s ease}
+
+/* SECTION HEADER */
+.section-head{margin-bottom:14px}
+.eyebrow{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.15em;color:var(--purple);text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* STEP CARD */
+.step-card{background:rgba(20,34,64,.7);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:16px;transition:.2s;position:relative;overflow:hidden}
+.step-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--step-color,var(--purple));opacity:0;transition:.2s}
+.step-card.active::before{opacity:1}
+.step-card.done{border-color:rgba(34,197,94,.25);background:rgba(34,197,94,.04)}
+.step-card.done::before{background:var(--ok);opacity:1}
+.step-card.locked{opacity:.4;pointer-events:none}
+.step-num{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.1em;color:var(--mut);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.step-icon{font-size:1.1rem}
+.step-title{font-size:.97rem;font-weight:700;color:#fff;margin-bottom:5px}
+.step-desc{font-size:.8rem;color:var(--mut);margin-bottom:14px;line-height:1.5}
+.step-result{margin-top:12px;padding:10px 12px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:.78rem;color:#86efac;display:none}
+.step-result.show{display:block}
+
+/* BUTTONS */
+.btn{font-family:var(--ff-disp);font-weight:700;font-size:.82rem;padding:8px 16px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:.15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-purple{background:linear-gradient(135deg,#4c1d95,var(--purple));color:#fff;box-shadow:0 3px 10px rgba(139,92,246,.3)}
+.btn-purple:hover{transform:translateY(-1px)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#fbbf24);color:#0a1628}
+.btn-gold:hover{transform:translateY(-1px)}
+.btn-ok{background:rgba(34,197,94,.1);color:var(--ok);border-color:rgba(34,197,94,.3)}
+.btn-ok:hover{background:rgba(34,197,94,.2)}
+.btn-out{background:transparent;color:var(--mut-2);border-color:var(--line)}
+.btn-out:hover{border-color:var(--purple);color:var(--purple)}
+.btn-sm{padding:5px 11px;font-size:.75rem;border-radius:7px}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+/* CHECKLIST */
+.checklist{list-style:none;display:flex;flex-direction:column;gap:6px}
+.checklist li{display:flex;align-items:flex-start;gap:10px;font-size:.83rem;padding:9px 12px;border-radius:8px;background:rgba(255,255,255,.03);cursor:pointer;transition:.15s;user-select:none;line-height:1.4}
+.checklist li:hover{background:rgba(255,255,255,.06)}
+.checklist li.checked{color:var(--ok)}
+.chk{width:18px;height:18px;border-radius:5px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s;font-size:.7rem;margin-top:1px}
+.checklist li.checked .chk{background:var(--ok);border-color:var(--ok);color:#000}
+.checklist li .sub-hint{font-size:.74rem;color:var(--mut);margin-top:2px;display:block}
+
+/* QCM */
+.qcm-wrap{display:flex;flex-direction:column;gap:0}
+.qcm-item{border-bottom:1px solid var(--line);padding:14px 0}
+.qcm-item:last-child{border-bottom:none}
+.qcm-q{font-size:.88rem;color:#fff;font-weight:600;margin-bottom:10px;display:flex;gap:10px;align-items:flex-start}
+.qcm-q .qnum{font-family:var(--ff-mono);font-size:.7rem;color:var(--purple);background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25);border-radius:6px;padding:2px 7px;flex-shrink:0;margin-top:1px}
+.qcm-options{display:flex;flex-direction:column;gap:6px;padding-left:36px}
+.qcm-option{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;border:1px solid var(--line);cursor:pointer;transition:.15s;font-size:.82rem;color:var(--mut-2)}
+.qcm-option:hover{border-color:var(--purple);background:rgba(139,92,246,.07);color:#fff}
+.qcm-option.sel{border-color:var(--purple);background:rgba(139,92,246,.12);color:#fff}
+.qcm-option.sel-ok{border-color:var(--ok);background:rgba(34,197,94,.08);color:#86efac}
+.qcm-option.sel-warn{border-color:var(--warn);background:rgba(245,158,11,.08);color:var(--gold)}
+.qcm-option.sel-alert{border-color:var(--alert);background:rgba(255,77,94,.08);color:#fca5a5}
+.qcm-radio{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;transition:.15s;display:flex;align-items:center;justify-content:center}
+.qcm-option.sel .qcm-radio,.qcm-option.sel-ok .qcm-radio,.qcm-option.sel-warn .qcm-radio,.qcm-option.sel-alert .qcm-radio{border-color:currentColor}
+.qcm-option.sel .qcm-radio::after,.qcm-option.sel-ok .qcm-radio::after,.qcm-option.sel-warn .qcm-radio::after,.qcm-option.sel-alert .qcm-radio::after{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;display:block}
+.qcm-score-bar{margin-top:12px;padding:10px 12px;background:rgba(20,34,64,.6);border-radius:8px;border:1px solid var(--line);font-size:.78rem;display:none}
+.qcm-score-bar.show{display:flex;align-items:center;gap:10px}
+.score-val{font-family:var(--ff-disp);font-size:1.2rem;font-weight:800;color:#fff}
+.score-label{color:var(--mut)}
+
+/* NOTES */
+textarea.notes{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:#fff;font-size:.82rem;font-family:var(--ff-body);resize:vertical;min-height:70px;margin-top:8px}
+textarea.notes:focus{outline:none;border-color:var(--purple)}
+.field-label{font-family:var(--ff-mono);font-size:.65rem;letter-spacing:.1em;color:var(--mut);text-transform:uppercase;display:block;margin-bottom:4px;margin-top:12px}
+
+/* TOOLS */
+.tools-strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tool-link{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);color:var(--mut-2);font-size:.78rem;transition:.15s;background:rgba(255,255,255,.03)}
+.tool-link:hover{border-color:var(--purple);color:#fff;background:rgba(139,92,246,.08)}
+
+/* SUMMARY */
+.summary-box{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:var(--r);padding:20px 24px;margin-top:28px;display:none}
+.summary-box.show{display:block}
+.summary-box h3{color:var(--ok);margin-bottom:12px}
+.summary-box ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.summary-box ul li::before{content:"✓ ";color:var(--ok);font-weight:700}
+.summary-box ul li{font-size:.83rem}
+
+/* TOAST / SPINNER / LOADING */
+.toast{position:fixed;bottom:24px;right:24px;z-index:500;padding:11px 16px;border-radius:11px;font-size:.83rem;font-weight:600;transform:translateY(16px);opacity:0;transition:.22s;pointer-events:none;max-width:340px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#86efac}
+.toast.err{background:rgba(255,77,94,.15);border:1px solid rgba(255,77,94,.4);color:#fca5a5}
+.toast.info{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.4);color:#93c5fd}
+.spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-screen{position:fixed;inset:0;z-index:999;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.loading-screen .sp{width:40px;height:40px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite}
+.loading-screen p{color:var(--mut);font-size:.88rem}
+
+/* RISK BADGE */
+.risk-badge{display:inline-block;font-family:var(--ff-mono);font-size:.72rem;font-weight:700;padding:4px 12px;border-radius:20px;margin-left:8px}
+.risk-0{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.3)}
+.risk-1{background:rgba(245,158,11,.15);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
+.risk-2{background:rgba(255,77,94,.15);color:#fca5a5;border:1px solid rgba(255,77,94,.3)}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loading">
+  <div class="sp"></div>
+  <p>Chargement de la mission RGPD…</p>
+</div>
+
+<div class="topbar">
+  <div class="brand">S<b>@</b>FE</div>
+  <span class="mission-label">🔒 Mission RGPD</span>
+  <span class="formule-badge" id="topbar-formule" style="display:none"></span>
+  <div class="topbar-right">
+    <button class="btn-back" onclick="history.back()">← Retour Work</button>
+  </div>
+</div>
+
+<div class="page" id="main-page" style="display:none">
+
+  <!-- CLIENT HERO -->
+  <div class="client-hero">
+    <div class="client-avatar" id="client-avatar">?</div>
+    <div class="client-info" style="flex:1;min-width:180px">
+      <h2 id="client-nom">—</h2>
+      <div class="sub" id="client-sub">—</div>
+    </div>
+    <div class="client-meta" id="client-meta"></div>
+  </div>
+
+  <!-- FORMULE INFO -->
+  <div class="formule-info" id="formule-info"></div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-labels">
+      <span id="progress-label">0 étape complétée</span>
+      <span id="progress-pct">0 %</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+  </div>
+
+  <!-- MISSION CONTENT (injecté dynamiquement selon formule) -->
+  <div id="mission-content"></div>
+
+  <!-- SUMMARY -->
+  <div class="summary-box" id="summary">
+    <h3>🎉 Mission accomplie !</h3>
+    <ul id="summary-list"></ul>
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-purple" onclick="history.back()">← Retour Work</button>
+      <button class="btn btn-out" onclick="location.reload()">↺ Nouvelle session</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL='https://qdjmzietysukediqkebg.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkam16aWV0eXN1a2VkaXFrZWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMTY0MzcsImV4cCI6MjA5Njc5MjQzN30.JbS1D34VhRv8lsSUndT7o2ZTPJmBgfWGHDh7JdNlLIY';
+const H={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+
+let contact=null,contract=null;
+let stepsValidated=new Set();
+let totalSteps=0;
+let summaryActions=[];
+let qcmAnswers={};
+
+/* ============================================================
+   DÉFINITIONS PAR FORMULE
+   ============================================================ */
+
+/* --- QCM COMMUN (Diagnostic + toutes formules) --- */
+const QCM_DIAGNOSTIC=[
+  {id:'q1',q:"Avez-vous désigné un responsable de la protection des données en interne ?",
+   opts:[{l:"Oui, c'est formalisé",r:'ok'},{l:"Informellement",r:'warn'},{l:"Non",r:'alert'}]},
+  {id:'q2',q:"Savez-vous quelles données personnelles vous collectez et pourquoi ?",
+   opts:[{l:"Oui, tout est documenté",r:'ok'},{l:"Partiellement",r:'warn'},{l:"Non",r:'alert'}]},
+  {id:'q3',q:"Disposez-vous d'un registre des activités de traitement (Art. 30) ?",
+   opts:[{l:"Oui, à jour",r:'ok'},{l:"Incomplet ou obsolète",r:'warn'},{l:"Non",r:'alert'}]},
+  {id:'q4',q:"Vos clients et prospects sont-ils informés de l'utilisation de leurs données ?",
+   opts:[{l:"Oui, mentions légales + formulaires",r:'ok'},{l:"Partiellement",r:'warn'},{l:"Non",r:'alert'}]},
+  {id:'q5',q:"Avez-vous signé des contrats de sous-traitance avec vos prestataires (hébergeur, CRM, comptable…) ?",
+   opts:[{l:"Oui, avec les principaux",r:'ok'},{l:"Quelques-uns",r:'warn'},{l:"Non",r:'alert'}]},
+  {id:'q6',q:"En cas de demande d'un client pour accéder ou supprimer ses données, savez-vous quoi faire ?",
+   opts:[{l:"Oui, procédure en place",r:'ok'},{l:"Approximativement",r:'warn'},{l:"Non",r:'alert'}]},
+  {id:'q7',q:"Vos données clients sont-elles sauvegardées et sécurisées (mot de passe, chiffrement) ?",
+   opts:[{l:"Oui",r:'ok'},{l:"Partiellement",r:'warn'},{l:"Non",r:'alert'}]},
+  {id:'q8',q:"Avez-vous déjà subi ou êtes-vous conscient d'une fuite ou d'un incident de données ?",
+   opts:[{l:"Non, aucun incident",r:'ok'},{l:"Possible mais non signalé",r:'warn'},{l:"Oui",r:'alert'}]},
+  {id:'q9',q:"Vos employés ont-ils été sensibilisés au RGPD et à la sécurité des données ?",
+   opts:[{l:"Oui, formation réalisée",r:'ok'},{l:"Informellement",r:'warn'},{l:"Non",r:'alert'}]},
+  {id:'q10',q:"Avez-vous des cookies ou outils de suivi sur votre site web (Google Analytics, etc.) ?",
+   opts:[{l:"Oui, avec bandeau de consentement conforme",r:'ok'},{l:"Oui, sans bandeau conforme",r:'warn'},{l:"Pas de site / je ne sais pas",r:'alert'}]},
+];
+
+const QCM_AVANCE=[
+  {id:'qa1',q:"Réalisez-vous des traitements à grande échelle (données sensibles, profiling, données de santé) ?",
+   opts:[{l:"Non",r:'ok'},{l:"À vérifier",r:'warn'},{l:"Oui",r:'alert'}]},
+  {id:'qa2',q:"Avez-vous plusieurs établissements ou services avec des données différentes ?",
+   opts:[{l:"Non, périmètre unique",r:'ok'},{l:"2 à 5 entités",r:'warn'},{l:"Plus de 5 ou multi-sites",r:'alert'}]},
+  {id:'qa3',q:"Des données sont-elles transférées hors UE (hébergement US, CRM américain…) ?",
+   opts:[{l:"Non",r:'ok'},{l:"À vérifier",r:'warn'},{l:"Oui",r:'alert'}]},
+  {id:'qa4',q:"Avez-vous une procédure de notification à la CNIL en cas de violation (72h) ?",
+   opts:[{l:"Oui, formalisée",r:'ok'},{l:"Non mais on saurait faire",r:'warn'},{l:"Non",r:'alert'}]},
+  {id:'qa5',q:"Avez-vous réalisé une Analyse d'Impact (AIPD) pour vos traitements à risque ?",
+   opts:[{l:"Oui",r:'ok'},{l:"Pas sûr d\'en avoir besoin",r:'warn'},{l:"Non",r:'alert'}]},
+];
+
+/* --- CHECKLISTS PAR FORMULE --- */
+const CHECKLISTS={
+  'Diagnostic (offert)':[
+    {t:"Prise de contact et présentation S@FE",h:"Expliquer le cadre du diagnostic gratuit"},
+    {t:"Soumettre le QCM de 10 questions",h:"En face à face ou partagé sur écran"},
+    {t:"Calculer le score de conformité",h:"Automatique après validation du QCM"},
+    {t:"Identifier les 3 risques principaux",h:"À partir des réponses 'rouge'"},
+    {t:"Remettre le rapport de diagnostic PDF",h:"Télécharger et envoyer par email"},
+    {t:"Présenter les offres S@FE adaptées",h:"Audit TPE, PME ou DPO selon les besoins"},
+  ],
+  'Audit RGPD TPE':[
+    {t:"Réunion de lancement (1h)",h:"Présenter la méthodologie, recueillir les accès"},
+    {t:"QCM de diagnostic approfondi",h:"20 questions — en face à face avec le dirigeant"},
+    {t:"Inventaire des traitements de données",h:"Identifier toutes les catégories : clients, RH, fournisseurs…"},
+    {t:"Rédaction du Registre Art. 30",h:"Document obligatoire CNIL — base légale, durées, destinataires"},
+    {t:"Audit des mentions d'information",h:"Site web, devis, contrats, formulaires"},
+    {t:"Modèles de contrats sous-traitants",h:"Clauses RGPD pour hébergeur, comptable, prestataires IT"},
+    {t:"Référentiel des durées de conservation",h:"Par catégorie de données selon les règles CNIL"},
+    {t:"Rédaction du plan d'action priorisé",h:"Critique / Modéré / Faible — avec échéances"},
+    {t:"Restitution client + rapport final PDF",h:"Présentation des résultats et remise du dossier complet"},
+  ],
+  'Audit RGPD+ PME':[
+    {t:"Réunion de lancement multi-interlocuteurs",h:"DG, RH, DSI, responsable commercial"},
+    {t:"QCM de diagnostic approfondi (étendu)",h:"25 questions — toutes les directions concernées"},
+    {t:"Cartographie complète des traitements",h:"Par service / établissement / périmètre"},
+    {t:"Rédaction du Registre Art. 30 étendu",h:"Couvre tous les services et filiales"},
+    {t:"Audit des mesures de sécurité (technique)",h:"Accès, chiffrement, sauvegardes, journalisation"},
+    {t:"Entretiens responsables métier",h:"RH, commercial, production, DSI — 30 min chacun"},
+    {t:"Analyse d'impact (AIPD) si nécessaire",h:"Obligatoire si traitement à risque élevé"},
+    {t:"Audit des mentions + contrats sous-traitants",h:"Tous prestataires manipulant des données personnelles"},
+    {t:"Référentiel conservation + politique de données",h:"Document interne de gouvernance"},
+    {t:"Plan d'action détaillé par priorité",h:"Avec responsable, délai et budget estimé pour chaque action"},
+    {t:"Accompagnement démarrage plan d'action",h:"Première réunion de suivi — J+15"},
+    {t:"Restitution + rapport final complet PDF",h:"Présentation à la direction + dossier complet"},
+  ],
+  'DPO externalisé':[
+    {t:"Déclaration DPO externalisé auprès de la CNIL",h:"Via le portail notifications.cnil.fr"},
+    {t:"Audit initial de l'existant RGPD",h:"Registre, mentions, contrats — état des lieux complet"},
+    {t:"Mise à jour / création du Registre Art. 30",h:"Premier registre ou mise à jour de l'existant"},
+    {t:"Point de contact CNIL activé",h:"Coordonnées S@FE référencées comme DPO"},
+    {t:"Procédure de gestion des droits (accès, effacement…)",h:"Document interne + modèles de réponse"},
+    {t:"Procédure de notification violation 72h",h:"Qui fait quoi, dans quel délai, sur quel canal"},
+    {t:"Veille réglementaire mensuelle activée",h:"Newsletter CNIL + suivi jurisprudence"},
+    {t:"Tableau de bord de suivi activé",h:"Revue mensuelle des indicateurs de conformité"},
+    {t:"Planning des points mensuels défini",h:"Date fixe chaque mois — visio ou sur site"},
+  ],
+  'Audit ETI (sur devis)':[
+    {t:"Cadrage initial et périmètre d'intervention",h:"Définir le scope exact avec la DSI et la direction"},
+    {t:"QCM complet toutes directions",h:"Diagnostic étendu multi-services"},
+    {t:"Cartographie exhaustive des traitements",h:"Toutes entités, tous pays, tous systèmes"},
+    {t:"Analyse des flux de données (data mapping)",h:"Schéma des flux internes et externes"},
+    {t:"Audit technique sécurité SI",h:"En coordination avec la DSI"},
+    {t:"AIPD sur les traitements à risque",h:"Obligatoire pour les traitements identifiés"},
+    {t:"Gouvernance données : politique interne",h:"Rédaction de la politique de protection des données"},
+    {t:"Formation des équipes clés",h:"Sensibilisation DPO, RH, commercial, DSI"},
+    {t:"Plan d'action global + feuille de route",h:"Roadmap 12 mois avec jalons et KPIs"},
+    {t:"Rapport de conformité complet + restitution",h:"Présentation au COMEX + dossier exhaustif"},
+  ],
+  'Audit RGPD':[
+    {t:"QCM de diagnostic (10 questions)",h:"Évaluation rapide de la maturité RGPD"},
+    {t:"Inventaire des traitements principaux",h:"Identifier les données collectées et leur usage"},
+    {t:"Vérification du Registre Art. 30",h:"Existant ou à créer"},
+    {t:"Rapport de recommandations PDF",h:"Synthèse avec plan d'action"},
+  ],
+};
+
+/* ============================================================
+   INIT
+   ============================================================ */
+async function init(){
+  const p=new URLSearchParams(location.search);
+  const cid=p.get('contact'), ctid=p.get('contract');
+  if(!cid||!ctid){
+    document.getElementById('loading').innerHTML='<p style="color:var(--alert)">Paramètres manquants.</p>';
+    return;
+  }
+  try{
+    const token=localStorage.getItem('safe_work_token');
+    if(token) H['Authorization']='Bearer '+token;
+    const [contacts,contracts]=await Promise.all([
+      sbGet('contacts',`id=eq.${cid}&select=*`),
+      sbGet('contracts',`id=eq.${ctid}&select=*`)
+    ]);
+    contact=contacts[0]; contract=contracts[0];
+    if(!contact||!contract) throw new Error('Données introuvables');
+    render();
+  }catch(e){
+    document.getElementById('loading').innerHTML=`<p style="color:var(--alert)">Erreur : ${e.message}</p>`;
+  }
+}
+
+async function sbGet(t,p){
+  const r=await fetch(`${SB_URL}/rest/v1/${t}?${p}`,{headers:{...H,'Prefer':'return=representation'}});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('main-page').style.display='block';
+
+  const formule=contract.formule||contract.type||'Diagnostic (offert)';
+  const ini=(contact.nom||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('client-avatar').textContent=ini;
+  document.getElementById('client-nom').textContent=contact.nom||'—';
+  document.getElementById('client-sub').textContent=(contact.entreprise||'')+(contact.activites&&contact.activites.length?' — '+contact.activites[0]:'');
+
+  // Meta
+  document.getElementById('client-meta').innerHTML=[
+    {l:'Formule',v:formule},
+    {l:'Montant',v:contract.montant?`${parseFloat(contract.montant).toLocaleString('fr-FR')} €/${contract.recurrence||'HT'}`:'—'},
+    {l:'Statut contrat',v:contract.statut||'—'},
+    {l:'Ville',v:contact.code_postal_ville||'—'},
+  ].map(i=>`<div class="cmi"><span class="lbl">${i.l}</span><span class="val">${i.v}</span></div>`).join('');
+
+  // Badge topbar
+  const fb=document.getElementById('topbar-formule');
+  fb.style.display='inline-block';
+  const fColors={'Diagnostic (offert)':'rgba(139,92,246,.3);color:#c4b5fd','Audit RGPD TPE':'rgba(245,158,11,.3);color:var(--gold)','Audit RGPD+ PME':'rgba(59,130,246,.3);color:#93c5fd','DPO externalisé':'rgba(34,197,94,.3);color:#86efac','Audit ETI (sur devis)':'rgba(255,77,94,.3);color:#fca5a5','Audit RGPD':'rgba(139,92,246,.3);color:#c4b5fd'};
+  const fc=fColors[formule]||'rgba(148,163,184,.2);color:var(--mut)';
+  fb.style.cssText+=`;border-color:${fc.split(';')[0]};${fc.split(';')[1]}`;
+  fb.textContent=formule;
+
+  renderFormuleInfo(formule);
+  renderMission(formule);
+}
+
+function renderFormuleInfo(formule){
+  const infos={
+    'Diagnostic (offert)':{price:'Offert',sub:'Diagnostic rapide',items:['10 questions en face à face','Score de conformité immédiat','3 risques prioritaires identifiés','Rapport PDF remis sur place']},
+    'Audit RGPD TPE':{price:'À partir de 1 490 € HT',sub:'Prestation ponctuelle',items:['Audit complet des traitements','Registre des activités (Art. 30)','Mentions d\'information & procédures','Modèles de contrats sous-traitants','Référentiel des durées de conservation','Plan d\'action priorisé']},
+    'Audit RGPD+ PME':{price:'À partir de 2 990 € HT',sub:'Prestation ponctuelle approfondie',items:['Tout le contenu de l\'Audit TPE','Périmètre multi-services / établissements','Analyses d\'impact (AIPD) si nécessaire','Entretiens avec les responsables métier','Revue des mesures de sécurité','Accompagnement du plan d\'action']},
+    'DPO externalisé':{price:'189 € / mois HT',sub:'Abonnement — Point de contact CNIL',items:['Point de contact CNIL & personnes concernées','Maintien du registre à jour','Gestion des demandes de droits','Veille réglementaire continue','Assistance en cas de violation (72h)']},
+    'Audit ETI (sur devis)':{price:'Sur devis',sub:'Audit complet grande structure',items:['Cartographie exhaustive multi-entités','AIPD sur traitements à risque','Gouvernance données & politique interne','Formation des équipes clés','Feuille de route 12 mois']},
+    'Audit RGPD':{price:'À définir',sub:'Audit RGPD',items:['Diagnostic initial','Registre des traitements','Recommandations','Rapport PDF']},
+  };
+  const info=infos[formule]||infos['Audit RGPD'];
+  document.getElementById('formule-info').innerHTML=`
+    <div style="flex:1;min-width:200px">
+      <div class="fi-label">Formule contractualisée</div>
+      <h3>${formule}</h3>
+      <ul style="margin-top:8px">${info.items.map(i=>`<li>${i}</li>`).join('')}</ul>
+    </div>
+    <div style="text-align:right;flex-shrink:0">
+      <div class="fi-price">${info.price}<small>${info.sub}</small></div>
+    </div>`;
+}
+
+/* ============================================================
+   MISSION PAR FORMULE
+   ============================================================ */
+function renderMission(formule){
+  const el=document.getElementById('mission-content');
+  const checklist=CHECKLISTS[formule]||CHECKLISTS['Audit RGPD'];
+  const isDiag=formule==='Diagnostic (offert)';
+  const isTpe=formule==='Audit RGPD TPE';
+  const isPme=formule==='Audit RGPD+ PME'||formule==='Audit ETI (sur devis)';
+  const isDpo=formule==='DPO externalisé';
+
+  let html='';
+
+  /* --- ÉTAPE 1 : CHECKLIST DE LA MISSION --- */
+  html+=stepCard(1,`📋 Checklist de la mission — ${formule}`,'Valide chaque étape au fil de la mission. La checklist s\'adapte à ta formule.','var(--purple)',`
+    <ul class="checklist" id="chk-list">
+      ${checklist.map((item,i)=>`
+        <li id="chk-${i}" onclick="toggleChk(${i})">
+          <span class="chk" id="chkico-${i}"></span>
+          <div><span>${item.t}</span>${item.h?`<span class="sub-hint">${item.h}</span>`:''}</div>
+        </li>`).join('')}
+    </ul>
+    <div class="btn-row">
+      <button class="btn btn-ok" onclick="validateChecklist(${checklist.length})">✓ Checklist complète</button>
+      <button class="btn btn-out btn-sm" onclick="validateChecklist(${checklist.length},true)">Passer (partiel)</button>
+    </div>
+  `);
+
+  /* --- ÉTAPE 2 : QCM FACE À FACE (toutes formules sauf DPO) --- */
+  if(!isDpo){
+    const qcmBase=QCM_DIAGNOSTIC;
+    const qcmExt=(isPme)?[...QCM_DIAGNOSTIC,...QCM_AVANCE]:QCM_DIAGNOSTIC;
+    const qcmLabel=isDiag?'10 questions — Diagnostic de conformité':isPme?'25 questions — Audit approfondi':'20 questions — Audit RGPD';
+    html+=stepCard(2,`💬 QCM — ${qcmLabel}`,'Pose ces questions au client en face à face. Le score de conformité est calculé automatiquement.','var(--accent)',`
+      <div class="tools-strip">
+        <a class="tool-link" href="https://www.cnil.fr/fr/les-bases-legales" target="_blank">📖 CNIL — Bases légales</a>
+        <a class="tool-link" href="https://www.cnil.fr/fr/rgpd-de-quoi-parle-t-on" target="_blank">🔍 Guide CNIL TPE/PME</a>
+      </div>
+      <div class="qcm-wrap" id="qcm-wrap">
+        ${qcmExt.map((q,i)=>renderQcmItem(q,i)).join('')}
+      </div>
+      <div class="qcm-score-bar" id="qcm-score-bar">
+        <div>
+          <div class="score-val" id="score-val">—</div>
+          <div class="score-label">Score de conformité</div>
+        </div>
+        <div id="score-risk" style="margin-left:12px"></div>
+        <div id="score-detail" style="font-size:.75rem;color:var(--mut);margin-left:auto"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-purple" onclick="validateQCM()">✓ QCM terminé — Calculer le score</button>
+      </div>
+    `);
+  }
+
+  /* --- ÉTAPE 3 : NOTES & OBSERVATIONS --- */
+  const stepNotes=isDpo?2:3;
+  html+=stepCard(stepNotes,'📝 Notes & Observations','Saisis ici les informations collectées pendant la mission : traitements identifiés, risques spécifiques, engagement du client…','var(--gold)',`
+    <div>
+      <label class="field-label">Traitements de données identifiés</label>
+      <textarea class="notes" id="notes-traitements" placeholder="Clients, prospects, employés, vidéosurveillance, données de santé, cookies…"></textarea>
+    </div>
+    <div>
+      <label class="field-label">Risques & non-conformités observés</label>
+      <textarea class="notes" id="notes-risques" placeholder="Registre absent, pas de mentions légales, contrats sous-traitants manquants, mots de passe partagés…"></textarea>
+    </div>
+    ${!isDiag?`<div>
+      <label class="field-label">Engagement du client / freins identifiés</label>
+      <textarea class="notes" id="notes-engagement" placeholder="Niveau de sensibilisation, disponibilité, moyens techniques, résistances…"></textarea>
+    </div>`:''}
+    <div class="btn-row">
+      <button class="btn btn-ok" onclick="validateStep(${stepNotes})">✓ Notes enregistrées</button>
+    </div>
+  `);
+
+  /* --- ÉTAPE 4 : RAPPORT PDF --- */
+  const stepPDF=isDpo?3:4;
+  totalSteps=stepPDF;
+  html+=stepCard(stepPDF,'📊 Rapport PDF — Livrable client','Génère le rapport complet à partir de toutes les données saisies. Prêt à remettre au client.','var(--ok)',`
+    <div class="tools-strip">
+      <a class="tool-link" href="https://kdrive.infomaniak.com" target="_blank">☁️ kDrive</a>
+      <a class="tool-link" href="https://mail.infomaniak.com" target="_blank">📧 kMail</a>
+      <a class="tool-link" href="https://notifications.cnil.fr" target="_blank" ${isDpo?'':'style="display:none"'}>🏛️ CNIL DPO</a>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="generateRapport()" id="btn-rapport">📊 Générer le rapport PDF</button>
+    </div>
+  `);
+
+  el.innerHTML=html;
+  // Activer étape 1
+  document.getElementById('step-1')?.classList.add('active');
+  updateProgress();
+}
+
+function renderQcmItem(q,i){
+  return `<div class="qcm-item" id="qcm-item-${q.id}">
+    <div class="qcm-q"><span class="qnum">Q${i+1}</span>${q.q}</div>
+    <div class="qcm-options">
+      ${q.opts.map((o,j)=>`
+        <div class="qcm-option" id="opt-${q.id}-${j}" onclick="selectOpt('${q.id}',${j},'${o.r}')">
+          <span class="qcm-radio"></span>${o.l}
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function stepCard(n,title,desc,color,content){
+  return `<div class="step-card${n===1?' active':''} locked" id="step-${n}" style="--step-color:${color}">
+    <div class="step-num">ÉTAPE ${n} / ${0} <span style="margin-left:4px;font-size:.8rem" id="step-${n}-status"></span></div>
+    <div class="step-title">${title}</div>
+    <div class="step-desc">${desc}</div>
+    ${content}
+    <div class="step-result" id="result-${n}"></div>
+  </div>`;
+}
+
+/* ============================================================
+   INTERACTIONS
+   ============================================================ */
+function toggleChk(i){
+  const li=document.getElementById('chk-'+i);
+  const ico=document.getElementById('chkico-'+i);
+  li.classList.toggle('checked');
+  ico.textContent=li.classList.contains('checked')?'✓':'';
+}
+
+function validateChecklist(total,force=false){
+  let checked=0;
+  for(let i=0;i<total;i++) if(document.getElementById('chk-'+i)?.classList.contains('checked')) checked++;
+  if(!force&&checked<total){showToast(`${total-checked} tâche(s) non cochée(s)${force?'':' — Clic "Passer" pour ignorer'}`, 'info');return;}
+  const r=document.getElementById('result-1');
+  r.textContent=`✓ Checklist : ${checked}/${total} tâches validées`;
+  validateStep(1);
+  summaryActions.push(`📋 Checklist mission : ${checked}/${total} tâches`);
+}
+
+function selectOpt(qid,idx,risk){
+  // Déselectionner les autres options de cette question
+  document.querySelectorAll(`[id^="opt-${qid}-"]`).forEach(el=>{
+    el.classList.remove('sel','sel-ok','sel-warn','sel-alert');
+  });
+  const cls=risk==='ok'?'sel-ok':risk==='warn'?'sel-warn':risk==='alert'?'sel-alert':'sel';
+  document.getElementById(`opt-${qid}-${idx}`).classList.add(cls);
+  qcmAnswers[qid]={idx,risk};
+}
+
+function validateQCM(){
+  const qcm=contract.formule==='Audit RGPD+ PME'||contract.formule==='Audit ETI (sur devis)'
+    ?[...QCM_DIAGNOSTIC,...QCM_AVANCE]:QCM_DIAGNOSTIC;
+  const answered=Object.keys(qcmAnswers).length;
+  if(answered<qcm.length){showToast(`${qcm.length-answered} question(s) sans réponse`,'info');return;}
+
+  let ok=0,warn=0,alert=0;
+  Object.values(qcmAnswers).forEach(a=>{
+    if(a.risk==='ok') ok++;
+    else if(a.risk==='warn') warn++;
+    else alert++;
+  });
+  const score=Math.round((ok*100+warn*50)/qcm.length);
+  const riskClass=score>=70?'risk-0':score>=40?'risk-1':'risk-2';
+  const riskLabel=score>=70?'Conforme':score>=40?'Risque modéré':'Risque élevé';
+
+  const bar=document.getElementById('qcm-score-bar');
+  bar.classList.add('show');
+  document.getElementById('score-val').textContent=score+'%';
+  document.getElementById('score-risk').innerHTML=`<span class="risk-badge ${riskClass}">${riskLabel}</span>`;
+  document.getElementById('score-detail').textContent=`✓ ${ok} conformes · ⚠ ${warn} à améliorer · ✗ ${alert} critiques`;
+
+  window._qcmScore={score,ok,warn,alert,riskLabel,riskClass,total:qcm.length};
+  const r=document.getElementById('result-2');
+  r.textContent=`✓ Score : ${score}% — ${riskLabel} (${ok} vert / ${warn} orange / ${alert} rouge)`;
+  validateStep(2);
+  summaryActions.push(`💬 QCM terminé — Score ${score}% (${riskLabel})`);
+}
+
+/* ============================================================
+   STEP ENGINE
+   ============================================================ */
+function validateStep(n){
+  stepsValidated.add(n);
+  const card=document.getElementById('step-'+n);
+  if(card){card.classList.remove('active','locked');card.classList.add('done');}
+  const r=document.getElementById('result-'+n);
+  if(r) r.classList.add('show');
+  // Activer la suivante
+  const next=document.getElementById('step-'+(n+1));
+  if(next){next.classList.remove('locked');next.classList.add('active');}
+  updateProgress();
+  if(stepsValidated.size>=totalSteps) setTimeout(()=>showSummary(),400);
+}
+
+function updateProgress(){
+  // Mettre à jour les numéros d'étapes affichés
+  document.querySelectorAll('[id^="step-"]').forEach(el=>{
+    const n=parseInt(el.id.replace('step-',''));
+    if(isNaN(n)) return;
+    const numEl=el.querySelector('.step-num');
+    if(numEl) numEl.childNodes[0].textContent=`ÉTAPE ${n} / ${totalSteps} `;
+  });
+  const pct=totalSteps?Math.round(stepsValidated.size/totalSteps*100):0;
+  document.getElementById('progress').style.width=pct+'%';
+  document.getElementById('progress-pct').textContent=pct+' %';
+  document.getElementById('progress-label').textContent=`${stepsValidated.size} étape${stepsValidated.size>1?'s':''} complétée${stepsValidated.size>1?'s':''}`;
+}
+
+/* ============================================================
+   RAPPORT PDF
+   ============================================================ */
+function generateRapport(){
+  const btn=document.getElementById('btn-rapport');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Génération…';
+  loadJsPDF(()=>{
+    try{
+      buildRapportPDF();
+      document.getElementById('result-'+totalSteps).textContent='✓ Rapport PDF généré et téléchargé';
+      validateStep(totalSteps);
+      summaryActions.push('📊 Rapport RGPD PDF généré');
+      showToast('Rapport téléchargé','ok');
+    }catch(e){showToast('Erreur PDF : '+e.message,'err');console.error(e);}
+    btn.disabled=false; btn.innerHTML='📊 Régénérer le rapport';
+  });
+}
+
+function buildRapportPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  const navy=[10,22,40],gold=[245,158,11],ok=[34,197,94],alert=[255,77,94],warn=[245,158,11],mut=[100,116,139],purple=[139,92,246];
+  const today=new Date().toLocaleDateString('fr-FR');
+  const formule=contract.formule||contract.type||'RGPD';
+  const isDiag=formule==='Diagnostic (offert)';
+  const qs=window._qcmScore||{score:0,ok:0,warn:0,alert:0,riskLabel:'Non évalué',total:0};
+
+  // === PAGE 1 : COUVERTURE ===
+  doc.setFillColor(...navy); doc.rect(0,0,210,297,'F');
+  // Bande dorée
+  doc.setFillColor(...gold); doc.rect(0,0,210,4,'F');
+  // Logo texte
+  doc.setTextColor(...gold); doc.setFont('helvetica','bold'); doc.setFontSize(28);
+  doc.text('S@FE',14,40);
+  doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','normal');
+  doc.text('Digitalisation',14,52);
+  // Titre rapport
+  doc.setTextColor(...gold); doc.setFont('helvetica','bold'); doc.setFontSize(22);
+  doc.text(isDiag?'DIAGNOSTIC RGPD':'RAPPORT DE CONFORMITÉ RGPD',14,100);
+  doc.setTextColor(200,215,235); doc.setFontSize(12); doc.setFont('helvetica','normal');
+  doc.text(formule,14,112);
+  // Ligne déco
+  doc.setDrawColor(...gold); doc.setLineWidth(1); doc.line(14,118,100,118);
+  // Client
+  doc.setTextColor(200,215,235); doc.setFontSize(10);
+  doc.text('CLIENT',14,132); 
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(13);
+  doc.text(contact.nom+(contact.entreprise?' — '+contact.entreprise:''),14,142);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(160,180,210);
+  if(contact.code_postal_ville) doc.text(contact.code_postal_ville,14,151);
+  if(contact.siret) doc.text('SIRET : '+contact.siret,14,158);
+  // Score si QCM fait
+  if(qs.total>0){
+    const scoreColor=qs.score>=70?ok:qs.score>=40?warn:alert;
+    doc.setFillColor(...scoreColor); doc.setDrawColor(...scoreColor);
+    doc.circle(168,130,22,'F');
+    doc.setTextColor(qs.score>=70?[0,80,0]:qs.score>=40?[80,50,0]:[80,0,0]); 
+    doc.setTextColor(10,22,40); doc.setFont('helvetica','bold'); doc.setFontSize(18);
+    doc.text(qs.score+'%',158,128);
+    doc.setFontSize(7); doc.text(qs.riskLabel,152,136);
+    doc.text('Score RGPD',154,143);
+  }
+  // Date + prestataire
+  doc.setTextColor(120,140,170); doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('Établi le '+today,14,260);
+  doc.text('S@FE Digitalisation · SIRET 104 699 558',14,267);
+  doc.text('66 av. Champs-Élysées, 75008 Paris · www.safe-digitalisation.fr',14,274);
+  doc.setFillColor(...gold); doc.rect(0,293,210,4,'F');
+
+  // === PAGE 2 : INFOS CLIENT + CONTRAT ===
+  doc.addPage();
+  pdfHeader(doc,navy,gold);
+  let y=52;
+  y=pdfSection(doc,'INFORMATIONS CLIENT & CONTRAT',y,navy,gold);
+  const clientRows=[
+    ['Nom / Responsable',contact.nom||'—'],
+    ['Entreprise',contact.entreprise||'—'],
+    ['E-mail',contact.email||'—'],
+    ['Téléphone',contact.telephone||'—'],
+    ['SIRET',contact.siret||'—'],
+    ['Adresse',contact.adresse||'—'],
+    ['Formule contractualisée',formule],
+    ['Montant',contract.montant?`${parseFloat(contract.montant).toLocaleString('fr-FR')} € HT`:'—'],
+    ['Date de mission',today],
+  ];
+  y=pdfTable(doc,clientRows,y,navy,mut);
+
+  // === PAGE 3 : RÉSULTATS QCM ===
+  if(qs.total>0){
+    doc.addPage(); pdfHeader(doc,navy,gold); y=52;
+    y=pdfSection(doc,'RÉSULTATS DU DIAGNOSTIC DE CONFORMITÉ',y,navy,gold);
+    // Score global
+    const sc=qs.score>=70?ok:qs.score>=40?warn:alert;
+    doc.setFillColor(...sc); doc.rect(14,y,40,16,'F');
+    doc.setTextColor(qs.score>=70?10:255,qs.score>=70?80:qs.score>=40?50:77,qs.score>=70?10:qs.score>=40?0:94);
+    doc.setTextColor(10,22,40); doc.setFont('helvetica','bold'); doc.setFontSize(14);
+    doc.text(qs.score+'%',20,y+10);
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...navy);
+    doc.text(qs.riskLabel,58,y+10);
+    doc.setFontSize(8); doc.setTextColor(...mut);
+    doc.text(`${qs.ok} conforme(s) / ${qs.warn} à améliorer / ${qs.alert} critique(s)`,58,y+16);
+    y+=26;
+    // Détail par question
+    const qcmUsed=contract.formule==='Audit RGPD+ PME'?[...QCM_DIAGNOSTIC,...QCM_AVANCE]:QCM_DIAGNOSTIC;
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+    doc.text('Détail des réponses :',14,y); y+=8;
+    qcmUsed.forEach((q,i)=>{
+      const ans=qcmAnswers[q.id];
+      const optLabel=ans?q.opts[ans.idx].l:'Non répondu';
+      const riskC=!ans?mut:ans.risk==='ok'?ok:ans.risk==='warn'?warn:alert;
+      doc.setFillColor(...riskC); doc.rect(14,y-4,3,6,'F');
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(40,55,80);
+      doc.text(`Q${i+1}. ${q.q}`,19,y,{maxWidth:150});
+      doc.setFont('helvetica','italic'); doc.setTextColor(...riskC);
+      doc.text('→ '+optLabel,19,y+4.5);
+      y+=12;
+      if(y>270){doc.addPage();pdfHeader(doc,navy,gold);y=52;}
+    });
+  }
+
+  // === PAGE : OBSERVATIONS & PLAN D'ACTION ===
+  doc.addPage(); pdfHeader(doc,navy,gold); y=52;
+  y=pdfSection(doc,'OBSERVATIONS & POINTS D\'ATTENTION',y,navy,gold);
+  const notesT=document.getElementById('notes-traitements')?.value||'Non renseigné';
+  const notesR=document.getElementById('notes-risques')?.value||'Non renseigné';
+  const notesE=document.getElementById('notes-engagement')?.value||'';
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+  doc.text('Traitements identifiés :',14,y); y+=5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(40,55,80);
+  const lt=doc.splitTextToSize(notesT,182); doc.text(lt,14,y); y+=lt.length*5+6;
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+  doc.text('Risques & non-conformités :',14,y); y+=5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(40,55,80);
+  const lr=doc.splitTextToSize(notesR,182); doc.text(lr,14,y); y+=lr.length*5+6;
+  if(notesE){
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+    doc.text('Engagement client :',14,y); y+=5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(40,55,80);
+    const le=doc.splitTextToSize(notesE,182); doc.text(le,14,y); y+=le.length*5+6;
+  }
+
+  // Recommandations automatiques selon score
+  y+=4; y=pdfSection(doc,'RECOMMANDATIONS PRIORITAIRES',y,navy,gold);
+  const recos=buildRecos(qs);
+  recos.forEach(reco=>{
+    if(y>260){doc.addPage();pdfHeader(doc,navy,gold);y=52;}
+    const rc=reco.level==='CRITIQUE'?alert:reco.level==='MODÉRÉ'?warn:ok;
+    doc.setFillColor(...rc); doc.rect(14,y-4,3,7,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...rc);
+    doc.text('['+reco.level+']',19,y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(40,55,80);
+    doc.text(reco.text,46,y,{maxWidth:148});
+    y+=10;
+  });
+
+  // Prochaines étapes selon formule
+  y+=6;
+  if(y>240){doc.addPage();pdfHeader(doc,navy,gold);y=52;}
+  y=pdfSection(doc,'PROCHAINES ÉTAPES',y,navy,gold);
+  const nextSteps=getNextSteps(contract.formule||contract.type);
+  nextSteps.forEach((s,i)=>{
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(40,55,80);
+    doc.text(`${i+1}. ${s}`,16,y); y+=7;
+  });
+
+  // Footer dernière page
+  pdfFooter(doc,navy,gold,today);
+  doc.save(`SAFE_RGPD_${(contact.entreprise||contact.nom).replace(/\s+/g,'_')}_${today.replace(/\//g,'-')}.pdf`);
+}
+
+/* --- HELPERS PDF --- */
+function pdfHeader(doc,navy,gold){
+  doc.setFillColor(...navy); doc.rect(0,0,210,40,'F');
+  doc.setFillColor(...gold); doc.rect(0,0,210,3,'F');
+  doc.setTextColor(...gold); doc.setFont('helvetica','bold'); doc.setFontSize(16);
+  doc.text('S@FE Digitalisation',14,18);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(200,215,235);
+  doc.text('SIRET 104 699 558 · 66 av. des Champs-Élysées, 75008 Paris',14,27);
+  doc.text('contact@safe-digitalisation.fr · www.safe-digitalisation.fr',14,34);
+}
+function pdfFooter(doc,navy,gold,today){
+  doc.setFillColor(...navy); doc.rect(0,275,210,22,'F');
+  doc.setFillColor(...gold); doc.rect(0,272,210,2,'F');
+  doc.setTextColor(160,180,210); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text('S@FE Digitalisation — Document confidentiel — '+today,14,284);
+  doc.text('www.safe-digitalisation.fr',162,284);
+}
+function pdfSection(doc,title,y,navy,gold){
+  doc.setFillColor(...navy); doc.rect(14,y-5,182,10,'F');
+  doc.setDrawColor(...gold); doc.setLineWidth(.5); doc.line(14,y+5,196,y+5);
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  doc.text(title,16,y+1);
+  return y+14;
+}
+function pdfTable(doc,rows,y,navy,mut){
+  rows.forEach(([l,v],i)=>{
+    doc.setFillColor(i%2===0?245:255,i%2===0?247:255,i%2===0?250:255);
+    doc.rect(14,y-4,182,8,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...mut);
+    doc.text(l,16,y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(30,45,70);
+    doc.text(String(v),80,y);
+    y+=8;
+  });
+  return y+4;
+}
+function buildRecos(qs){
+  const recos=[];
+  if(!qs||!qs.total) return [{level:'INFO',text:'Aucun QCM réalisé — score non calculé. Se référer aux observations ci-dessus.'}];
+  const qcmUsed=contract.formule==='Audit RGPD+ PME'?[...QCM_DIAGNOSTIC,...QCM_AVANCE]:QCM_DIAGNOSTIC;
+  qcmUsed.forEach(q=>{
+    const ans=qcmAnswers[q.id];
+    if(!ans) return;
+    if(ans.risk==='alert') recos.push({level:'CRITIQUE',text:recoTexts[q.id]?.alert||`Corriger immédiatement : ${q.q}`});
+    else if(ans.risk==='warn') recos.push({level:'MODÉRÉ',text:recoTexts[q.id]?.warn||`Améliorer : ${q.q}`});
+  });
+  if(!recos.length) recos.push({level:'CONFORME',text:'Niveau de conformité satisfaisant. Maintenir les bonnes pratiques et effectuer une revue annuelle.'});
+  return recos;
+}
+const recoTexts={
+  q1:{alert:'Désigner un référent RGPD interne ou externaliser la fonction DPO.',warn:'Formaliser le rôle du référent RGPD par écrit.'},
+  q2:{alert:'Réaliser un inventaire complet des données collectées (registre Art. 30).',warn:'Compléter et documenter la cartographie des traitements.'},
+  q3:{alert:'Créer immédiatement le registre des activités de traitement (obligation légale).',warn:'Mettre à jour et valider le registre existant.'},
+  q4:{alert:'Mettre en place des mentions d\'information conformes sur tous les supports.',warn:'Compléter les mentions d\'information manquantes ou insuffisantes.'},
+  q5:{alert:'Signer des clauses RGPD avec tous les sous-traitants manipulant des données.',warn:'Compléter les contrats sous-traitants manquants.'},
+  q6:{alert:'Rédiger une procédure de gestion des droits (accès, rectification, effacement).',warn:'Formaliser et tester la procédure de réponse aux demandes de droits.'},
+  q7:{alert:'Renforcer la sécurité des données : mots de passe uniques, chiffrement, accès limités.',warn:'Auditer et renforcer les mesures de sécurité existantes.'},
+  q8:{alert:'Mettre en place une procédure de notification à la CNIL sous 72h et informer les personnes concernées.',warn:'Documenter les incidents passés et mettre en place une procédure de gestion.'},
+  q9:{alert:'Former immédiatement les employés au RGPD et aux bonnes pratiques de sécurité.',warn:'Renforcer et formaliser la sensibilisation des équipes.'},
+  q10:{alert:'Mettre en place un bandeau de consentement aux cookies conforme CNIL (refus facile, pas de dark patterns).',warn:'Vérifier la conformité du bandeau existant avec les dernières recommandations CNIL.'},
+  qa1:{alert:'Réaliser une Analyse d\'Impact (AIPD) obligatoire pour les traitements à risque élevé.',warn:'Évaluer si une AIPD est nécessaire pour les traitements concernés.'},
+  qa2:{alert:'Décliner le registre et les procédures pour chaque établissement / service.',warn:'Adapter les documents RGPD au périmètre multi-entités.'},
+  qa3:{alert:'Vérifier les mécanismes de transfert hors UE (clauses contractuelles types, Privacy Shield successor).',warn:'Documenter les transferts hors UE et leur base légale.'},
+  qa4:{alert:'Mettre en place une procédure de notification à la CNIL sous 72h.',warn:'Tester et formaliser la procédure de notification violation.'},
+  qa5:{alert:'Réaliser les AIPD manquantes pour les traitements à risque élevé identifiés.',warn:'Évaluer la nécessité d\'une AIPD pour les traitements concernés.'},
+};
+function getNextSteps(formule){
+  const steps={
+    'Diagnostic (offert)':['Remise du rapport de diagnostic au client','Proposition commerciale Audit TPE ou PME adaptée','Planification de l\'audit complet si accord du client'],
+    'Audit RGPD TPE':['Validation du registre Art. 30 par le client','Déploiement des mentions d\'information sur tous les supports','Signature des clauses sous-traitants avec les prestataires clés','Revue du plan d\'action à J+30'],
+    'Audit RGPD+ PME':['Présentation du rapport à la direction','Priorisation du plan d\'action avec les responsables métier','Mise en place du comité de pilotage RGPD','Démarrage des actions critiques sous 15 jours'],
+    'DPO externalisé':['Enregistrement DPO S@FE auprès de la CNIL','Mise en place des outils de suivi mensuel','Premier point mensuel planifié','Revue annuelle de conformité prévue'],
+    'Audit ETI (sur devis)':['Présentation au COMEX','Validation de la feuille de route 12 mois','Mise en place de la gouvernance données','Premier jalon de suivi à J+30'],
+    'Audit RGPD':['Remise du rapport au client','Plan d\'action priorisé à démarrer','Point de suivi à J+30'],
+  };
+  return steps[formule]||steps['Audit RGPD'];
+}
+
+/* SUMMARY */
+function showSummary(){
+  const box=document.getElementById('summary');
+  box.classList.add('show');
+  document.getElementById('summary-list').innerHTML=summaryActions.map(a=>`<li>${a}</li>`).join('');
+  box.scrollIntoView({behavior:'smooth'});
+}
+
+/* UTILS */
+function loadJsPDF(cb){
+  if(window.jspdf){cb();return;}
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  s.onload=cb; document.head.appendChild(s);
+}
+function showToast(msg,type='info'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+type;
+  clearTimeout(t._t); t._t=setTimeout(()=>t.className='toast',3200);
+}
+
+init();
+</script>
+</body>
+</html>

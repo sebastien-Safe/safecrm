@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>S@FE Work — Mission Onboarding</title>
 <meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/favicon.ico" sizes="any">
 <style>
 :root{
   --navy:#0a1628;--navy-mid:#142240;--line:rgba(255,255,255,.08);
@@ -184,25 +185,14 @@ a{color:inherit;text-decoration:none}
       </div>
       <div class="step-actions" style="margin-top:14px">
         <button class="btn btn-ok" onclick="validateStep(1)">✓ Données correctes</button>
-        <button class="btn btn-out btn-sm" onclick="window.open('https://crm.safe-digitalisation.fr/index.html.html','_blank')">✏️ Modifier dans le CRM</button>
+        <button class="btn btn-out btn-sm" onclick="window.open('https://crm.safe-digitalisation.fr/crm.html','_blank')">✏️ Modifier dans le CRM</button>
       </div>
       <div class="step-result" id="result-1">✓ Données validées</div>
     </div>
 
-    <!-- ÉTAPE 2 — CONTRAT PDF -->
-    <div class="step-card" id="step-2" style="--step-color:var(--gold)">
-      <div class="step-num"><span class="status-ico">📄</span> ÉTAPE 2 / 5</div>
-      <div class="step-title">Génération du contrat PDF</div>
-      <div class="step-desc">Contrat S@FE pré-rempli avec les données du client et les conditions de la formule souscrite.</div>
-      <div class="step-actions">
-        <button class="btn btn-gold" onclick="generateContratPDF()" id="btn-contrat">📄 Générer le contrat</button>
-      </div>
-      <div class="step-result" id="result-2"></div>
-    </div>
-
-    <!-- ÉTAPE 3 — EMAIL BIENVENUE -->
-    <div class="step-card" id="step-3" style="--step-color:var(--accent)">
-      <div class="step-num"><span class="status-ico">📧</span> ÉTAPE 3 / 5</div>
+    <!-- ÉTAPE 2 — EMAIL BIENVENUE -->
+    <div class="step-card" id="step-2" style="--step-color:var(--accent)">
+      <div class="step-num"><span class="status-ico">📧</span> ÉTAPE 2 / 4</div>
       <div class="step-title">Email de bienvenue</div>
       <div class="step-desc">Email personnalisé pré-rédigé — copie en un clic, envoie depuis ta messagerie kMail.</div>
       <button class="btn btn-out btn-sm" onclick="toggleEmailPreview()" style="margin-bottom:10px">👁 Prévisualiser</button>
@@ -211,24 +201,24 @@ a{color:inherit;text-decoration:none}
         <button class="btn btn-pri" onclick="copyEmail()" id="btn-copy-email">📋 Copier l'email</button>
         <a class="btn btn-out btn-sm" href="https://mail.infomaniak.com" target="_blank">↗ Ouvrir kMail</a>
       </div>
-      <div class="step-result" id="result-3"></div>
+      <div class="step-result" id="result-2"></div>
     </div>
 
     <!-- ÉTAPE 4 — CHECKLIST DÉMARRAGE -->
-    <div class="step-card" id="step-4" style="--step-color:var(--ok)">
-      <div class="step-num"><span class="status-ico">✅</span> ÉTAPE 4 / 5</div>
+    <div class="step-card" id="step-3" style="--step-color:var(--ok)">
+      <div class="step-num"><span class="status-ico">✅</span> ÉTAPE 3 / 4</div>
       <div class="step-title">Checklist de démarrage</div>
       <div class="step-desc">Valide chaque point pour t'assurer que tout est en place avant le premier RDV client.</div>
       <ul class="checklist" id="checklist"></ul>
       <div class="step-actions" style="margin-top:14px">
         <button class="btn btn-ok" onclick="validateChecklist()" id="btn-checklist">✓ Checklist complète</button>
       </div>
-      <div class="step-result" id="result-4"></div>
+      <div class="step-result" id="result-3"></div>
     </div>
 
     <!-- ÉTAPE 5 — RAPPORT D'ONBOARDING PDF -->
-    <div class="step-card" id="step-5" style="--step-color:var(--ok)">
-      <div class="step-num"><span class="status-ico">📊</span> ÉTAPE 5 / 5</div>
+    <div class="step-card" id="step-4" style="--step-color:var(--ok)">
+      <div class="step-num"><span class="status-ico">📊</span> ÉTAPE 4 / 4</div>
       <div class="step-title">Rapport d'onboarding PDF</div>
       <div class="step-desc">Synthèse complète de l'onboarding — récapitulatif contrat, actions réalisées, prochaines étapes. À remettre au client.</div>
       <div class="tools-strip">
@@ -238,7 +228,7 @@ a{color:inherit;text-decoration:none}
       <div class="step-actions" style="margin-top:14px">
         <button class="btn btn-gold" onclick="generateRapportPDF()" id="btn-rapport">📊 Générer le rapport final</button>
       </div>
-      <div class="step-result" id="result-5"></div>
+      <div class="step-result" id="result-4"></div>
     </div>
 
   </div>
@@ -352,7 +342,7 @@ function render(){
 
 /* PROGRESS */
 function updateProgress(){
-  const total = 5;
+  const total = 4;
   const done = stepsValidated.size;
   document.getElementById('progress').style.width = Math.round(done/total*100)+'%';
   if(done===total) showSummary();
@@ -529,7 +519,7 @@ function toggleEmailPreview(){
 function copyEmail(){
   navigator.clipboard.writeText(window._emailText||'').then(()=>{
     document.getElementById('result-3').textContent = '✓ Email copié dans le presse-papier';
-    validateStep(3);
+    validateStep(2);
     summaryActions.push('📧 Email de bienvenue copié');
     showToast('Email copié !','ok');
   }).catch(()=>showToast('Erreur copie','err'));
@@ -576,7 +566,7 @@ function validateChecklist(){
     return;
   }
   document.getElementById('result-4').textContent = '✓ Checklist complète — '+total+' points validés';
-  validateStep(4);
+  validateStep(3);
   summaryActions.push('✅ Checklist démarrage complétée ('+total+' points)');
 }
 
@@ -588,7 +578,7 @@ function generateRapportPDF(){
     try{
       buildRapportPDF();
       document.getElementById('result-5').textContent = '✓ Rapport d\'onboarding généré';
-      validateStep(5);
+      validateStep(4);
       summaryActions.push('📊 Rapport d\'onboarding PDF généré');
       showToast('Rapport téléchargé','ok');
     }catch(e){ showToast('Erreur PDF : '+e.message,'err'); }
