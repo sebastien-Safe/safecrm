@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S@FE Work — Mission Cybersécurité</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<style>
+:root{
+  --navy:#0a1628;--navy-mid:#142240;--line:rgba(255,255,255,.08);
+  --mut:#94a3b8;--mut-2:#cbd5e1;--accent:#3b82f6;--accent-2:#2563eb;
+  --gold:#f59e0b;--ok:#22c55e;--alert:#ff4d5e;--warn:#f59e0b;
+  --red:#ef4444;--orange:#f97316;--cyber:#06b6d4;
+  --r:14px;--ff-disp:'Sora',sans-serif;--ff-body:'IBM Plex Sans',sans-serif;--ff-mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--ff-body);background:var(--navy);color:var(--mut-2);min-height:100vh;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(800px 500px at 85% 0%,rgba(6,182,212,.12),transparent 60%),
+    radial-gradient(600px 400px at 0% 40%,rgba(239,68,68,.07),transparent 55%),
+    linear-gradient(180deg,var(--navy),var(--navy-mid));}
+h1,h2,h3,h4{font-family:var(--ff-disp);color:#fff;line-height:1.15;letter-spacing:-.02em}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;backdrop-filter:blur(14px);background:rgba(10,17,36,.88);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 24px;height:60px}
+.brand{font-family:var(--ff-disp);font-weight:800;font-size:1.2rem;color:#fff}.brand b{color:var(--gold)}
+.mission-label{font-family:var(--ff-mono);font-size:.7rem;letter-spacing:.15em;color:var(--cyber);text-transform:uppercase;border:1px solid rgba(6,182,212,.35);padding:3px 10px;border-radius:20px}
+.topbar-formule{font-family:var(--ff-mono);font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid rgba(6,182,212,.3);color:var(--cyber);display:none}
+.topbar-right{margin-left:auto;display:flex;gap:10px;align-items:center}
+.btn-back{background:transparent;border:1px solid var(--line);color:var(--mut);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem;font-family:var(--ff-body);transition:.15s}
+.btn-back:hover{border-color:var(--cyber);color:var(--cyber)}
+
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 24px}
+
+/* CLIENT HERO */
+.client-hero{background:rgba(20,34,64,.8);border:1px solid var(--line);border-radius:var(--r);padding:20px 24px;display:flex;align-items:center;gap:20px;margin-bottom:22px;flex-wrap:wrap}
+.client-avatar{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#164e63,var(--cyber));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.client-info h2{font-size:1.1rem;margin-bottom:2px}
+.client-info .sub{font-size:.82rem;color:var(--mut)}
+.client-meta{display:flex;gap:22px;flex-wrap:wrap}
+.cmi .lbl{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.1em;color:var(--mut);text-transform:uppercase;display:block}
+.cmi .val{font-size:.85rem;color:#fff;font-weight:500}
+
+/* FORMULE INFO */
+.formule-info{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2);border-radius:var(--r);padding:16px 20px;margin-bottom:22px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.formule-info .fi-label{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.12em;color:var(--cyber);text-transform:uppercase;margin-bottom:4px}
+.formule-info h3{font-size:1rem;color:#fff;margin-bottom:6px}
+.formule-info ul{list-style:none;display:flex;flex-direction:column;gap:3px}
+.formule-info ul li{font-size:.8rem;color:var(--mut-2);display:flex;align-items:center;gap:7px}
+.formule-info ul li::before{content:"✓";color:var(--cyber);font-weight:700;font-size:.75rem}
+.fi-price{font-family:var(--ff-disp);font-size:1.3rem;font-weight:800;color:var(--gold);white-space:nowrap;text-align:right}
+.fi-price small{font-size:.7rem;color:var(--mut);font-weight:400;display:block}
+
+/* PROGRESS */
+.progress-wrap{margin-bottom:22px}
+.progress-labels{display:flex;justify-content:space-between;margin-bottom:6px;font-family:var(--ff-mono);font-size:.65rem;color:var(--mut)}
+.progress-bar{background:rgba(255,255,255,.06);border-radius:99px;height:6px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--cyber),var(--ok));transition:width .4s ease}
+
+/* STEP CARD */
+.step-card{background:rgba(20,34,64,.7);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:16px;position:relative;overflow:hidden;transition:.2s}
+.step-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--step-color,var(--cyber));opacity:0;transition:.2s}
+.step-card.active::before{opacity:1}
+.step-card.done{border-color:rgba(34,197,94,.25);background:rgba(34,197,94,.04)}
+.step-card.done::before{background:var(--ok);opacity:1}
+.step-card.locked{opacity:.38;pointer-events:none}
+.step-num{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.1em;color:var(--mut);margin-bottom:8px}
+.step-title{font-size:.97rem;font-weight:700;color:#fff;margin-bottom:5px}
+.step-desc{font-size:.8rem;color:var(--mut);margin-bottom:14px;line-height:1.5}
+.step-result{margin-top:12px;padding:10px 12px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:.78rem;color:#86efac;display:none}
+.step-result.show{display:block}
+
+/* BUTTONS */
+.btn{font-family:var(--ff-disp);font-weight:700;font-size:.82rem;padding:8px 16px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:.15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-cyber{background:linear-gradient(135deg,#164e63,var(--cyber));color:#fff;box-shadow:0 3px 10px rgba(6,182,212,.25)}
+.btn-cyber:hover{transform:translateY(-1px)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#fbbf24);color:#0a1628}
+.btn-gold:hover{transform:translateY(-1px)}
+.btn-ok{background:rgba(34,197,94,.1);color:var(--ok);border-color:rgba(34,197,94,.3)}
+.btn-ok:hover{background:rgba(34,197,94,.2)}
+.btn-out{background:transparent;color:var(--mut-2);border-color:var(--line)}
+.btn-out:hover{border-color:var(--cyber);color:var(--cyber)}
+.btn-alert{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.3)}
+.btn-alert:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:5px 11px;font-size:.75rem;border-radius:7px}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+/* TOOLS GRID */
+.tools-section{margin-bottom:14px}
+.tools-cat{font-family:var(--ff-mono);font-size:.62rem;letter-spacing:.12em;color:var(--cyber);text-transform:uppercase;margin-bottom:6px;margin-top:12px}
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.tool-card{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03);transition:.15s;text-decoration:none}
+.tool-card:hover{border-color:var(--cyber);background:rgba(6,182,212,.07)}
+.tool-card .tc-name{font-size:.82rem;font-weight:600;color:#fff;display:flex;align-items:center;gap:6px}
+.tool-card .tc-desc{font-size:.72rem;color:var(--mut);line-height:1.35}
+.tool-card .tc-tag{font-family:var(--ff-mono);font-size:.62rem;color:var(--cyber);margin-top:2px}
+
+/* CHECKLIST */
+.checklist{list-style:none;display:flex;flex-direction:column;gap:6px}
+.checklist li{display:flex;align-items:flex-start;gap:10px;font-size:.83rem;padding:9px 12px;border-radius:8px;background:rgba(255,255,255,.03);cursor:pointer;transition:.15s;user-select:none;line-height:1.4}
+.checklist li:hover{background:rgba(255,255,255,.06)}
+.checklist li.checked{color:var(--ok)}
+.chk{width:18px;height:18px;border-radius:5px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s;font-size:.7rem;margin-top:1px}
+.checklist li.checked .chk{background:var(--ok);border-color:var(--ok);color:#000}
+.chk-sub{font-size:.74rem;color:var(--mut);display:block;margin-top:2px}
+
+/* QCM */
+.qcm-wrap{display:flex;flex-direction:column;gap:0}
+.qcm-domain{font-family:var(--ff-mono);font-size:.65rem;letter-spacing:.12em;color:var(--cyber);text-transform:uppercase;padding:10px 0 6px;border-top:1px solid var(--line);margin-top:4px}
+.qcm-domain:first-child{border-top:none;margin-top:0}
+.qcm-item{border-bottom:1px solid rgba(255,255,255,.04);padding:12px 0}
+.qcm-item:last-child{border-bottom:none}
+.qcm-q{font-size:.87rem;color:#fff;font-weight:600;margin-bottom:9px;display:flex;gap:10px;align-items:flex-start}
+.qnum{font-family:var(--ff-mono);font-size:.68rem;color:var(--cyber);background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.2);border-radius:6px;padding:2px 7px;flex-shrink:0;margin-top:1px}
+.qcm-options{display:flex;flex-direction:column;gap:5px;padding-left:36px}
+.qcm-option{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;border:1px solid var(--line);cursor:pointer;transition:.15s;font-size:.82rem;color:var(--mut-2)}
+.qcm-option:hover{border-color:var(--cyber);background:rgba(6,182,212,.06);color:#fff}
+.qcm-option.sel-ok{border-color:var(--ok);background:rgba(34,197,94,.08);color:#86efac}
+.qcm-option.sel-warn{border-color:var(--warn);background:rgba(245,158,11,.08);color:var(--gold)}
+.qcm-option.sel-alert{border-color:var(--red);background:rgba(239,68,68,.08);color:#fca5a5}
+.qcm-radio{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;transition:.15s;display:flex;align-items:center;justify-content:center}
+.qcm-option.sel-ok .qcm-radio{border-color:var(--ok)}.qcm-option.sel-ok .qcm-radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok);display:block}
+.qcm-option.sel-warn .qcm-radio{border-color:var(--warn)}.qcm-option.sel-warn .qcm-radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--warn);display:block}
+.qcm-option.sel-alert .qcm-radio{border-color:var(--red)}.qcm-option.sel-alert .qcm-radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--red);display:block}
+
+/* SCORE BOARD */
+.score-board{display:none;margin-top:14px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:12px;padding:16px;gap:20px;flex-wrap:wrap}
+.score-board.show{display:flex}
+.score-global{text-align:center;min-width:100px}
+.score-pct{font-family:var(--ff-disp);font-size:2.2rem;font-weight:800;line-height:1}
+.score-lbl{font-size:.75rem;color:var(--mut);margin-top:4px}
+.score-domains{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.domain-score{background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px}
+.domain-score .ds-label{font-size:.73rem;color:var(--mut);margin-bottom:4px}
+.domain-score .ds-bar{height:5px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:3px}
+.domain-score .ds-fill{height:100%;border-radius:99px;transition:width .4s}
+.domain-score .ds-val{font-family:var(--ff-mono);font-size:.72rem}
+
+/* NOTES */
+textarea.notes{width:100%;background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:#fff;font-size:.82rem;font-family:var(--ff-body);resize:vertical;min-height:65px;margin-top:6px}
+textarea.notes:focus{outline:none;border-color:var(--cyber)}
+.field-label{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.1em;color:var(--mut);text-transform:uppercase;display:block;margin-bottom:3px;margin-top:10px}
+
+/* RISK BADGE */
+.risk-badge{display:inline-block;font-family:var(--ff-mono);font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px}
+.risk-ok{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.3)}
+.risk-warn{background:rgba(245,158,11,.15);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
+.risk-alert{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+.risk-crit{background:rgba(239,68,68,.25);color:#f87171;border:2px solid rgba(239,68,68,.5)}
+
+/* TOAST / SPINNER / LOADING */
+.toast{position:fixed;bottom:24px;right:24px;z-index:500;padding:11px 16px;border-radius:11px;font-size:.83rem;font-weight:600;transform:translateY(16px);opacity:0;transition:.22s;pointer-events:none;max-width:340px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#86efac}
+.toast.err{background:rgba(255,77,94,.15);border:1px solid rgba(255,77,94,.4);color:#fca5a5}
+.toast.info{background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.4);color:#67e8f9}
+.spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-screen{position:fixed;inset:0;z-index:999;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.loading-screen .sp{width:40px;height:40px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--cyber);border-radius:50%;animation:spin .8s linear infinite}
+.loading-screen p{color:var(--mut);font-size:.88rem}
+
+/* SUMMARY */
+.summary-box{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:var(--r);padding:20px 24px;margin-top:28px;display:none}
+.summary-box.show{display:block}
+.summary-box h3{color:var(--ok);margin-bottom:12px}
+.summary-box ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.summary-box ul li::before{content:"✓ ";color:var(--ok);font-weight:700}
+.summary-box ul li{font-size:.83rem}
+
+/* SCAN RESULT */
+.scan-result{background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px;font-family:var(--ff-mono);font-size:.75rem;line-height:1.7;color:var(--mut-2);display:none;max-height:160px;overflow-y:auto}
+.scan-result.show{display:block}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loading">
+  <div class="sp"></div>
+  <p>Chargement de la mission Cybersécurité…</p>
+</div>
+
+<div class="topbar">
+  <div class="brand">S<b>@</b>FE</div>
+  <span class="mission-label">🛡️ Mission Cybersécurité</span>
+  <span class="topbar-formule" id="topbar-formule"></span>
+  <div class="topbar-right">
+    <button class="btn-back" onclick="history.back()">← Retour Work</button>
+  </div>
+</div>
+
+<div class="page" id="main-page" style="display:none">
+
+  <div class="client-hero">
+    <div class="client-avatar" id="client-avatar">?</div>
+    <div class="client-info" style="flex:1;min-width:180px">
+      <h2 id="client-nom">—</h2>
+      <div class="sub" id="client-sub">—</div>
+    </div>
+    <div class="client-meta" id="client-meta"></div>
+  </div>
+
+  <div class="formule-info" id="formule-info"></div>
+
+  <div class="progress-wrap">
+    <div class="progress-labels">
+      <span id="progress-label">0 étape complétée</span>
+      <span id="progress-pct">0 %</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+  </div>
+
+  <div id="mission-content"></div>
+
+  <div class="summary-box" id="summary">
+    <h3>🎉 Mission accomplie !</h3>
+    <ul id="summary-list"></ul>
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-cyber" onclick="history.back()">← Retour Work</button>
+      <button class="btn btn-out" onclick="location.reload()">↺ Nouvelle session</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL='https://qdjmzietysukediqkebg.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkam16aWV0eXN1a2VkaXFrZWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMTY0MzcsImV4cCI6MjA5Njc5MjQzN30.JbS1D34VhRv8lsSUndT7o2ZTPJmBgfWGHDh7JdNlLIY';
+const H={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+
+let contact=null,contract=null;
+let stepsValidated=new Set();
+let totalSteps=0;
+let summaryActions=[];
+let qcmAnswers={};
+
+/* ============================================================
+   OUTILS EXTERNES PAR CATÉGORIE
+   ============================================================ */
+const TOOLS={
+  reconnaissance:[
+    {name:'Shodan',url:'https://www.shodan.io',ico:'🔍',desc:'Moteur de recherche d\'appareils connectés — expose ports ouverts, services, bannières',tag:'Surface d\'exposition'},
+    {name:'Censys',url:'https://search.censys.io',ico:'🌐',desc:'Scanner internet — certificats SSL, ports, services exposés',tag:'Exposition IP/domaine'},
+    {name:'DNSDumpster',url:'https://dnsdumpster.com',ico:'🗺️',desc:'Cartographie DNS — sous-domaines, enregistrements MX, SPF, DMARC',tag:'Reconnaissance DNS'},
+    {name:'ViewDNS',url:'https://viewdns.info',ico:'📡',desc:'Reverse IP, Whois, traceroute, DMARC, SPF checker',tag:'DNS / Whois'},
+    {name:'MX Toolbox',url:'https://mxtoolbox.com',ico:'📧',desc:'Analyse complète DNS, blacklist, SPF, DKIM, DMARC, open relay',tag:'Sécurité email'},
+  ],
+  web:[
+    {name:'Qualys SSL Labs',url:'https://www.ssllabs.com/ssltest/',ico:'🔒',desc:'Audit SSL/TLS du site web — note A à F, vulnérabilités HTTPS',tag:'SSL/TLS gratuit'},
+    {name:'Security Headers',url:'https://securityheaders.com',ico:'🛡️',desc:'Analyse des en-têtes HTTP de sécurité (CSP, HSTS, X-Frame…)',tag:'Headers HTTP'},
+    {name:'Observatory Mozilla',url:'https://observatory.mozilla.org',ico:'🦊',desc:'Audit sécurité web complet par Mozilla — note + recommandations',tag:'Sécurité web'},
+    {name:'HackerTarget',url:'https://hackertarget.com',ico:'🎯',desc:'Suite d\'outils : Nmap scan, traceroute, whois, reverse IP, ping',tag:'Scan réseau'},
+    {name:'VirusTotal',url:'https://www.virustotal.com',ico:'🦠',desc:'Analyse URL/IP/fichier avec 70+ antivirus — détection malwares',tag:'Malware / IOC'},
+    {name:'Sucuri SiteCheck',url:'https://sitecheck.sucuri.net',ico:'🧹',desc:'Scan malware site web, blacklist, version CMS, vulnérabilités',tag:'CMS / Malware'},
+  ],
+  credentials:[
+    {name:'Have I Been Pwned',url:'https://haveibeenpwned.com',ico:'💧',desc:'Vérifie si l\'email du client a été compromis dans une fuite de données',tag:'Fuites de données'},
+    {name:'DeHashed',url:'https://www.dehashed.com',ico:'🔑',desc:'Recherche de credentials exposés — emails, mots de passe hashés',tag:'Credentials leaks'},
+    {name:'LeakCheck',url:'https://leakcheck.io',ico:'📋',desc:'Vérification d\'emails/domaines dans les bases de données compromises',tag:'Domaine compromis'},
+  ],
+  infrastructure:[
+    {name:'Nmap Online',url:'https://nmap.online',ico:'📊',desc:'Scanner de ports en ligne — services exposés, versions, OS detection',tag:'Scan de ports'},
+    {name:'IPVoid',url:'https://www.ipvoid.com',ico:'🚫',desc:'Réputation IP, blacklist, géolocalisation, reverse DNS, ASN',tag:'Réputation IP'},
+    {name:'Netcraft',url:'https://sitereport.netcraft.com',ico:'🏗️',desc:'Technologies web, hébergeur, historique, certificats, risque phishing',tag:'Infrastructure'},
+    {name:'OWASP ZAP (Web)',url:'https://www.zaproxy.org/zap-api-scan/',ico:'⚡',desc:'Scanner DAST open source OWASP — à lancer en local pour un scan complet',tag:'DAST / OWASP'},
+  ],
+  conformite:[
+    {name:'ANSSI — Guide hygiène',url:'https://www.ssi.gouv.fr/guide/la-cybersecurite-pour-les-tpe-pme-en-douze-questions/',ico:'🏛️',desc:'Guide officiel ANSSI cybersécurité TPE/PME — 12 questions de référence',tag:'Référentiel ANSSI'},
+    {name:'Cybermalveillance.gouv',url:'https://www.cybermalveillance.gouv.fr',ico:'🇫🇷',desc:'Diagnostic cyber gouvernemental, ressources, signalement d\'incidents',tag:'Officiel France'},
+    {name:'MITRE ATT&CK',url:'https://attack.mitre.org',ico:'🗂️',desc:'Base de connaissances des techniques d\'attaque — utile pour l\'analyse de risques',tag:'Framework ATT&CK'},
+    {name:'NIS2 Checker',url:'https://nis2directive.eu',ico:'🇪🇺',desc:'Vérifier si l\'entreprise cliente est soumise à NIS2 (obligatoire depuis oct. 2024)',tag:'NIS2 / Réglementation'},
+  ],
+  password:[
+    {name:'Bitwarden (Web)',url:'https://vault.bitwarden.com',ico:'🗝️',desc:'Gestionnaire de mots de passe open source — recommander au client',tag:'Gestionnaire MDP'},
+    {name:'KeePass (info)',url:'https://keepass.info',ico:'🔐',desc:'Gestionnaire local open source — solution recommandée ANSSI pour TPE',tag:'ANSSI recommandé'},
+    {name:'Password Checker',url:'https://www.security.org/how-secure-is-my-password/',ico:'💪',desc:'Tester la robustesse des mots de passe utilisés',tag:'Test MDP'},
+  ],
+};
+
+/* ============================================================
+   QCM CYBER — 7 DOMAINES (inspiré ANSSI Guide Hygiène)
+   ============================================================ */
+const QCM_DOMAINS=[
+  {
+    id:'gouvernance',label:'Gouvernance & Organisation',
+    questions:[
+      {id:'g1',q:'Un responsable de la sécurité informatique est-il désigné ?',opts:[{l:'Oui, formalisé',r:'ok'},{l:'Informellement',r:'warn'},{l:'Non',r:'alert'}]},
+      {id:'g2',q:'Existe-t-il une politique de sécurité (charte informatique) ?',opts:[{l:'Oui, signée par tous',r:'ok'},{l:'En cours / informelle',r:'warn'},{l:'Non',r:'alert'}]},
+      {id:'g3',q:'Les incidents de sécurité sont-ils recensés et analysés ?',opts:[{l:'Oui, procédure formalisée',r:'ok'},{l:'Occasionnellement',r:'warn'},{l:'Non',r:'alert'}]},
+    ]
+  },
+  {
+    id:'acces',label:'Gestion des Accès & Authentification',
+    questions:[
+      {id:'a1',q:'L\'authentification à deux facteurs (MFA) est-elle activée sur les comptes critiques ?',opts:[{l:'Oui, sur tous les comptes admin',r:'ok'},{l:'Partiellement',r:'warn'},{l:'Non',r:'alert'}]},
+      {id:'a2',q:'Les mots de passe respectent-ils une politique de robustesse (12 car. min, complexité) ?',opts:[{l:'Oui, politique appliquée et contrôlée',r:'ok'},{l:'Recommandé mais non contrôlé',r:'warn'},{l:'Non',r:'alert'}]},
+      {id:'a3',q:'Les comptes des ex-employés sont-ils désactivés immédiatement après le départ ?',opts:[{l:'Oui, procédure en place',r:'ok'},{l:'Généralement oui',r:'warn'},{l:'Non / pas de procédure',r:'alert'}]},
+      {id:'a4',q:'Les droits d\'accès sont-ils limités au strict nécessaire (principe du moindre privilège) ?',opts:[{l:'Oui',r:'ok'},{l:'Partiellement',r:'warn'},{l:'Non',r:'alert'}]},
+    ]
+  },
+  {
+    id:'postes',label:'Sécurité des Postes de Travail',
+    questions:[
+      {id:'p1',q:'Les postes et serveurs sont-ils à jour (OS, logiciels, antivirus) ?',opts:[{l:'Oui, mises à jour automatiques',r:'ok'},{l:'Manuellement / irrégulièrement',r:'warn'},{l:'Non',r:'alert'}]},
+      {id:'p2',q:'Un antivirus/EDR est-il installé et à jour sur tous les postes ?',opts:[{l:'Oui sur tous les postes',r:'ok'},{l:'Sur certains postes',r:'warn'},{l:'Non',r:'alert'}]},
+      {id:'p3',q:'Le chiffrement des disques durs est-il activé (BitLocker, FileVault…) ?',opts:[{l:'Oui',r:'ok'},{l:'Partiellement',r:'warn'},{l:'Non',r:'alert'}]},
+    ]
+  },
+  {
+    id:'reseau',label:'Sécurité Réseau & Exposition',
+    questions:[
+      {id:'r1',q:'Le Wi-Fi professionnel est-il séparé du Wi-Fi invités/clients ?',opts:[{l:'Oui, réseaux distincts',r:'ok'},{l:'Même réseau avec mot de passe',r:'warn'},{l:'Non / pas de Wi-Fi',r:'ok'}]},
+      {id:'r2',q:'Un pare-feu est-il configuré et maintenu à jour ?',opts:[{l:'Oui, règles revues régulièrement',r:'ok'},{l:'Pare-feu actif non configuré',r:'warn'},{l:'Non',r:'alert'}]},
+      {id:'r3',q:'L\'accès à distance (télétravail, RDP, VPN) est-il sécurisé ?',opts:[{l:'VPN avec MFA',r:'ok'},{l:'Accès sécurisé sans MFA',r:'warn'},{l:'RDP exposé / non sécurisé',r:'alert'}]},
+    ]
+  },
+  {
+    id:'sauvegardes',label:'Sauvegardes & Continuité',
+    questions:[
+      {id:'s1',q:'Des sauvegardes régulières sont-elles réalisées (règle 3-2-1) ?',opts:[{l:'Oui, 3-2-1 avec hors-site',r:'ok'},{l:'Sauvegardes partielles / irrégulières',r:'warn'},{l:'Non',r:'alert'}]},
+      {id:'s2',q:'Les sauvegardes sont-elles testées (test de restauration) ?',opts:[{l:'Oui, régulièrement',r:'ok'},{l:'Jamais testé',r:'warn'},{l:'Non',r:'alert'}]},
+      {id:'s3',q:'Existe-t-il un Plan de Continuité d\'Activité (PCA) ou Plan de Reprise (PRA) ?',opts:[{l:'Oui, formalisé et testé',r:'ok'},{l:'Informel',r:'warn'},{l:'Non',r:'alert'}]},
+    ]
+  },
+  {
+    id:'sensibilisation',label:'Sensibilisation & Humain',
+    questions:[
+      {id:'h1',q:'Les employés ont-ils été formés à reconnaître le phishing ?',opts:[{l:'Oui, formation + simulation',r:'ok'},{l:'Information ponctuelle',r:'warn'},{l:'Non',r:'alert'}]},
+      {id:'h2',q:'Une procédure de signalement d\'incident est-elle connue de tous ?',opts:[{l:'Oui, documentée',r:'ok'},{l:'Connue informellement',r:'warn'},{l:'Non',r:'alert'}]},
+    ]
+  },
+  {
+    id:'web',label:'Sécurité Web & Exposition Externe',
+    questions:[
+      {id:'w1',q:'Le site web est-il en HTTPS avec un certificat SSL valide ?',opts:[{l:'Oui, A/A+',r:'ok'},{l:'HTTPS mais certificat expirant / faible',r:'warn'},{l:'Non / HTTP',r:'alert'}]},
+      {id:'w2',q:'Le CMS/site web est-il à jour (WordPress, Joomla, plugins…) ?',opts:[{l:'Oui, à jour',r:'ok'},{l:'Partiellement',r:'warn'},{l:'Non',r:'alert'}]},
+      {id:'w3',q:'Des emails frauduleux au nom du domaine ont-ils déjà été détectés ?',opts:[{l:'Non, SPF/DKIM/DMARC configurés',r:'ok'},{l:'Incertain',r:'warn'},{l:'Oui / pas de protection email',r:'alert'}]},
+    ]
+  },
+];
+
+/* ============================================================
+   CHECKLISTS PAR FORMULE
+   ============================================================ */
+const CHECKLISTS={
+  'Audit de vulnérabilité':[
+    {t:'Recueil des informations client (SIRET, domaine, IP, hébergeur)',h:'Nécessaire pour les scans de reconnaissance'},
+    {t:'Cartographie de la surface d\'exposition (Shodan, Censys)',h:'Identifier les services et ports exposés sur internet'},
+    {t:'Scan DNS et sécurité email (DNSDumpster, MX Toolbox)',h:'SPF, DKIM, DMARC, sous-domaines, enregistrements'},
+    {t:'Analyse SSL/TLS du site web (Qualys SSL Labs)',h:'Note A à F — vulnérabilités HTTPS, certificat'},
+    {t:'Vérification des headers HTTP (Security Headers)',h:'CSP, HSTS, X-Frame-Options, Referrer-Policy'},
+    {t:'Scan antivirus URL/domaine (VirusTotal)',h:'Réputation du domaine et IP auprès de 70+ moteurs'},
+    {t:'Vérification fuites de données (Have I Been Pwned)',h:'Emails du client compromis dans des leaks connus'},
+    {t:'QCM de diagnostic face à face (7 domaines)',h:'Évaluation de la maturité cyber avec le dirigeant'},
+    {t:'Analyse des accès et droits utilisateurs',h:'Comptes admin, ex-employés, MFA'},
+    {t:'Revue des sauvegardes existantes',h:'Fréquence, localisation, test de restauration'},
+    {t:'Rédaction du rapport de risques priorisé',h:'Critique / Élevé / Modéré / Faible'},
+    {t:'Remise du rapport + recommandations actionnables',h:'PDF livré sous 5 jours ouvrés'},
+  ],
+  'Pack Sécurité Essentiel':[
+    {t:'Audit de vulnérabilité complet (tous les outils)',h:'Surface exposition, DNS, SSL, web, réputation'},
+    {t:'QCM de diagnostic approfondi (7 domaines, 20 questions)',h:'Face à face avec le dirigeant et/ou DSI'},
+    {t:'Vérification et durcissement des accès (MFA)',h:'Activer MFA sur messagerie, cloud, admin'},
+    {t:'Déploiement politique de mots de passe',h:'Règles + gestionnaire de MDP recommandé (Bitwarden/KeePass)'},
+    {t:'Audit et configuration des sauvegardes 3-2-1',h:'3 copies, 2 supports, 1 hors-site'},
+    {t:'Revue des droits utilisateurs (principe moindre privilège)',h:'Désactiver les comptes inutiles, limiter les droits admin'},
+    {t:'Rapport + plan d\'action priorisé',h:'Avec actions immédiates, court terme et moyen terme'},
+    {t:'Restitution direction — visioconférence 1h',h:'Présentation des résultats et validation du plan d\'action'},
+    {t:'Livraison du dossier complet (PDF)',h:'Sous 10 jours ouvrés'},
+  ],
+  'Pack Résilience Pro':[
+    {t:'Audit étendu : réseau, postes, site, cloud',h:'Périmètre complet — tous les vecteurs d\'attaque'},
+    {t:'QCM complet 7 domaines face à face',h:'Avec DSI, dirigeant et responsables métier si applicable'},
+    {t:'Scan complet de la surface d\'attaque externe',h:'Shodan, Censys, Nmap, VirusTotal, fuites credentials'},
+    {t:'Durcissement complet des accès et droits',h:'MFA, politique MDP, RBAC, comptes de service'},
+    {t:'Configuration et test sauvegardes 3-2-1',h:'Mise en place + test de restauration documenté'},
+    {t:'Rédaction de la charte informatique',h:'Document signé par tous les collaborateurs'},
+    {t:'Rédaction du Plan de Continuité d\'Activité (NIS2)',h:'PCA/PRA conforme aux exigences NIS2'},
+    {t:'Vérification conformité NIS2 (si applicable)',h:'Évaluer si l\'entreprise est soumise à NIS2'},
+    {t:'Activation veille menaces — 3 mois',h:'Paramétrer les alertes ANSSI, CERT-FR, Cybermalveillance'},
+    {t:'Rapport de sécurité complet + plan d\'action',h:'Critique / Élevé / Modéré / Faible — avec budget estimé'},
+    {t:'Restitution direction — visioconférence 2h',h:'Présentation complète + questions/réponses direction'},
+    {t:'Livraison du dossier complet (PDF)',h:'Sous 15 jours ouvrés'},
+  ],
+  'Pack Sécurité':[
+    {t:'Reconnaissance et cartographie de la surface d\'attaque',h:'Domaine, IP, ports, services exposés'},
+    {t:'QCM de diagnostic cyber (7 domaines)',h:'Évaluation de la maturité avec le responsable'},
+    {t:'Revue des accès et authentification',h:'MFA, droits, ex-employés'},
+    {t:'Analyse des sauvegardes',h:'Fréquence, type, test restauration'},
+    {t:'Rapport + recommandations',h:'Plan d\'action priorisé'},
+  ],
+};
+
+/* ============================================================
+   FORMULES INFO
+   ============================================================ */
+const FORMULES_INFO={
+  'Audit de vulnérabilité':{
+    price:'490 € HT',sub:'Livraison sous 5 j. ouvrés',
+    items:['Cartographie de la surface d\'exposition','Analyse des accès et droits utilisateurs','Revue des sauvegardes existantes','Vérification sécurité site web','Rapport de risques priorisé','Recommandations actionnables']
+  },
+  'Pack Sécurité Essentiel':{
+    price:'990 € HT',sub:'Livraison sous 10 j. ouvrés',
+    items:['Audit de vulnérabilité complet','Durcissement des accès (MFA, droits)','Politique de mots de passe déployée','Sauvegardes 3-2-1 configurées','Rapport + plan d\'action priorisé','Restitution direction — 1h visio']
+  },
+  'Pack Résilience Pro':{
+    price:'1 990 € HT',sub:'Livraison sous 15 j. ouvrés',
+    items:['Audit étendu (réseau, postes, site, cloud)','Durcissement complet des accès','Sauvegardes 3-2-1 + test restauration','Charte informatique rédigée','PCA conforme NIS2','Veille menaces 3 mois inclus','Restitution direction — 2h visio']
+  },
+};
+
+/* ============================================================
+   INIT
+   ============================================================ */
+async function init(){
+  const p=new URLSearchParams(location.search);
+  const cid=p.get('contact'),ctid=p.get('contract');
+  if(!cid||!ctid){document.getElementById('loading').innerHTML='<p style="color:var(--alert)">Paramètres manquants.</p>';return;}
+  try{
+    const token=localStorage.getItem('safe_work_token');
+    if(token) H['Authorization']='Bearer '+token;
+    const [contacts,contracts]=await Promise.all([
+      sbGet('contacts',`id=eq.${cid}&select=*`),
+      sbGet('contracts',`id=eq.${ctid}&select=*`)
+    ]);
+    contact=contacts[0]; contract=contracts[0];
+    if(!contact||!contract) throw new Error('Données introuvables');
+    render();
+  }catch(e){
+    document.getElementById('loading').innerHTML=`<p style="color:var(--alert)">Erreur : ${e.message}</p>`;
+  }
+}
+
+async function sbGet(t,p){
+  const r=await fetch(`${SB_URL}/rest/v1/${t}?${p}`,{headers:{...H,'Prefer':'return=representation'}});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('main-page').style.display='block';
+
+  const formule=contract.formule||contract.type||'Audit de vulnérabilité';
+  const ini=(contact.nom||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('client-avatar').textContent=ini;
+  document.getElementById('client-nom').textContent=contact.nom||'—';
+  document.getElementById('client-sub').textContent=(contact.entreprise||'')+(contact.activites&&contact.activites.length?' — '+contact.activites[0]:'');
+
+  const fb=document.getElementById('topbar-formule');
+  fb.style.display='inline-block'; fb.textContent=formule;
+
+  document.getElementById('client-meta').innerHTML=[
+    {l:'Formule',v:formule},
+    {l:'Montant',v:contract.montant?`${parseFloat(contract.montant).toLocaleString('fr-FR')} € HT`:'—'},
+    {l:'Délai',v:formule.includes('Résilience')?'15 j. ouvrés':formule.includes('Essentiel')?'10 j. ouvrés':'5 j. ouvrés'},
+    {l:'Domaine',v:contact.code_postal_ville||'—'},
+  ].map(i=>`<div class="cmi"><span class="lbl">${i.l}</span><span class="val">${i.val||i.v}</span></div>`).join('');
+
+  // Formule info
+  const fi=FORMULES_INFO[formule]||{price:'—',sub:'Cybersécurité',items:[]};
+  document.getElementById('formule-info').innerHTML=`
+    <div style="flex:1;min-width:200px">
+      <div class="fi-label">Formule contractualisée</div>
+      <h3>${formule}</h3>
+      <ul style="margin-top:8px">${fi.items.map(i=>`<li>${i}</li>`).join('')}</ul>
+    </div>
+    <div style="flex-shrink:0">
+      <div class="fi-price">${fi.price}<small>${fi.sub}</small></div>
+    </div>`;
+
+  renderMission(formule);
+}
+
+/* ============================================================
+   MISSION
+   ============================================================ */
+function renderMission(formule){
+  const isPro=formule.includes('Résilience');
+  const isEss=formule.includes('Essentiel');
+  const checklist=CHECKLISTS[formule]||CHECKLISTS['Pack Sécurité'];
+  // Nombre de questions QCM selon formule
+  const qcmDomains=QCM_DOMAINS;
+  const totalQ=qcmDomains.reduce((a,d)=>a+d.questions.length,0);
+
+  totalSteps=4;
+  const el=document.getElementById('mission-content');
+  el.innerHTML=`
+    ${renderStepChecklist(checklist)}
+    ${renderStepTools()}
+    ${renderStepQCM(qcmDomains,totalQ)}
+    ${renderStepRapport(formule)}
+  `;
+
+  // Activer étape 1
+  const s1=document.getElementById('step-1');
+  if(s1){s1.classList.remove('locked');s1.classList.add('active');}
+  updateProgress();
+}
+
+function renderStepChecklist(items){
+  return `<div class="step-card active" id="step-1" style="--step-color:var(--cyber)">
+    <div class="step-num" id="step-1-num">ÉTAPE 1 / 4</div>
+    <div class="step-title">📋 Checklist de la mission</div>
+    <div class="step-desc">Valide chaque étape au fil de la mission. La checklist s'adapte à ta formule.</div>
+    <ul class="checklist" id="chk-list">
+      ${items.map((it,i)=>`
+        <li id="chk-${i}" onclick="toggleChk(${i})">
+          <span class="chk" id="chkico-${i}"></span>
+          <div><span>${it.t}</span>${it.h?`<span class="chk-sub">${it.h}</span>`:''}</div>
+        </li>`).join('')}
+    </ul>
+    <div class="btn-row">
+      <button class="btn btn-ok" onclick="validateChecklist(${items.length})">✓ Checklist complète</button>
+      <button class="btn btn-out btn-sm" onclick="validateChecklist(${items.length},true)">Passer (partiel)</button>
+    </div>
+    <div class="step-result" id="result-1"></div>
+  </div>`;
+}
+
+function renderStepTools(){
+  const cats=[
+    {key:'reconnaissance',label:'🔍 Reconnaissance & Cartographie'},
+    {key:'web',label:'🌐 Sécurité Web & Site'},
+    {key:'credentials',label:'💧 Fuites de Données & Credentials'},
+    {key:'infrastructure',label:'🏗️ Infrastructure & Réseau'},
+    {key:'conformite',label:'🏛️ Conformité & Référentiels'},
+    {key:'password',label:'🔑 Gestion des Mots de Passe'},
+  ];
+  return `<div class="step-card locked" id="step-2" style="--step-color:var(--cyber)">
+    <div class="step-num" id="step-2-num">ÉTAPE 2 / 4</div>
+    <div class="step-title">🛠️ Outils d'audit — Tests & Analyse</div>
+    <div class="step-desc">Lance les outils dans l'ordre recommandé. Documente chaque résultat dans tes notes.</div>
+    ${cats.map(cat=>`
+      <div class="tools-cat">${cat.label}</div>
+      <div class="tools-grid">
+        ${TOOLS[cat.key].map(t=>`
+          <a class="tool-card" href="${t.url}" target="_blank" rel="noopener">
+            <div class="tc-name">${t.ico} ${t.name}</div>
+            <div class="tc-desc">${t.desc}</div>
+            <div class="tc-tag">${t.tag}</div>
+          </a>`).join('')}
+      </div>`).join('')}
+    <label class="field-label">Résultats des scans & observations techniques</label>
+    <textarea class="notes" id="notes-scans" placeholder="Shodan : ports 80, 443, 22 ouverts — SSH exposé sans fail2ban&#10;SSL Labs : note B — TLS 1.0 encore actif&#10;HIBP : 3 emails compromis dans breach LinkedIn 2021&#10;Sucuri : plugin WordPress obsolète (WooCommerce 7.2)…"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-ok" onclick="validateStep(2)">✓ Analyse terminée</button>
+    </div>
+    <div class="step-result" id="result-2"></div>
+  </div>`;
+}
+
+function renderStepQCM(domains,totalQ){
+  const domainsHTML=domains.map((d,di)=>`
+    <div class="qcm-domain">${d.label}</div>
+    ${d.questions.map((q,qi)=>{
+      const num=domains.slice(0,di).reduce((a,dd)=>a+dd.questions.length,0)+qi+1;
+      return `<div class="qcm-item">
+        <div class="qcm-q"><span class="qnum">Q${num}</span>${q.q}</div>
+        <div class="qcm-options">
+          ${q.opts.map((o,oi)=>`
+            <div class="qcm-option" id="opt-${q.id}-${oi}" onclick="selectOpt('${q.id}',${oi},'${o.r}','${d.id}')">
+              <span class="qcm-radio"></span>${o.l}
+            </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('')}`).join('');
+
+  const domainScores=domains.map(d=>`
+    <div class="domain-score" id="ds-${d.id}">
+      <div class="ds-label">${d.label}</div>
+      <div class="ds-bar"><div class="ds-fill" id="dsf-${d.id}" style="width:0%;background:var(--mut)"></div></div>
+      <div class="ds-val" id="dsv-${d.id}">—</div>
+    </div>`).join('');
+
+  return `<div class="step-card locked" id="step-3" style="--step-color:var(--accent)">
+    <div class="step-num" id="step-3-num">ÉTAPE 3 / 4</div>
+    <div class="step-title">💬 QCM Cybersécurité — ${totalQ} questions · 7 domaines</div>
+    <div class="step-desc">Pose ces questions au client en face à face. Le score de maturité cyber est calculé par domaine automatiquement.</div>
+    <div class="qcm-wrap">${domainsHTML}</div>
+    <div class="score-board" id="score-board">
+      <div class="score-global">
+        <div class="score-pct" id="score-pct-val">—</div>
+        <div class="score-lbl">Score global</div>
+        <div style="margin-top:8px" id="score-risk-badge"></div>
+      </div>
+      <div class="score-domains">${domainScores}</div>
+    </div>
+    <label class="field-label" style="margin-top:14px">Notes complémentaires (contexte, freins, spécificités…)</label>
+    <textarea class="notes" id="notes-qcm" placeholder="Le dirigeant est sensibilisé mais pas les employés&#10;Beaucoup de télétravail non sécurisé&#10;Ancien prestataire IT sans documentation…"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-cyber" onclick="validateQCM(${totalQ})">✓ QCM terminé — Calculer les scores</button>
+    </div>
+    <div class="step-result" id="result-3"></div>
+  </div>`;
+}
+
+function renderStepRapport(formule){
+  return `<div class="step-card locked" id="step-4" style="--step-color:var(--ok)">
+    <div class="step-num" id="step-4-num">ÉTAPE 4 / 4</div>
+    <div class="step-title">📊 Rapport Cybersécurité PDF — Livrable client</div>
+    <div class="step-desc">Rapport complet généré à partir de toutes les données collectées : score par domaine, risques priorisés, plan d'action, recommandations ANSSI.</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <a class="tool-card" href="https://kdrive.infomaniak.com" target="_blank" style="flex:1;min-width:140px">
+        <div class="tc-name">☁️ kDrive</div><div class="tc-desc">Déposer le rapport final</div>
+      </a>
+      <a class="tool-card" href="https://mail.infomaniak.com" target="_blank" style="flex:1;min-width:140px">
+        <div class="tc-name">📧 kMail</div><div class="tc-desc">Envoyer au client</div>
+      </a>
+      <a class="tool-card" href="https://www.ssi.gouv.fr" target="_blank" style="flex:1;min-width:140px">
+        <div class="tc-name">🏛️ ANSSI</div><div class="tc-desc">Référence officielle</div>
+      </a>
+    </div>
+    ${formule.includes('Résilience')||formule.includes('Essentiel')?`
+    <label class="field-label">Lien visioconférence de restitution</label>
+    <textarea class="notes" id="notes-visio" placeholder="https://meet.infomaniak.com/..." style="min-height:42px"></textarea>`:''}
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="generateRapport()" id="btn-rapport">📊 Générer le rapport PDF</button>
+    </div>
+    <div class="step-result" id="result-4"></div>
+  </div>`;
+}
+
+/* ============================================================
+   INTERACTIONS
+   ============================================================ */
+function toggleChk(i){
+  const li=document.getElementById('chk-'+i);
+  const ico=document.getElementById('chkico-'+i);
+  li.classList.toggle('checked');
+  ico.textContent=li.classList.contains('checked')?'✓':'';
+}
+
+function validateChecklist(total,force=false){
+  let checked=0;
+  for(let i=0;i<total;i++) if(document.getElementById('chk-'+i)?.classList.contains('checked')) checked++;
+  if(!force&&checked<total){showToast(`${total-checked} tâche(s) non cochée(s)${''}`, 'info');return;}
+  document.getElementById('result-1').textContent=`✓ Checklist : ${checked}/${total} tâches validées`;
+  validateStep(1);
+  summaryActions.push(`📋 Checklist mission : ${checked}/${total} tâches`);
+}
+
+function selectOpt(qid,idx,risk,domain){
+  document.querySelectorAll(`[id^="opt-${qid}-"]`).forEach(el=>el.classList.remove('sel-ok','sel-warn','sel-alert'));
+  const cls=risk==='ok'?'sel-ok':risk==='warn'?'sel-warn':'sel-alert';
+  document.getElementById(`opt-${qid}-${idx}`).classList.add(cls);
+  if(!qcmAnswers[domain]) qcmAnswers[domain]={};
+  qcmAnswers[domain][qid]={idx,risk};
+}
+
+function validateQCM(totalQ){
+  const allAnswered=Object.values(qcmAnswers).reduce((a,d)=>a+Object.keys(d).length,0);
+  if(allAnswered<totalQ){showToast(`${totalQ-allAnswered} question(s) sans réponse`,'info');return;}
+
+  // Score global
+  let totalOk=0,totalWarn=0,totalAlert=0;
+  const domainResults={};
+
+  QCM_DOMAINS.forEach(d=>{
+    const ans=qcmAnswers[d.id]||{};
+    let ok=0,warn=0,alert=0;
+    d.questions.forEach(q=>{
+      const a=ans[q.id];
+      if(!a) return;
+      if(a.risk==='ok') ok++;
+      else if(a.risk==='warn') warn++;
+      else alert++;
+    });
+    const score=Math.round((ok*100+warn*50)/d.questions.length);
+    domainResults[d.id]={score,ok,warn,alert,total:d.questions.length};
+    totalOk+=ok; totalWarn+=warn; totalAlert+=alert;
+  });
+
+  const globalScore=Math.round((totalOk*100+totalWarn*50)/totalQ);
+  const riskLabel=globalScore>=75?'Niveau acceptable':globalScore>=50?'Risque modéré':globalScore>=25?'Risque élevé':'Critique';
+  const riskClass=globalScore>=75?'risk-ok':globalScore>=50?'risk-warn':'risk-alert';
+
+  window._cyberScore={globalScore,riskLabel,riskClass,totalOk,totalWarn,totalAlert,totalQ,domainResults};
+
+  // Afficher score board
+  const board=document.getElementById('score-board');
+  board.classList.add('show');
+  document.getElementById('score-pct-val').textContent=globalScore+'%';
+  document.getElementById('score-pct-val').style.color=globalScore>=75?'var(--ok)':globalScore>=50?'var(--gold)':'var(--red)';
+  document.getElementById('score-risk-badge').innerHTML=`<span class="risk-badge ${riskClass}">${riskLabel}</span>`;
+
+  // Score par domaine
+  QCM_DOMAINS.forEach(d=>{
+    const r=domainResults[d.id];
+    const fill=document.getElementById('dsf-'+d.id);
+    const val=document.getElementById('dsv-'+d.id);
+    if(fill&&val){
+      fill.style.width=r.score+'%';
+      fill.style.background=r.score>=75?'var(--ok)':r.score>=50?'var(--gold)':'var(--red)';
+      val.textContent=r.score+'%';
+      val.style.color=r.score>=75?'var(--ok)':r.score>=50?'var(--gold)':'var(--red)';
+    }
+  });
+
+  document.getElementById('result-3').textContent=`✓ Score global : ${globalScore}% — ${riskLabel} · ${totalOk} vert / ${totalWarn} orange / ${totalAlert} rouge`;
+  validateStep(3);
+  summaryActions.push(`💬 QCM Cyber : ${globalScore}% (${riskLabel})`);
+}
+
+/* ============================================================
+   STEP ENGINE
+   ============================================================ */
+function validateStep(n){
+  stepsValidated.add(n);
+  const card=document.getElementById('step-'+n);
+  if(card){card.classList.remove('active','locked');card.classList.add('done');}
+  const r=document.getElementById('result-'+n);
+  if(r) r.classList.add('show');
+  if(n===2) summaryActions.push('🛠️ Analyse technique complétée');
+  const next=document.getElementById('step-'+(n+1));
+  if(next){next.classList.remove('locked');next.classList.add('active');}
+  updateProgress();
+  if(stepsValidated.size>=totalSteps) setTimeout(()=>showSummary(),400);
+}
+
+function updateProgress(){
+  const pct=Math.round(stepsValidated.size/totalSteps*100);
+  document.getElementById('progress').style.width=pct+'%';
+  document.getElementById('progress-pct').textContent=pct+' %';
+  document.getElementById('progress-label').textContent=`${stepsValidated.size} étape${stepsValidated.size>1?'s':''} complétée${stepsValidated.size>1?'s':''}`;
+}
+
+/* ============================================================
+   RAPPORT PDF
+   ============================================================ */
+function generateRapport(){
+  const btn=document.getElementById('btn-rapport');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Génération…';
+  loadJsPDF(()=>{
+    try{
+      buildRapportPDF();
+      document.getElementById('result-4').textContent='✓ Rapport Cybersécurité PDF généré et téléchargé';
+      validateStep(4);
+      summaryActions.push('📊 Rapport Cyber PDF généré');
+      showToast('Rapport téléchargé','ok');
+    }catch(e){showToast('Erreur PDF : '+e.message,'err');console.error(e);}
+    btn.disabled=false; btn.innerHTML='📊 Régénérer le rapport';
+  });
+}
+
+function buildRapportPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  const navy=[10,22,40],gold=[245,158,11],ok=[34,197,94],red=[239,68,68],warn=[245,158,11],mut=[100,116,139],cyber=[6,182,212];
+  const today=new Date().toLocaleDateString('fr-FR');
+  const formule=contract.formule||contract.type||'Audit de vulnérabilité';
+  const sc=window._cyberScore||{globalScore:0,riskLabel:'Non évalué',totalOk:0,totalWarn:0,totalAlert:0,totalQ:0,domainResults:{}};
+
+  /* === PAGE 1 — COUVERTURE === */
+  doc.setFillColor(...navy); doc.rect(0,0,210,297,'F');
+  doc.setFillColor(...cyber); doc.rect(0,0,210,4,'F');
+  // Logo
+  doc.setTextColor(...gold); doc.setFont('helvetica','bold'); doc.setFontSize(28); doc.text('S@FE',14,42);
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','normal'); doc.setFontSize(12); doc.text('Digitalisation',14,53);
+  // Titre
+  doc.setTextColor(...cyber); doc.setFont('helvetica','bold'); doc.setFontSize(20);
+  doc.text('RAPPORT DE CYBERSÉCURITÉ',14,90);
+  doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','normal'); doc.text(formule,14,102);
+  doc.setDrawColor(...cyber); doc.setLineWidth(1); doc.line(14,108,110,108);
+  // Client
+  doc.setTextColor(180,200,225); doc.setFontSize(10); doc.text('CLIENT',14,122);
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(13);
+  doc.text(contact.nom+(contact.entreprise?' — '+contact.entreprise:''),14,132);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(150,175,210);
+  if(contact.code_postal_ville) doc.text(contact.code_postal_ville,14,141);
+  if(contact.siret) doc.text('SIRET : '+contact.siret,14,148);
+  // Score global
+  if(sc.totalQ>0){
+    const sColor=sc.globalScore>=75?ok:sc.globalScore>=50?warn:red;
+    doc.setFillColor(...sColor); doc.circle(170,120,24,'F');
+    doc.setTextColor(10,22,40); doc.setFont('helvetica','bold'); doc.setFontSize(16);
+    doc.text(sc.globalScore+'%',160,118);
+    doc.setFontSize(7); doc.text(sc.riskLabel,154,126); doc.text('Maturité Cyber',154,133);
+  }
+  // Métadonnées
+  doc.setTextColor(100,130,170); doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('Établi le '+today+' · Référentiel ANSSI Guide Hygiène Informatique',14,260);
+  doc.text('S@FE Digitalisation · SIRET 104 699 558 · www.safe-digitalisation.fr',14,267);
+  doc.setFillColor(...cyber); doc.rect(0,293,210,4,'F');
+
+  /* === PAGE 2 — INFOS CLIENT === */
+  doc.addPage(); pdfH(doc,navy,gold,cyber);
+  let y=52;
+  y=sec(doc,'INFORMATIONS CLIENT & MISSION',y,navy,cyber);
+  y=tbl(doc,[
+    ['Client',contact.nom||'—'],['Entreprise',contact.entreprise||'—'],
+    ['Email',contact.email||'—'],['Téléphone',contact.telephone||'—'],
+    ['SIRET',contact.siret||'—'],['Adresse',(contact.adresse||'')+(contact.code_postal_ville?' — '+contact.code_postal_ville:'')],
+    ['Formule',formule],['Montant',contract.montant?`${parseFloat(contract.montant).toLocaleString('fr-FR')} € HT`:'—'],
+    ['Date d\'audit',today],['Référentiel','ANSSI Guide Hygiène Informatique — 42 règles'],
+  ],y,navy,mut);
+
+  /* === PAGE 3 — SCORES PAR DOMAINE === */
+  if(sc.totalQ>0){
+    doc.addPage(); pdfH(doc,navy,gold,cyber); y=52;
+    y=sec(doc,'SCORES DE MATURITÉ PAR DOMAINE',y,navy,cyber);
+    // Score global encadré
+    const gc=sc.globalScore>=75?ok:sc.globalScore>=50?warn:red;
+    doc.setFillColor(...gc); doc.rect(14,y,40,14,'F');
+    doc.setTextColor(10,22,40); doc.setFont('helvetica','bold'); doc.setFontSize(13);
+    doc.text(sc.globalScore+'%',20,y+9);
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...navy);
+    doc.text(sc.riskLabel,58,y+9);
+    doc.setFontSize(8); doc.setTextColor(...mut);
+    doc.text(`${sc.totalOk} conforme(s) · ${sc.totalWarn} à améliorer · ${sc.totalAlert} critique(s)`,58,y+15);
+    y+=24;
+
+    QCM_DOMAINS.forEach(d=>{
+      const r=sc.domainResults[d.id];
+      if(!r) return;
+      if(y>265){doc.addPage();pdfH(doc,navy,gold,cyber);y=52;}
+      const dc=r.score>=75?ok:r.score>=50?warn:red;
+      // Barre de domaine
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+      doc.text(d.label,14,y);
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...dc);
+      doc.text(r.score+'%',185,y,{align:'right'});
+      y+=4;
+      doc.setFillColor(30,45,70); doc.rect(14,y,182,6,'F');
+      doc.setFillColor(...dc); doc.rect(14,y,182*r.score/100,6,'F');
+      y+=10;
+      // Détail des questions
+      const ans=qcmAnswers[d.id]||{};
+      d.questions.forEach(q=>{
+        const a=ans[q.id];
+        const qColor=!a?mut:a.risk==='ok'?ok:a.risk==='warn'?warn:red;
+        doc.setFillColor(...qColor); doc.rect(16,y-3,2.5,5,'F');
+        doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(45,60,85);
+        doc.text(q.q,21,y,{maxWidth:140});
+        if(a){
+          doc.setFont('helvetica','italic'); doc.setTextColor(...qColor);
+          doc.text('→ '+q.opts[a.idx].l,21,y+4.5,{maxWidth:140});
+        }
+        y+=11;
+        if(y>270){doc.addPage();pdfH(doc,navy,gold,cyber);y=52;}
+      });
+      y+=3;
+    });
+  }
+
+  /* === PAGE — ANALYSE TECHNIQUE === */
+  const notesScans=document.getElementById('notes-scans')?.value||'';
+  if(notesScans){
+    doc.addPage(); pdfH(doc,navy,gold,cyber); y=52;
+    y=sec(doc,'RÉSULTATS DE L\'ANALYSE TECHNIQUE',y,navy,cyber);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(40,55,80);
+    const lines=doc.splitTextToSize(notesScans,182);
+    doc.text(lines,14,y); y+=lines.length*5+8;
+  }
+
+  /* === PAGE — RISQUES & RECOMMANDATIONS === */
+  doc.addPage(); pdfH(doc,navy,gold,cyber); y=52;
+  y=sec(doc,'RISQUES IDENTIFIÉS & RECOMMANDATIONS',y,navy,cyber);
+  const recos=buildRecos(sc);
+  recos.forEach(r=>{
+    if(y>265){doc.addPage();pdfH(doc,navy,gold,cyber);y=52;}
+    const rc=r.level==='CRITIQUE'?red:r.level==='ÉLEVÉ'?[249,115,22]:r.level==='MODÉRÉ'?warn:ok;
+    doc.setFillColor(rc[0],rc[1],rc[2],0.1);
+    doc.setFillColor(rc[0]<50?rc[0]+20:rc[0]-20,rc[1],rc[2]); // approx
+    doc.setFillColor(...rc); doc.rect(14,y-4,3,9,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...rc);
+    doc.text('['+r.level+']',19,y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(35,50,75);
+    const rt=doc.splitTextToSize(r.text,150); doc.text(rt,50,y);
+    y+=rt.length*4.5+5;
+  });
+
+  /* === PAGE — PLAN D'ACTION === */
+  y+=6;
+  if(y>240){doc.addPage();pdfH(doc,navy,gold,cyber);y=52;}
+  y=sec(doc,'PLAN D\'ACTION PRIORISÉ',y,navy,cyber);
+  const plan=buildPlanAction(sc,formule);
+  ['Immédiat (0-7 jours)','Court terme (1-4 semaines)','Moyen terme (1-3 mois)'].forEach((horizon,hi)=>{
+    const actions=plan.filter(p=>p.horizon===hi);
+    if(!actions.length) return;
+    if(y>255){doc.addPage();pdfH(doc,navy,gold,cyber);y=52;}
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+    doc.text(horizon,14,y); y+=6;
+    actions.forEach(a=>{
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(40,55,80);
+      doc.text('• '+a.action,16,y); y+=5.5;
+    });
+    y+=3;
+  });
+
+  /* === FOOTER DERNIÈRE PAGE === */
+  pdfF(doc,navy,cyber,gold,today);
+  doc.save(`SAFE_Cyber_${(contact.entreprise||contact.nom).replace(/\s+/g,'_')}_${today.replace(/\//g,'-')}.pdf`);
+}
+
+/* --- HELPERS RECOMMANDATIONS --- */
+const RECOS_MAP={
+  g1:{alert:'Désigner formellement un responsable de la sécurité informatique (RSSI ou référent cyber).',warn:'Formaliser le rôle du référent cyber par écrit.'},
+  g2:{alert:'Rédiger et faire signer une charte informatique à tous les collaborateurs.',warn:'Mettre à jour et diffuser la charte informatique existante.'},
+  g3:{alert:'Mettre en place un registre des incidents de sécurité et une procédure de signalement.',warn:'Formaliser la procédure de gestion des incidents.'},
+  a1:{alert:'Activer le MFA sur tous les comptes admin, messagerie et accès cloud en priorité.',warn:'Étendre le MFA à tous les comptes, pas seulement admin.'},
+  a2:{alert:'Déployer une politique de mots de passe (12 car. min.) et un gestionnaire (Bitwarden/KeePass).',warn:'Contrôler l\'application de la politique de mots de passe.'},
+  a3:{alert:'Créer une procédure de départ employé incluant la révocation immédiate de tous les accès.',warn:'Vérifier et auditer les comptes inactifs.'},
+  a4:{alert:'Auditer et restreindre les droits d\'accès au strict nécessaire (principe du moindre privilège).',warn:'Revoir régulièrement les droits et supprimer les accès superflus.'},
+  p1:{alert:'Activer les mises à jour automatiques sur tous les postes et serveurs — priorité critique.',warn:'Mettre en place un suivi mensuel des mises à jour.'},
+  p2:{alert:'Installer un antivirus/EDR sur tous les postes — solution recommandée ANSSI.',warn:'Étendre la couverture antivirus aux postes non protégés.'},
+  p3:{alert:'Activer le chiffrement des disques (BitLocker/FileVault) sur tous les postes.',warn:'Vérifier que le chiffrement est bien actif sur tous les appareils.'},
+  r1:{alert:'Créer un réseau Wi-Fi invité séparé du réseau professionnel.',warn:'Vérifier la segmentation et le mot de passe du Wi-Fi professionnel.'},
+  r2:{alert:'Configurer et maintenir un pare-feu avec des règles adaptées à l\'activité.',warn:'Revoir les règles du pare-feu et activer la journalisation.'},
+  r3:{alert:'Sécuriser les accès distants — VPN avec MFA obligatoire, désactiver RDP exposé.',warn:'Ajouter le MFA sur les accès distants existants.'},
+  s1:{alert:'Mettre en place immédiatement des sauvegardes 3-2-1 (3 copies, 2 supports, 1 hors-site).',warn:'Compléter la stratégie de sauvegarde pour respecter la règle 3-2-1.'},
+  s2:{alert:'Planifier un test de restauration immédiat — une sauvegarde non testée n\'existe pas.',warn:'Tester la restauration des sauvegardes au moins tous les 3 mois.'},
+  s3:{alert:'Rédiger un Plan de Continuité d\'Activité (PCA) et un Plan de Reprise (PRA).',warn:'Tester et mettre à jour le PCA/PRA existant.'},
+  h1:{alert:'Organiser une formation anti-phishing pour tous les collaborateurs — simuler des attaques.',warn:'Renforcer la sensibilisation avec des exercices pratiques réguliers.'},
+  h2:{alert:'Diffuser et afficher la procédure de signalement d\'incident à tous les collaborateurs.',warn:'Tester la connaissance de la procédure de signalement.'},
+  w1:{alert:'Migrer en HTTPS avec un certificat SSL valide et configurer HSTS — action immédiate.',warn:'Renouveler ou renforcer le certificat SSL existant.'},
+  w2:{alert:'Mettre à jour immédiatement le CMS et tous les plugins — vecteur d\'attaque n°1 WordPress.',warn:'Planifier les mises à jour CMS et activer les mises à jour automatiques.'},
+  w3:{alert:'Configurer SPF, DKIM et DMARC sur le domaine email — prévention usurpation d\'identité.',warn:'Vérifier et compléter la configuration SPF/DKIM/DMARC.'},
+};
+
+function buildRecos(sc){
+  const recos=[];
+  if(!sc||!sc.totalQ) return [{level:'INFO',text:'QCM non réalisé — analyse manuelle requise.'}];
+  QCM_DOMAINS.forEach(d=>{
+    const ans=qcmAnswers[d.id]||{};
+    d.questions.forEach(q=>{
+      const a=ans[q.id];
+      if(!a) return;
+      const map=RECOS_MAP[q.id];
+      if(a.risk==='alert'&&map) recos.push({level:'CRITIQUE',text:map.alert});
+      else if(a.risk==='warn'&&map) recos.push({level:'MODÉRÉ',text:map.warn});
+    });
+  });
+  if(!recos.length) recos.push({level:'CONFORME',text:'Niveau de maturité cyber satisfaisant. Maintenir les bonnes pratiques et effectuer un audit annuel.'});
+  return recos;
+}
+
+function buildPlanAction(sc,formule){
+  const actions=[];
+  if(!sc||!sc.totalQ) return [{horizon:0,action:'Planifier l\'audit de vulnérabilité complet'}];
+  QCM_DOMAINS.forEach(d=>{
+    const ans=qcmAnswers[d.id]||{};
+    d.questions.forEach(q=>{
+      const a=ans[q.id];
+      if(!a) return;
+      const map=RECOS_MAP[q.id];
+      if(!map) return;
+      if(a.risk==='alert') actions.push({horizon:0,action:map.alert});
+      else if(a.risk==='warn') actions.push({horizon:1,action:map.warn});
+    });
+  });
+  if(formule.includes('Résilience')||formule.includes('Essentiel')){
+    actions.push({horizon:2,action:'Mise en place du tableau de bord de suivi cyber'});
+    actions.push({horizon:2,action:'Formation des collaborateurs à la cybersécurité'});
+  }
+  return actions;
+}
+
+/* --- HELPERS PDF --- */
+function pdfH(doc,navy,gold,cyber){
+  doc.setFillColor(...navy); doc.rect(0,0,210,42,'F');
+  doc.setFillColor(...cyber); doc.rect(0,0,210,3,'F');
+  doc.setTextColor(...gold); doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text('S@FE Digitalisation',14,18);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(200,215,235);
+  doc.text('SIRET 104 699 558 · 66 av. Champs-Élysées, 75008 Paris · www.safe-digitalisation.fr',14,28);
+  doc.text('Rapport Cybersécurité — Référentiel ANSSI Guide Hygiène Informatique',14,35);
+}
+function pdfF(doc,navy,cyber,gold,today){
+  doc.setFillColor(...navy); doc.rect(0,275,210,22,'F');
+  doc.setFillColor(...cyber); doc.rect(0,272,210,2,'F');
+  doc.setTextColor(160,180,210); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text('S@FE Digitalisation — Rapport confidentiel — '+today,14,284);
+  doc.text('www.safe-digitalisation.fr',162,284);
+}
+function sec(doc,title,y,navy,cyber){
+  doc.setFillColor(...navy); doc.rect(14,y-6,182,11,'F');
+  doc.setDrawColor(...cyber); doc.setLineWidth(.5); doc.line(14,y+5,196,y+5);
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text(title,16,y+1);
+  return y+15;
+}
+function tbl(doc,rows,y,navy,mut){
+  rows.forEach(([l,v],i)=>{
+    doc.setFillColor(i%2===0?245:255,i%2===0?247:255,i%2===0?250:255);
+    doc.rect(14,y-5,182,8,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...mut); doc.text(l,16,y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(30,45,70); doc.text(String(v||'—'),75,y);
+    y+=8;
+  });
+  return y+4;
+}
+
+/* SUMMARY */
+function showSummary(){
+  const box=document.getElementById('summary');
+  box.classList.add('show');
+  document.getElementById('summary-list').innerHTML=summaryActions.map(a=>`<li>${a}</li>`).join('');
+  box.scrollIntoView({behavior:'smooth'});
+}
+
+/* UTILS */
+function loadJsPDF(cb){
+  if(window.jspdf){cb();return;}
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  s.onload=cb; document.head.appendChild(s);
+}
+function showToast(msg,type='info'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+type;
+  clearTimeout(t._t); t._t=setTimeout(()=>t.className='toast',3200);
+}
+
+init();
+</script>
+</body>
+</html>
