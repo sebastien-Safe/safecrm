@@ -412,10 +412,15 @@ function updateDashboardClock() {
   el.textContent = `${capitalize(dateStr)} — ${timeStr} (heure de Paris)`;
 }
 
-function dismissAlert(contractId) {
-  const dismissed = JSON.parse(localStorage.getItem('safe_dismissed_alerts') || '[]');
-  if (!dismissed.includes(contractId)) dismissed.push(contractId);
-  localStorage.setItem('safe_dismissed_alerts', JSON.stringify(dismissed));
+function interactAlert(contractId, contactId, days) {
+  // Marquer le palier vu selon les jours restants
+  const dismissed = JSON.parse(localStorage.getItem('safe_dismissed_alerts_v2') || '{}');
+  if (!dismissed[contractId]) dismissed[contractId] = {};
+  if (days <= 3)      dismissed[contractId].seen3 = true;
+  else if (days <= 7) dismissed[contractId].seen7 = true;
+  localStorage.setItem('safe_dismissed_alerts_v2', JSON.stringify(dismissed));
+  // Basculer sur la fiche contact
+  if (contactId) openContactModal(contactId);
   renderDashboard();
 }
 
@@ -429,12 +434,24 @@ function renderDashboard() {
   const limit = new Date();
   limit.setDate(limit.getDate() + 15);
   const limitStr = limit.toISOString().slice(0, 10);
-  const dismissed = JSON.parse(localStorage.getItem('safe_dismissed_alerts') || '[]');
+  // Dismissed : { id: { seen7: bool, seen3: bool } }
+  const dismissed = JSON.parse(localStorage.getItem('safe_dismissed_alerts_v2') || '{}');
   const dueSoon = state.contracts
-    .filter(c => c.date_echeance && c.date_echeance <= limitStr
-      && !['Terminé', 'Résilié'].includes(c.statut)
-      && c.created_by === state.user?.id
-      && !dismissed.includes(c.id))
+    .filter(c => {
+      if (!c.date_echeance) return false;
+      if (c.date_echeance > limitStr) return false;
+      if (['Terminé', 'Résilié'].includes(c.statut)) return false;
+      if (c.created_by !== state.user?.id) return false;
+      const days = Math.round((new Date(c.date_echeance) - new Date(today)) / 86400000);
+      const d = dismissed[c.id] || {};
+      // Toujours afficher si en retard
+      if (days < 0) return true;
+      // Afficher à J-7 (entre 4 et 7 jours) si pas encore vu ce palier
+      if (days <= 7 && days > 3 && !d.seen7) return true;
+      // Afficher à J-3 (entre 0 et 3 jours) si pas encore vu ce palier
+      if (days <= 3 && !d.seen3) return true;
+      return false;
+    })
     .sort((a, b) => a.date_echeance.localeCompare(b.date_echeance));
   const alertBlock = $('#echeances-alert');
   if (dueSoon.length) {
@@ -449,7 +466,7 @@ function renderDashboard() {
             <div class="s">Échéance le ${formatDate(c.date_echeance)}</div>
           </div>
           <span class="${days < 0 ? 'overdue' : ''}">${when}</span>
-          <button class="btn btn-out btn-sm" style="margin-left:8px;font-size:.72rem" onclick="dismissAlert('${c.id}')">Corrigé</button>
+          <button class="btn btn-pri btn-sm" style="margin-left:8px;font-size:.72rem" onclick="interactAlert('${c.id}','${c.contact_id}',${days})">👉 Interagir</button>
         </div>`;
     }).join('');
   } else {
