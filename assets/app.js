@@ -2927,7 +2927,14 @@ function renderInteractions(contactId) {
     return;
   }
   const typeClass = { 'Téléphone':'tel','Email':'email','Visite':'visite','LinkedIn':'linkedin','Facebook':'facebook','Autre':'autre' };
-  const typeIcon  = { 'Téléphone':'📞','Email':'✉️','Visite':'🤝','LinkedIn':'💼','Facebook':'📘','Autre':'💬' };
+  const typeIcon  = {
+    'Téléphone': '📞',
+    'Email':     '✉️',
+    'Visite':    '🤝',
+    'LinkedIn':  '<img src="https://www.google.com/s2/favicons?sz=16&domain=linkedin.com" alt="LinkedIn">',
+    'Facebook':  '<img src="https://www.google.com/s2/favicons?sz=16&domain=facebook.com" alt="Facebook">',
+    'Autre':     '💬'
+  };
   list.innerHTML = items.map(i => {
     const cls  = typeClass[i.type] || 'autre';
     const icon = typeIcon[i.type]  || '💬';
