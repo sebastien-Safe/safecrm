@@ -365,3 +365,32 @@ button{font-family:var(--ff-body)}
 /* --- Blocs utilisateurs cliquables (onglet Résultats) --- */
 .per-user-row.clickable{cursor:pointer}
 .per-user-row.clickable:hover{border-color:var(--gold);box-shadow:0 4px 16px rgba(245,158,11,.15)}
+
+/* ── Suivi client : liste des interactions ── */
+.interaction-item{
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px 14px;
+  margin-bottom:8px;
+  cursor:pointer;
+  transition:background .15s;
+}
+.interaction-item:hover{background:rgba(255,255,255,.07)}
+.interaction-header{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.interaction-type{
+  font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:3px 8px;border-radius:999px;flex-shrink:0;
+}
+.interaction-type.tel{background:rgba(99,179,237,.15);color:#63b3ed}
+.interaction-type.email{background:rgba(154,230,180,.15);color:#9ae6b4}
+.interaction-type.visite{background:rgba(201,168,76,.15);color:var(--gold)}
+.interaction-type.autre{background:rgba(255,255,255,.08);color:var(--mut-2)}
+.interaction-date{font-size:.8rem;color:var(--mut-2);margin-left:auto;flex-shrink:0}
+.interaction-objet{font-size:.9rem;font-weight:600;color:#fff}
+.interaction-suite{
+  font-size:.78rem;color:var(--gold);
+  margin-top:4px;
+  display:flex;align-items:center;gap:5px;
+}
+
