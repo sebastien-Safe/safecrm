@@ -2926,8 +2926,8 @@ function renderInteractions(contactId) {
     list.innerHTML = '<p class="mut" style="font-size:.85rem">Aucun échange enregistré.</p>';
     return;
   }
-  const typeClass = { 'Téléphone':'tel','Email':'email','Visite':'visite','Autre':'autre' };
-  const typeIcon  = { 'Téléphone':'📞','Email':'✉️','Visite':'🤝','Autre':'💬' };
+  const typeClass = { 'Téléphone':'tel','Email':'email','Visite':'visite','LinkedIn':'linkedin','Facebook':'facebook','Autre':'autre' };
+  const typeIcon  = { 'Téléphone':'📞','Email':'✉️','Visite':'🤝','LinkedIn':'💼','Facebook':'📘','Autre':'💬' };
   list.innerHTML = items.map(i => {
     const cls  = typeClass[i.type] || 'autre';
     const icon = typeIcon[i.type]  || '💬';
