@@ -626,6 +626,14 @@ function openContactModal(id = null) {
   const transferBtn = $('#contact-transfer-btn');
   if (transferBtn) transferBtn.style.display = canTransfer ? 'inline-flex' : 'none';
 
+  // Afficher le suivi client si fiche existante
+  if (id) {
+    renderInteractions(id);
+  } else {
+    const section = document.getElementById('contact-suivi-section');
+    if (section) section.style.display = 'none';
+  }
+
   $('#contact-modal').classList.add('show');
 }
 
