@@ -399,6 +399,49 @@
       <button class="btn btn-out" id="contact-cancel-btn">Annuler</button>
       <button class="btn btn-pri" id="contact-save-btn">Enregistrer</button>
     </div>
+
+    <!-- ── Onglet Suivi client ── -->
+    <div id="contact-suivi-section" style="display:none;margin-top:24px;border-top:1px solid var(--line);padding-top:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <h4 style="margin:0;font-size:1rem">📋 Suivi des échanges</h4>
+        <button class="btn btn-pri btn-sm" id="btn-add-interaction">+ Ajouter un échange</button>
+      </div>
+      <div id="interactions-list">
+        <p class="mut" style="font-size:.85rem">Aucun échange enregistré.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODALE INTERACTION ================= -->
+<div class="modal" id="interaction-modal">
+  <div class="box" style="max-width:480px">
+    <h3 id="interaction-modal-title">Nouvel échange</h3>
+    <input type="hidden" id="int-id">
+    <input type="hidden" id="int-contact-id">
+    <div class="field-row">
+      <div class="field">
+        <label>Type *</label>
+        <select id="int-type">
+          <option value="Téléphone">📞 Téléphone</option>
+          <option value="Email">✉️ Email</option>
+          <option value="Visite">🤝 Visite</option>
+          <option value="Autre">💬 Autre</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Date *</label>
+        <input type="date" id="int-date">
+      </div>
+    </div>
+    <div class="field"><label>Objet *</label><input type="text" id="int-objet" placeholder="Ex : Présentation offre SEO"></div>
+    <div class="field"><label>Compte-rendu</label><textarea id="int-contenu" rows="4" placeholder="Résumé de l'échange…"></textarea></div>
+    <div class="field"><label>Suite à donner</label><input type="text" id="int-suite" placeholder="Ex : Rappeler dans 15 jours"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="int-delete-btn" style="display:none;margin-right:auto">Supprimer</button>
+      <button class="btn btn-out" id="int-cancel-btn">Annuler</button>
+      <button class="btn btn-pri" id="int-save-btn">Enregistrer</button>
+    </div>
   </div>
 </div>
 
