@@ -303,7 +303,7 @@ async function loadContacts() {
 }
 
 async function loadContracts() {
-  const { data, error } = await sb.from('contracts').select('*, stripe_subscription_id').order('created_at', { ascending: false });
+  const { data, error } = await sb.from('contracts').select('*, stripe_subscription_id, resilié_at').order('created_at', { ascending: false });
   if (error) return alert('Erreur chargement contrats : ' + error.message);
   state.contracts = data || [];
 }
@@ -934,7 +934,7 @@ function openContractModal(id = null) {
     const canResilier = ct
       && ct.recurrence === 'Mensuel'
       && ct.stripe_subscription_id
-      && ct.statut !== 'Résilié'
+      && !ct.resilié_at
       && ct.statut !== 'Terminé'
       && (isAdmin() || ct.created_by === state.user?.id);
     resilierBtn.style.display = canResilier ? 'inline-flex' : 'none';
@@ -3071,7 +3071,7 @@ async function confirmResilierAbonnement() {
         'Authorization': `Bearer ${session.access_token}`,
         'apikey': SUPABASE_ANON_KEY,
       },
-      body: JSON.stringify({ contract_id: contractId }),
+      body: JSON.stringify({ contract_id: contractId, cancelled_by: state.profile?.prenom || state.user?.email || 'Admin' }),
     });
     const result = await resp.json();
     if (!resp.ok) throw new Error(result.details || result.error || 'Erreur inconnue');
@@ -3080,7 +3080,12 @@ async function confirmResilierAbonnement() {
     closeContractModal();
     await loadContracts();
     renderContracts();
-    alert('✅ Abonnement résilié. Le client ne sera plus débité à la prochaine échéance.');
+    const msg = result.period_end
+      ? \`✅ Résiliation enregistrée. L'abonnement se terminera le \${formatDate(result.period_end)}.\`
+      : '✅ Résiliation enregistrée. Le client ne sera plus débité à la prochaine échéance.';
+    alert(msg);
+    // Recharger les interactions pour afficher l'événement dans la fiche client
+    await loadInteractions();
   } catch(e) {
     alert('Erreur : ' + e.message);
   } finally {
