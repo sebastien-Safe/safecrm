@@ -303,7 +303,7 @@ async function loadContacts() {
 }
 
 async function loadContracts() {
-  const { data, error } = await sb.from('contracts').select('*').order('created_at', { ascending: false });
+  const { data, error } = await sb.from('contracts').select('*, stripe_subscription_id').order('created_at', { ascending: false });
   if (error) return alert('Erreur chargement contrats : ' + error.message);
   state.contracts = data || [];
 }
@@ -928,6 +928,18 @@ function openContractModal(id = null) {
   $('#contract-pdf-btn').style.display = ct ? 'inline-flex' : 'none';
   const sendBtn = $('#contract-send-btn');
   if (sendBtn) sendBtn.style.display = (ct && editable) ? 'inline-flex' : 'none';
+  // Bouton Résilier : visible si abonnement mensuel actif avec stripe_subscription_id
+  const resilierBtn = $('#contract-resilier-btn');
+  if (resilierBtn) {
+    const canResilier = ct
+      && ct.recurrence === 'Mensuel'
+      && ct.stripe_subscription_id
+      && ct.statut !== 'Résilié'
+      && ct.statut !== 'Terminé'
+      && (isAdmin() || ct.created_by === state.user?.id);
+    resilierBtn.style.display = canResilier ? 'inline-flex' : 'none';
+    resilierBtn.dataset.contractId = ct?.id || '';
+  }
   $('#contract-modal').classList.add('show');
 }
 
@@ -2916,6 +2928,14 @@ function bindEvents() {
   document.getElementById('int-save-btn')?.addEventListener('click', saveInteraction);
   document.getElementById('int-delete-btn')?.addEventListener('click', deleteInteraction);
 
+  // === Résiliation abonnement Stripe ===
+  document.getElementById('contract-resilier-btn')?.addEventListener('click', () => {
+    const contractId = document.getElementById('contract-resilier-btn').dataset.contractId;
+    openResilierModal(contractId);
+  });
+  document.getElementById('resilier-cancel-btn')?.addEventListener('click', closeResilierModal);
+  document.getElementById('resilier-confirm-btn')?.addEventListener('click', confirmResilierAbonnement);
+
   // === Déconnexion par inactivité (5 min) ===
   setupInactivityTimeout();
 }
@@ -3020,6 +3040,53 @@ async function deleteInteraction() {
   await loadInteractions();
   renderInteractions(contactId);
   closeInteractionModal();
+}
+
+
+// ==========================================================================
+// RÉSILIATION ABONNEMENT STRIPE
+// ==========================================================================
+
+function openResilierModal(contractId) {
+  document.getElementById('resilier-contract-id').value = contractId;
+  document.getElementById('resilier-modal').classList.add('show');
+}
+
+function closeResilierModal() {
+  document.getElementById('resilier-modal').classList.remove('show');
+}
+
+async function confirmResilierAbonnement() {
+  const contractId = document.getElementById('resilier-contract-id').value;
+  const btn = document.getElementById('resilier-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = 'Résiliation en cours…';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/cancel-subscription`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ contract_id: contractId }),
+    });
+    const result = await resp.json();
+    if (!resp.ok) throw new Error(result.details || result.error || 'Erreur inconnue');
+
+    closeResilierModal();
+    closeContractModal();
+    await loadContracts();
+    renderContracts();
+    alert('✅ Abonnement résilié. Le client ne sera plus débité à la prochaine échéance.');
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Confirmer la résiliation';
+  }
 }
 
 
