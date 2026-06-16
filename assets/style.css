@@ -385,7 +385,10 @@ button{font-family:var(--ff-body)}
 .interaction-type.tel{background:rgba(99,179,237,.15);color:#63b3ed}
 .interaction-type.email{background:rgba(154,230,180,.15);color:#9ae6b4}
 .interaction-type.visite{background:rgba(201,168,76,.15);color:var(--gold)}
+.interaction-type.linkedin{background:rgba(10,102,194,.18);color:#4da3e8}
+.interaction-type.facebook{background:rgba(24,119,242,.18);color:#6fa8f5}
 .interaction-type.autre{background:rgba(255,255,255,.08);color:var(--mut-2)}
+.interaction-type img{width:12px;height:12px;border-radius:2px;vertical-align:middle;margin-right:3px}
 .interaction-date{font-size:.8rem;color:var(--mut-2);margin-left:auto;flex-shrink:0}
 .interaction-objet{font-size:.9rem;font-weight:600;color:#fff}
 .interaction-suite{
