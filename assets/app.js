@@ -293,6 +293,7 @@ async function loadAll() {
   ]);
   await ensureUserObjectifs();
   renderAll();
+  checkRgpdExpiry(); // Vérification RGPD automatique au login
 }
 
 async function loadContacts() {
