@@ -508,8 +508,28 @@
       <button class="btn btn-danger" id="contract-delete-btn" style="display:none;margin-right:auto">Supprimer</button>
       <button class="btn btn-out" id="contract-pdf-btn" style="display:none">📄 PDF</button>
       <button class="btn btn-pri" id="contract-send-btn" style="display:none">📧 Envoyer au client</button>
+      <button class="btn btn-danger" id="contract-resilier-btn" style="display:none">🚫 Résilier l'abonnement</button>
       <button class="btn btn-out" id="contract-cancel-btn">Annuler</button>
       <button class="btn btn-pri" id="contract-save-btn">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ================= MODALE CONFIRMATION RÉSILIATION ================= -->
+<div class="modal" id="resilier-modal">
+  <div class="box" style="max-width:420px;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:12px">🚫</div>
+    <h3 style="color:var(--danger,#e53e3e);margin-bottom:10px">Résilier l'abonnement</h3>
+    <p style="color:var(--mut-2);font-size:.92rem;line-height:1.6;margin-bottom:6px">
+      L'abonnement sera arrêté <b style="color:#fff">à la fin de la période en cours</b>.<br>
+      Le client ne sera plus débité après cette date.
+    </p>
+    <p class="mut" style="font-size:.8rem;margin-bottom:20px">Cette action est irréversible.</p>
+    <input type="hidden" id="resilier-contract-id">
+    <div class="modal-actions" style="justify-content:center;gap:12px">
+      <button class="btn btn-out" id="resilier-cancel-btn">Annuler</button>
+      <button class="btn btn-danger" id="resilier-confirm-btn">Confirmer la résiliation</button>
     </div>
   </div>
 </div>
