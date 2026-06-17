@@ -542,7 +542,7 @@ function renderContacts() {
     const editable = canEditContact(c);
     const label = c.rgpd_ko ? 'Voir' : (editable ? 'Modifier' : 'Voir');
     const lockBadge = (!editable && !c.rgpd_ko) ? ' <span class="badge badge-gray">🔒</span>' : '';
-    return `<tr class="${c.rgpd_ko ? 'row-rgpd-ko' : ''}">
+    return `<tr class="${c.rgpd_ko ? 'row-rgpd-ko' : ''}" style="cursor:pointer" onclick="openContactModal('${c.id}')">
       <td>${escapeHtml(c.nom)}${lockBadge}</td>
       <td>${escapeHtml(c.entreprise || '—')}</td>
       <td><div class="tag-row">${(c.activites || []).map(a => `<span class="badge ${ACTIVITE_BADGE[a] || 'badge-gray'}">${escapeHtml(a)}</span>`).join('') || '—'}</div></td>
@@ -724,7 +724,7 @@ function renderContracts() {
       ? `${formatMoney(net)}<br><span class="mut" style="font-size:.74rem">(remise -${formatMoney(remise)})</span>`
       : formatMoney(montant);
     return `
-    <tr>
+    <tr style="cursor:pointer" onclick="openContractModal('${ct.id}')">
       <td>${escapeHtml(contactName(ct.contact_id))}</td>
       <td>${escapeHtml(ct.type)}</td>
       <td>${escapeHtml(ct.formule || '—')}</td>
