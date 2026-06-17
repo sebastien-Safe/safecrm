@@ -2017,7 +2017,7 @@ function computeMonthlyCommission(userId) {
     // --- 1. Commission à la signature (mois de signature uniquement) ---
     if (signedThisMonth) {
       if (preset?.comm_signature_fix != null && preset.comm_signature_fix > 0) {
-        // Montant fixe (SEO, C&C, Cyber, DPO, Audits RGPD TPE/PME)
+        // Montant fixe (SEO, Cyber, DPO, Audits RGPD TPE/PME)
         total += preset.comm_signature_fix;
       } else if (preset?.comm_signature_pct > 0) {
         // Pourcentage du montant HT (Audit ETI sur devis, options à la carte)
@@ -3955,7 +3955,7 @@ async function executeReset() {
 // ==========================================================================
 
 // Gammes disponibles pour détecter les manques
-const GAMMES = ['SEO', 'RGPD', 'Cybersécurité', 'DPO', 'Click'];
+const GAMMES = ['SEO', 'RGPD', 'Cybersécurité', 'DPO'];
 
 function detectGamme(type) {
   if (!type) return null;
@@ -3964,7 +3964,6 @@ function detectGamme(type) {
   if (t.includes('rgpd') || t.includes('conform')) return 'RGPD';
   if (t.includes('cyber') || t.includes('sécu') || t.includes('secu')) return 'Cybersécurité';
   if (t.includes('dpo')) return 'DPO';
-  if (t.includes('click') || t.includes('collect')) return 'Click & Collect';
   return null;
 }
 
