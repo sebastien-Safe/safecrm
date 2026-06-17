@@ -950,7 +950,7 @@ async function saveContract() {
     recurrence: $('#ct-recurrence').value,
     date_debut: $('#ct-date-debut').value || null,
     date_echeance: $('#ct-date-echeance').value || null,
-    statut: ($('#ct-resilier')?.checked) ? 'Résilié' : ($('#ct-statut').value || 'En attente de signature'),
+    statut: $('#ct-statut').value || 'En attente de signature',
     notes: $('#ct-notes').value.trim() || null,
   };
   // Colonnes ajoutées en v13 — on ne les envoie que si elles existent dans le HTML ET en base
@@ -963,6 +963,32 @@ async function saveContract() {
     ({ error } = await sb.from('contracts').insert({ ...payload, created_by: state.user.id }));
   }
   if (error) return alert('Erreur : ' + error.message);
+
+  // Si la case Résilier est cochée → déclencher résiliation Stripe + traçabilité
+  if ($('#ct-resilier')?.checked && id) {
+    const contract = state.contracts.find(c => c.id === id);
+    if (contract?.stripe_subscription_id && !contract?.resilié_at) {
+      // Ouvrir la modale de confirmation résiliation (2 clics)
+      closeContractModal();
+      await loadAll();
+      document.getElementById('resilier-contract-id').value = id;
+      document.getElementById('resilier-modal').classList.add('show');
+      return;
+    } else if (!contract?.stripe_subscription_id) {
+      // Pas d'abonnement Stripe : juste passer en Terminé
+      await sb.from('contracts').update({ statut: 'Terminé', resilié_at: new Date().toISOString() }).eq('id', id);
+      await sb.from('interactions').insert({
+        contact_id: contract.contact_id,
+        created_by: state.user.id,
+        type: 'Autre',
+        date: new Date().toISOString().slice(0,10),
+        objet: 'Résiliation contrat',
+        contenu: 'Contrat résilié manuellement par l'administrateur.',
+        suite_a_donner: null,
+      });
+    }
+  }
+
   closeContractModal();
   await loadAll();
 }
