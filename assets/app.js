@@ -2531,7 +2531,7 @@ async function sendOrderLink() {
   if (!contract) { alert('Contrat introuvable.'); return; }
   const contact = state.contacts.find(c => c.id === contract.contact_id);
   if (!contact) { alert('Contact lié introuvable.'); return; }
-  if (!contact.email) { alert("Le contact n'a pas d'e-mail. Ajoutez-le avant d'envoyer le bon de commande."); return; }
+  if (!texte) { alert("Rédigez un message avant d'envoyer."); return; }
 
   if (!confirm(
     `Créer un lien de paiement pour ${contact.nom || '—'} (${contact.email}) ?\n\n` +
