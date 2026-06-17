@@ -3073,29 +3073,51 @@ async function confirmResilierAbonnement() {
   btn.textContent = 'Résiliation en cours…';
 
   try {
-    const { data: { session } } = await sb.auth.getSession();
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/cancel-subscription`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-        'apikey': SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({ contract_id: contractId, cancelled_by: state.profile?.prenom || state.user?.email || 'Admin' }),
-    });
-    const result = await resp.json();
-    if (!resp.ok) throw new Error(result.details || result.error || 'Erreur inconnue');
+    const contract = state.contracts.find(c => c.id === contractId);
+
+    if (contract?.stripe_subscription_id && !contract?.resilié_at) {
+      // Abonnement Stripe actif → appel Edge Function
+      const { data: { session } } = await sb.auth.getSession();
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/cancel-subscription`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ contract_id: contractId, cancelled_by: state.profile?.prenom || state.user?.email || 'Admin' }),
+      });
+      const result = await resp.json();
+      if (!resp.ok) throw new Error(result.details || result.error || 'Erreur inconnue');
+      const msg = result.period_end
+        ? `✅ Résiliation enregistrée. L'abonnement se terminera le ${formatDate(result.period_end)}.`
+        : '✅ Résiliation enregistrée. Le client ne sera plus débité à la prochaine échéance.';
+      alert(msg);
+    } else {
+      // Pas d'abonnement Stripe → résiliation directe dans Supabase
+      const { error } = await sb.from('contracts').update({
+        statut: 'Terminé',
+        resilié_at: new Date().toISOString(),
+      }).eq('id', contractId);
+      if (error) throw new Error(error.message);
+      if (contract?.contact_id) {
+        await sb.from('interactions').insert({
+          contact_id: contract.contact_id,
+          created_by: state.user.id,
+          type: 'Autre',
+          date: new Date().toISOString().slice(0,10),
+          objet: 'Résiliation contrat',
+          contenu: 'Contrat résilié manuellement par l\'administrateur.',
+          suite_a_donner: null,
+        });
+      }
+      alert('✅ Contrat résilié.');
+    }
 
     closeResilierModal();
-    closeContractModal();
     await loadContracts();
-    renderContracts();
-    const msg = result.period_end
-      ? `✅ Résiliation enregistrée. L'abonnement se terminera le ${formatDate(result.period_end)}.`
-      : '✅ Résiliation enregistrée. Le client ne sera plus débité à la prochaine échéance.';
-    alert(msg);
-    // Recharger les interactions pour afficher l'événement dans la fiche client
     await loadInteractions();
+    renderContracts();
   } catch(e) {
     alert('Erreur : ' + e.message);
   } finally {
