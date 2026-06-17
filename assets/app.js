@@ -1718,29 +1718,114 @@ async function loadAdminUsers() {
 function renderAdminUsers() {
   const tbody = $('#admin-users-table tbody');
   if (!state.adminUsers.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">Aucun utilisateur.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Aucun utilisateur.</td></tr>';
     return;
   }
   const now = new Date();
+  const roleLabels = {
+    'super_admin': '⚡ Super Admin',
+    'admin_candy': '🍬 Admin C@NDY',
+    'dci':         '🤝 DCI',
+    'user':        '👤 Utilisateur',
+  };
   tbody.innerHTML = state.adminUsers.map(u => {
-    const banned = u.banned_until && new Date(u.banned_until) > now;
-    const isSelf = u.id === state.user.id;
+    const banned  = u.banned_until && new Date(u.banned_until) > now;
+    const isSelf  = u.id === state.user.id;
+    const role    = u.role || (u.is_admin ? 'admin_candy' : 'user');
+    const roleLbl = roleLabels[role] || '👤 Utilisateur';
+    const profil  = u.profil_complet ? '🟢' : '🔴';
+    const revoc   = u.profil_revocation_flag ? ' <span class="badge badge-red" style="font-size:.62rem">⚠ Révocation</span>' : '';
     return `
       <tr class="${banned ? 'row-banned' : ''}">
         <td>${escapeHtml(u.prenom || '—')}</td>
         <td>${escapeHtml(u.email || '—')}</td>
-        <td>${u.is_admin ? '<span class="badge badge-gold">Admin</span>' : '<span class="badge badge-gray">Utilisateur</span>'}</td>
+        <td><span class="badge badge-gray" style="font-size:.72rem">${roleLbl}</span></td>
+        <td style="text-align:center;font-size:1.1rem" title="${u.profil_complet ? 'Profil complet' : 'Profil incomplet'}">${profil}${revoc}</td>
         <td>${banned ? '<span class="badge badge-red">Révoqué</span>' : '<span class="badge badge-green">Actif</span>'}</td>
         <td class="nowrap mut" style="font-size:.82rem">${new Date(u.created_at).toLocaleDateString('fr-FR')}</td>
         <td class="actions">
+          <button class="btn btn-out btn-sm" onclick="openEditUserModal('${u.id}')" ${isSelf ? 'disabled' : ''} title="Modifier">✏️ Modifier</button>
           <button class="btn btn-out btn-sm" data-admin-message="${u.id}" ${isSelf ? 'disabled' : ''}>Message</button>
-          <button class="btn btn-out btn-sm" data-admin-toggle-admin="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas vous rétrograder"' : ''}>${u.is_admin ? 'Rétrograder' : 'Promouvoir'}</button>
-          <button class="btn ${banned ? 'btn-pri' : 'btn-out'} btn-sm" data-admin-ban="${u.id}|${banned ? '0' : '1'}" ${isSelf ? 'disabled' : ''}>${banned ? 'Restaurer' : 'Révoquer'}</button>
+          <button class="btn btn-out btn-sm" data-admin-toggle-admin="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas modifier votre propre rôle"' : ''}>${u.is_admin ? 'Révoquer admin' : 'Rendre admin'}</button>
           <button class="btn btn-danger btn-sm" data-admin-delete="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas supprimer votre propre compte"' : ''}>Supprimer</button>
         </td>
       </tr>`;
   }).join('');
 }
+
+// Modale édition utilisateur (niveau 3/4)
+function openEditUserModal(userId) {
+  const u = state.adminUsers.find(x => x.id === userId);
+  if (!u) return;
+
+  let modal = document.getElementById('edit-user-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'edit-user-modal';
+    modal.className = 'modal';
+    modal.innerHTML = `
+      <div class="box" style="max-width:480px">
+        <h3>✏️ Modifier l'utilisateur</h3>
+        <input type="hidden" id="eu-id">
+        <div class="field"><label>Prénom *</label><input id="eu-prenom" type="text"></div>
+        <div class="field"><label>Nom *</label><input id="eu-nom" type="text"></div>
+        <div class="field"><label>Téléphone</label><input id="eu-telephone" type="tel"></div>
+        <div class="field"><label>Adresse</label><input id="eu-adresse" type="text"></div>
+        <div class="field"><label>SIRET</label><input id="eu-siret" type="text"></div>
+        <div class="field"><label>N° RC Pro</label><input id="eu-rcpro" type="text"></div>
+        <div class="field"><label>Rôle</label>
+          <select id="eu-role">
+            <option value="user">👤 Utilisateur (Niveau 1)</option>
+            <option value="dci">🤝 DCI (Niveau 2)</option>
+            <option value="admin_candy">🍬 Admin C@NDY (Niveau 3)</option>
+          </select>
+        </div>
+        <p class="error" id="eu-error"></p>
+        <div class="modal-actions">
+          <button class="btn btn-out" onclick="$('#edit-user-modal').classList.remove('show')">Annuler</button>
+          <button class="btn btn-pri" onclick="saveEditUser()">Enregistrer</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+
+  document.getElementById('eu-id').value       = u.id;
+  document.getElementById('eu-prenom').value   = u.prenom    || '';
+  document.getElementById('eu-nom').value      = u.nom       || '';
+  document.getElementById('eu-telephone').value= u.telephone || '';
+  document.getElementById('eu-adresse').value  = u.adresse   || '';
+  document.getElementById('eu-siret').value    = u.siret     || '';
+  document.getElementById('eu-rcpro').value    = u.rcpro_numero || '';
+  document.getElementById('eu-role').value     = u.role || 'user';
+  document.getElementById('eu-error').textContent = '';
+  document.getElementById('edit-user-modal').classList.add('show');
+}
+
+async function saveEditUser() {
+  const id      = document.getElementById('eu-id').value;
+  const prenom  = document.getElementById('eu-prenom').value.trim();
+  const nom     = document.getElementById('eu-nom').value.trim();
+  const role    = document.getElementById('eu-role').value;
+  const errEl   = document.getElementById('eu-error');
+  if (!prenom) { errEl.textContent = 'Le prénom est obligatoire.'; return; }
+
+  const { error } = await sb.from('profiles').update({
+    prenom,
+    nom:         nom || null,
+    telephone:   document.getElementById('eu-telephone').value.trim() || null,
+    adresse:     document.getElementById('eu-adresse').value.trim()   || null,
+    siret:       document.getElementById('eu-siret').value.trim()     || null,
+    rcpro_numero:document.getElementById('eu-rcpro').value.trim()     || null,
+    role,
+    is_admin:    ['admin_candy','super_admin'].includes(role),
+  }).eq('id', id);
+
+  if (error) { errEl.textContent = 'Erreur : ' + error.message; return; }
+  document.getElementById('edit-user-modal').classList.remove('show');
+  await loadAdminUsers();
+  renderAdminUsers();
+}
+
 
 async function adminToggleAdmin(userId) {
   const u = state.adminUsers.find(x => x.id === userId);
