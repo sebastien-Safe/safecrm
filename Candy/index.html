@@ -1,1 +1,609 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>S@FE Santé — Dossier patient, agenda, ordonnances</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --rose:      #F2D7D9;
+      --rose-deep: #E8BFC2;
+      --cerise:    #C4717A;
+      --cerise-2:  #A85860;
+      --blanc:     #FEFAF9;
+      --ardoise:   #3D2B2D;
+      --ardoise-2: #5C3F42;
+      --mut:       #8C6A6D;
+      --sauge:     #7A9E7E;
+      --sauge-2:   #5C7D60;
+      --line:      rgba(61,43,45,.1);
+      --ff-disp:   'DM Serif Display', serif;
+      --ff-body:   'Inter', sans-serif;
+    }
 
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--ff-body);
+      background: var(--rose);
+      color: var(--ardoise);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(242,215,217,.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-brand {
+      font-family: var(--ff-disp);
+      font-size: 1.3rem;
+      color: var(--ardoise);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-brand .badge-sante {
+      font-family: var(--ff-body);
+      font-size: .62rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      background: var(--cerise);
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+    .nav-cta {
+      background: var(--cerise);
+      color: #fff;
+      font-size: .85rem;
+      font-weight: 600;
+      padding: 9px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background .2s;
+    }
+    .nav-cta:hover { background: var(--cerise-2); }
+
+    /* ── HERO ── */
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 80px 32px 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .hero-eyebrow {
+      font-family: var(--ff-body);
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--cerise);
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-family: var(--ff-disp);
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      line-height: 1.15;
+      color: var(--ardoise);
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--cerise);
+    }
+    .hero-sub {
+      font-size: 1rem;
+      color: var(--ardoise-2);
+      max-width: 46ch;
+      margin-bottom: 32px;
+      line-height: 1.7;
+    }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-pri {
+      background: var(--cerise);
+      color: #fff;
+      font-weight: 600;
+      font-size: .92rem;
+      padding: 13px 24px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: background .2s, transform .15s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-pri:hover { background: var(--cerise-2); transform: translateY(-1px); }
+    .btn-sec {
+      background: transparent;
+      border: 1.5px solid var(--cerise);
+      color: var(--cerise);
+      font-weight: 600;
+      font-size: .92rem;
+      padding: 12px 22px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-sec:hover { background: rgba(196,113,122,.08); }
+
+    /* ── MOCK INTERFACE ── */
+    .mock {
+      background: var(--blanc);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(61,43,45,.18), 0 4px 12px rgba(61,43,45,.08);
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+    .mock-bar {
+      background: var(--ardoise);
+      padding: 10px 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .mock-dot.r { background: #ff5f57; }
+    .mock-dot.y { background: #febc2e; }
+    .mock-dot.g { background: #28c840; }
+    .mock-title { font-size: .72rem; color: rgba(255,255,255,.5); margin-left: 8px; font-weight: 500; }
+    .mock-body { display: grid; grid-template-columns: 180px 1fr; }
+    .mock-sidebar {
+      background: #f8f2f3;
+      border-right: 1px solid var(--line);
+      padding: 16px 12px;
+    }
+    .mock-nav-item {
+      font-size: .75rem;
+      font-weight: 500;
+      color: var(--mut);
+      padding: 7px 10px;
+      border-radius: 7px;
+      margin-bottom: 2px;
+      display: flex; align-items: center; gap: 8px;
+      cursor: default;
+    }
+    .mock-nav-item.active {
+      background: rgba(196,113,122,.12);
+      color: var(--cerise);
+      font-weight: 600;
+    }
+    .mock-content { padding: 16px; }
+    .mock-patient-card {
+      background: var(--blanc);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .mock-patient-name { font-weight: 700; font-size: .88rem; color: var(--ardoise); margin-bottom: 4px; }
+    .mock-patient-meta { font-size: .72rem; color: var(--mut); display: flex; gap: 10px; flex-wrap: wrap; }
+    .mock-tag {
+      font-size: .65rem; font-weight: 600;
+      padding: 2px 7px; border-radius: 999px;
+      background: rgba(196,113,122,.12); color: var(--cerise);
+    }
+    .mock-tag.g { background: rgba(122,158,126,.12); color: var(--sauge-2); }
+    .mock-rdv {
+      background: rgba(196,113,122,.06);
+      border-left: 3px solid var(--cerise);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: .72rem;
+      color: var(--ardoise-2);
+      margin-bottom: 6px;
+    }
+    .mock-rdv strong { color: var(--ardoise); font-size: .78rem; }
+    .mock-section-label {
+      font-size: .65rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--mut); margin-bottom: 8px;
+    }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--line); max-width: 1100px; margin: 0 auto; }
+
+    /* ── SECTION ── */
+    .section { max-width: 1100px; margin: 0 auto; padding: 72px 32px; }
+    .section-eyebrow {
+      font-size: .7rem; font-weight: 700;
+      letter-spacing: .18em; text-transform: uppercase;
+      color: var(--cerise); margin-bottom: 10px;
+    }
+    .section h2 {
+      font-family: var(--ff-disp);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      color: var(--ardoise);
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+    .section-intro { font-size: 1rem; color: var(--ardoise-2); max-width: 58ch; margin-bottom: 48px; line-height: 1.7; }
+
+    /* ── FEATURES ── */
+    .features { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+    .feat {
+      background: var(--blanc);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 28px 24px;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .feat:hover { box-shadow: 0 8px 32px rgba(61,43,45,.1); transform: translateY(-3px); }
+    .feat-icon {
+      width: 48px; height: 48px;
+      background: rgba(196,113,122,.1);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+    }
+    .feat h3 {
+      font-family: var(--ff-disp);
+      font-size: 1.1rem;
+      color: var(--ardoise);
+      margin-bottom: 8px;
+    }
+    .feat p { font-size: .88rem; color: var(--mut); line-height: 1.6; }
+
+    /* ── DATA ── */
+    .data-section {
+      background: var(--ardoise);
+      padding: 72px 32px;
+    }
+    .data-inner { max-width: 1100px; margin: 0 auto; }
+    .data-inner .section-eyebrow { color: var(--rose-deep); }
+    .data-inner h2 { color: var(--blanc); }
+    .data-inner .section-intro { color: rgba(254,250,249,.65); }
+    .data-points { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+    .data-point {
+      background: rgba(254,250,249,.06);
+      border: 1px solid rgba(254,250,249,.1);
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .data-point .dp-icon { font-size: 1.6rem; margin-bottom: 12px; }
+    .data-point h4 {
+      font-family: var(--ff-disp);
+      font-size: 1rem;
+      color: var(--blanc);
+      margin-bottom: 6px;
+    }
+    .data-point p { font-size: .84rem; color: rgba(254,250,249,.6); line-height: 1.6; }
+    .data-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(122,158,126,.2);
+      border: 1px solid rgba(122,158,126,.4);
+      color: #a8d4ac;
+      font-size: .72rem; font-weight: 600;
+      padding: 4px 10px; border-radius: 999px;
+      margin-top: 10px;
+    }
+
+    /* ── PROFILS ── */
+    .profils { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+    .profil-tag {
+      background: var(--blanc);
+      border: 1.5px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--ardoise-2);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── TARIF ── */
+    .tarif-card {
+      background: var(--blanc);
+      border: 2px solid var(--cerise);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 440px;
+      margin: 0 auto;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(196,113,122,.15);
+    }
+    .tarif-label {
+      font-size: .72rem; font-weight: 700;
+      letter-spacing: .15em; text-transform: uppercase;
+      color: var(--cerise); margin-bottom: 16px;
+    }
+    .tarif-price {
+      font-family: var(--ff-disp);
+      font-size: 3.5rem;
+      color: var(--ardoise);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .tarif-price sup { font-size: 1.5rem; vertical-align: super; }
+    .tarif-price sub { font-size: 1rem; color: var(--mut); font-family: var(--ff-body); }
+    .tarif-desc { font-size: .85rem; color: var(--mut); margin-bottom: 28px; }
+    .tarif-features { list-style: none; text-align: left; margin-bottom: 32px; display: flex; flex-direction: column; gap: 10px; }
+    .tarif-features li { display: flex; align-items: flex-start; gap: 10px; font-size: .88rem; color: var(--ardoise-2); }
+    .tarif-features li::before { content: '✓'; color: var(--sauge-2); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── CTA FINAL ── */
+    .cta-final {
+      background: linear-gradient(135deg, var(--cerise) 0%, var(--cerise-2) 100%);
+      padding: 72px 32px;
+      text-align: center;
+    }
+    .cta-final h2 {
+      font-family: var(--ff-disp);
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      color: #fff;
+      margin-bottom: 14px;
+    }
+    .cta-final p { font-size: 1rem; color: rgba(255,255,255,.75); margin-bottom: 32px; max-width: 50ch; margin-left: auto; margin-right: auto; }
+    .btn-white {
+      background: #fff;
+      color: var(--cerise-2);
+      font-weight: 700;
+      font-size: .95rem;
+      padding: 14px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .15s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ardoise);
+      padding: 28px 32px;
+      text-align: center;
+      font-size: .78rem;
+      color: rgba(254,250,249,.35);
+    }
+    footer a { color: rgba(254,250,249,.5); text-decoration: none; }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width: 800px) {
+      .hero { grid-template-columns: 1fr; gap: 40px; }
+      .features { grid-template-columns: 1fr; }
+      .data-points { grid-template-columns: 1fr; }
+      .mock-body { grid-template-columns: 1fr; }
+      .mock-sidebar { display: none; }
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero-text { animation: fadeUp .6s ease both; }
+    .hero-mock { animation: fadeUp .6s .15s ease both; }
+
+    /* ── PULSE SAUGE ── */
+    .secure-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--sauge);
+      display: inline-block;
+      animation: pulse-sauge 2s ease-in-out infinite;
+    }
+    @keyframes pulse-sauge {
+      0%,100% { opacity: 1; }
+      50%      { opacity: .4; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">
+    S@FE Santé
+    <span class="badge-sante">Nouveau</span>
+  </a>
+  <a href="#contact" class="nav-cta">Demander une démo</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-text">
+    <div class="hero-eyebrow">Solution dédiée aux professionnels de santé</div>
+    <h1>Vos patients.<br>Vos données.<br><em>Votre cabinet.</em></h1>
+    <p class="hero-sub">S@FE Santé est un logiciel de gestion médicale conçu pour les cabinets indépendants. Dossiers patients, agenda et ordonnances — tout reste dans votre cabinet, sans jamais quitter vos murs.</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-pri">Demander une démo gratuite →</a>
+      <a href="#fonctionnalites" class="btn-sec">Découvrir les fonctionnalités</a>
+    </div>
+  </div>
+
+  <!-- MOCK INTERFACE -->
+  <div class="hero-mock">
+    <div class="mock">
+      <div class="mock-bar">
+        <div class="mock-dot r"></div>
+        <div class="mock-dot y"></div>
+        <div class="mock-dot g"></div>
+        <span class="mock-title">S@FE Santé — Cabinet Dr. Martin</span>
+      </div>
+      <div class="mock-body">
+        <div class="mock-sidebar">
+          <div class="mock-section-label">Navigation</div>
+          <div class="mock-nav-item active">🗂 Patients</div>
+          <div class="mock-nav-item">📅 Agenda</div>
+          <div class="mock-nav-item">📋 Ordonnances</div>
+          <div class="mock-nav-item">⚙️ Paramètres</div>
+        </div>
+        <div class="mock-content">
+          <div class="mock-section-label">Patients du jour</div>
+          <div class="mock-patient-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div>
+                <div class="mock-patient-name">Dupont, Marie</div>
+                <div class="mock-patient-meta">
+                  <span>72 ans</span>
+                  <span>Médecine générale</span>
+                </div>
+              </div>
+              <span class="mock-tag g">Vu</span>
+            </div>
+          </div>
+          <div class="mock-patient-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div>
+                <div class="mock-patient-name">Bernard, Luc</div>
+                <div class="mock-patient-meta">
+                  <span>45 ans</span>
+                  <span>Suivi chronique</span>
+                </div>
+              </div>
+              <span class="mock-tag">14h30</span>
+            </div>
+          </div>
+          <div class="mock-section-label" style="margin-top:12px">Prochain rendez-vous</div>
+          <div class="mock-rdv"><strong>15h00</strong> — Lefèvre, Sophie — Consultation</div>
+          <div class="mock-rdv"><strong>15h30</strong> — Moreau, Paul — Renouvellement</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- PROFILS -->
+<div class="section" style="padding-bottom:48px">
+  <div class="section-eyebrow">Pour tous les professionnels de santé</div>
+  <h2>Conçu pour votre pratique,<br>quelle qu'elle soit.</h2>
+  <div class="profils">
+    <div class="profil-tag">👨‍⚕️ Médecins généralistes</div>
+    <div class="profil-tag">🦷 Chirurgiens-dentistes</div>
+    <div class="profil-tag">🏃 Kinésithérapeutes</div>
+    <div class="profil-tag">💉 Infirmiers libéraux</div>
+    <div class="profil-tag">🧠 Psychologues</div>
+    <div class="profil-tag">👁 Ophtalmologistes</div>
+    <div class="profil-tag">🦴 Ostéopathes</div>
+    <div class="profil-tag">+ tout spécialiste en cabinet</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- FONCTIONNALITÉS -->
+<div class="section" id="fonctionnalites">
+  <div class="section-eyebrow">Fonctionnalités</div>
+  <h2>Tout ce dont votre cabinet a besoin.</h2>
+  <p class="section-intro">Trois modules essentiels, pensés pour des soignants qui n'ont pas de temps à perdre avec un logiciel compliqué.</p>
+
+  <div class="features">
+    <div class="feat">
+      <div class="feat-icon">🗂</div>
+      <h3>Dossier patient</h3>
+      <p>Historique complet, antécédents, allergies, documents. Accès immédiat en consultation, navigation fluide entre les dossiers.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📅</div>
+      <h3>Agenda</h3>
+      <p>Planification des consultations, gestion des créneaux, vue semaine et mois. Aucune double réservation, rappels intégrés.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📋</div>
+      <h3>Ordonnances</h3>
+      <p>Rédaction et impression des ordonnances directement depuis la fiche patient. Historique des prescriptions accessible en un clic.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- DONNÉES -->
+<div class="data-section">
+  <div class="data-inner">
+    <div class="section-eyebrow">Sécurité des données</div>
+    <h2 style="color:var(--blanc);font-family:var(--ff-disp);font-size:clamp(1.6rem,3vw,2.4rem);margin-bottom:14px">Vos données de santé<br>ne quittent jamais votre cabinet.</h2>
+    <p class="section-intro">Dans un secteur où la confidentialité des données patients n'est pas une option, S@FE Santé a fait le choix de la simplicité radicale : tout reste chez vous.</p>
+
+    <div class="data-points">
+      <div class="data-point">
+        <div class="dp-icon">🏠</div>
+        <h4>Stockage local</h4>
+        <p>Les données sont hébergées sur votre propre matériel, dans votre cabinet. Aucune transmission vers un serveur externe.</p>
+        <div class="data-badge"><span class="secure-dot"></span> Zéro transfert externe</div>
+      </div>
+      <div class="data-point">
+        <div class="dp-icon">🔒</div>
+        <h4>Accès sécurisé</h4>
+        <p>Connexion par identifiant personnel, session automatiquement fermée après inactivité. Aucun accès sans authentification.</p>
+        <div class="data-badge"><span class="secure-dot"></span> Authentification forte</div>
+      </div>
+      <div class="data-point">
+        <div class="dp-icon">📜</div>
+        <h4>Conformité RGPD</h4>
+        <p>Traitement des données de santé conforme au RGPD et aux recommandations de la CNIL. Registre des traitements inclus.</p>
+        <div class="data-badge"><span class="secure-dot"></span> RGPD & CNIL</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TARIF -->
+<div class="section" id="tarif" style="text-align:center">
+  <div class="section-eyebrow">Tarif</div>
+  <h2 style="margin-bottom:8px">Un tarif, tout inclus.</h2>
+  <p class="section-intro" style="margin:0 auto 48px">Sans engagement de durée, sans frais cachés, sans module payant en supplément.</p>
+
+  <div class="tarif-card">
+    <div class="tarif-label">S@FE Santé — Abonnement mensuel</div>
+    <div class="tarif-price"><sup>€</sup>120<sub> HT/mois</sub></div>
+    <div class="tarif-desc">Par cabinet, utilisateurs illimités</div>
+    <ul class="tarif-features">
+      <li>Dossiers patients illimités</li>
+      <li>Agenda multi-praticiens</li>
+      <li>Ordonnances et impression directe</li>
+      <li>Stockage local — données dans votre cabinet</li>
+      <li>Mises à jour incluses</li>
+      <li>Assistance S@FE Digitalisation</li>
+      <li>Sans engagement de durée</li>
+    </ul>
+    <a href="#contact" class="btn-pri" style="width:100%;justify-content:center">Demander une démo gratuite →</a>
+  </div>
+</div>
+
+<!-- CTA FINAL -->
+<div class="cta-final" id="contact">
+  <h2>Prêt à simplifier<br>votre quotidien ?</h2>
+  <p>Demandez une démonstration gratuite. Nous configurons S@FE Santé dans votre cabinet en moins d'une heure.</p>
+  <a href="mailto:contact@safe-digitalisation.fr?subject=Demande%20de%20démo%20S@FE%20Santé&body=Bonjour,%0A%0AJe%20souhaite%20obtenir%20une%20démonstration%20de%20S@FE%20Santé%20pour%20mon%20cabinet.%0A%0ANom%20:%0ASpécialité%20:%0ATéléphone%20:%0A%0AMerci." class="btn-white">
+    ✉️ Nous contacter
+  </a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>S@FE Santé est une solution de <a href="https://safe-digitalisation.fr">S@FE Digitalisation</a> — SIRET 104 699 558 00011 · <a href="https://safe-digitalisation.fr/Politique-RGPD.html">Politique de confidentialité</a></p>
+</footer>
+
+<script>
+  // Scroll reveal léger
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.feat, .data-point, .tarif-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity .5s ease, transform .5s ease';
+    observer.observe(el);
+  });
+</script>
+
+</body>
+</html>
