@@ -1182,6 +1182,7 @@ function renderUserBadge() {
   $all('.admin-only').forEach(el => { el.style.display = isAdmin() ? '' : 'none'; });
   if (isAdmin()) checkResetFlag();
   applyRoleVisibility();
+  updateMobMenuRole();
   checkProfilComplet();
   checkMFAExpiry();
   checkUpsellFirstLogin();
@@ -4748,6 +4749,55 @@ async function appliquerNouveauMDP() {
     btn.textContent = '✅ Appliquer & envoyer par email';
   }
 }
+
+
+
+// ── MENU HAMBURGER MOBILE ──
+function toggleMobMenu() {
+  const drawer = document.getElementById('mob-drawer');
+  if (!drawer) return;
+  drawer.classList.contains('open') ? closeMobMenu() : openMobMenu();
+}
+function openMobMenu() {
+  document.getElementById('mob-menu-btn')?.classList.add('open');
+  document.getElementById('mob-overlay')?.classList.add('show');
+  document.getElementById('mob-drawer')?.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobMenu() {
+  document.getElementById('mob-menu-btn')?.classList.remove('open');
+  document.getElementById('mob-overlay')?.classList.remove('show');
+  document.getElementById('mob-drawer')?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+function mobNav(view) {
+  closeMobMenu();
+  document.querySelectorAll('#mob-drawer .mob-lk').forEach(l => l.classList.remove('mob-active'));
+  const el = document.getElementById('mob-lk-' + view);
+  if (el) el.classList.add('mob-active');
+  if (typeof switchView === 'function') switchView(view);
+}
+function updateMobMenuRole() {
+  const admin = typeof isAdmin === 'function' && isAdmin();
+  const dci   = typeof isAtLeast === 'function' && isAtLeast('dci');
+  const sup   = typeof isSuperAdmin === 'function' && isSuperAdmin();
+  document.querySelectorAll('#mob-drawer .admin-only').forEach(el => el.style.display = admin ? '' : 'none');
+  const dciSec = document.getElementById('mob-sec-dci');
+  if (dciSec) dciSec.style.display = dci ? '' : 'none';
+  const dangerSec = document.getElementById('mob-sec-danger');
+  if (dangerSec) dangerSec.style.display = sup ? '' : 'none';
+}
+// Swipe gauche pour fermer
+(function() {
+  let sx = 0;
+  document.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', e => {
+    if (e.changedTouches[0].clientX - sx < -50) {
+      const drawer = document.getElementById('mob-drawer');
+      if (drawer?.classList.contains('open')) closeMobMenu();
+    }
+  }, {passive:true});
+})();
 
 
 init()
