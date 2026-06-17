@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/Candy/favicon.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>C@NDY — Moreau Paul</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+:root{
+  --rose:#F2D7D9;--rose-deep:#E8BFC2;--rose-light:#FBF0F1;
+  --cerise:#C4717A;--cerise-2:#A85860;
+  --blanc:#FEFAF9;--ardoise:#3D2B2D;--ardoise-2:#5C3F42;
+  --mut:#8C6A6D;--sauge:#7A9E7E;--sauge-2:#5C7D60;
+  --line:rgba(61,43,45,.1);--line-2:rgba(61,43,45,.06);
+  --ff-disp:'DM Serif Display',serif;--ff-body:'Inter',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--ff-body);background:var(--rose-light);color:var(--ardoise);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+nav{position:sticky;top:0;z-index:200;background:rgba(254,250,249,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px}
+.nav-brand{font-family:var(--ff-disp);font-size:1.25rem;color:var(--ardoise);text-decoration:none}
+.nav-badge{font-family:var(--ff-body);font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--cerise);color:#fff;padding:3px 8px;border-radius:999px;margin-left:8px}
+.nav-back{font-size:.85rem;color:var(--mut);text-decoration:none;display:flex;align-items:center;gap:5px}
+.nav-back:hover{color:var(--cerise)}
+.page{max-width:980px;margin:0 auto;padding:32px 24px 80px}
+.patient-hero{background:var(--blanc);border:1px solid var(--line);border-radius:16px;padding:28px 32px;margin-bottom:24px;display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center}
+.patient-avatar{width:72px;height:72px;border-radius:50%;background:var(--rose-deep);display:flex;align-items:center;justify-content:center;font-family:var(--ff-disp);font-size:1.8rem;color:var(--cerise-2);flex-shrink:0}
+.patient-hero h1{font-family:var(--ff-disp);font-size:1.7rem;color:var(--ardoise);margin-bottom:4px}
+.patient-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.meta-chip{font-size:.75rem;color:var(--mut);background:var(--rose-light);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+.secu-block{text-align:right}
+.secu-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+.secu-num{font-family:monospace;font-size:1rem;font-weight:700;color:var(--ardoise);letter-spacing:.06em;background:var(--rose-light);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+.btn-print{font-size:.78rem;color:var(--mut);background:none;border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;margin-top:8px;display:block;text-align:center;transition:all .18s}
+.btn-print:hover{border-color:var(--cerise);color:var(--cerise)}
+.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--line);padding-bottom:0}
+.tab{font-size:.85rem;font-weight:600;color:var(--mut);padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .18s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--ff-body)}
+.tab.active{color:var(--cerise);border-bottom-color:var(--cerise)}
+.tab:hover{color:var(--cerise-2)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.bloc{background:var(--blanc);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:18px}
+.bloc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line-2)}
+.bloc-title{display:flex;align-items:center;gap:9px;font-weight:700;font-size:.9rem;color:var(--ardoise)}
+.civil-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.civil-row{display:flex;flex-direction:column;gap:2px}
+.civil-label{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.civil-val{font-size:.88rem;color:var(--ardoise);font-weight:500}
+.constantes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.const-card{background:var(--rose-light);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center}
+.const-val{font-family:var(--ff-disp);font-size:1.6rem;color:var(--ardoise);line-height:1}
+.const-unit{font-size:.7rem;color:var(--mut);margin-left:2px}
+.const-label{font-size:.72rem;color:var(--mut);margin-top:4px}
+.imc-ok{color:#5C7D60}.imc-warn{color:var(--cerise)}
+.allergie-item{display:flex;align-items:center;gap:12px;border-left:3px solid #ccc;border-radius:9px;padding:12px 14px;margin-bottom:10px;background:rgba(192,57,43,.04)}
+.allergie-name{font-weight:700;font-size:.88rem;color:var(--ardoise)}
+.allergie-desc{font-size:.78rem;color:var(--mut);margin-top:2px}
+.allergie-badge{margin-left:auto;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:999px;flex-shrink:0;border:1px solid}
+.no-allergie{font-size:.88rem;color:var(--sauge-2);display:flex;align-items:center;gap:8px;padding:10px 0}
+.histo-item{display:grid;grid-template-columns:90px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--line-2)}
+.histo-item:last-child{border-bottom:none}
+.histo-date{font-size:.78rem;font-weight:600;color:var(--mut);padding-top:2px;text-align:right}
+.histo-type{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.histo-type.consult{color:var(--cerise)}.histo-type.ordonnance{color:var(--sauge-2)}.histo-type.examen{color:#7B68EE}
+.histo-titre{font-size:.88rem;font-weight:600;color:var(--ardoise);margin-bottom:3px}
+.histo-note{font-size:.82rem;color:var(--mut);line-height:1.55}
+.histo-medecin{font-size:.72rem;color:var(--mut);margin-top:4px}
+.agenda-item{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--line-2);align-items:center}
+.agenda-item:last-child{border-bottom:none}
+.agenda-date-col{text-align:right}
+.agenda-date{font-size:.82rem;font-weight:700;color:var(--ardoise)}
+.agenda-heure{font-size:.72rem;color:var(--cerise);font-weight:600}
+.agenda-type{display:inline-flex;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cerise);background:rgba(196,113,122,.1);padding:2px 8px;border-radius:999px;margin-bottom:4px}
+.agenda-motif{font-size:.88rem;font-weight:600;color:var(--ardoise)}
+.agenda-lieu{font-size:.78rem;color:var(--mut);margin-top:2px}
+.ordo-card{background:var(--blanc);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.ordo-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line-2)}
+.ordo-num{font-family:monospace;font-size:.75rem;color:var(--cerise);font-weight:600}
+.ordo-date{font-size:.78rem;color:var(--mut)}
+.med-item{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-2)}
+.med-item:last-child{border-bottom:none}
+.med-dot{width:6px;height:6px;border-radius:50%;background:var(--cerise);margin-top:6px;flex-shrink:0}
+.med-nom{font-size:.88rem;font-weight:600;color:var(--ardoise)}
+.med-pos{font-size:.78rem;color:var(--mut);margin-top:2px}
+.med-duree{font-size:.72rem;color:var(--sauge-2);font-weight:600;margin-top:2px}
+@media(max-width:700px){
+  .patient-hero{grid-template-columns:auto 1fr;gap:16px}
+  .secu-block{display:none}.grid-2{grid-template-columns:1fr}
+  .civil-grid{grid-template-columns:1fr}.constantes{grid-template-columns:repeat(3,1fr)}
+  .histo-item,.agenda-item{grid-template-columns:1fr}.histo-date,.agenda-date-col{text-align:left}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/Candy/patients.html" class="nav-brand">C<span style="color:var(--cerise)">@</span>NDY<span class="nav-badge">Démo</span></a>
+  <a href="/Candy/patients.html" class="nav-back">← Liste des patients</a>
+</nav>
+
+<div class="page">
+
+  <div class="patient-hero">
+    <div class="patient-avatar">PM</div>
+    <div>
+      <h1>Moreau, Paul</h1>
+      <div class="patient-meta">
+        <span class="meta-chip">📅 Né(e) le 14/01/1965</span>
+        <span class="meta-chip">61 ans</span>
+        <span class="meta-chip">♂ Homme</span>
+        <span class="meta-chip">🩸 AB+</span>
+        <span class="meta-chip">👤 Divorcé</span>
+        <span class="meta-chip">💼 Cadre</span>
+      </div>
+    </div>
+    <div class="secu-block">
+      <div class="secu-label">N° Sécurité Sociale</div>
+      <div class="secu-num">3 65 01 38 001 345 67</div>
+      <button class="btn-print" onclick="window.print()">🖨 Imprimer</button>
+    </div>
+  </div>
+
+  <!-- ONGLETS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('infos',this)">👤 Informations</button>
+    <button class="tab" onclick="showTab('historique',this)">📅 Historique</button>
+    <button class="tab" onclick="showTab('agenda',this)">🗓 Agenda</button>
+    <button class="tab" onclick="showTab('ordonnances',this)">📋 Ordonnances</button>
+  </div>
+
+  <!-- ONGLET INFOS -->
+  <div id="tab-infos" class="tab-content active">
+    <div class="grid-2">
+      <div class="bloc">
+        <div class="bloc-header">
+          <div class="bloc-title"><span>👤</span> État civil & coordonnées</div>
+        </div>
+        <div class="civil-grid">
+          <div class="civil-row"><span class="civil-label">Adresse</span><span class="civil-val">22 rue Victor Hugo, 38000 Grenoble</span></div>
+          <div class="civil-row"><span class="civil-label">Téléphone</span><span class="civil-val">06 11 22 33 44</span></div>
+          <div class="civil-row"><span class="civil-label">E-mail</span><span class="civil-val">p.moreau@gmail.com</span></div>
+          <div class="civil-row"><span class="civil-label">Médecin traitant</span><span class="civil-val">Dr. Martin</span></div>
+        </div>
+      </div>
+      <div class="bloc">
+        <div class="bloc-header">
+          <div class="bloc-title"><span>📊</span> Constantes</div>
+        </div>
+        <div class="constantes">
+          <div class="const-card"><div class="const-val">91<span class="const-unit">kg</span></div><div class="const-label">Poids</div></div>
+          <div class="const-card"><div class="const-val">180<span class="const-unit">cm</span></div><div class="const-label">Taille</div></div>
+          <div class="const-card"><div class="const-val imc-warn">28.1</div><div class="const-label">IMC</div><div style="font-size:.65rem;color:var(--mut);margin-top:2px">Surpoids</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bloc">
+      <div class="bloc-header"><div class="bloc-title"><span>⚠️</span> Allergies connues</div></div>
+      <div class="no-allergie">✓ Aucune allergie connue à ce jour</div>
+    </div>
+  </div>
+
+  <!-- ONGLET HISTORIQUE -->
+  <div id="tab-historique" class="tab-content">
+    <div class="bloc">
+      <div class="bloc-header"><div class="bloc-title"><span>📅</span> Historique médical</div></div>
+      
+    <div class="histo-item">
+      <div class="histo-date">28/05/2026</div>
+      <div>
+        <span class="histo-type consult">🩺 Consultation</span>
+        <div class="histo-titre">Renouvellement traitement — diabète T2</div>
+        <div class="histo-note">Glycémie à jeun : 7.2 mmol/L. HbA1c : 7.1% (stable). Metformine maintenue. Régime et activité physique rappelés.</div>
+        <div class="histo-medecin">Dr. référent : Dr. Martin</div>
+      </div>
+    </div>
+
+    <div class="histo-item">
+      <div class="histo-date">10/02/2026</div>
+      <div>
+        <span class="histo-type examen">🔬 Examen / Bilan</span>
+        <div class="histo-titre">Bilan diabétologique annuel</div>
+        <div class="histo-note">Fond d'œil : normal. Créatinine : normale. Microalbuminurie : négative. Bilan lipidique satisfaisant sous statine.</div>
+        <div class="histo-medecin">Dr. référent : Dr. Martin</div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- ONGLET AGENDA -->
+  <div id="tab-agenda" class="tab-content">
+    <div class="bloc">
+      <div class="bloc-header"><div class="bloc-title"><span>🗓</span> Rendez-vous</div></div>
+      
+    <div class="agenda-item">
+      <div class="agenda-date-col">
+        <div class="agenda-date">28/06/2026</div>
+        <div class="agenda-heure">10h30</div>
+      </div>
+      <div>
+        <div class="agenda-type">Consultation</div>
+        <div class="agenda-motif">Renouvellement diabète</div>
+        <div class="agenda-lieu">📍 Cabinet Dr. Martin</div>
+      </div>
+    </div>
+
+    <div class="agenda-item">
+      <div class="agenda-date-col">
+        <div class="agenda-date">28/09/2026</div>
+        <div class="agenda-heure">10h30</div>
+      </div>
+      <div>
+        <div class="agenda-type">Consultation</div>
+        <div class="agenda-motif">Suivi trimestriel</div>
+        <div class="agenda-lieu">📍 Cabinet Dr. Martin</div>
+      </div>
+    </div>
+
+    <div class="agenda-item">
+      <div class="agenda-date-col">
+        <div class="agenda-date">10/02/2027</div>
+        <div class="agenda-heure">08h00</div>
+      </div>
+      <div>
+        <div class="agenda-type">Bilan</div>
+        <div class="agenda-motif">Bilan diabétologique annuel</div>
+        <div class="agenda-lieu">📍 Cabinet Dr. Martin</div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <!-- ONGLET ORDONNANCES -->
+  <div id="tab-ordonnances" class="tab-content">
+    <div class="bloc">
+      <div class="bloc-header"><div class="bloc-title"><span>📋</span> Ordonnances</div></div>
+      
+        <div class="ordo-card">
+          <div class="ordo-header">
+            <span class="ordo-num">📋 ORD-2026-0528</span>
+            <span class="ordo-date">Émise le 28/05/2026</span>
+          </div>
+          <div class="med-item">
+            <div class="med-dot"></div>
+            <div>
+              <div class="med-nom">Metformine 850mg</div>
+              <div class="med-pos">1 comprimé matin et soir pendant les repas</div>
+              <div class="med-duree">⏱ 3 mois</div>
+            </div>
+          </div><div class="med-item">
+            <div class="med-dot"></div>
+            <div>
+              <div class="med-nom">Atorvastatine 20mg</div>
+              <div class="med-pos">1 comprimé le soir</div>
+              <div class="med-duree">⏱ 3 mois</div>
+            </div>
+          </div><div class="med-item">
+            <div class="med-dot"></div>
+            <div>
+              <div class="med-nom">Ramipril 5mg</div>
+              <div class="med-pos">1 comprimé le matin</div>
+              <div class="med-duree">⏱ 3 mois</div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
