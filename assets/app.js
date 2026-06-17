@@ -4691,7 +4691,7 @@ async function appliquerNouveauMDP() {
   const btn     = document.getElementById('mdp-send-btn');
 
   if (!userId) { errEl.textContent = 'Sélectionnez un utilisateur.'; return; }
-  if (!pwd)    { errEl.textContent = 'Générez un mot de passe d'abord.'; return; }
+  if (!pwd)    { errEl.textContent = "Générez un mot de passe d'abord."; return; }
 
   btn.disabled = true;
   btn.textContent = 'Application en cours…';
