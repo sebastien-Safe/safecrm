@@ -773,6 +773,46 @@
   </div>
 </div>
 
+<!-- ================= MODALE GÉNÉRER MDP ================= -->
+<div class="modal" id="generer-mdp-modal">
+  <div class="box" style="max-width:440px">
+    <h3>🔑 Générer un nouveau mot de passe</h3>
+    <p class="mut" style="font-size:.85rem;margin-bottom:20px">
+      Sélectionnez un utilisateur, générez un nouveau mot de passe fort et envoyez-le lui par email.
+    </p>
+    <div class="field" style="margin-bottom:14px">
+      <label>Utilisateur *</label>
+      <select id="mdp-user-select" style="background:var(--navy-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--mut-2);font-family:var(--ff-body);font-size:.88rem;outline:none;width:100%">
+        <option value="">— Sélectionner un utilisateur —</option>
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:20px">
+      <label>Nouveau mot de passe</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="mdp-password" type="text" readonly
+          style="flex:1;background:var(--navy-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--gold);font-family:var(--ff-mono);font-size:.9rem;letter-spacing:.05em;outline:none"
+          placeholder="Cliquez sur Générer">
+        <button class="btn btn-out" onclick="genererNouveauMDP()" style="flex-shrink:0;padding:9px 14px;font-size:.82rem">
+          🔀 Générer
+        </button>
+        <button onclick="copierMDP()" style="flex-shrink:0;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:none;color:var(--mut);cursor:pointer;font-size:.88rem" title="Copier">
+          📋
+        </button>
+      </div>
+    </div>
+    <div class="info-block warn" id="mdp-warn" style="display:none;margin-bottom:16px;font-size:.82rem">
+      ⚠️ Ce mot de passe ne sera affiché qu'une seule fois. Notez-le ou envoyez-le immédiatement.
+    </div>
+    <p class="error" id="mdp-error"></p>
+    <div class="modal-actions">
+      <button class="btn btn-out" onclick="$('#generer-mdp-modal').classList.remove('show')">Annuler</button>
+      <button class="btn btn-pri" id="mdp-send-btn" disabled onclick="appliquerNouveauMDP()">
+        ✅ Appliquer &amp; envoyer par email
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ================= MODALE GÉRER MON ÉQUIPE (DCI) ================= -->
 <div class="modal" id="equipe-modal">
   <div class="box" style="max-width:680px;max-height:85vh;overflow-y:auto">
