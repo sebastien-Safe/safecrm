@@ -70,6 +70,12 @@
       <button data-view="admin" class="navlink admin-only" style="display:none">⚙️ Administration</button>
     </nav>
     <div class="sidebar-footer">
+      <div class="dci-only" id="equipe-btn-wrap" style="display:none;margin-bottom:6px">
+        <button class="btn btn-out btn-sm" onclick="openEquipeModal()"
+          style="width:100%;font-size:.75rem;display:flex;align-items:center;gap:6px;justify-content:center">
+          🤝 Gérer mon équipe
+        </button>
+      </div>
       <div class="admin-only" id="reset-test-btn-wrap" style="display:none;margin-bottom:6px">
         <button class="btn btn-out btn-sm" onclick="openResetModal()"
           style="width:100%;color:var(--alert);border-color:var(--alert);font-size:.75rem">
@@ -759,6 +765,50 @@
         disabled onclick="executeReset()">
         🗑 Réinitialiser définitivement
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODALE GÉRER MON ÉQUIPE (DCI) ================= -->
+<div class="modal" id="equipe-modal">
+  <div class="box" style="max-width:680px;max-height:85vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3>🤝 Gérer mon équipe</h3>
+      <button class="btn btn-out btn-sm" onclick="$('#equipe-modal').classList.remove('show')">Fermer</button>
+    </div>
+
+    <!-- Stats équipe -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px" id="equipe-stats">
+      <div class="panel-block" style="text-align:center;padding:14px">
+        <div style="font-size:1.6rem;font-family:var(--ff-disp);color:var(--accent)" id="eq-nb-membres">—</div>
+        <div class="mut" style="font-size:.75rem">Membres</div>
+      </div>
+      <div class="panel-block" style="text-align:center;padding:14px">
+        <div style="font-size:1.6rem;font-family:var(--ff-disp);color:var(--ok)" id="eq-ca-total">—</div>
+        <div class="mut" style="font-size:.75rem">CA équipe (€)</div>
+      </div>
+      <div class="panel-block" style="text-align:center;padding:14px">
+        <div style="font-size:1.6rem;font-family:var(--ff-disp);color:var(--gold)" id="eq-cooptation">—</div>
+        <div class="mut" style="font-size:.75rem">Prime cooptation (3%)</div>
+      </div>
+    </div>
+
+    <!-- Liste membres -->
+    <div style="margin-bottom:16px">
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:10px">Membres de mon équipe</div>
+      <div id="equipe-membres-list" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+
+    <!-- Envoyer un message à l'équipe -->
+    <div style="border-top:1px solid var(--line);padding-top:16px">
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:10px">📨 Message à l'équipe</div>
+      <textarea id="equipe-message-text" placeholder="Rédigez votre message pour tous les membres de votre équipe…"
+        style="width:100%;background:var(--navy-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--mut-2);font-family:var(--ff-body);font-size:.85rem;min-height:80px;outline:none;resize:vertical;margin-bottom:10px"></textarea>
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn btn-pri" onclick="envoyerMessageEquipe()" style="font-size:.85rem;padding:8px 18px">
+          📤 Envoyer à l'équipe
+        </button>
+      </div>
     </div>
   </div>
 </div>
