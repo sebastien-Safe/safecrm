@@ -98,6 +98,16 @@
         </div>
         <div class="mini-list" id="bordereaux-list"></div>
       </div>
+      <!-- Alerte demandes d'assistance (admin) -->
+      <div class="panel-block alert-block admin-only" id="help-requests-alert" style="display:none">
+        <h3>🆘 Demandes d'assistance en attente</h3>
+        <div class="mini-list" id="help-requests-list"></div>
+      </div>
+      <!-- Alerte demandes d'assistance (utilisateur) -->
+      <div class="panel-block alert-block" id="my-help-requests-alert" style="display:none">
+        <h3>📬 Mes demandes en cours</h3>
+        <div class="mini-list" id="my-help-requests-list"></div>
+      </div>
       <div class="stats-grid">
         <div class="stat-card"><div class="n" id="stat-contacts">–</div><div class="l">Contacts au total</div></div>
         <div class="stat-card"><div class="n" id="stat-clients">–</div><div class="l">Clients actifs</div></div>
@@ -712,12 +722,12 @@
 <div class="modal" id="help-modal">
   <div class="modal-card" style="max-width:520px">
     <h3>Demande d'assistance</h3>
-    <p class="mut">Décrivez votre besoin. Votre message sera envoyé à l'équipe S@FE avec votre identifiant utilisateur pour faciliter le suivi.</p>
+    <p class="mut">Décrivez votre besoin. Votre demande sera transmise à l'administrateur et suivie depuis le tableau de bord.</p>
     <div class="field"><label>Sujet</label>
       <select id="help-subject">
         <option>Question d'utilisation</option>
         <option>Bug ou anomalie</option>
-        <option>Demande d'évolution</option>
+        <option>Demande d'ajout de fonctionnalité</option>
         <option>Problème de connexion / accès</option>
         <option>Autre</option>
       </select>
@@ -725,7 +735,7 @@
     <div class="field"><label>Votre message</label><textarea id="help-message" rows="5" placeholder="Décrivez votre demande…"></textarea></div>
     <div class="modal-actions">
       <button class="btn btn-out" id="help-cancel-btn">Annuler</button>
-      <button class="btn btn-pri" id="help-send-btn">Envoyer par e-mail</button>
+      <button class="btn btn-pri" id="help-send-btn">Envoyer</button>
     </div>
   </div>
 </div>
