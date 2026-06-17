@@ -294,6 +294,7 @@ async function loadAll() {
   await ensureUserObjectifs();
   renderAll();
   checkRgpdExpiry(); // Vérification RGPD automatique au login
+  loadBordereaux();  // Bordereaux admin
 }
 
 async function loadContacts() {
@@ -2921,6 +2922,8 @@ function bindEvents() {
     openCustomerPortal(contractId);
   });
 
+  // === Bordereaux (rechargement si changement période géré dans loadBordereaux) ===
+
   // === Déconnexion par inactivité (5 min) ===
   setupInactivityTimeout();
 }
@@ -3110,6 +3113,146 @@ async function openCustomerPortal(contractId) {
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '🔗 Portail client'; }
   }
+}
+
+
+// ==========================================================================
+// BORDEREAUX DE COMMISSION — Gestion admin
+// ==========================================================================
+
+async function loadBordereaux() {
+  if (!isAdmin()) return;
+  // Construire la liste des 6 derniers mois pour le select
+  const sel = document.getElementById('bordereau-periode');
+  if (!sel) return;
+  const opts = [];
+  const now = new Date();
+  for (let i = 1; i <= 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const val = d.toISOString().slice(0, 7);
+    const label = d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    opts.push(`<option value="${val}">${label.charAt(0).toUpperCase() + label.slice(1)}</option>`);
+  }
+  sel.innerHTML = opts.join('');
+  sel.addEventListener('change', renderBordereaux);
+  await renderBordereaux();
+}
+
+async function renderBordereaux() {
+  const sel = document.getElementById('bordereau-periode');
+  if (!sel) return;
+  const periode = sel.value;
+  const block   = document.getElementById('bordereaux-alert');
+  const list    = document.getElementById('bordereaux-list');
+  if (!block || !list) return;
+
+  try {
+    const { data, error } = await sb.rpc('get_pending_bordereaux', { p_periode: periode });
+    if (error) throw error;
+
+    const users = data || [];
+    if (!users.length) { block.style.display = 'none'; return; }
+
+    block.style.display = 'block';
+    list.innerHTML = users.map(u => {
+      const sent = u.sent_at;
+      const sentLabel = sent
+        ? `<span class="badge badge-ok">✅ Envoyé le ${formatDate(sent.slice(0,10))}</span>`
+        : `<span class="badge badge-red">⏳ En attente</span>`;
+      return `<div class="mini-item">
+        <div>
+          <div class="t">${escapeHtml(u.prenom || u.email)}</div>
+          <div class="s">${escapeHtml(u.email)} — Période : ${escapeHtml(periode)}</div>
+        </div>
+        ${sentLabel}
+        <button class="btn btn-out btn-sm" style="margin-left:8px;font-size:.72rem"
+          onclick="genererBordereau('${u.user_id}','${escapeHtml(u.prenom || '')}','${escapeHtml(u.email)}','${periode}')">
+          📄 Générer PDF
+        </button>
+        ${!sent ? `<button class="btn btn-pri btn-sm" style="margin-left:4px;font-size:.72rem"
+          onclick="marquerBordereauEnvoye('${u.user_id}','${periode}')">
+          ✅ Marquer envoyé
+        </button>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    console.error('loadBordereaux:', e);
+  }
+}
+
+async function genererBordereau(userId, prenom, email, periode) {
+  // Calculer les commissions de la période
+  const [year, month] = periode.split('-').map(Number);
+  const startMonth = new Date(year, month - 1, 1);
+  const endMonth   = new Date(year, month, 0, 23, 59, 59);
+
+  const contracts = state.contracts.filter(c => {
+    if (c.created_by !== userId) return false;
+    if (!c.date_debut) return false;
+    const d = new Date(c.date_debut + 'T00:00:00');
+    return d >= startMonth && d <= endMonth;
+  });
+
+  const recurrents = state.contracts.filter(c =>
+    c.created_by === userId &&
+    c.recurrence === 'Mensuel' &&
+    !['Terminé'].includes(c.statut) &&
+    c.date_debut && new Date(c.date_debut + 'T00:00:00') <= endMonth
+  );
+
+  // Calculer montant total
+  let total = 0;
+  const rows = [];
+
+  contracts.forEach(ct => {
+    const preset = (FORMULE_PRESETS[ct.type] || []).find(f => f.label === ct.formule);
+    const comm = preset?.comm_signature_fix || (preset?.comm_signature_pct ? Math.round(Number(ct.montant || 0) * preset.comm_signature_pct * 100) / 100 : 0);
+    if (comm > 0) {
+      total += comm;
+      rows.push({ type: 'Signature', contact: contactName(ct.contact_id), formule: ct.formule || ct.type, montant: comm });
+    }
+  });
+
+  recurrents.forEach(ct => {
+    const preset = (FORMULE_PRESETS[ct.type] || []).find(f => f.label === ct.formule);
+    const pct = preset?.comm_recurrent_pct || 0;
+    const comm = Math.round(Number(ct.montant || 0) * pct * 100) / 100;
+    if (comm > 0) {
+      total += comm;
+      rows.push({ type: 'Récurrent', contact: contactName(ct.contact_id), formule: ct.formule || ct.type, montant: comm });
+    }
+  });
+
+  // Enregistrer dans bordereau_log
+  await sb.from('bordereau_log').upsert({
+    user_id: userId,
+    periode,
+    montant_total: total,
+    generated_at: new Date().toISOString(),
+  }, { onConflict: 'user_id,periode' });
+
+  // Générer le PDF via generateBordereauCommission adapté
+  if (window.ContractPDF && window.ContractPDF.generateBordereau) {
+    window.ContractPDF.generateBordereau({ prenom, email, periode, rows, total });
+  } else {
+    // Fallback : bordereau texte simple
+    const lines = rows.map(r => `${r.type} | ${r.contact} | ${r.formule} | ${formatMoney(r.montant)}`).join('\n');
+    alert(`Bordereau ${prenom} — ${periode}\n\n${lines || 'Aucune commission ce mois'}\n\nTOTAL : ${formatMoney(total)}`);
+  }
+
+  await renderBordereaux();
+}
+
+async function marquerBordereauEnvoye(userId, periode) {
+  if (!confirm(`Confirmer que le bordereau de ${periode} a été envoyé ?`)) return;
+  const { error } = await sb.from('bordereau_log').upsert({
+    user_id: userId,
+    periode,
+    sent_at: new Date().toISOString(),
+    sent_by: state.user.id,
+  }, { onConflict: 'user_id,periode' });
+  if (error) { alert('Erreur : ' + error.message); return; }
+  await renderBordereaux();
 }
 
 
