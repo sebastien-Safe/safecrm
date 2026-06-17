@@ -193,7 +193,7 @@ select option{background:var(--navy-mid)}
   <!-- Topbar -->
   <div class="topbar">
     <div class="topbar-brand">S<b>@</b>FE<small>WORK</small></div>
-    <span class="topbar-badge">⚡ PHASE TEST</span>
+    
     <div class="topbar-user">
       <span>Connecté : <strong id="user-label">—</strong></span>
       <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
@@ -266,6 +266,20 @@ select option{background:var(--navy-mid)}
           <div class="stat-card"><div class="val" id="st-clients">—</div><div class="lbl">Clients actifs</div><div class="sub" id="st-clients-sub"></div></div>
           <div class="stat-card"><div class="val" id="st-contrats">—</div><div class="lbl">Contrats en cours</div></div>
           <div class="stat-card"><div class="val" id="st-tasks">—</div><div class="lbl">Tâches à faire</div></div>
+        </div>
+
+        <!-- Bloc Nouveaux contrats — bordure dorée -->
+        <div style="margin-top:20px;background:rgba(20,34,64,.7);border:1.5px solid var(--gold);border-radius:var(--r);padding:20px 22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+            <div>
+              <div style="font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Activité récente</div>
+              <h3 style="font-size:1rem;color:#fff;margin:0">📄 Nouveaux contrats</h3>
+            </div>
+            <button class="btn btn-out btn-sm" onclick="showView('clients')" style="border-color:var(--gold);color:var(--gold);font-size:.78rem">Voir tous →</button>
+          </div>
+          <div id="dash-nouveaux-contrats">
+            <div style="text-align:center;padding:20px;color:var(--mut);font-size:.85rem">Chargement…</div>
+          </div>
         </div>
 
         <div class="section-head">
@@ -531,6 +545,7 @@ async function initApp(token, user){
   await Promise.all([loadStats(), loadContacts(), loadJournal()]);
   renderQuickAutomations();
   showView('dashboard');
+  loadNouveauxContrats();
 }
 
 /* ============================================================
@@ -585,13 +600,37 @@ function renderClientsTable(){
   }).join('');
 }
 
+// Emoji par type de produit/gamme
+function emojiProduit(type) {
+  if (!type) return '📋';
+  const t = type.toLowerCase();
+  if (t.includes('seo') || t.includes('référencement') || t.includes('referencement') || t.includes('local')) return '🔍';
+  if (t.includes('rgpd') || t.includes('conformit')) return '🛡';
+  if (t.includes('dpo')) return '⚖️';
+  if (t.includes('cyber') || t.includes('sécu') || t.includes('secu')) return '🔐';
+  if (t.includes('assurance') || t.includes('courtage')) return '🏦';
+  if (t.includes('web') || t.includes('site') || t.includes('digital')) return '🌐';
+  if (t.includes('formation') || t.includes('coaching')) return '🎓';
+  if (t.includes('audit')) return '🔎';
+  return '📋';
+}
+
+function getContactEmojis(contactId) {
+  const cts = allContracts.filter(ct => ct.contact_id === contactId && ct.statut !== 'Terminé' && ct.statut !== 'Résilié');
+  if (!cts.length) return '';
+  const emojis = [...new Set(cts.map(ct => emojiProduit(ct.type)))];
+  return emojis.join('') + ' ';
+}
+
 function renderAutoContactSelect(){
   const sel = document.getElementById('auto-contact');
   sel.innerHTML = '<option value="">— Choisir un contact —</option>';
   allContacts.forEach(c=>{
     const o = document.createElement('option');
     o.value = c.id;
-    o.textContent = c.nom + (c.entreprise?' — '+c.entreprise:'');
+    const emojis = getContactEmojis(c.id);
+    const label  = c.nom + (c.entreprise ? ' — ' + c.entreprise : '');
+    o.textContent = emojis + label;
     sel.appendChild(o);
   });
 }
