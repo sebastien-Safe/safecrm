@@ -549,7 +549,6 @@ function renderContacts() {
       <td class="nowrap">${escapeHtml(c.telephone || '—')}</td>
       <td>${c.email ? `<a href="mailto:${escapeHtml(c.email)}" style="color:var(--accent)">${escapeHtml(c.email)}</a>` : '—'}</td>
       <td class="nowrap">${escapeHtml(creatorName(c.created_by))}</td>
-      <td class="actions"><button class="btn btn-out btn-sm" data-edit-contact="${c.id}">${label}</button></td>
     </tr>`;
   }).join('');
 }
@@ -734,9 +733,7 @@ function renderContracts() {
       <td class="${isOverdue(ct.date_echeance, ct.statut) ? 'overdue' : ''}">${formatDate(ct.date_echeance)}</td>
       <td><span class="badge ${CONTRACT_STATUT_BADGE[ct.statut] || 'badge-gray'}">${escapeHtml(ct.statut)}</span>${ct.resilié_at ? '<br><span style="font-size:.7rem;color:#fc8181;font-weight:600">🔔 Résiliation demandée</span>' : ''}</td>
       <td class="nowrap">${escapeHtml(creatorName(ct.created_by))}</td>
-      <td class="actions">
-        <button class="btn btn-out btn-sm" data-edit-contract="${ct.id}">Modifier</button>
-      </td>
+      <td></td>
     </tr>`;
   }).join('');
 }
