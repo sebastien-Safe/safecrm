@@ -322,8 +322,9 @@ async function loadAll() {
   checkRgpdExpiry(); // Vérification RGPD automatique au login
   if (!isAdmin()) checkMandatSigne(); // Redirection vers signature si mandat absent
   checkPasswordStatus();             // Vérification mot de passe + renouvellement 45j
-  loadBordereaux();  // Bordereaux admin
-  loadHelpRequests(); // Demandes d'assistance
+  loadBordereaux();     // Bordereaux admin
+  loadBordereauDCI();   // Rappel facturation DCI
+  loadHelpRequests();   // Demandes d'assistance
 }
 
 async function loadContacts() {
@@ -3720,6 +3721,105 @@ async function checkPasswordStatus() {
   } catch(e) {
     console.warn('checkPasswordStatus:', e);
   }
+}
+
+
+// ==========================================================================
+// ALERTE FACTURATION DCI — dernier jour ouvré du mois
+// ==========================================================================
+
+async function loadBordereauDCI() {
+  if (isAdmin()) return; // Admins ne voient pas cette alerte
+
+  const block = document.getElementById('my-bordereau-alert');
+  if (!block) return;
+
+  const now    = new Date();
+  const year   = now.getFullYear();
+  const month  = now.getMonth() + 1;
+
+  // Vérifier si on est le dernier jour ouvré du mois
+  const dernierJour = dernierJourOuvreMois(year, month);
+  const isLastOuvre = (
+    now.getFullYear() === dernierJour.getFullYear() &&
+    now.getMonth()    === dernierJour.getMonth() &&
+    now.getDate()     === dernierJour.getDate()
+  );
+
+  if (!isLastOuvre) { block.style.display = 'none'; return; }
+
+  // Calculer les commissions du mois courant
+  const periode  = `${year}-${String(month).padStart(2,'0')}`;
+  const startM   = new Date(year, month - 1, 1);
+  const endM     = new Date(year, month, 0, 23, 59, 59);
+
+  const myContracts = (state.contracts || []).filter(c => c.created_by === state.user?.id);
+
+  // Signatures du mois
+  const signatures = myContracts.filter(c => {
+    if (!c.date_debut) return false;
+    const d = new Date(c.date_debut + 'T00:00:00');
+    return d >= startM && d <= endM;
+  });
+
+  // Récurrents actifs
+  const recurrents = myContracts.filter(c =>
+    c.recurrence === 'Mensuel' &&
+    !['Terminé'].includes(c.statut) &&
+    c.date_debut && new Date(c.date_debut + 'T00:00:00') <= endM
+  );
+
+  // Calcul montant estimé
+  let total = 0;
+  signatures.forEach(c  => { total += Math.round((Number(c.montant) || 0) * 0.15); });
+  recurrents.forEach(c  => { total += Math.round((Number(c.montant) || 0) * 0.10); });
+
+  if (total === 0 && signatures.length === 0 && recurrents.length === 0) {
+    block.style.display = 'none';
+    return;
+  }
+
+  const periodLabel = new Date(year, month - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  const mailSubject = encodeURIComponent(`Facture de commissions S@FE — ${periodLabel}`);
+  const mailBody    = encodeURIComponent(
+    `Bonjour,
+
+Veuillez trouver ci-joint ma facture de commissions pour le mois de ${periodLabel}.
+
+Montant total : ${total} € HT
+
+Cordialement,
+${state.profile?.prenom || ''}`
+  );
+
+  block.style.display = 'block';
+  const list = document.getElementById('my-bordereau-list');
+  if (list) list.innerHTML = `
+    <div class="mini-item" style="flex-direction:column;gap:12px;align-items:flex-start">
+      <div>
+        <div class="t">💶 Commissions estimées — ${periodLabel}</div>
+        <div class="s" style="margin-top:4px">
+          ${signatures.length} contrat${signatures.length>1?'s':''} signés
+          · ${recurrents.length} abonnement${recurrents.length>1?'s':''} actifs
+          · <strong style="color:var(--gold)">~${total} € HT</strong>
+        </div>
+        <div class="s mut" style="font-size:.75rem;margin-top:4px">
+          ⚠️ Le virement sera effectué à réception de votre facture. Sans facture, aucun paiement ne sera déclenché.
+        </div>
+      </div>
+      <a href="mailto:facturation@safe-digitalisation.fr?subject=${mailSubject}&body=${mailBody}"
+        class="btn btn-pri" style="font-size:.78rem;padding:8px 14px;text-decoration:none">
+        ✉️ Envoyer ma facture à S@FE
+      </a>
+    </div>`;
+}
+
+function dernierJourOuvreMois(year, month) {
+  let d = new Date(year, month, 0); // dernier jour calendaire
+  while (d.getDay() === 0 || d.getDay() === 6) {
+    d.setDate(d.getDate() - 1);
+  }
+  return d;
 }
 
 
