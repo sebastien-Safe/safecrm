@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://*.supabase.co https://checkout.stripe.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; frame-src https://checkout.stripe.com;">
 <title>Bon de commande — S@FE Digitalisation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -167,7 +169,7 @@ async function init() {
 
   const { data, error } = await sb
     .from('contracts')
-    .select('id, type, formule, montant, remise, recurrence, statut')
+    .select('id, type, formule, montant, remise, recurrence, frais_mise_en_place, statut, created_at')
     .eq('id', ORDER_ID)
     .single();
 
@@ -180,6 +182,18 @@ async function init() {
   if (data.statut !== 'En attente de signature' && data.statut !== 'Envoyé') {
     show('#state-paid');
     return;
+  }
+
+  // Vérification expiration : lien valable 7 jours après création
+  if (data.created_at) {
+    const createdAt  = new Date(data.created_at);
+    const expiresAt  = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+    if (new Date() > expiresAt) {
+      show('#state-error');
+      document.getElementById('err-title').textContent = 'Lien expiré';
+      document.getElementById('err-msg').textContent = 'Ce lien de paiement a expiré (validité 7 jours). Contactez votre conseiller S@FE pour en obtenir un nouveau.';
+      return;
+    }
   }
 
   ORDER = {
