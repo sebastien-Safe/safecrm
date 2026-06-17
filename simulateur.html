@@ -198,6 +198,15 @@ function calcR(){
   document.getElementById('r-pct-v').textContent     = Math.round(pct*100)+'%';
 
   const commParClient = montant * pct;
+
+  // Prime DCI cooptation
+  const isDCI = document.getElementById('r-dci') && document.getElementById('r-dci').checked;
+  const dciCtrl = document.getElementById('r-dci-ctrl');
+  if (dciCtrl) dciCtrl.style.display = isDCI ? 'flex' : 'none';
+  const caEquipe = isDCI ? parseInt(document.getElementById('r-dci-ca') && document.getElementById('r-dci-ca').value || 0) : 0;
+  const primeDCI = Math.round(caEquipe * 0.03);
+  const dciValEl = document.getElementById('r-dci-ca-v');
+  if (dciValEl) dciValEl.textContent = caEquipe.toLocaleString('fr-FR') + ' €';
   const clientsNecessaires = Math.ceil(TARGET_R / commParClient);
   const caObj = clientsNecessaires * montant;
 
@@ -210,11 +219,16 @@ function calcR(){
     if(comm>=TARGET_R && moisObj===null) moisObj=m;
   }
 
+  // Recalculer avec prime DCI si activée
+  const dataAvecDCI = data.map(d => ({ m:d.m, pf:d.pf, comm: d.comm + primeDCI }));
+  const moisObjFinal = dataAvecDCI.findIndex(d => d.comm >= TARGET_R);
+  const commTotale = commParClient + primeDCI;
+
   document.getElementById('r-metrics').innerHTML = `
     <div class="metric"><div class="metric-label">Clients n&eacute;cessaires</div><div class="metric-val">${clientsNecessaires}</div><div class="metric-sub">portefeuille stable</div></div>
     <div class="metric"><div class="metric-label">CA mensuel objectif</div><div class="metric-val" style="color:var(--gold)">${fmt(caObj)}</div><div class="metric-sub">chiffre d&rsquo;affaires g&eacute;n&eacute;r&eacute;</div></div>
-    <div class="metric"><div class="metric-label">D&eacute;lai estim&eacute;</div><div class="metric-val" style="color:${moisObj?'var(--green)':'var(--alert)'}">${moisObj?moisObj+' mois':'> 36 mois'}</div><div class="metric-sub">${moisObj?'avec ce rythme':'hors port&eacute;e'}</div></div>
-    <div class="metric"><div class="metric-label">Commission / client</div><div class="metric-val">${fmt(commParClient)}</div><div class="metric-sub">par mois r&eacute;current</div></div>`;
+    <div class="metric"><div class="metric-label">D&eacute;lai estim&eacute;</div><div class="metric-val" style="color:${moisObjFinal>=0?'var(--green)':'var(--alert)'}">${moisObjFinal>=0?(moisObjFinal+1)+' mois':'> 36 mois'}</div><div class="metric-sub">${isDCI?'prime DCI incluse':'hors cooptation'}</div></div>
+    <div class="metric"><div class="metric-label">${isDCI?'Revenu total/mois':'Commission/client'}</div><div class="metric-val" style="color:${isDCI?'var(--gold)':''}">${isDCI?fmt(commTotale):fmt(commParClient)}</div><div class="metric-sub">${isDCI?'dont cooptation '+fmt(primeDCI):'par mois r&eacute;current'}</div></div>`;
 
   document.getElementById('r-phases').innerHTML = `
     <div class="phase"><div class="phase-num">Phase 1 &mdash; mois 1 &agrave; 12</div><div class="phase-title">Construction</div>
