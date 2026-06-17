@@ -653,6 +653,14 @@
     <div class="field"><label>N° de police RC Pro</label><input id="profile-rcpro" type="text" placeholder="Référence assurance RC Pro"></div>
     <p class="mut" style="font-size:.74rem;margin-top:-6px">* Champs obligatoires. SIRET : renseigné dans votre contrat de mandat.</p>
     <p class="error" id="profile-error"></p>
+    <div id="clause-signed-block" style="display:none;margin-top:8px;padding:10px 12px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:.8rem;color:var(--ok);display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <span>✅ Clause de confidentialité signée</span>
+      <a id="clause-signed-link" href="#" target="_blank" rel="noopener noreferrer" style="font-size:.76rem;color:var(--ok);font-weight:600;text-decoration:underline">Voir ma clause →</a>
+    </div>
+    <div id="clause-unsigned-block" style="display:none;padding:10px 12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;font-size:.8rem;color:var(--gold);margin-top:8px">
+      ⚠️ Clause de confidentialité non signée —
+      <a href="/clause-confidentialite.html" style="color:var(--gold);font-weight:600;text-decoration:underline">Signer maintenant →</a>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-out" id="profile-cancel-btn">Annuler</button>
       <button class="btn btn-pri" id="profile-save-btn">Enregistrer</button>
