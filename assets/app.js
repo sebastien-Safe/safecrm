@@ -326,6 +326,8 @@ async function loadAll() {
   loadNotifContracts(); // Notifications nouveaux contrats (admin)
   loadBordereauDCI();   // Rappel facturation DCI
   loadHelpRequests();   // Demandes d'assistance
+  loadUpsellOpportunities(); // Potentiel montée en gamme
+  loadChurnRisk();           // Risque résiliation
 }
 
 async function loadContacts() {
@@ -3945,6 +3947,122 @@ async function executeReset() {
     btn.disabled = false;
     btn.textContent = '🗑 Réinitialiser définitivement';
   }
+}
+
+
+// ==========================================================================
+// INTELLIGENCE COMMERCIALE — Upsell & Churn Risk
+// ==========================================================================
+
+// Gammes disponibles pour détecter les manques
+const GAMMES = ['SEO', 'RGPD', 'Cybersécurité', 'DPO', 'Click'];
+
+function detectGamme(type) {
+  if (!type) return null;
+  const t = type.toLowerCase();
+  if (t.includes('seo') || t.includes('réf') || t.includes('ref') || t.includes('local')) return 'SEO';
+  if (t.includes('rgpd') || t.includes('conform')) return 'RGPD';
+  if (t.includes('cyber') || t.includes('sécu') || t.includes('secu')) return 'Cybersécurité';
+  if (t.includes('dpo')) return 'DPO';
+  if (t.includes('click') || t.includes('collect')) return 'Click & Collect';
+  return null;
+}
+
+async function loadUpsellOpportunities() {
+  const block = document.getElementById('upsell-alert');
+  const list  = document.getElementById('upsell-list');
+  if (!block) return;
+
+  const myId = state.user?.id;
+  const contacts  = (state.contacts  || []).filter(c => c.created_by === myId && c.statut === 'Client');
+  const contracts = (state.contracts || []).filter(c => c.created_by === myId && !['Terminé'].includes(c.statut));
+
+  // Pour chaque client actif, quelles gammes lui manquent ?
+  const opps = [];
+  for (const contact of contacts) {
+    const clientContracts = contracts.filter(c => c.contact_id === contact.id);
+    const gammes = clientContracts.map(c => detectGamme(c.type)).filter(Boolean);
+    const manquantes = GAMMES.filter(g => !gammes.some(cg => cg === g || cg?.includes(g)));
+    if (manquantes.length > 0 && gammes.length > 0) {
+      opps.push({ contact, gammes_actives: gammes, manquantes });
+    }
+  }
+
+  // Trier par nombre de gammes manquantes (le plus de potentiel en premier)
+  opps.sort((a, b) => b.manquantes.length - a.manquantes.length);
+  const top = opps.slice(0, 5);
+
+  if (!top.length) { block.style.display = 'none'; return; }
+
+  block.style.display = 'block';
+  list.innerHTML = top.map(o => {
+    const nom = escapeHtml((o.contact.entreprise || o.contact.nom || '—').slice(0, 30));
+    const actives   = o.gammes_actives.map(g => `<span style="background:rgba(34,197,94,.12);color:#16a34a;font-size:.7rem;padding:1px 6px;border-radius:999px">${escapeHtml(g)}</span>`).join(' ');
+    const manquants = o.manquantes.map(g => `<span style="background:rgba(59,130,246,.1);color:#2563eb;font-size:.7rem;padding:1px 6px;border-radius:999px;cursor:pointer" onclick="switchView('contacts');openContactModal('${o.contact.id}')">${escapeHtml(g)}</span>`).join(' ');
+    return `<div class="mini-item" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div class="t" style="cursor:pointer" onclick="switchView('contacts');openContactModal('${o.contact.id}')">${nom}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+        <span style="font-size:.72rem;color:var(--mut)">Actif :</span> ${actives}
+        <span style="font-size:.72rem;color:var(--mut);margin-left:4px">À proposer :</span> ${manquants}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadChurnRisk() {
+  const block = document.getElementById('churn-alert');
+  const list  = document.getElementById('churn-list');
+  if (!block) return;
+
+  const myId    = state.user?.id;
+  const now     = new Date();
+  const limite  = new Date(now - 60 * 24 * 60 * 60 * 1000); // 60 jours
+
+  // Clients actifs avec contrat en cours
+  const contacts  = (state.contacts  || []).filter(c => c.created_by === myId && c.statut === 'Client' && !c.rgpd_ko);
+  const contracts = (state.contracts || []).filter(c => c.created_by === myId && !['Terminé'].includes(c.statut));
+  const clientsAvecContrat = contacts.filter(c => contracts.some(ct => ct.contact_id === c.id));
+
+  // Chercher la dernière interaction pour chaque client
+  const { data: interactions } = await sb
+    .from('interactions')
+    .select('contact_id, date')
+    .in('contact_id', clientsAvecContrat.map(c => c.id))
+    .order('date', { ascending: false });
+
+  const risques = [];
+  for (const contact of clientsAvecContrat) {
+    const ints = (interactions || []).filter(i => i.contact_id === contact.id);
+    const lastDate = ints.length ? new Date(ints[0].date) : new Date(contact.created_at || 0);
+    const joursEcoules = Math.floor((now - lastDate) / (24 * 60 * 60 * 1000));
+    if (joursEcoules >= 60) {
+      risques.push({ contact, joursEcoules, lastDate });
+    }
+  }
+
+  // Trier par le plus longtemps sans contact
+  risques.sort((a, b) => b.joursEcoules - a.joursEcoules);
+  const top = risques.slice(0, 5);
+
+  if (!top.length) { block.style.display = 'none'; return; }
+
+  block.style.display = 'block';
+  list.innerHTML = top.map(r => {
+    const nom  = escapeHtml((r.contact.entreprise || r.contact.nom || '—').slice(0, 30));
+    const j    = r.joursEcoules;
+    const couleur = j >= 120 ? 'var(--alert)' : j >= 90 ? '#f59e0b' : 'var(--mut)';
+    return `<div class="mini-item">
+      <div>
+        <div class="t" style="cursor:pointer" onclick="switchView('contacts');openContactModal('${r.contact.id}')">${nom}</div>
+        <div class="s" style="color:${couleur};font-size:.75rem">Dernier contact il y a <strong>${j} jours</strong></div>
+      </div>
+      <button class="btn btn-pri btn-sm"
+        style="font-size:.72rem;padding:5px 10px;flex-shrink:0;margin-left:8px"
+        onclick="switchView('contacts');openContactModal('${r.contact.id}')">
+        📞 Relancer
+      </button>
+    </div>`;
+  }).join('');
 }
 
 
