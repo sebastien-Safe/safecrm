@@ -344,7 +344,10 @@
         <div class="panel-block">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;flex-wrap:wrap">
             <h3 style="margin:0">Comptes utilisateurs</h3>
-            <button class="btn btn-pri btn-sm" id="btn-new-user">+ Créer un utilisateur</button>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn btn-out btn-sm" onclick="openGenererMDPModal()" style="font-size:.82rem">🔑 Générer un MDP</button>
+              <button class="btn btn-pri btn-sm" id="btn-new-user">+ Créer un utilisateur</button>
+            </div>
           </div>
           <div class="scrollx">
             <table class="tbl" id="admin-users-table">
