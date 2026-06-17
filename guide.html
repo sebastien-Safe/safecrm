@@ -132,15 +132,55 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/assets/config.js"></script>
 <script>
-(async function checkClause(){
+(async function checkClauseAndRole(){
   try {
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.href = '/'; return; }
-    const { data } = await sb.from('clauses_confidentialite')
+
+    // Vérifier clause
+    const { data: clause } = await sb.from('clauses_confidentialite')
       .select('id').eq('user_id', session.user.id).maybeSingle();
-    if (!data) { window.location.href = '/clause-confidentialite.html'; }
-  } catch(e) { console.warn('checkClause:', e); }
+    if (!clause) { window.location.href = '/clause-confidentialite.html'; return; }
+
+    // Charger le rôle
+    const { data: profile } = await sb.from('profiles')
+      .select('role, prenom').eq('id', session.user.id).maybeSingle();
+    const role  = profile?.role || 'user';
+    const order = ['user','dci','admin_candy','super_admin'];
+    const level = order.indexOf(role);
+
+    // Personnaliser le titre du guide
+    const roleLabels = {
+      'user':        'Guide Utilisateur (Niveau 1)',
+      'dci':         'Guide DCI (Niveau 2)',
+      'admin_candy': 'Guide Administrateur (Niveau 3)',
+      'super_admin': 'Guide Super Admin (Niveau 4)',
+    };
+    const heroTitle = document.getElementById('guide-role-title');
+    if (heroTitle) heroTitle.textContent = roleLabels[role] || 'Guide utilisateur';
+    const heroPre = document.getElementById('guide-role-prenom');
+    if (heroPre) heroPre.textContent = profile?.prenom ? 'Bonjour ' + profile.prenom + ' —' : '';
+
+    // Masquer sections selon le rôle
+    document.querySelectorAll('[data-guide-min-role]').forEach(el => {
+      const minRole  = el.getAttribute('data-guide-min-role');
+      const minLevel = order.indexOf(minRole);
+      el.style.display = level >= minLevel ? '' : 'none';
+      // Masquer aussi l'entrée TOC correspondante
+      const toc = document.querySelector('.toc a[href="#' + el.id + '"]');
+      if (toc) toc.style.display = level >= minLevel ? '' : 'none';
+    });
+
+    // Masquer les sections réservées à un seul rôle exact
+    document.querySelectorAll('[data-guide-role]').forEach(el => {
+      const allowedRole = el.getAttribute('data-guide-role');
+      el.style.display = role === allowedRole ? '' : 'none';
+      const toc = document.querySelector('.toc a[href="#' + el.id + '"]');
+      if (toc) toc.style.display = role === allowedRole ? '' : 'none';
+    });
+
+  } catch(e) { console.warn('checkClauseAndRole:', e); }
 })();
 </script>
 <body>
@@ -520,7 +560,7 @@
 <div class="divider"></div>
 
 <!-- COMMISSIONS -->
-<section class="section" id="commissions">
+<section class="section" id="commissions" data-guide-min-role="dci">
   <div class="section-label">Rémunération</div>
   <h2>Grille des commissions.</h2>
   <p class="section-intro">Les commissions sont calculées automatiquement et versées sur facture, chaque mois. Un bordereau récapitulatif est généré et envoyé par l'administrateur en début de mois pour le mois précédent.</p>
