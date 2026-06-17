@@ -35,6 +35,7 @@
       color: var(--ardoise);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
     /* ── NAV ── */
@@ -371,11 +372,32 @@
 
     /* ── RESPONSIVE ── */
     @media(max-width: 800px) {
-      .hero { grid-template-columns: 1fr; gap: 40px; }
+      .hero { grid-template-columns: 1fr; gap: 32px; padding: 48px 20px 40px; }
       .features { grid-template-columns: 1fr; }
       .data-points { grid-template-columns: 1fr; }
       .mock-body { grid-template-columns: 1fr; }
       .mock-sidebar { display: none; }
+      .hero h1 { font-size: clamp(1.8rem, 6vw, 2.4rem); }
+      .hero-sub { font-size: .92rem; }
+      .hero-actions { flex-direction: column; }
+      .btn-pri, .btn-sec { width: 100%; justify-content: center; text-align: center; }
+      nav { padding: 0 16px; }
+      .nav-cta { padding: 7px 14px; font-size: .8rem; }
+      .section { padding: 52px 20px; }
+      .tarif-card { padding: 28px 20px; }
+      .profils { gap: 8px; }
+      .profil-tag { font-size: .78rem; padding: 6px 14px; }
+      .data-section { padding: 52px 20px; }
+      .cta-final { padding: 52px 20px; }
+      .cta-final h2 { font-size: clamp(1.6rem, 5vw, 2.2rem); }
+      footer { padding: 24px 20px; }
+    }
+    @media(max-width: 480px) {
+      .hero { padding: 36px 16px 32px; }
+      .mock { display: none; }
+      .hero-mock { display: none; }
+      .constantes { grid-template-columns: repeat(3,1fr); }
+      nav { height: 52px; }
     }
 
     /* ── ANIMATIONS ── */
