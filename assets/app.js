@@ -4435,7 +4435,7 @@ async function loadEquipe() {
 
 async function envoyerMessageEquipe() {
   const texte = document.getElementById('equipe-message-text').value.trim();
-  if (!texte) { alert('Rédigez un message avant d'envoyer.'); return; }
+  if (!texte) { alert('Rédigez un message avant d’envoyer.'); return; }
 
   const myId = state.user?.id;
   const { data: membres } = await sb.from('profiles')
