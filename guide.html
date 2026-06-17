@@ -375,7 +375,7 @@
     <div class="screen-row"><span class="screen-label">Portefeuille récurrent</span><span class="screen-value">Abonnements actifs avec commission mensuelle calculée. Base de votre revenu passif.</span></div>
     <div class="screen-row"><span class="screen-label">Objectifs ajustés</span><span class="screen-value">Les objectifs sont proratisés selon vos jours travaillés déclarés dans votre profil.</span></div>
     <div class="screen-row"><span class="screen-label">Vue équipe (admin)</span><span class="screen-value">L'administrateur voit les résultats de tous les DCIs avec possibilité de zoomer sur chaque profil.</span></div>
-    <div class="screen-row"><span class="screen-label">Bordereau PDF</span><span class="screen-value">Bouton en bas de page — génère un PDF récapitulatif de toutes vos commissions du mois, prêt pour validation.</span></div>
+    <div class="screen-row"><span class="screen-label">Bordereau PDF</span><span class="screen-value">Généré chaque début de mois par l'administrateur pour le mois précédent. Vous recevez un PDF récapitulatif par email avec le détail de chaque commission (signature + récurrent). Le règlement se fait sur présentation de votre facture.</span></div>
   </div>
 
   <div class="info gold" style="margin-top:16px">
@@ -395,8 +395,8 @@
     <div class="int-item"><div class="ico">📞</div><div class="lbl">Téléphone</div><div class="desc">Appel entrant ou sortant</div></div>
     <div class="int-item"><div class="ico">✉️</div><div class="lbl">Email</div><div class="desc">Échange par email</div></div>
     <div class="int-item"><div class="ico">🤝</div><div class="lbl">Visite</div><div class="desc">Rendez-vous physique</div></div>
-    <div class="int-item"><div class="ico">💼</div><div class="lbl">LinkedIn</div><div class="desc">Message ou interaction</div></div>
-    <div class="int-item"><div class="ico">📘</div><div class="lbl">Facebook</div><div class="desc">Message ou interaction</div></div>
+    <div class="int-item"><div class="ico"><img src="https://www.google.com/s2/favicons?sz=32&domain=linkedin.com" alt="LinkedIn" style="width:28px;height:28px;border-radius:6px"></div><div class="lbl">LinkedIn</div><div class="desc">Message ou interaction</div></div>
+    <div class="int-item"><div class="ico"><img src="https://www.google.com/s2/favicons?sz=32&domain=facebook.com" alt="Facebook" style="width:28px;height:28px;border-radius:6px"></div><div class="lbl">Facebook</div><div class="desc">Message ou interaction</div></div>
     <div class="int-item"><div class="ico">💬</div><div class="lbl">Autre</div><div class="desc">SMS, courrier…</div></div>
   </div>
 
@@ -480,7 +480,7 @@
 <section class="section" id="commissions">
   <div class="section-label">Rémunération</div>
   <h2>Grille des commissions.</h2>
-  <p class="section-intro">Toutes les commissions sont calculées automatiquement à la création du contrat. Aucune saisie manuelle.</p>
+  <p class="section-intro">Les commissions sont calculées automatiquement et versées sur facture, chaque mois. Un bordereau récapitulatif est généré et envoyé par l'administrateur en début de mois pour le mois précédent.</p>
 
   <table class="tbl">
     <thead>
@@ -504,7 +504,10 @@
   </table>
 
   <div class="info gold" style="margin-top:20px">
-    <strong>Comment lire le tableau</strong> — La commission signature est versée à la date de signature du contrat. Le récurrent est versé chaque mois tant que le client est actif. Le bonus fidélité est versé en une fois à la fin de la période d'engagement si le client n'a pas résilié.
+    <strong>Comment lire le tableau</strong> — La commission signature est versée à la signature du contrat. Le récurrent est calculé chaque mois tant que le client est actif. Le bonus fidélité est versé en une fois à la fin de la période d'engagement si le client n'a pas résilié.
+  </div>
+  <div class="info" style="margin-top:12px">
+    <strong>Processus de paiement</strong> — En début de mois, l'administrateur génère votre bordereau de commission pour le mois précédent et vous l'envoie par email. Vous émettez ensuite votre <strong>facture</strong> correspondante pour déclencher le virement. Aucune commission n'est versée sans facture.
   </div>
 </section>
 
