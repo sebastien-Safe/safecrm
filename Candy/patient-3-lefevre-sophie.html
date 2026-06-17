@@ -1,362 +1,318 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <link rel="icon" type="image/svg+xml" href="/Candy/favicon.svg">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <title>C@NDY — Lefèvre Sophie</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-:root{
-  --rose:#F2D7D9;--rose-deep:#E8BFC2;--rose-light:#FBF0F1;
-  --cerise:#C4717A;--cerise-2:#A85860;
-  --blanc:#FEFAF9;--ardoise:#3D2B2D;--ardoise-2:#5C3F42;
-  --mut:#8C6A6D;--sauge:#7A9E7E;--sauge-2:#5C7D60;
-  --line:rgba(61,43,45,.1);--line-2:rgba(61,43,45,.06);
-  --ff-disp:'DM Serif Display',serif;--ff-body:'Inter',sans-serif;
-}
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/Candy/favicon.svg">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>C@NDY &mdash; Lef&egrave;vre Sophie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--rose:#F2D7D9;--rose-deep:#E8BFC2;--rose-light:#FBF0F1;--cerise:#C4717A;--cerise-2:#A85860;--blanc:#FEFAF9;--ardoise:#3D2B2D;--ardoise-2:#5C3F42;--mut:#8C6A6D;--sauge-2:#5C7D60;--line:rgba(61,43,45,.1);--line-2:rgba(61,43,45,.06);--ff-disp:"DM Serif Display",serif;--fb:"Inter",sans-serif}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:var(--ff-body);background:var(--rose-light);color:var(--ardoise);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
-nav{position:sticky;top:0;z-index:200;background:rgba(254,250,249,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px}
-.nav-brand{font-family:var(--ff-disp);font-size:1.25rem;color:var(--ardoise);text-decoration:none}
-.nav-badge{font-family:var(--ff-body);font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--cerise);color:#fff;padding:3px 8px;border-radius:999px;margin-left:8px}
-.nav-back{font-size:.85rem;color:var(--mut);text-decoration:none;display:flex;align-items:center;gap:5px}
+body{font-family:var(--fb);background:var(--rose-light);color:var(--ardoise);line-height:1.5;-webkit-font-smoothing:antialiased}
+nav{position:sticky;top:0;z-index:200;background:rgba(254,250,249,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-brand{font-family:var(--ff-disp);font-size:1.2rem;color:var(--ardoise);text-decoration:none}
+.nav-badge{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--cerise);color:#fff;padding:3px 8px;border-radius:999px;margin-left:6px}
+.nav-back{font-size:.85rem;color:var(--mut);text-decoration:none}
 .nav-back:hover{color:var(--cerise)}
 .page{max-width:980px;margin:0 auto;padding:32px 24px 80px}
-.patient-hero{background:var(--blanc);border:1px solid var(--line);border-radius:16px;padding:28px 32px;margin-bottom:24px;display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center}
-.patient-avatar{width:72px;height:72px;border-radius:50%;background:var(--rose-deep);display:flex;align-items:center;justify-content:center;font-family:var(--ff-disp);font-size:1.8rem;color:var(--cerise-2);flex-shrink:0}
-.patient-hero h1{font-family:var(--ff-disp);font-size:1.7rem;color:var(--ardoise);margin-bottom:4px}
-.patient-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-.meta-chip{font-size:.75rem;color:var(--mut);background:var(--rose-light);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
-.secu-block{text-align:right}
-.secu-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
-.secu-num{font-family:monospace;font-size:1rem;font-weight:700;color:var(--ardoise);letter-spacing:.06em;background:var(--rose-light);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
-.btn-print{font-size:.78rem;color:var(--mut);background:none;border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;margin-top:8px;display:block;text-align:center;transition:all .18s}
-.btn-print:hover{border-color:var(--cerise);color:var(--cerise)}
-.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--line);padding-bottom:0}
-.tab{font-size:.85rem;font-weight:600;color:var(--mut);padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .18s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--ff-body)}
+.hero{background:var(--blanc);border:1px solid var(--line);border-radius:16px;padding:22px 26px;margin-bottom:24px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:start}
+.avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--rose-deep),var(--cerise));display:flex;align-items:center;justify-content:center;font-family:var(--ff-disp);font-size:1.2rem;color:#fff;font-weight:700;flex-shrink:0}
+.hero h1{font-family:var(--ff-disp);font-size:1.55rem;color:var(--ardoise);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.chip{font-size:.74rem;color:var(--mut);background:var(--rose-light);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+.aller-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.secu-block{text-align:right;flex-shrink:0}
+.secu-lbl{font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+.secu-num{font-family:monospace;font-size:.9rem;font-weight:700;color:var(--ardoise);background:var(--rose-light);border:1px solid var(--line);border-radius:7px;padding:5px 10px;display:block;margin-bottom:8px;letter-spacing:.05em}
+.hero-btns{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.btn{font-size:.78rem;color:var(--mut);background:none;border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{border-color:var(--cerise);color:var(--cerise)}
+.btn.pri{background:var(--cerise);color:#fff;border-color:var(--cerise)}
+.btn.pri:hover{background:var(--cerise-2)}
+.tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--line)}
+.tab{font-size:.85rem;font-weight:600;color:var(--mut);padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;background:none;border-top:none;border-left:none;border-right:none;transition:all .18s}
 .tab.active{color:var(--cerise);border-bottom-color:var(--cerise)}
 .tab:hover{color:var(--cerise-2)}
 .tab-content{display:none}
 .tab-content.active{display:block}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
-.bloc{background:var(--blanc);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:18px}
-.bloc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line-2)}
-.bloc-title{display:flex;align-items:center;gap:9px;font-weight:700;font-size:.9rem;color:var(--ardoise)}
-.civil-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.civil-row{display:flex;flex-direction:column;gap:2px}
-.civil-label{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
-.civil-val{font-size:.88rem;color:var(--ardoise);font-weight:500}
-.constantes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.const-card{background:var(--rose-light);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center}
-.const-val{font-family:var(--ff-disp);font-size:1.6rem;color:var(--ardoise);line-height:1}
-.const-unit{font-size:.7rem;color:var(--mut);margin-left:2px}
-.const-label{font-size:.72rem;color:var(--mut);margin-top:4px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.bloc{background:var(--blanc);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:18px}
+.bloc-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line-2)}
+.bloc-title{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;color:var(--ardoise)}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cr{display:flex;flex-direction:column;gap:2px}
+.cl{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.cv{font-size:.87rem;color:var(--ardoise);font-weight:500}
+.cst{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.cc{background:var(--rose-light);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center}
+.cc .v{font-family:var(--ff-disp);font-size:1.6rem;color:var(--ardoise);line-height:1}
+.cc .u{font-size:.7rem;color:var(--mut)}
+.cc .l{font-size:.72rem;color:var(--mut);margin-top:4px}
 .imc-ok{color:#5C7D60}.imc-warn{color:var(--cerise)}
-.allergie-item{display:flex;align-items:center;gap:12px;border-left:3px solid #ccc;border-radius:9px;padding:12px 14px;margin-bottom:10px;background:rgba(192,57,43,.04)}
-.allergie-name{font-weight:700;font-size:.88rem;color:var(--ardoise)}
-.allergie-desc{font-size:.78rem;color:var(--mut);margin-top:2px}
-.allergie-badge{margin-left:auto;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:999px;flex-shrink:0;border:1px solid}
-.no-allergie{font-size:.88rem;color:var(--sauge-2);display:flex;align-items:center;gap:8px;padding:10px 0}
-.histo-item{display:grid;grid-template-columns:90px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--line-2)}
-.histo-item:last-child{border-bottom:none}
-.histo-date{font-size:.78rem;font-weight:600;color:var(--mut);padding-top:2px;text-align:right}
-.histo-type{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
-.histo-type.consult{color:var(--cerise)}.histo-type.ordonnance{color:var(--sauge-2)}.histo-type.examen{color:#7B68EE}
-.histo-titre{font-size:.88rem;font-weight:600;color:var(--ardoise);margin-bottom:3px}
-.histo-note{font-size:.82rem;color:var(--mut);line-height:1.55}
-.histo-medecin{font-size:.72rem;color:var(--mut);margin-top:4px}
-.agenda-item{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--line-2);align-items:center}
-.agenda-item:last-child{border-bottom:none}
-.agenda-date-col{text-align:right}
-.agenda-date{font-size:.82rem;font-weight:700;color:var(--ardoise)}
-.agenda-heure{font-size:.72rem;color:var(--cerise);font-weight:600}
-.agenda-type{display:inline-flex;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cerise);background:rgba(196,113,122,.1);padding:2px 8px;border-radius:999px;margin-bottom:4px}
-.agenda-motif{font-size:.88rem;font-weight:600;color:var(--ardoise)}
-.agenda-lieu{font-size:.78rem;color:var(--mut);margin-top:2px}
-.ordo-card{background:var(--blanc);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px}
-.ordo-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line-2)}
-.ordo-num{font-family:monospace;font-size:.75rem;color:var(--cerise);font-weight:600}
-.ordo-date{font-size:.78rem;color:var(--mut)}
-.med-item{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-2)}
-.med-item:last-child{border-bottom:none}
-.med-dot{width:6px;height:6px;border-radius:50%;background:var(--cerise);margin-top:6px;flex-shrink:0}
-.med-nom{font-size:.88rem;font-weight:600;color:var(--ardoise)}
-.med-pos{font-size:.78rem;color:var(--mut);margin-top:2px}
-.med-duree{font-size:.72rem;color:var(--sauge-2);font-weight:600;margin-top:2px}
-@media(max-width:700px){
-  .patient-hero{grid-template-columns:auto 1fr;gap:16px}
-  .secu-block{display:none}.grid-2{grid-template-columns:1fr}
-  .civil-grid{grid-template-columns:1fr}.constantes{grid-template-columns:repeat(3,1fr)}
-  .histo-item,.agenda-item{grid-template-columns:1fr}.histo-date,.agenda-date-col{text-align:left}
-}
-
-    @media(max-width:600px){
-      .patient-hero{grid-template-columns:auto 1fr;gap:14px;padding:20px 18px}
-      .patient-hero h1{font-size:1.3rem}
-      .secu-block{display:none}
-      .grid-2{grid-template-columns:1fr}
-      .civil-grid{grid-template-columns:1fr}
-      .constantes{grid-template-columns:repeat(3,1fr)}
-      .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap}
-      .tab{white-space:nowrap;padding:8px 14px;font-size:.8rem}
-      .histo-item{grid-template-columns:1fr}
-      .histo-date{text-align:left;margin-bottom:2px}
-      .agenda-item{grid-template-columns:1fr;gap:6px}
-      .agenda-date-col{text-align:left;display:flex;gap:10px;align-items:center}
-      .bloc{padding:16px 14px}
-      .page{padding:20px 14px 60px}
-      nav{padding:0 16px}
-      .patient-avatar{width:52px;height:52px;font-size:1.2rem}
-    }
-    @media(max-width:380px){
-      .constantes{grid-template-columns:1fr 1fr 1fr}
-      .const-val{font-size:1.2rem}
-      .tabs{gap:0}
-      .tab{padding:8px 10px;font-size:.75rem}
-    }
-  </style>
+.pj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:10px}
+.pj-card{background:var(--rose-light);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:all .18s}
+.pj-card:hover{border-color:var(--cerise)}
+.pj-add{border:2px dashed var(--line);background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:80px}
+.pj-add:hover{border-color:var(--cerise)}
+.hi{display:grid;grid-template-columns:90px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--line-2)}
+.hi:last-child{border-bottom:none}
+.hd{font-size:.77rem;font-weight:600;color:var(--mut);text-align:right;padding-top:2px}
+.ht{display:inline-flex;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cerise);background:rgba(196,113,122,.1);border-radius:4px;padding:2px 7px;margin-bottom:3px}
+.htit{font-size:.87rem;font-weight:600;color:var(--ardoise);margin-bottom:2px}
+.hnote{font-size:.81rem;color:var(--mut);line-height:1.5}
+.ordo-page{background:#fff;border:1px solid #ddd;border-radius:12px;padding:32px 36px;max-width:660px;margin:0 auto;box-shadow:0 4px 20px rgba(61,43,45,.08)}
+.ordo-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--cerise)}
+.ordo-med{font-size:.81rem;color:var(--ardoise-2);line-height:1.7}
+.ordo-med strong{font-size:.95rem;color:var(--ardoise);display:block;margin-bottom:2px}
+.ordo-pat{font-size:.81rem;color:var(--ardoise-2);text-align:right;line-height:1.7}
+.ordo-textarea{width:100%;border:none;outline:none;font-family:"Times New Roman",serif;font-size:1rem;color:var(--ardoise);resize:none;min-height:220px;line-height:1.85;background:transparent}
+@media(max-width:700px){.hero{grid-template-columns:auto 1fr}.secu-block{display:none}.g2{grid-template-columns:1fr}.cg{grid-template-columns:1fr}.cst{grid-template-columns:repeat(3,1fr)}.hi{grid-template-columns:1fr}.tabs{overflow-x:auto;flex-wrap:nowrap}.tab{white-space:nowrap;font-size:.8rem;padding:8px 12px}}
+</style>
 </head>
 <body>
 <nav>
-  <a href="/Candy/patients.html" class="nav-brand">C<span style="color:var(--cerise)">@</span>NDY<span class="nav-badge">Démo</span></a>
-  <a href="/Candy/patients.html" class="nav-back">← Liste des patients</a>
+  <a href="/Candy/patients.html" class="nav-brand">C<span style="color:var(--cerise)">@</span>NDY<span class="nav-badge">D&eacute;mo</span></a>
+  <a href="/Candy/patients.html" class="nav-back">&larr; Liste des patients</a>
 </nav>
 
 <div class="page">
 
-  <div class="patient-hero">
-    <div class="patient-avatar">SL</div>
-    <div>
-      <h1>Lefèvre, Sophie</h1>
-      <div class="patient-meta">
-        <span class="meta-chip">📅 Né(e) le 23/11/1988</span>
-        <span class="meta-chip">37 ans</span>
-        <span class="meta-chip">♀ Femme</span>
-        <span class="meta-chip">🩸 B+</span>
-        <span class="meta-chip">👤 Célibataire</span>
-        <span class="meta-chip">💼 Enseignante</span>
+<!-- HERO -->
+<div class="hero">
+  <div class="avatar">SL</div>
+  <div>
+    <h1>Lef&egrave;vre, Sophie</h1>
+    <div class="chips">
+      <span class="chip">&#128197; 23/11/1988 &nbsp;&middot;&nbsp; 37 ans</span>
+      <span class="chip">&#9792; Femme</span>
+      <span class="chip">&#129656; B+</span>
+      <span class="chip">&#128118; Sans enfant</span>
+      <span class="chip">&#128100; C&eacute;libataire</span>
+    </div>
+    <div class="aller-row"><span style="font-size:.75rem;color:#5C7D60">&#10003; Aucune allergie connue</span></div>
+  </div>
+  <div class="secu-block">
+    <div class="secu-lbl">N&deg; S&eacute;curit&eacute; Sociale</div>
+    <span class="secu-num">3 88 11 74 001 234 56</span>
+    <div class="hero-btns">
+      <button class="btn" onclick="window.print()">&#128424; Imprimer</button>
+      <button class="btn pri" onclick="alert('Modification disponible dans la version compl&egrave;te C@NDY.')">&#9999;&#65039; Modifier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ONGLETS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('infos',this)">&#128100; Informations</button>
+  <button class="tab" onclick="showTab('historique',this)">&#128197; Historique</button>
+  <button class="tab" onclick="showTab('agenda',this)">&#128467; Agenda</button>
+  <button class="tab" onclick="showTab('ordonnances',this)">&#128203; Ordonnances</button>
+</div>
+
+<!-- INFOS -->
+<div id="tab-infos" class="tab-content active">
+  <div class="g2">
+    <div class="bloc">
+      <div class="bloc-hdr"><div class="bloc-title"><span>&#128100;</span> &Eacute;tat civil &amp; coordonn&eacute;es</div></div>
+      <div class="cg">
+        <div class="cr"><span class="cl">Naissance</span><span class="cv">&#128197; 23/11/1988 (37 ans)</span></div>
+        <div class="cr"><span class="cl">Sexe</span><span class="cv">&#9792; Femme</span></div>
+        <div class="cr"><span class="cl">&#129656; Groupe sanguin</span><span class="cv" style="font-weight:700;font-size:1rem">B+</span></div>
+        <div class="cr"><span class="cl">&#128118; Enfants</span><span class="cv">Sans enfant</span></div>
+        <div class="cr"><span class="cl">Situation</span><span class="cv">C&eacute;libataire</span></div>
+        <div class="cr"><span class="cl">Profession</span><span class="cv">Enseignante</span></div>
+        <div class="cr"><span class="cl">Adresse</span><span class="cv">3 impasse des Roses, 74000 Annecy</span></div>
+        <div class="cr"><span class="cl">T&eacute;l&eacute;phone</span><span class="cv">06 87 65 43 21</span></div>
+        <div class="cr"><span class="cl">E-mail</span><span class="cv">sophie.lefevre@email.com</span></div>
+        <div class="cr"><span class="cl">M&eacute;decin traitant</span><span class="cv">Dr. Martin</span></div>
+        <div class="cr" style="grid-column:1/-1"><span class="cl">&#9888;&#65039; Allergies connues</span><span class="cv"><span style="color:#5C7D60">Aucune</span></span></div>
       </div>
     </div>
-    <div class="secu-block">
-      <div class="secu-label">N° Sécurité Sociale</div>
-      <div class="secu-num">3 88 11 74 001 234 56</div>
-      <button class="btn-print" onclick="window.print()">🖨 Imprimer</button>
+    <div class="bloc">
+      <div class="bloc-hdr"><div class="bloc-title"><span>&#128202;</span> Constantes</div></div>
+      <div class="cst">
+        <div class="cc"><div class="v">58<span class="u">kg</span></div><div class="l">Poids</div></div>
+        <div class="cc"><div class="v">167<span class="u">cm</span></div><div class="l">Taille</div></div>
+        <div class="cc"><div class="v imc-ok">20.8</div><div class="l">IMC</div><div style="font-size:.65rem;color:var(--mut);margin-top:2px">Normal</div></div>
+      </div>
     </div>
   </div>
 
-  <!-- ONGLETS -->
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('infos',this)">👤 Informations</button>
-    <button class="tab" onclick="showTab('historique',this)">📅 Historique</button>
-    <button class="tab" onclick="showTab('agenda',this)">🗓 Agenda</button>
-    <button class="tab" onclick="showTab('ordonnances',this)">📋 Ordonnances</button>
+  <!-- SUIVI MEDICAL -->
+  <div class="bloc" style="position:relative">
+    <div class="bloc-hdr">
+      <div class="bloc-title"><span>&#128203;</span> Suivi m&eacute;dical</div>
+      <button id="mic-btn" onclick="toggleDictee()" title="Dict&eacute;e vocale" style="background:rgba(196,113,122,.1);border:1px solid rgba(196,113,122,.3);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:.85rem;color:var(--cerise)">&#127908;</button>
+    </div>
+    <div style="float:right;width:200px;margin:0 0 12px 16px;background:rgba(192,57,43,.05);border:1px solid rgba(192,57,43,.2);border-radius:10px;padding:10px 12px;font-size:.8rem">
+      <div style="font-weight:700;color:var(--ardoise);margin-bottom:6px;font-size:.75rem">&#9888;&#65039; Allergies</div>
+      <div style="color:#5C7D60;font-size:.82rem">&#10003; Aucune allergie</div>
+    </div>
+    <div style="font-size:.75rem;color:var(--mut);margin-bottom:6px;display:none" id="dictee-status"></div>
+    <textarea id="suivi-notes" placeholder="Notes de suivi &#8212; consultations, &eacute;volutions, observations&#8230;" style="width:100%;min-height:160px;max-height:320px;background:var(--rose-light);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;font-family:var(--fb);font-size:.87rem;color:var(--ardoise);line-height:1.7;resize:vertical;outline:none;overflow-y:auto;transition:border-color .2s" onfocus="this.style.borderColor='var(--cerise)'" onblur="this.style.borderColor='var(--line)'" oninput="saveSuivi()"></textarea>
+    <div style="display:flex;justify-content:space-between;margin-top:5px">
+      <span style="font-size:.7rem;color:var(--mut)">Sauvegarde automatique dans le navigateur</span>
+      <span id="suivi-saved" style="font-size:.7rem;color:var(--sauge-2);display:none">&#10003; Sauvegard&eacute;</span>
+    </div>
   </div>
 
-  <!-- ONGLET INFOS -->
-  <div id="tab-infos" class="tab-content active">
+  <!-- PIECES JOINTES -->
+  <div class="bloc">
+    <div class="bloc-hdr">
+      <div class="bloc-title"><span>&#128206;</span> Pi&egrave;ces jointes</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" onclick="document.getElementById('pj-photo').click()">&#128247; Photos</button>
+        <button class="btn" onclick="document.getElementById('pj-pdf').click()">&#128196; PDF</button>
+        <button class="btn" onclick="document.getElementById('pj-photo').click()">Ajouter une pi&egrave;ce jointe</button>
+        <input type="file" id="pj-photo" accept="image/*" style="display:none" onchange="addPJ(this,'photo')">
+        <input type="file" id="pj-pdf" accept=".pdf" style="display:none" onchange="addPJ(this,'pdf')">
+      </div>
+    </div>
+    <div class="pj-grid" id="pj-grid">
+      <div class="pj-card" onclick="alert('Aper&ccedil;u dans la version compl&egrave;te C@NDY.')"><div style="font-size:1.8rem">&#128196;</div><div style="font-size:.74rem;font-weight:600;color:var(--ardoise);margin-top:5px">Bilan sanguin</div><div style="font-size:.67rem;color:var(--mut)">12/03/2026</div></div>
+      <div class="pj-card" onclick="alert('Aper&ccedil;u dans la version compl&egrave;te C@NDY.')"><div style="font-size:1.8rem">&#128196;</div><div style="font-size:.74rem;font-weight:600;color:var(--ardoise);margin-top:5px">Compte-rendu cardio</div><div style="font-size:.67rem;color:var(--mut)">05/01/2026</div></div>
+      <div class="pj-card" onclick="alert('Aper&ccedil;u dans la version compl&egrave;te C@NDY.')"><div style="font-size:1.8rem">&#128444;</div><div style="font-size:.74rem;font-weight:600;color:var(--ardoise);margin-top:5px">Radio thorax</div><div style="font-size:.67rem;color:var(--mut)">20/11/2025</div></div>
+      <div class="pj-card pj-add" id="pj-add-btn" onclick="document.getElementById('pj-pdf').click()"><div style="font-size:1.5rem;color:var(--mut)">+</div><div style="font-size:.74rem;color:var(--mut)">Ajouter</div></div>
+    </div>
+  </div>
+</div>
 
-    <div class="grid-2">
-      <div class="bloc">
-        <div class="bloc-header"><div class="bloc-title"><span>👤</span> État civil & coordonnées</div></div>
-        <div class="civil-grid">
-          <div class="civil-row"><span class="civil-label">Naissance</span><span class="civil-val">📅 23/11/1988 (37 ans)</span></div>
-          <div class="civil-row"><span class="civil-label">Sexe</span><span class="civil-val">♀ Femme</span></div>
-          <div class="civil-row"><span class="civil-label">🩸 Groupe sanguin</span><span class="civil-val" style="font-weight:700;font-size:1rem">B+</span></div>
-          <div class="civil-row"><span class="civil-label">Situation</span><span class="civil-val">Célibataire</span></div>
-          <div class="civil-row"><span class="civil-label">Profession</span><span class="civil-val">Enseignante</span></div>
-          <div class="civil-row"><span class="civil-label">Adresse</span><span class="civil-val">3 impasse des Roses, 74000 Annecy</span></div>
-          <div class="civil-row"><span class="civil-label">Téléphone</span><span class="civil-val">06 87 65 43 21</span></div>
-          <div class="civil-row"><span class="civil-label">E-mail</span><span class="civil-val">sophie.lefevre@email.com</span></div>
-          <div class="civil-row"><span class="civil-label">Médecin traitant</span><span class="civil-val">Dr. Martin</span></div>
-          <div class="civil-row" style="grid-column:1/-1"><span class="civil-label">⚠️ Allergies connues</span><span class="civil-val"><span style="color:var(--sauge-2)">Aucune</span></span></div>
+<!-- HISTORIQUE -->
+<div id="tab-historique" class="tab-content">
+  <div class="bloc">
+    <div class="bloc-hdr"><div class="bloc-title"><span>&#128197;</span> Historique m&eacute;dical</div></div>
+    <div class="hi"><div class="hd">17/06/2026</div><div><span class="ht">Consultation</span><div class="htit">Suivi trimestriel</div><div class="hnote">PA : 138/82 mmHg. Traitement bien tol&eacute;r&eacute;. Renouvellement ordonnance effectu&eacute;.</div><div style="font-size:.72rem;color:var(--mut);margin-top:3px">Dr. Martin</div></div></div>
+    <div class="hi"><div class="hd">12/03/2026</div><div><span class="ht">Bilan</span><div class="htit">Bilan biologique annuel</div><div class="hnote">NFS, bilan lipidique, glyc&eacute;mie &agrave; jeun. R&eacute;sultats dans les normes.</div><div style="font-size:.72rem;color:var(--mut);margin-top:3px">Labo Cerba</div></div></div>
+    <div class="hi"><div class="hd">05/01/2026</div><div><span class="ht">Sp&eacute;cialiste</span><div class="htit">Consultation cardiologique</div><div class="hnote">ECG normal. &Eacute;chocardiographie stable. Poursuite traitement antihypertenseur.</div><div style="font-size:.72rem;color:var(--mut);margin-top:3px">Dr. Rousseau &mdash; Cardiologue</div></div></div>
+    <div class="hi"><div class="hd">20/11/2025</div><div><span class="ht">Examen</span><div class="htit">Radio thorax</div><div class="hnote">Pas d'anomalie pleuro-pulmonaire. Silhouette cardiaque normale.</div><div style="font-size:.72rem;color:var(--mut);margin-top:3px">Centre d'imagerie</div></div></div>
+  </div>
+</div>
+
+<!-- AGENDA -->
+<div id="tab-agenda" class="tab-content">
+  <div class="bloc">
+    <div class="bloc-hdr">
+      <div class="bloc-title"><span>&#128467;</span> Agenda &mdash; Semaine du 22 au 26 juin 2026</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn">&larr; Pr&eacute;c.</button>
+        <button class="btn">Suiv. &rarr;</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:600px"><thead><tr><th style="width:70px;padding:8px;font-size:.7rem;color:#8C6A6D"></th><th style="padding:8px;font-size:.74rem;font-weight:600;color:#3D2B2D;text-align:center;border-left:1px solid rgba(61,43,45,.1)">Lundi<br>22/06</th><th style="padding:8px;font-size:.74rem;font-weight:600;color:#3D2B2D;text-align:center;border-left:1px solid rgba(61,43,45,.1)">Mardi<br>23/06</th><th style="padding:8px;font-size:.74rem;font-weight:600;color:#3D2B2D;text-align:center;border-left:1px solid rgba(61,43,45,.1)">Mercredi<br>24/06</th><th style="padding:8px;font-size:.74rem;font-weight:600;color:#3D2B2D;text-align:center;border-left:1px solid rgba(61,43,45,.1)">Jeudi<br>25/06</th><th style="padding:8px;font-size:.74rem;font-weight:600;color:#3D2B2D;text-align:center;border-left:1px solid rgba(61,43,45,.1)">Vendredi<br>26/06</th></tr></thead><tbody><tr><td style="padding:6px 10px;font-size:.72rem;color:#8C6A6D;text-align:right;white-space:nowrap">08h00</td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td></tr><tr><td style="padding:6px 10px;font-size:.72rem;color:#8C6A6D;text-align:right;white-space:nowrap">09h00</td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"><div style="background:rgba(196,113,122,.15);border-left:3px solid #C4717A;border-radius:4px;padding:3px 6px;font-size:.7rem;color:#C4717A;font-weight:600">Suivi tensionnel</div></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td></tr><tr><td style="padding:6px 10px;font-size:.72rem;color:#8C6A6D;text-align:right;white-space:nowrap">10h00</td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"><div style="background:rgba(196,113,122,.15);border-left:3px solid #C4717A;border-radius:4px;padding:3px 6px;font-size:.7rem;color:#C4717A;font-weight:600">Bilan sanguin</div></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td></tr><tr><td style="padding:6px 10px;font-size:.72rem;color:#8C6A6D;text-align:right;white-space:nowrap">11h00</td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td></tr><tr><td style="padding:6px 10px;font-size:.72rem;color:#8C6A6D;text-align:right;white-space:nowrap">12h00</td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td></tr><tr><td style="padding:6px 10px;font-size:.72rem;color:#8C6A6D;text-align:right;white-space:nowrap">14h00</td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"><div style="background:rgba(196,113,122,.15);border-left:3px solid #C4717A;border-radius:4px;padding:3px 6px;font-size:.7rem;color:#C4717A;font-weight:600">Renouvellement</div></td></tr><tr><td style="padding:6px 10px;font-size:.72rem;color:#8C6A6D;text-align:right;white-space:nowrap">15h00</td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td></tr><tr><td style="padding:6px 10px;font-size:.72rem;color:#8C6A6D;text-align:right;white-space:nowrap">16h00</td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td></tr><tr><td style="padding:6px 10px;font-size:.72rem;color:#8C6A6D;text-align:right;white-space:nowrap">17h00</td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td><td style="border-left:1px solid rgba(61,43,45,.06);border-top:1px solid rgba(61,43,45,.06);padding:4px;height:38px;vertical-align:top"></td></tr></tbody></table></div>
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line-2)">
+      <div style="font-size:.8rem;font-weight:600;color:var(--ardoise);margin-bottom:10px">Prochains rendez-vous</div>
+      <div class="hi"><div class="hd" style="font-size:.8rem">Lun 22/06<br><span style="color:var(--cerise);font-weight:600">09h00</span></div><div><span class="ht">Consultation</span><div class="htit">Suivi tensionnel</div><div class="hnote">Dr. Martin</div></div></div>
+      <div class="hi"><div class="hd" style="font-size:.8rem">Mer 24/06<br><span style="color:var(--cerise);font-weight:600">10h30</span></div><div><span class="ht">Bilan</span><div class="htit">Prise de sang &agrave; jeun</div><div class="hnote">Labo Cerba</div></div></div>
+      <div class="hi"><div class="hd" style="font-size:.8rem">Ven 26/06<br><span style="color:var(--cerise);font-weight:600">14h00</span></div><div><span class="ht">Consultation</span><div class="htit">Renouvellement ordonnance</div><div class="hnote">Dr. Martin</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDONNANCES -->
+<div id="tab-ordonnances" class="tab-content">
+  <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+    <button class="btn pri" onclick="showOrdo('new')">+ Nouvelle ordonnance</button>
+    <button class="btn" onclick="showOrdo('list')">&#128203; Historique</button>
+  </div>
+  <div id="ordo-list">
+    <div class="bloc">
+      <div class="bloc-hdr"><div class="bloc-title"><span>&#128203;</span> Ordonnances r&eacute;centes</div></div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="background:var(--rose-light);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-family:monospace;font-size:.75rem;color:var(--cerise);font-weight:600">ORDO-2026-047</span><span style="font-size:.77rem;color:var(--mut)">17/06/2026</span></div>
+          <div style="font-size:.85rem;color:var(--ardoise);margin-bottom:3px">Amlodipine 5mg &middot; Bisoprolol 5mg</div>
+          <div style="font-size:.77rem;color:var(--mut)">Renouvellement 3 mois &mdash; Dr. Martin</div>
+          <div style="margin-top:8px;display:flex;gap:6px"><button class="btn" onclick="window.print()">&#128424; Imprimer</button><button class="btn" onclick="alert('Envoi disponible dans la version compl&egrave;te.')">&#128231; Envoyer</button></div>
         </div>
       </div>
-      <div class="bloc">
-        <div class="bloc-header"><div class="bloc-title"><span>📊</span> Constantes</div></div>
-        <div class="constantes">
-          <div class="const-card"><div class="const-val">58<span class="const-unit">kg</span></div><div class="const-label">Poids</div></div>
-          <div class="const-card"><div class="const-val">167<span class="const-unit">cm</span></div><div class="const-label">Taille</div></div>
-          <div class="const-card"><div class="const-val imc-ok">20.8</div><div class="const-label">IMC</div><div style="font-size:.65rem;color:var(--mut);margin-top:2px">Corpulence normale</div></div>
+    </div>
+  </div>
+  <div id="ordo-new" style="display:none">
+    <div class="ordo-page">
+      <div class="ordo-hdr">
+        <div class="ordo-med"><strong>Dr. Jean Martin</strong>M&eacute;decine g&eacute;n&eacute;rale<br>N&deg; RPPS : 10012345678<br>22 rue de la R&eacute;publique, 69003 Lyon<br>T&eacute;l. : 04 72 00 00 00</div>
+        <div class="ordo-pat"><strong>Sophie Lef&egrave;vre</strong>N&eacute;(e) le 23/11/1988<br>3 impasse des Roses, 74000 Annecy<br>N&deg; SS : 3 88 11 74 001 234 56</div>
+      </div>
+      <div style="font-size:.82rem;color:var(--mut);margin-bottom:12px"><span style="color:var(--cerise);font-weight:600">Ordonnance</span> du <span id="ordo-date-today"></span></div>
+      <div style="border-bottom:1px solid #eee;padding-bottom:16px;margin-bottom:14px">
+        <textarea class="ordo-textarea" placeholder="Saisir les prescriptions&#8230;&#10;&#10;Ex :&#10;- Amlodipine 5 mg &#8212; 1 cp matin &#8212; 3 mois&#10;- Bisoprolol 5 mg &#8212; 1 cp matin &#8212; 3 mois"></textarea>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end">
+        <div style="font-size:.78rem;color:var(--mut)"><em>Cachet et signature</em><br><div style="width:160px;height:60px;border:1px dashed #ccc;border-radius:6px;margin-top:6px;display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#ccc">Signature</div></div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <button class="btn pri" onclick="window.print()">&#128424; Imprimer</button>
+          <button class="btn" onclick="alert('Envoi s&eacute;curis&eacute; MSSant&eacute; disponible dans la version compl&egrave;te.')">&#128231; Envoyer</button>
+          <button class="btn" onclick="showOrdo('list')">Annuler</button>
         </div>
       </div>
     </div>
-
-    <!-- BLOC SUIVI MÉDICAL -->
-    <div class="bloc" style="margin-bottom:18px;position:relative">
-      <div class="bloc-header">
-        <div class="bloc-title"><span>📋</span> Suivi médical</div>
-        <button id="mic-btn" onclick="toggleDictee()" title="Dictée vocale" style="background:rgba(196,113,122,.1);border:1px solid rgba(196,113,122,.3);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:.85rem;color:var(--cerise);transition:all .2s">🎤</button>
-      </div>
-      <!-- Allergies flottantes à droite -->
-      <div id="allergies-float" style="float:right;width:220px;margin:0 0 12px 16px;background:rgba(192,57,43,.05);border:1px solid rgba(192,57,43,.2);border-radius:10px;padding:10px 12px;font-size:.78rem">
-        <div style="font-weight:700;color:var(--ardoise);margin-bottom:6px;font-size:.78rem">⚠️ Allergies</div>
-        <div style="color:var(--sauge-2)">✓ Aucune allergie connue</div>
-      </div>
-      <div style="font-size:.75rem;color:var(--mut);margin-bottom:6px" id="dictee-status" style="display:none"></div>
-      <textarea id="suivi-notes" placeholder="Notes de suivi — consultations, évolutions, observations…&#10;&#10;Ex: 17/06/2026 — PA bien contrôlée, renouvellement ordonnance effectué." style="width:100%;min-height:180px;max-height:340px;background:var(--rose-light);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;font-family:var(--fb,Inter,sans-serif);font-size:.88rem;color:var(--ardoise);line-height:1.7;resize:vertical;outline:none;overflow-y:auto;transition:border-color .2s" onfocus="this.style.borderColor='var(--cerise)'" onblur="this.style.borderColor='var(--line)'" oninput="saveSuivi()"></textarea>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
-        <span style="font-size:.7rem;color:var(--mut)">Sauvegarde automatique dans le navigateur</span>
-        <span id="suivi-saved" style="font-size:.7rem;color:var(--sauge);display:none">✓ Sauvegardé</span>
-      </div>
-    </div>
   </div>
-
-    <!-- ONGLET HISTORIQUE -->
-  <div id="tab-historique" class="tab-content">
-    <div class="bloc">
-      <div class="bloc-header"><div class="bloc-title"><span>📅</span> Historique médical</div></div>
-      
-    <div class="histo-item">
-      <div class="histo-date">02/06/2026</div>
-      <div>
-        <span class="histo-type consult">🩺 Consultation</span>
-        <div class="histo-titre">Consultation — rhume et fatigue</div>
-        <div class="histo-note">Rhinopharyngite virale. Pas d'antibiotiques indiqués. Repos, hydratation, paracétamol si fièvre.</div>
-        <div class="histo-medecin">Dr. référent : Dr. Martin</div>
-      </div>
-    </div>
-
-    <div class="histo-item">
-      <div class="histo-date">14/01/2026</div>
-      <div>
-        <span class="histo-type consult">🩺 Consultation</span>
-        <div class="histo-titre">Certificat médical sport</div>
-        <div class="histo-note">Aptitude à la pratique sportive confirmée. Pas de contre-indication. Certificat valable 1 an.</div>
-        <div class="histo-medecin">Dr. référent : Dr. Martin</div>
-      </div>
-    </div>
-    </div>
-  </div>
-
-  <!-- ONGLET AGENDA -->
-  <div id="tab-agenda" class="tab-content">
-    <div class="bloc">
-      <div class="bloc-header"><div class="bloc-title"><span>🗓</span> Rendez-vous</div></div>
-      
-    <div class="agenda-item">
-      <div class="agenda-date-col">
-        <div class="agenda-date">02/09/2026</div>
-        <div class="agenda-heure">11h00</div>
-      </div>
-      <div>
-        <div class="agenda-type">Consultation</div>
-        <div class="agenda-motif">Visite annuelle</div>
-        <div class="agenda-lieu">📍 Cabinet Dr. Martin</div>
-      </div>
-    </div>
-    </div>
-  </div>
-
-  <!-- ONGLET ORDONNANCES -->
-  <div id="tab-ordonnances" class="tab-content">
-    <div class="bloc">
-      <div class="bloc-header"><div class="bloc-title"><span>📋</span> Ordonnances</div></div>
-      <p style="color:var(--mut);font-size:.86rem;padding:10px 0">Aucune ordonnance enregistrée.</p>
-    </div>
-  </div>
+</div>
 
 </div>
 
+<!-- ONBOARDING -->
+<div id="ob" style="position:fixed;inset:0;z-index:999;background:rgba(61,43,45,.55);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--blanc);border-radius:20px;padding:28px;max-width:420px;width:100%">
+    <div style="font-size:2rem;text-align:center;margin-bottom:10px">&#128075;</div>
+    <h3 style="font-family:var(--ff-disp);font-size:1.1rem;color:var(--ardoise);text-align:center;margin-bottom:14px">Dossier patient &mdash; mode d&eacute;mo</h3>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:18px;font-size:.82rem;color:var(--ardoise)">
+      <div style="background:var(--rose-light);border-radius:8px;padding:9px 12px">&#128218; 4 onglets : Informations, Historique, Agenda, Ordonnances</div>
+      <div style="background:var(--rose-light);border-radius:8px;padding:9px 12px">&#127908; Dict&eacute;e vocale dans les notes de suivi</div>
+      <div style="background:var(--rose-light);border-radius:8px;padding:9px 12px">&#128206; Pi&egrave;ces jointes : PDF et photos</div>
+      <div style="background:var(--rose-light);border-radius:8px;padding:9px 12px">&#128203; Ordonnances : saisie, impression, envoi</div>
+      <div style="background:var(--rose-light);border-radius:8px;padding:9px 12px">&#9999;&#65039; Bouton Modifier le dossier patient</div>
+    </div>
+    <button onclick="document.getElementById('ob').style.display='none'" style="width:100%;background:var(--cerise);color:#fff;border:none;border-radius:10px;padding:11px;font-family:var(--fb);font-weight:600;font-size:.9rem;cursor:pointer">D&eacute;couvrir le dossier &rarr;</button>
+  </div>
+</div>
+
 <script>
-function showTab(name, btn) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  btn.classList.add('active');
+function showTab(n,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const el=document.getElementById('tab-'+n);
+  if(el)el.classList.add('active');
+  if(btn)btn.classList.add('active');
 }
-
-// ── SUIVI MÉDICAL ──
-const SUIVI_KEY = 'candy_suivi_3';
-const savedSuivi = localStorage.getItem(SUIVI_KEY);
-if(savedSuivi) document.getElementById('suivi-notes').value = savedSuivi;
-
-let suiviTimer;
-function saveSuivi(){
-  clearTimeout(suiviTimer);
-  suiviTimer = setTimeout(()=>{
-    localStorage.setItem(SUIVI_KEY, document.getElementById('suivi-notes').value);
-    const s = document.getElementById('suivi-saved');
-    s.style.display='inline'; setTimeout(()=>s.style.display='none',2000);
-  },600);
+function showOrdo(mode){
+  document.getElementById('ordo-list').style.display=mode==='list'?'block':'none';
+  document.getElementById('ordo-new').style.display=mode==='new'?'block':'none';
 }
+const d=document.getElementById('ordo-date-today');
+if(d)d.textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
 
-// ── DICTÉE VOCALE ──
-let recognition, isListening=false;
+const SK='candy_suivi_3';
+const saved=localStorage.getItem(SK);
+if(saved)document.getElementById('suivi-notes').value=saved;
+let st;
+function saveSuivi(){clearTimeout(st);st=setTimeout(()=>{localStorage.setItem(SK,document.getElementById('suivi-notes').value);const s=document.getElementById('suivi-saved');s.style.display='inline';setTimeout(()=>s.style.display='none',2000);},600);}
+
+let rec,il=false;
 function toggleDictee(){
-  const btn = document.getElementById('mic-btn');
-  const status = document.getElementById('dictee-status');
-  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
-    alert('La dictée vocale n'est pas supportée par votre navigateur. Utilisez Chrome ou Edge.');
-    return;
-  }
-  if(isListening){
-    recognition.stop(); isListening=false;
-    btn.style.background='rgba(196,113,122,.1)';
-    btn.textContent='🎤';
-    status.style.display='none';
-    return;
-  }
-  recognition = new (window.SpeechRecognition||window.webkitSpeechRecognition)();
-  recognition.lang='fr-FR'; recognition.continuous=true; recognition.interimResults=true;
-  recognition.onstart=()=>{ isListening=true; btn.style.background='rgba(192,57,43,.15)'; btn.textContent='⏹'; status.style.display='block'; status.textContent='🔴 Dictée en cours…'; };
-  recognition.onresult=e=>{
-    let interim='', final='';
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      if(e.results[i].isFinal) final+=e.results[i][0].transcript;
-      else interim+=e.results[i][0].transcript;
-    }
-    if(final){
-      const ta=document.getElementById('suivi-notes');
-      ta.value+=(ta.value&&!ta.value.endsWith(' ')?'  ':'')+final;
-      saveSuivi();
-    }
-    status.textContent=interim?'🔴 '+interim:'🔴 Dictée en cours…';
-  };
-  recognition.onerror=()=>{ isListening=false; btn.style.background='rgba(196,113,122,.1)'; btn.textContent='🎤'; status.style.display='none'; };
-  recognition.onend=()=>{ if(isListening){ isListening=false; btn.style.background='rgba(196,113,122,.1)'; btn.textContent='🎤'; status.style.display='none'; }};
-  recognition.start();
+  const btn=document.getElementById('mic-btn'),status=document.getElementById('dictee-status');
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){alert("Dictée vocale non supportée. Utilisez Chrome.");return;}
+  if(il){rec.stop();il=false;btn.style.background='rgba(196,113,122,.1)';btn.textContent='🎤';status.style.display='none';return;}
+  rec=new(window.SpeechRecognition||window.webkitSpeechRecognition)();rec.lang='fr-FR';rec.continuous=true;rec.interimResults=true;
+  rec.onstart=()=>{il=true;btn.style.background='rgba(192,57,43,.15)';btn.textContent='⏹';status.style.display='block';status.textContent='🔴 Dictée en cours…';};
+  rec.onresult=e=>{let f='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)f+=e.results[i][0].transcript;}if(f){const ta=document.getElementById('suivi-notes');ta.value+=(ta.value&&!ta.value.endsWith(' ')?' ':'')+f;saveSuivi();}};
+  rec.onerror=()=>{il=false;btn.style.background='rgba(196,113,122,.1)';btn.textContent='🎤';status.style.display='none';};
+  rec.onend=()=>{if(il){il=false;btn.style.background='rgba(196,113,122,.1)';btn.textContent='🎤';status.style.display='none';}};
+  rec.start();
 }
-</script>
 
-<!-- MODALE ONBOARDING -->
-<div id="onboarding-overlay" style="position:fixed;inset:0;z-index:999;background:rgba(61,43,45,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--blanc);border-radius:20px;padding:32px;max-width:460px;width:100%;box-shadow:0 24px 64px rgba(61,43,45,.2)">
-    <div style="font-size:2rem;text-align:center;margin-bottom:12px">👋</div>
-    <h3 style="font-family:var(--ff-disp,'DM Serif Display',serif);font-size:1.3rem;color:var(--ardoise);text-align:center;margin-bottom:8px">Bienvenue dans le dossier patient</h3>
-    <p style="font-size:.85rem;color:var(--mut);text-align:center;line-height:1.65;margin-bottom:20px">Voici un aperçu de ce que vous pouvez explorer dans cette démo :</p>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
-      <div style="display:flex;align-items:center;gap:12px;background:var(--rose-light);border-radius:10px;padding:10px 14px">
-        <span style="font-size:1.2rem;flex-shrink:0">🗂</span>
-        <div><div style="font-size:.85rem;font-weight:600;color:var(--ardoise)">Onglets en haut</div><div style="font-size:.78rem;color:var(--mut)">Naviguez entre Informations, Historique, Agenda et Ordonnances</div></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;background:var(--rose-light);border-radius:10px;padding:10px 14px">
-        <span style="font-size:1.2rem;flex-shrink:0">📝</span>
-        <div><div style="font-size:.85rem;font-weight:600;color:var(--ardoise)">Suivi médical</div><div style="font-size:.78rem;color:var(--mut)">Ajoutez des notes de suivi avec la dictée vocale 🎤</div></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;background:var(--rose-light);border-radius:10px;padding:10px 14px">
-        <span style="font-size:1.2rem;flex-shrink:0">⚠️</span>
-        <div><div style="font-size:.85rem;font-weight:600;color:var(--ardoise)">Allergies</div><div style="font-size:.78rem;color:var(--mut)">Visibles en haut à droite et dans les informations patient</div></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;background:var(--rose-light);border-radius:10px;padding:10px 14px">
-        <span style="font-size:1.2rem;flex-shrink:0">🖨</span>
-        <div><div style="font-size:.85rem;font-weight:600;color:var(--ardoise)">Bouton Imprimer</div><div style="font-size:.78rem;color:var(--mut)">Imprimez le dossier complet depuis la fiche</div></div>
-      </div>
-    </div>
-    <button onclick="document.getElementById('onboarding-overlay').style.display='none'" style="width:100%;background:var(--cerise);color:#fff;border:none;border-radius:10px;padding:12px;font-family:var(--fb,Inter,sans-serif);font-weight:600;font-size:.92rem;cursor:pointer">C'est parti ! →</button>
-  </div>
-</div>
-<script>
-// Afficher onboarding une seule fois par patient
-const OB_KEY = 'candy_ob_3';
-if(!localStorage.getItem(OB_KEY)){
-  document.getElementById('onboarding-overlay').style.display='flex';
-  localStorage.setItem(OB_KEY,'1');
-}
+const PK='candy_pj_3';
+function addPJ(input,type){if(!input.files.length)return;const f=input.files[0];const pjs=JSON.parse(localStorage.getItem(PK)||'[]');pjs.push({name:f.name,type,date:new Date().toLocaleDateString('fr-FR')});localStorage.setItem(PK,JSON.stringify(pjs));renderPJ();input.value='';}
+function renderPJ(){const pjs=JSON.parse(localStorage.getItem(PK)||'[]');const grid=document.getElementById('pj-grid');grid.querySelectorAll('.pj-dyn').forEach(c=>c.remove());const add=document.getElementById('pj-add-btn');pjs.forEach(pj=>{const c=document.createElement('div');c.className='pj-card pj-dyn';c.innerHTML='<div style="font-size:1.8rem">'+(pj.type==='pdf'?'📄':'🖼')+'</div><div style="font-size:.74rem;font-weight:600;color:var(--ardoise);margin-top:4px">'+pj.name.slice(0,18)+'</div><div style="font-size:.67rem;color:var(--mut)">'+pj.date+'</div>';c.onclick=()=>alert('Aperçu dans la version complète C@NDY.');grid.insertBefore(c,add);});}
+renderPJ();
+
+const OBK='candy_ob_3';
+if(!localStorage.getItem(OBK)){document.getElementById('ob').style.display='flex';localStorage.setItem(OBK,'1');}
 </script>
 </body>
 </html>
