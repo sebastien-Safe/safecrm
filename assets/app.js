@@ -181,6 +181,16 @@ async function init() {
       showResetScreen();
       return;
     }
+    if (event === 'TOKEN_REFRESHED' && session) {
+      // Token rafraîchi automatiquement par Supabase — mettre à jour le state
+      state.user = session.user;
+      return;
+    }
+    if (event === 'SIGNED_OUT') {
+      state.user = null;
+      showLogin();
+      return;
+    }
     if (session) {
       state.user = session.user;
       showApp();
@@ -189,6 +199,22 @@ async function init() {
       showLogin();
     }
   });
+
+  // Intercepteur global 401 — redirige proprement vers le login
+  const _origFetch = window.fetch;
+  window.fetch = async function(...args) {
+    const resp = await _origFetch.apply(this, args);
+    if (resp.status === 401 && state.user) {
+      // Tenter un refresh silencieux avant de déconnecter
+      const { data: refreshData } = await sb.auth.refreshSession();
+      if (!refreshData?.session) {
+        console.warn('[S@FE CRM] Session expirée — déconnexion.');
+        state.user = null;
+        showLogin();
+      }
+    }
+    return resp;
+  };
 
   bindEvents();
   updateDashboardClock();
@@ -554,7 +580,7 @@ function renderContacts() {
       <td>${escapeHtml(c.entreprise || '—')}</td>
       <td><div class="tag-row">${(c.activites || []).map(a => `<span class="badge ${ACTIVITE_BADGE[a] || 'badge-gray'}">${escapeHtml(a)}</span>`).join('') || '—'}</div></td>
       <td class="nowrap">${escapeHtml(c.telephone || '—')}</td>
-      <td>${c.email ? `<a href="mailto:${escapeHtml(c.email)}" style="color:var(--accent)">${escapeHtml(c.email)}</a>` : '—'}</td>
+      <td>${c.email ? `<a href="mailto:${escapeHtml(c.email)}" rel="noopener noreferrer" style="color:var(--accent)">${escapeHtml(c.email)}</a>` : '—'}</td>
       <td class="nowrap">${escapeHtml(creatorName(c.created_by))}</td>
     </tr>`;
   }).join('');
