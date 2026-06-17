@@ -159,22 +159,25 @@ nav{position:sticky;top:0;z-index:200;background:rgba(254,250,249,.92);backdrop-
 
   <!-- ONGLET INFOS -->
   <div id="tab-infos" class="tab-content active">
+
     <div class="grid-2">
       <div class="bloc">
-        <div class="bloc-header">
-          <div class="bloc-title"><span>👤</span> État civil & coordonnées</div>
-        </div>
+        <div class="bloc-header"><div class="bloc-title"><span>👤</span> État civil & coordonnées</div></div>
         <div class="civil-grid">
+          <div class="civil-row"><span class="civil-label">Naissance</span><span class="civil-val">📅 07/08/1979 (44 ans)</span></div>
+          <div class="civil-row"><span class="civil-label">Sexe</span><span class="civil-val">♂ Homme</span></div>
+          <div class="civil-row"><span class="civil-label">🩸 Groupe sanguin</span><span class="civil-val" style="font-weight:700;font-size:1rem">O-</span></div>
+          <div class="civil-row"><span class="civil-label">Situation</span><span class="civil-val">Pacsé</span></div>
+          <div class="civil-row"><span class="civil-label">Profession</span><span class="civil-val">Technicien</span></div>
           <div class="civil-row"><span class="civil-label">Adresse</span><span class="civil-val">8 avenue Jean Jaurès, 01000 Bourg-en-Bresse</span></div>
           <div class="civil-row"><span class="civil-label">Téléphone</span><span class="civil-val">07 23 45 67 89</span></div>
           <div class="civil-row"><span class="civil-label">E-mail</span><span class="civil-val">luc.bernard@pro.fr</span></div>
           <div class="civil-row"><span class="civil-label">Médecin traitant</span><span class="civil-val">Dr. Martin</span></div>
+          <div class="civil-row" style="grid-column:1/-1"><span class="civil-label">⚠️ Allergies connues</span><span class="civil-val"><span style="font-weight:600;color:#E67E22">Latex</span></span></div>
         </div>
       </div>
       <div class="bloc">
-        <div class="bloc-header">
-          <div class="bloc-title"><span>📊</span> Constantes</div>
-        </div>
+        <div class="bloc-header"><div class="bloc-title"><span>📊</span> Constantes</div></div>
         <div class="constantes">
           <div class="const-card"><div class="const-val">82<span class="const-unit">kg</span></div><div class="const-label">Poids</div></div>
           <div class="const-card"><div class="const-val">178<span class="const-unit">cm</span></div><div class="const-label">Taille</div></div>
@@ -182,20 +185,28 @@ nav{position:sticky;top:0;z-index:200;background:rgba(254,250,249,.92);backdrop-
         </div>
       </div>
     </div>
-    <div class="bloc">
-      <div class="bloc-header"><div class="bloc-title"><span>⚠️</span> Allergies connues</div></div>
-      
-        <div class="allergie-item" style="border-left-color:#E67E22">
-          <div>
-            <div class="allergie-name">🚫 Latex</div>
-            <div class="allergie-desc">Contact — Dermatite de contact. Prévenir le personnel soignant avant tout acte.</div>
-          </div>
-          <div class="allergie-badge" style="color:#E67E22;border-color:#E67E22;background:#E67E2218">Modérée</div>
-        </div>
+
+    <!-- BLOC SUIVI MÉDICAL -->
+    <div class="bloc" style="margin-bottom:18px;position:relative">
+      <div class="bloc-header">
+        <div class="bloc-title"><span>📋</span> Suivi médical</div>
+        <button id="mic-btn" onclick="toggleDictee()" title="Dictée vocale" style="background:rgba(196,113,122,.1);border:1px solid rgba(196,113,122,.3);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:.85rem;color:var(--cerise);transition:all .2s">🎤</button>
+      </div>
+      <!-- Allergies flottantes à droite -->
+      <div id="allergies-float" style="float:right;width:220px;margin:0 0 12px 16px;background:rgba(192,57,43,.05);border:1px solid rgba(192,57,43,.2);border-radius:10px;padding:10px 12px;font-size:.78rem">
+        <div style="font-weight:700;color:var(--ardoise);margin-bottom:6px;font-size:.78rem">⚠️ Allergies</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="width:8px;height:8px;border-radius:50%;background:#E67E22;flex-shrink:0"></span><div><div style="font-weight:600;color:var(--ardoise)">Latex</div><div style="color:var(--mut);font-size:.72rem">Modérée</div></div></div>
+      </div>
+      <div style="font-size:.75rem;color:var(--mut);margin-bottom:6px" id="dictee-status" style="display:none"></div>
+      <textarea id="suivi-notes" placeholder="Notes de suivi — consultations, évolutions, observations…&#10;&#10;Ex: 17/06/2026 — PA bien contrôlée, renouvellement ordonnance effectué." style="width:100%;min-height:180px;max-height:340px;background:var(--rose-light);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;font-family:var(--fb,Inter,sans-serif);font-size:.88rem;color:var(--ardoise);line-height:1.7;resize:vertical;outline:none;overflow-y:auto;transition:border-color .2s" onfocus="this.style.borderColor='var(--cerise)'" onblur="this.style.borderColor='var(--line)'" oninput="saveSuivi()"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+        <span style="font-size:.7rem;color:var(--mut)">Sauvegarde automatique dans le navigateur</span>
+        <span id="suivi-saved" style="font-size:.7rem;color:var(--sauge);display:none">✓ Sauvegardé</span>
+      </div>
     </div>
   </div>
 
-  <!-- ONGLET HISTORIQUE -->
+    <!-- ONGLET HISTORIQUE -->
   <div id="tab-historique" class="tab-content">
     <div class="bloc">
       <div class="bloc-header"><div class="bloc-title"><span>📅</span> Historique médical</div></div>
@@ -329,6 +340,94 @@ function showTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   btn.classList.add('active');
+}
+
+// ── SUIVI MÉDICAL ──
+const SUIVI_KEY = 'candy_suivi_2';
+const savedSuivi = localStorage.getItem(SUIVI_KEY);
+if(savedSuivi) document.getElementById('suivi-notes').value = savedSuivi;
+
+let suiviTimer;
+function saveSuivi(){
+  clearTimeout(suiviTimer);
+  suiviTimer = setTimeout(()=>{
+    localStorage.setItem(SUIVI_KEY, document.getElementById('suivi-notes').value);
+    const s = document.getElementById('suivi-saved');
+    s.style.display='inline'; setTimeout(()=>s.style.display='none',2000);
+  },600);
+}
+
+// ── DICTÉE VOCALE ──
+let recognition, isListening=false;
+function toggleDictee(){
+  const btn = document.getElementById('mic-btn');
+  const status = document.getElementById('dictee-status');
+  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
+    alert('La dictée vocale n'est pas supportée par votre navigateur. Utilisez Chrome ou Edge.');
+    return;
+  }
+  if(isListening){
+    recognition.stop(); isListening=false;
+    btn.style.background='rgba(196,113,122,.1)';
+    btn.textContent='🎤';
+    status.style.display='none';
+    return;
+  }
+  recognition = new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+  recognition.lang='fr-FR'; recognition.continuous=true; recognition.interimResults=true;
+  recognition.onstart=()=>{ isListening=true; btn.style.background='rgba(192,57,43,.15)'; btn.textContent='⏹'; status.style.display='block'; status.textContent='🔴 Dictée en cours…'; };
+  recognition.onresult=e=>{
+    let interim='', final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) final+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    if(final){
+      const ta=document.getElementById('suivi-notes');
+      ta.value+=(ta.value&&!ta.value.endsWith(' ')?'  ':'')+final;
+      saveSuivi();
+    }
+    status.textContent=interim?'🔴 '+interim:'🔴 Dictée en cours…';
+  };
+  recognition.onerror=()=>{ isListening=false; btn.style.background='rgba(196,113,122,.1)'; btn.textContent='🎤'; status.style.display='none'; };
+  recognition.onend=()=>{ if(isListening){ isListening=false; btn.style.background='rgba(196,113,122,.1)'; btn.textContent='🎤'; status.style.display='none'; }};
+  recognition.start();
+}
+</script>
+
+<!-- MODALE ONBOARDING -->
+<div id="onboarding-overlay" style="position:fixed;inset:0;z-index:999;background:rgba(61,43,45,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--blanc);border-radius:20px;padding:32px;max-width:460px;width:100%;box-shadow:0 24px 64px rgba(61,43,45,.2)">
+    <div style="font-size:2rem;text-align:center;margin-bottom:12px">👋</div>
+    <h3 style="font-family:var(--ff-disp,'DM Serif Display',serif);font-size:1.3rem;color:var(--ardoise);text-align:center;margin-bottom:8px">Bienvenue dans le dossier patient</h3>
+    <p style="font-size:.85rem;color:var(--mut);text-align:center;line-height:1.65;margin-bottom:20px">Voici un aperçu de ce que vous pouvez explorer dans cette démo :</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+      <div style="display:flex;align-items:center;gap:12px;background:var(--rose-light);border-radius:10px;padding:10px 14px">
+        <span style="font-size:1.2rem;flex-shrink:0">🗂</span>
+        <div><div style="font-size:.85rem;font-weight:600;color:var(--ardoise)">Onglets en haut</div><div style="font-size:.78rem;color:var(--mut)">Naviguez entre Informations, Historique, Agenda et Ordonnances</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--rose-light);border-radius:10px;padding:10px 14px">
+        <span style="font-size:1.2rem;flex-shrink:0">📝</span>
+        <div><div style="font-size:.85rem;font-weight:600;color:var(--ardoise)">Suivi médical</div><div style="font-size:.78rem;color:var(--mut)">Ajoutez des notes de suivi avec la dictée vocale 🎤</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--rose-light);border-radius:10px;padding:10px 14px">
+        <span style="font-size:1.2rem;flex-shrink:0">⚠️</span>
+        <div><div style="font-size:.85rem;font-weight:600;color:var(--ardoise)">Allergies</div><div style="font-size:.78rem;color:var(--mut)">Visibles en haut à droite et dans les informations patient</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--rose-light);border-radius:10px;padding:10px 14px">
+        <span style="font-size:1.2rem;flex-shrink:0">🖨</span>
+        <div><div style="font-size:.85rem;font-weight:600;color:var(--ardoise)">Bouton Imprimer</div><div style="font-size:.78rem;color:var(--mut)">Imprimez le dossier complet depuis la fiche</div></div>
+      </div>
+    </div>
+    <button onclick="document.getElementById('onboarding-overlay').style.display='none'" style="width:100%;background:var(--cerise);color:#fff;border:none;border-radius:10px;padding:12px;font-family:var(--fb,Inter,sans-serif);font-weight:600;font-size:.92rem;cursor:pointer">C'est parti ! →</button>
+  </div>
+</div>
+<script>
+// Afficher onboarding une seule fois par patient
+const OB_KEY = 'candy_ob_2';
+if(!localStorage.getItem(OB_KEY)){
+  document.getElementById('onboarding-overlay').style.display='flex';
+  localStorage.setItem(OB_KEY,'1');
 }
 </script>
 </body>
