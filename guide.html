@@ -275,22 +275,48 @@
     <div class="flow-item">
       <div class="flow-num">3</div>
       <div class="flow-body">
-        <h4>Ce que voit le client</h4>
-        <p>Le client accède à une page de commande sécurisée affichant le récapitulatif de la prestation, les CGV, la politique RGPD et le formulaire de paiement Stripe. Il n'a pas besoin de créer de compte.</p>
-        <p>Pour les abonnements mensuels, Stripe enregistre la carte et prélève automatiquement chaque mois.</p>
+        <h4>Ce que voit le client — mode de paiement automatique</h4>
+        <p>Le client accède à une page de commande sécurisée avec le récapitulatif de la prestation, les CGV, la politique RGPD et un encart indiquant le mode de paiement qui s'applique.</p>
+        <div class="screen" style="margin-top:12px">
+          <div class="screen-header">Règle automatique selon le type de contrat</div>
+          <div class="screen-row">
+            <span class="screen-label" style="display:flex;align-items:center;gap:6px">🏦 Abonnement mensuel</span>
+            <span class="screen-value">
+              <strong style="color:#fff">Prélèvement SEPA obligatoire.</strong>
+              Le client renseigne son IBAN — Stripe génère un mandat de prélèvement automatique. Le client est prélevé chaque mois sans action supplémentaire.
+              Frais Stripe : <strong style="color:#fff">0,35 € fixe</strong> quelle que soit la somme.
+            </span>
+          </div>
+          <div class="screen-row">
+            <span class="screen-label" style="display:flex;align-items:center;gap:6px">💳 Paiement unique</span>
+            <span class="screen-value">
+              <strong style="color:#fff">Carte bancaire, Apple Pay ou Google Pay.</strong>
+              Visa, Mastercard, Amex. Paiement 3D Secure. Aucune donnée carte stockée par S@FE.
+              Frais Stripe : <strong style="color:#fff">1,5 % + 0,25 €</strong> par transaction.
+            </span>
+          </div>
+        </div>
       </div>
     </div>
     <div class="flow-item">
       <div class="flow-num">4</div>
       <div class="flow-body">
         <h4>Paiement confirmé</h4>
-        <p>Le contrat passe automatiquement en statut <span class="badge badge-ok">Signé</span>. Un événement est créé dans le suivi client. Pour les abonnements, Stripe gère la facturation mensuelle sans intervention.</p>
+        <p>Le contrat passe automatiquement en statut <span class="badge badge-ok">Signé</span>. Un événement est créé dans le suivi client. Pour les abonnements SEPA, Stripe gère la facturation mensuelle sans aucune intervention.</p>
       </div>
     </div>
   </div>
 
   <div class="info ok" style="margin-top:8px">
-    <strong>Frais de mise en service</strong> — Facturés une seule fois sur la première facture Stripe. Les mensualités suivantes ne contiennent que l'abonnement récurrent.
+    <strong>Frais de mise en service</strong> — Facturés une seule fois sur la première échéance Stripe. Les mensualités suivantes ne contiennent que l'abonnement récurrent.
+  </div>
+
+  <div class="info" style="margin-top:8px">
+    <strong>Pourquoi le SEPA pour les abonnements ?</strong> — Le prélèvement SEPA coûte 0,35 € fixe contre 1,5 % + 0,25 € par carte. Sur un abonnement SEO Pro à 149 € sur 12 mois, c'est <strong style="color:#fff">25 € économisés par client</strong>. Le mandat est irrévocable jusqu'à résiliation explicite du client, ce qui sécurise également la récurrence des encaissements.
+  </div>
+
+  <div class="info warn" style="margin-top:8px">
+    <strong>Portail client Stripe</strong> — Le client peut gérer son mandat SEPA (ou sa carte pour les paiements uniques récurrents) depuis son espace client Stripe, accessible via le bouton 🔗 Portail client dans la fiche contrat.
   </div>
 </section>
 
