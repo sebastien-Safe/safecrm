@@ -4590,8 +4590,7 @@ function ouvrirMailIdentifiants(email, password, prenom) {
   html +=     '<div><span class="mut">Identifiant :</span> <strong style="color:#fff">' + escapeHtml(email) + '</strong></div>';
   html +=     '<div><span class="mut">Mot de passe :</span>';
   html +=       '<strong style="color:var(--gold);font-family:var(--ff-mono)">' + escapeHtml(password) + '</strong>';
-  html +=       '<button onclick="navigator.clipboard.writeText('' + escapeHtml(password) + '').then(function(){this.textContent='&#x2705; Copié'}).catch(function(){})"';
-  html +=         ' style="font-size:.7rem;margin-left:8px;padding:2px 8px;border-radius:5px;border:1px solid var(--line);background:none;color:var(--mut);cursor:pointer">';
+  html += '<button class="btn-copy" data-password="' + escapeHtml(password) + '" style="font-size:.7rem;margin-left:8px;padding:2px 8px;border-radius:5px;border:1px solid var(--line);">Copier</button>';  html +=         ' style="font-size:.7rem;margin-left:8px;padding:2px 8px;border-radius:5px;border:1px solid var(--line);background:none;color:var(--mut);cursor:pointer">';
   html +=         '&#x1F4CB; Copier';
   html +=       '</button>';
   html +=     '</div>';
