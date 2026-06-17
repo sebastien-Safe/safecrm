@@ -5,7 +5,21 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://*.supabase.co https://www.google.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https: blob:; frame-src 'none'; connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="S@FE CRM">
+<meta name="application-name" content="S@FE CRM">
+<meta name="theme-color" content="#0a1628">
+<meta name="msapplication-TileColor" content="#0a1628">
+<meta name="msapplication-TileImage" content="/icons/icon-144.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-128.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/icons/icon-96.png">
 <title>S@FE CRM</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
@@ -1062,5 +1076,78 @@
 <script src="assets/config.js"></script>
 <script src="assets/contract-pdf.js"></script>
 <script src="assets/app.js"></script>
+
+<script>
+// ── PWA Service Worker ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(reg => {
+        console.log('[PWA] Service Worker enregistré:', reg.scope);
+        // Vérifier les mises à jour
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateBanner();
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('[PWA] SW non enregistré:', err));
+  });
+}
+
+// ── Bannière mise à jour disponible ──
+function showUpdateBanner() {
+  const banner = document.createElement('div');
+  banner.id = 'pwa-update-banner';
+  banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:#142240;border:1px solid rgba(245,158,11,.4);border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.4);font-family:sans-serif;font-size:.85rem;color:#cbd5e1';
+  banner.innerHTML = '<span>🔄 Mise à jour S@FE CRM disponible</span><button onclick="appliquerMiseAJour()" style="background:#f59e0b;color:#0a1628;border:none;border-radius:7px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:.82rem">Mettre à jour</button><button onclick="this.parentElement.remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1rem">✕</button>';
+  document.body.appendChild(banner);
+}
+
+function appliquerMiseAJour() {
+  if (navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
+  }
+  window.location.reload();
+}
+
+// ── Bannière installation PWA ──
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Afficher le bouton d'installation après 10 secondes
+  setTimeout(() => {
+    if (deferredPrompt) showInstallBanner();
+  }, 10000);
+});
+
+function showInstallBanner() {
+  if (document.getElementById('pwa-install-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'pwa-install-banner';
+  banner.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#142240;border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,.4);max-width:280px;font-family:sans-serif';
+  banner.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><img src="/icons/icon-72.png" style="width:36px;height:36px;border-radius:8px"><div><div style="font-size:.88rem;font-weight:700;color:#fff">S@FE CRM</div><div style="font-size:.75rem;color:#94a3b8">Installer sur cet appareil</div></div><button onclick="document.getElementById('pwa-install-banner').remove();deferredPrompt=null" style="background:none;border:none;color:#94a3b8;cursor:pointer;margin-left:auto;font-size:1rem">✕</button></div><button onclick="installerPWA()" style="width:100%;background:#f59e0b;color:#0a1628;border:none;border-radius:8px;padding:8px;font-weight:700;cursor:pointer;font-size:.85rem">📲 Installer l'application</button>';
+  document.body.appendChild(banner);
+}
+
+async function installerPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log('[PWA] Installation:', outcome);
+  deferredPrompt = null;
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) banner.remove();
+}
+
+window.addEventListener('appinstalled', () => {
+  console.log('[PWA] Application installée avec succès !');
+  deferredPrompt = null;
+});
+</script>
 </body>
 </html>
