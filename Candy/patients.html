@@ -83,6 +83,16 @@
     .modal-box p{font-size:.88rem;color:var(--mut);text-align:center;line-height:1.6;margin-bottom:24px}
     .modal-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 
+
+    .side-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;border:none;background:none;cursor:pointer;width:60px;transition:all .18s;color:var(--mut)}
+    .side-btn:hover,.side-btn.active-side{background:rgba(196,113,122,.1);color:var(--cerise)}
+    .side-btn span:first-child{font-size:1.3rem}
+    .side-label{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+    #view-agenda .agenda-row{display:grid;grid-template-columns:80px repeat(5,1fr);border-bottom:1px solid rgba(61,43,45,.06)}
+    #view-agenda .slot{padding:8px;border-left:1px solid rgba(61,43,45,.06);min-height:36px;font-size:.75rem;color:var(--ardoise-2)}
+    #view-agenda .slot-filled{background:rgba(196,113,122,.08);border-radius:4px;padding:4px 6px;font-size:.72rem;color:var(--cerise-2);font-weight:500}
+    #view-agenda .time-label{padding:8px 10px;font-size:.72rem;color:var(--mut);font-weight:500}
+
     @media(max-width:700px){
       .stats{grid-template-columns:repeat(2,1fr)}
       .page{padding:16px 12px 60px}
@@ -116,6 +126,28 @@
   </div>
 </nav>
 
+<div style="display:flex;min-height:calc(100vh - 58px)">
+
+<!-- MENU LATÉRAL GAUCHE -->
+<aside id="left-menu" style="width:72px;background:var(--blanc);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:16px 8px;gap:8px;position:sticky;top:58px;height:calc(100vh - 58px);flex-shrink:0">
+  <button class="side-btn active-side" onclick="setSideView('liste')" title="Liste patients" id="btn-liste">
+    <span>👥</span><span class="side-label">Patients</span>
+  </button>
+  <button class="side-btn" onclick="setSideView('agenda')" title="Agenda" id="btn-agenda">
+    <span>📆</span><span class="side-label">Agenda</span>
+  </button>
+  <button class="side-btn" onclick="setSideView('perso1')" title="Personnalisé 1" id="btn-perso1">
+    <span>1️⃣</span><span class="side-label">Vue 1</span>
+  </button>
+  <button class="side-btn" onclick="setSideView('perso2')" title="Personnalisé 2" id="btn-perso2">
+    <span>2️⃣</span><span class="side-label">Vue 2</span>
+  </button>
+  <button class="side-btn" onclick="setSideView('medicaments')" title="Médicaments" id="btn-medicaments">
+    <span>💊</span><span class="side-label">Médic.</span>
+  </button>
+</aside>
+
+<div style="flex:1;overflow-x:hidden">
 <div class="page">
 
   <div class="page-header">
@@ -178,6 +210,82 @@
       <a href="/Candy/" class="btn btn-pri">En savoir plus</a>
     </div>
   </div>
+</div><!-- /page -->
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- VUE AGENDA -->
+<div id="view-agenda" style="display:none;padding:32px 24px">
+  <h2 style="font-family:var(--ff-disp,'DM Serif Display',serif);font-size:1.4rem;color:var(--ardoise);margin-bottom:20px">📆 Agenda du cabinet</h2>
+  <div style="background:var(--blanc);border:1px solid var(--line);border-radius:14px;overflow:hidden">
+    <div style="background:var(--rose-deep);padding:14px 20px;font-weight:600;color:var(--ardoise)">Semaine du 16 au 22 juin 2026</div>
+    <div style="display:grid;grid-template-columns:80px repeat(5,1fr);border-bottom:1px solid var(--line)">
+      <div style="padding:10px;font-size:.72rem;color:var(--mut)"></div>
+      <div style="padding:10px;font-size:.78rem;font-weight:600;color:var(--ardoise);text-align:center;border-left:1px solid var(--line)">Lun 16</div>
+      <div style="padding:10px;font-size:.78rem;font-weight:600;color:var(--cerise);text-align:center;border-left:1px solid var(--line)">Mar 17</div>
+      <div style="padding:10px;font-size:.78rem;font-weight:600;color:var(--ardoise);text-align:center;border-left:1px solid var(--line)">Mer 18</div>
+      <div style="padding:10px;font-size:.78rem;font-weight:600;color:var(--ardoise);text-align:center;border-left:1px solid var(--line)">Jeu 19</div>
+      <div style="padding:10px;font-size:.78rem;font-weight:600;color:var(--ardoise);text-align:center;border-left:1px solid var(--line)">Ven 20</div>
+    </div>
+    ${generateAgendaRows()}
+  </div>
+  <p style="font-size:.75rem;color:var(--mut);margin-top:12px;text-align:center">Mode démo — données fictives</p>
+</div>
+
+<!-- VUE PERSONNALISÉE 1 -->
+<div id="view-perso1" style="display:none;padding:32px 24px">
+  <h2 style="font-family:var(--ff-disp,'DM Serif Display',serif);font-size:1.4rem;color:var(--ardoise);margin-bottom:8px">1️⃣ Vue personnalisée 1</h2>
+  <p style="color:var(--mut);font-size:.88rem;margin-bottom:24px">Cette vue est configurable selon vos besoins. Exemple : tableau de bord administratif, statistiques, suivi des renouvellements…</p>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+    <div style="background:var(--blanc);border:1px solid var(--line);border-radius:12px;padding:20px;text-align:center">
+      <div style="font-family:var(--ff-disp,'DM Serif Display',serif);font-size:2rem;color:var(--ardoise)">12</div>
+      <div style="font-size:.78rem;color:var(--mut);margin-top:4px">Patients actifs</div>
+    </div>
+    <div style="background:var(--blanc);border:1px solid var(--line);border-radius:12px;padding:20px;text-align:center">
+      <div style="font-family:var(--ff-disp,'DM Serif Display',serif);font-size:2rem;color:var(--cerise)">3</div>
+      <div style="font-size:.78rem;color:var(--mut);margin-top:4px">Consultations aujourd'hui</div>
+    </div>
+    <div style="background:var(--blanc);border:1px solid var(--line);border-radius:12px;padding:20px;text-align:center">
+      <div style="font-family:var(--ff-disp,'DM Serif Display',serif);font-size:2rem;color:var(--ardoise)">4</div>
+      <div style="font-size:.78rem;color:var(--mut);margin-top:4px">Allergies connues</div>
+    </div>
+  </div>
+  <div style="background:var(--blanc);border:1px solid var(--line);border-radius:12px;padding:20px">
+    <p style="font-size:.85rem;color:var(--mut);text-align:center">⚙️ Cette vue est entièrement configurable dans la version complète de C@NDY.</p>
+  </div>
+</div>
+
+<!-- VUE PERSONNALISÉE 2 -->
+<div id="view-perso2" style="display:none;padding:32px 24px">
+  <h2 style="font-family:var(--ff-disp,'DM Serif Display',serif);font-size:1.4rem;color:var(--ardoise);margin-bottom:8px">2️⃣ Vue personnalisée 2</h2>
+  <p style="color:var(--mut);font-size:.88rem;margin-bottom:24px">Exemple d'usage : liste des ordonnances en cours de renouvellement, suivi des examens en attente…</p>
+  <div style="background:var(--blanc);border:1px solid var(--line);border-radius:12px;padding:20px">
+    <p style="font-size:.85rem;color:var(--mut);text-align:center">⚙️ Configuration libre dans la version complète.</p>
+  </div>
+</div>
+
+<!-- VUE MÉDICAMENTS -->
+<div id="view-medicaments" style="display:none;padding:32px 24px">
+  <h2 style="font-family:var(--ff-disp,'DM Serif Display',serif);font-size:1.4rem;color:var(--ardoise);margin-bottom:20px">💊 Médicaments en cours</h2>
+  <div style="background:var(--blanc);border:1px solid var(--line);border-radius:14px;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:var(--rose-light);border-bottom:1.5px solid var(--line)">
+        <th style="padding:12px 16px;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);text-align:left">Patient</th>
+        <th style="padding:12px 16px;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);text-align:left">Médicament</th>
+        <th style="padding:12px 16px;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);text-align:left">Posologie</th>
+        <th style="padding:12px 16px;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);text-align:left">Renouvellement</th>
+      </tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(61,43,45,.06)"><td style="padding:12px 16px;font-weight:600;color:var(--ardoise);font-size:.85rem">Dupont, Marie</td><td style="padding:12px 16px;font-size:.85rem;color:var(--ardoise-2)">Amlodipine 5mg</td><td style="padding:12px 16px;font-size:.82rem;color:var(--mut)">1 cp/j matin</td><td style="padding:12px 16px;font-size:.82rem;color:var(--cerise);font-weight:600">Sept. 2026</td></tr>
+        <tr style="border-bottom:1px solid rgba(61,43,45,.06)"><td style="padding:12px 16px;font-weight:600;color:var(--ardoise);font-size:.85rem">Dupont, Marie</td><td style="padding:12px 16px;font-size:.85rem;color:var(--ardoise-2)">Bisoprolol 5mg</td><td style="padding:12px 16px;font-size:.82rem;color:var(--mut)">1 cp/j matin</td><td style="padding:12px 16px;font-size:.82rem;color:var(--cerise);font-weight:600">Sept. 2026</td></tr>
+        <tr style="border-bottom:1px solid rgba(61,43,45,.06)"><td style="padding:12px 16px;font-weight:600;color:var(--ardoise);font-size:.85rem">Moreau, Paul</td><td style="padding:12px 16px;font-size:.85rem;color:var(--ardoise-2)">Metformine 850mg</td><td style="padding:12px 16px;font-size:.82rem;color:var(--mut)">1 cp matin et soir</td><td style="padding:12px 16px;font-size:.82rem;color:var(--mut)">Août 2026</td></tr>
+        <tr style="border-bottom:1px solid rgba(61,43,45,.06)"><td style="padding:12px 16px;font-weight:600;color:var(--ardoise);font-size:.85rem">Simon, Élise</td><td style="padding:12px 16px;font-size:.85rem;color:var(--ardoise-2)">Ramipril 5mg</td><td style="padding:12px 16px;font-size:.82rem;color:var(--mut)">1 cp/j matin</td><td style="padding:12px 16px;font-size:.82rem;color:var(--cerise);font-weight:600">Juil. 2026</td></tr>
+        <tr style="border-bottom:1px solid rgba(61,43,45,.06)"><td style="padding:12px 16px;font-weight:600;color:var(--ardoise);font-size:.85rem">Garcia, Antoine</td><td style="padding:12px 16px;font-size:.85rem;color:var(--ardoise-2)">Ventoline spray</td><td style="padding:12px 16px;font-size:.82rem;color:var(--mut)">Si besoin</td><td style="padding:12px 16px;font-size:.82rem;color:var(--mut)">Oct. 2026</td></tr>
+        <tr><td style="padding:12px 16px;font-weight:600;color:var(--ardoise);font-size:.85rem">Leroy, Marc</td><td style="padding:12px 16px;font-size:.85rem;color:var(--ardoise-2)">Epipen 0.3mg</td><td style="padding:12px 16px;font-size:.82rem;color:var(--mut)">Port permanent</td><td style="padding:12px 16px;font-size:.82rem;color:var(--alert);font-weight:600">⚠ Août 2026</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:.75rem;color:var(--mut);margin-top:12px;text-align:center">Mode démo — données fictives</p>
 </div>
 
 <script>
@@ -257,6 +365,54 @@ function ouvrirPatient(id) {
 }
 
 renderPatients(PATIENTS);
+
+function setSideView(view){
+  // Cacher toutes les vues
+  ['agenda','perso1','perso2','medicaments'].forEach(v=>{
+    const el = document.getElementById('view-'+v);
+    if(el) el.style.display='none';
+  });
+  // Activer/désactiver boutons
+  document.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('active-side'));
+  const activeBtn = document.getElementById('btn-'+view);
+  if(activeBtn) activeBtn.classList.add('active-side');
+
+  if(view==='liste'){
+    document.querySelector('.page').style.display='';
+  } else {
+    document.querySelector('.page').style.display='none';
+    const viewEl = document.getElementById('view-'+view);
+    if(viewEl){ viewEl.style.display='block'; }
+  }
+}
+
+function generateAgendaRows(){
+  const slots = ['09h00','09h30','10h00','10h30','11h00','11h30','14h00','14h30','15h00','15h30','16h00'];
+  const rdvs = {
+    '09h00':{1:'Dupont M.',3:'Bernard L.'},
+    '09h30':{2:'Simon E.'},
+    '10h00':{1:'Moreau P.',4:'Michel C.'},
+    '10h30':{3:'Garcia A.'},
+    '11h00':{1:'Lefèvre S.'},
+    '14h00':{2:'Laurent J.',1:'Petit I.'},
+    '14h30':{3:'Richard T.'},
+    '15h00':{1:'David N.'},
+    '15h30':{2:'Leroy M.'},
+  };
+  let html='';
+  slots.forEach(t=>{
+    html+='<div class="agenda-row">';
+    html+='<div class="time-label">'+t+'</div>';
+    for(let d=1;d<=5;d++){
+      const rdv = rdvs[t]?.[d];
+      html+='<div class="slot">'+( rdv ? '<div class="slot-filled">'+rdv+'</div>' : '' )+'</div>';
+    }
+    html+='</div>';
+  });
+  const el = document.getElementById('view-agenda');
+  if(el) el.innerHTML += html;
+}
+setTimeout(generateAgendaRows,100);
 
 // Bloc-note
 const NOTE_KEY = 'candy_demo_note';
