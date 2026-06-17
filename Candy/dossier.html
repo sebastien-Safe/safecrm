@@ -411,9 +411,6 @@ function render(p) {
   });
 }
 
-const id = parseInt(getParam('id'));
-const patient = [1,2,3,4,5,6,7,8,9,10,11,12].map(i => PATIENTS_DATA && PATIENTS_DATA[i-1]).filter(Boolean)[0];
-
 // Données inline
 const PATIENTS_DATA = [
   {id:1,nom:'Dupont',prenom:'Marie',naissance:'12/03/1952',age:72,sexe:'F',adresse:'14 rue des Lilas, 69003 Lyon',telephone:'06 12 34 56 78',email:'marie.dupont@email.fr',medecin_traitant:'Dr. Martin',profession:'Retraitée',situation:'Mariée',secu:'3 52 03 69 049 123 45',groupe_sanguin:'A+',poids:68,taille:162,allergies:[{nom:'Pénicilline',type:'Médicament',gravite:'Sévère',desc:'Réaction anaphylactique documentée en 2018. À éviter absolument.'},{nom:'Aspirine',type:'Médicament',gravite:'Modérée',desc:'Urticaire et œdème de Quincke. Substituer par paracétamol.'}],historique:[{date:'14/06/2026',type:'consult',titre:'Consultation de suivi — HTA',note:'PA : 138/82 mmHg. Traitement bien toléré. Renouvellement ordonnance Amlodipine 5mg. Prochain contrôle dans 3 mois.',medecin:'Dr. Martin'},{date:'02/03/2026',type:'ordonnance',titre:'Ordonnance renouvellement',note:'Amlodipine 5mg — 1 cp/j. Bisoprolol 5mg — 1 cp/j. Validité 6 mois.',medecin:'Dr. Martin'},{date:'10/01/2026',type:'examen',titre:'Bilan sanguin annuel',note:'NFS normale. HbA1c : 5.8% (surveillance). Cholestérol total : 5.2 mmol/L. Créatinine normale.',medecin:'Laboratoire Bio+ Lyon'},{date:'08/10/2025',type:'consult',titre:'Consultation urgente — douleur thoracique',note:"ECG normal. Douleur d'origine musculaire. Prescription antalgique 5 jours. Pas de signe d'alerte cardiaque.",medecin:'Dr. Martin'},{date:'12/06/2025',type:'consult',titre:'Consultation de suivi semestrielle',note:'Stabilité tensionnelle. Poids stable. RAS. Bilan annuel prescrit pour janvier 2026.',medecin:'Dr. Martin'}]},
@@ -430,6 +427,7 @@ const PATIENTS_DATA = [
   {id:12,nom:'Leroy',prenom:'Marc',naissance:'16/05/2010',age:16,sexe:'M',adresse:'5 place de la Mairie, 69700 Givors',telephone:'04 78 73 11 22',email:'famille.leroy@email.fr',medecin_traitant:'Dr. Martin',profession:'Lycéen',situation:'—',secu:'3 10 05 69 001 123 45',groupe_sanguin:'O+',poids:62,taille:174,allergies:[{nom:'Arachides',type:'Alimentaire',gravite:'Sévère',desc:"Allergie sévère avec antécédent de choc anaphylactique (2023). Adrénaline auto-injectable prescrite (Epipen). Port permanent obligatoire."}],historique:[{date:'30/05/2026',type:'consult',titre:'Suivi allergie arachide',note:"Pas de réaction depuis 12 mois. Bonne gestion de l'éviction. Adrénaline périmée en août — renouvellement prescrit. Consultation allergologue annuelle rappelée.",medecin:'Dr. Martin'},{date:'10/09/2025',type:'ordonnance',titre:'Ordonnance Epipen',note:'Epipen 0.3mg — 2 stylos auto-injecteurs. Port permanent. Renouvellement annuel.',medecin:'Dr. Martin'},{date:'15/04/2024',type:'examen',titre:'Bilan allergologique',note:'IgE spécifiques arachide : 48 kUA/L (très élevé). TPO positif. Pas d\'immunothérapie indiquée à ce stade. Éviction stricte maintenue.',medecin:'Dr. Allard — Allergologue Lyon'}]}
 ];
 
+const id = parseInt(getParam('id'));
 const p = PATIENTS_DATA.find(x => x.id === id);
 if (p) {
   render(p);
