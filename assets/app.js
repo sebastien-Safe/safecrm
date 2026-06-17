@@ -3165,13 +3165,31 @@ async function openCustomerPortal(contractId) {
 // BORDEREAUX DE COMMISSION — Gestion admin
 // ==========================================================================
 
+// Calcule l'avant-dernier jour ouvré du mois donné
+function avantDernierJourOuvre(year, month) {
+  // Partir du dernier jour du mois et remonter
+  let joursOuvres = 0;
+  let d = new Date(year, month, 0); // dernier jour du mois
+  while (joursOuvres < 2) {
+    const dow = d.getDay();
+    if (dow !== 0 && dow !== 6) joursOuvres++; // lundi-vendredi
+    if (joursOuvres < 2) d.setDate(d.getDate() - 1);
+  }
+  return d;
+}
+
 async function loadBordereaux() {
   if (!isAdmin()) return;
+
+  // Vérifier si on est à partir de l'avant-dernier jour ouvré du mois courant
+  const now = new Date();
+  const avantDernier = avantDernierJourOuvre(now.getFullYear(), now.getMonth() + 1);
+  const isAlertePeriode = now >= avantDernier;
+
   // Construire la liste des 6 derniers mois pour le select
   const sel = document.getElementById('bordereau-periode');
   if (!sel) return;
   const opts = [];
-  const now = new Date();
   for (let i = 1; i <= 6; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const val = d.toISOString().slice(0, 7);
@@ -3180,6 +3198,14 @@ async function loadBordereaux() {
   }
   sel.innerHTML = opts.join('');
   sel.addEventListener('change', renderBordereaux);
+
+  // N'afficher l'alerte que si on est dans la fenêtre de l'avant-dernier jour ouvré
+  if (!isAlertePeriode) {
+    const block = document.getElementById('bordereaux-alert');
+    if (block) block.style.display = 'none';
+    return;
+  }
+
   await renderBordereaux();
 }
 
@@ -3214,9 +3240,9 @@ async function renderBordereaux() {
           onclick="genererBordereau('${u.user_id}','${escapeHtml(u.prenom || '')}','${escapeHtml(u.email)}','${periode}')">
           📄 Générer PDF
         </button>
-        ${!sent ? `<button class="btn btn-pri btn-sm" style="margin-left:4px;font-size:.72rem"
+        ${!sent ? `<button class="btn btn-ok btn-sm" style="margin-left:4px;font-size:.72rem;background:var(--ok);color:#fff;border:none"
           onclick="marquerBordereauEnvoye('${u.user_id}','${periode}')">
-          ✅ Marquer envoyé
+          ✅ Fait
         </button>` : ''}
       </div>`;
     }).join('');
