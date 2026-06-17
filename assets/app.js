@@ -563,25 +563,8 @@ function setContactFieldsLocked(locked) {
   CONTACT_FIELD_IDS.forEach(id => { $('#' + id).disabled = reallyLocked; });
   $all('.c-activite').forEach(cb => { cb.disabled = reallyLocked; });
   CONTACT_CONSENT_IDS.forEach(id => { $('#' + id).disabled = reallyLocked; });
-  $('#c-rgpd-ko').disabled = false; // l'admin peut décocher
   $('#contact-save-btn').style.display = reallyLocked ? 'none' : '';
-  // L'admin garde la possibilité de gérer la case RGPD KO
-  $('#c-rgpd-ko-field').style.display = (locked && !isAdmin()) ? 'none' : '';
   $('#c-rgpd-locked-msg').style.display = reallyLocked ? 'block' : 'none';
-  // Banner admin quand on édite une fiche RGPD KO
-  let banner = $('#c-admin-rgpd-banner');
-  if (locked && isAdmin()) {
-    if (!banner) {
-      banner = document.createElement('p');
-      banner.id = 'c-admin-rgpd-banner';
-      banner.className = 'note-admin';
-      banner.textContent = "🔓 Vous modifiez une fiche RGPD KO en tant que super-administrateur.";
-      $('#c-rgpd-ko-field').parentNode.insertBefore(banner, $('#c-rgpd-ko-field'));
-    }
-    banner.style.display = '';
-  } else if (banner) {
-    banner.style.display = 'none';
-  }
 }
 
 // Détermine si l'utilisateur courant peut modifier ce contact
@@ -615,7 +598,7 @@ function openContactModal(id = null) {
   $('#c-siret').value = c?.siret || '';
   $('#c-source').value = c?.source || state.profile?.prenom || '';
   $('#c-notes').value = c?.notes || '';
-  $('#c-rgpd-ko').checked = !!c?.rgpd_ko;
+  // rgpd_ko géré automatiquement (plus de case à cocher manuelle)
   $('#c-consent-telephone').checked = !!c?.consent_telephone;
   $('#c-consent-email').checked = !!c?.consent_email;
   $('#c-consent-courrier').checked = !!c?.consent_courrier;
@@ -666,7 +649,7 @@ async function saveContact() {
   const existing = id ? state.contacts.find(x => x.id === id) : null;
   const nom = $('#c-nom').value.trim();
   if (!nom) { alert('Le nom est obligatoire.'); return; }
-  const rgpdKoChecked = $('#c-rgpd-ko').checked;
+  const rgpdKoChecked = false; // géré automatiquement par check_rgpd_expiry()
   const payload = {
     nom,
     entreprise: $('#c-entreprise').value.trim() || null,
@@ -685,24 +668,8 @@ async function saveContact() {
     consent_email: $('#c-consent-email').checked,
     consent_courrier: $('#c-consent-courrier').checked,
   };
-  // Passage en RGPD KO : confirmation puis effacement des coordonnées + consentements
-  if (rgpdKoChecked && !existing?.rgpd_ko) {
-    const confirmed = confirm(
-      "Confirmez-vous que ce contact ne souhaite plus être sollicité (RGPD KO) ?\n\n" +
-      "Cette action est définitive : l'e-mail, le téléphone, l'adresse et tous les consentements vont être effacés, " +
-      "et la fiche sera verrouillée en lecture seule (sauf pour un super-administrateur)."
-    );
-    if (!confirmed) {
-      $('#c-rgpd-ko').checked = false;
-      payload.rgpd_ko = false;
-    } else {
-      payload.email = null;
-      payload.telephone = null;
-      payload.adresse = null;
-      payload.consent_telephone = false;
-      payload.consent_email = false;
-      payload.consent_courrier = false;
-    }
+  // Basculement RGPD KO géré automatiquement par check_rgpd_expiry()
+  if (false) {
   }
   // Tout nouveau contact est automatiquement "Client"
   if (!existing) {
