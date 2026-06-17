@@ -1201,6 +1201,30 @@ function openProfileModal() {
   if (document.getElementById('profile-telephone')) document.getElementById('profile-telephone').value = state.profile?.telephone  || '';
   if (document.getElementById('profile-adresse'))   document.getElementById('profile-adresse').value   = state.profile?.adresse    || '';
   if (document.getElementById('profile-rcpro'))     document.getElementById('profile-rcpro').value     = state.profile?.rcpro_numero || '';
+
+  // Vérifier si la clause est signée
+  (async () => {
+    const signedBlock   = document.getElementById('clause-signed-block');
+    const unsignedBlock = document.getElementById('clause-unsigned-block');
+    if (!signedBlock || !unsignedBlock) return;
+
+    const { data } = await sb.from('clauses_confidentialite')
+      .select('id, signed_at')
+      .eq('user_id', state.user.id)
+      .maybeSingle();
+
+    if (data) {
+      signedBlock.style.display   = 'flex';
+      unsignedBlock.style.display = 'none';
+      // Construire un lien vers une page de visualisation
+      const dateStr = new Date(data.signed_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
+      signedBlock.querySelector('span').textContent = '✅ Clause signée le ' + dateStr;
+      document.getElementById('clause-signed-link').href = '/clause-confidentialite.html?view=' + data.id;
+    } else {
+      signedBlock.style.display   = 'none';
+      unsignedBlock.style.display = 'block';
+    }
+  })();
   $('#profile-photo-input').value = '';
   $('#profile-error').textContent = '';
   $('#profile-new-password').value = '';
