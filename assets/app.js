@@ -1774,6 +1774,7 @@ function closeNewUserModal() {
 async function createNewUser() {
   const email = $('#nu-email').value.trim();
   const password = $('#nu-password').value;
+  if (!password) { alert('Veuillez générer un mot de passe avant de créer le compte.'); return; }
   const prenom = $('#nu-prenom').value.trim();
   const makeAdmin = $('#nu-is-admin')?.checked || false;
   $('#nu-error').textContent = '';
