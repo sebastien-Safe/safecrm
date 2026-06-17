@@ -940,6 +940,16 @@ function openContractModal(id = null) {
     resilierBtn.style.display = canResilier ? 'inline-flex' : 'none';
     resilierBtn.dataset.contractId = ct?.id || '';
   }
+  // Bouton Portail client : visible si abonnement mensuel avec stripe_subscription_id
+  const portalBtn = $('#contract-portal-btn');
+  if (portalBtn) {
+    const canPortal = ct
+      && ct.recurrence === 'Mensuel'
+      && ct.stripe_subscription_id
+      && (isAdmin() || ct.created_by === state.user?.id);
+    portalBtn.style.display = canPortal ? 'inline-flex' : 'none';
+    portalBtn.dataset.contractId = ct?.id || '';
+  }
   $('#contract-modal').classList.add('show');
 }
 
@@ -2936,6 +2946,12 @@ function bindEvents() {
   document.getElementById('resilier-cancel-btn')?.addEventListener('click', closeResilierModal);
   document.getElementById('resilier-confirm-btn')?.addEventListener('click', confirmResilierAbonnement);
 
+  // === Portail client Stripe ===
+  document.getElementById('contract-portal-btn')?.addEventListener('click', () => {
+    const contractId = document.getElementById('contract-portal-btn').dataset.contractId;
+    openCustomerPortal(contractId);
+  });
+
   // === Déconnexion par inactivité (5 min) ===
   setupInactivityTimeout();
 }
@@ -3091,6 +3107,39 @@ async function confirmResilierAbonnement() {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Confirmer la résiliation';
+  }
+}
+
+
+// ==========================================================================
+// PORTAIL CLIENT STRIPE
+// ==========================================================================
+
+async function openCustomerPortal(contractId) {
+  const btn = document.getElementById('contract-portal-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Génération du lien…'; }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/customer-portal`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ contract_id: contractId }),
+    });
+    const result = await resp.json();
+    if (!resp.ok) throw new Error(result.details || result.error || 'Erreur inconnue');
+
+    // Copier le lien dans le presse-papier
+    await navigator.clipboard.writeText(result.url);
+    alert('✅ Lien copié dans le presse-papier !\n\nEnvoyez-le au client par email :\n' + result.url);
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔗 Portail client'; }
   }
 }
 
