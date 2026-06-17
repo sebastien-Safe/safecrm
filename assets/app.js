@@ -975,17 +975,12 @@ async function saveContract() {
       document.getElementById('resilier-modal').classList.add('show');
       return;
     } else if (!contract?.stripe_subscription_id) {
-      // Pas d'abonnement Stripe : juste passer en Terminé
-      await sb.from('contracts').update({ statut: 'Terminé', resilié_at: new Date().toISOString() }).eq('id', id);
-      await sb.from('interactions').insert({
-        contact_id: contract.contact_id,
-        created_by: state.user.id,
-        type: 'Autre',
-        date: new Date().toISOString().slice(0,10),
-        objet: 'Résiliation contrat',
-        contenu: 'Contrat résilié manuellement par l'administrateur.',
-        suite_a_donner: null,
-      });
+      // Pas d'abonnement Stripe : modale de confirmation avant de terminer
+      closeContractModal();
+      await loadAll();
+      document.getElementById('resilier-contract-id').value = id;
+      document.getElementById('resilier-modal').classList.add('show');
+      return;
     }
   }
 
