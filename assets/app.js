@@ -121,11 +121,6 @@ const FORMULE_PRESETS = {
     { label: 'Boost',     montant: 149, recurrence: 'Mensuel',  setup: 290, engagement: 6, comm_signature_fix: 100, comm_bonus_fidelite: 100, comm_recurrent_pct: 0.15 },
     { label: 'Prestige',  montant: 249, recurrence: 'Mensuel',  setup: 0,   engagement: 3, comm_signature_fix: 0,   comm_bonus_fidelite: 0,   comm_recurrent_pct: 0.15 },
   ],
-  'Click & Collect': [
-    { label: 'Essentiel', montant: 49,  recurrence: 'Mensuel',  setup: 150, engagement: 6, comm_signature_fix: 50,  comm_bonus_fidelite: 50,  comm_recurrent_pct: 0.15 },
-    { label: 'Pro',       montant: 79,  recurrence: 'Mensuel',  setup: 250, engagement: 6, comm_signature_fix: 100, comm_bonus_fidelite: 100, comm_recurrent_pct: 0.15 },
-    { label: 'Premium',   montant: 129, recurrence: 'Mensuel',  setup: 0,   engagement: 3, comm_signature_fix: 0,   comm_bonus_fidelite: 0,   comm_recurrent_pct: 0.15 },
-  ],
   'Mise en conformité RGPD': [
     { label: 'Diagnostic (offert)',     montant: 0,    recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0,    comm_recurrent_pct: 0 },
     { label: 'Audit RGPD TPE',          montant: 1490, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_fix: 298,  comm_recurrent_pct: 0 },
