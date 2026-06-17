@@ -295,6 +295,7 @@ async function loadAll() {
   renderAll();
   checkRgpdExpiry(); // Vérification RGPD automatique au login
   if (!isAdmin()) checkMandatSigne(); // Redirection vers signature si mandat absent
+  checkPasswordStatus();             // Vérification mot de passe + renouvellement 45j
   loadBordereaux();  // Bordereaux admin
   loadHelpRequests(); // Demandes d'assistance
 }
@@ -2952,6 +2953,21 @@ function bindEvents() {
 
   // === Bordereaux (rechargement si changement période géré dans loadBordereaux) ===
 
+  // === Changement de mot de passe ===
+  document.getElementById('cp-save-btn')?.addEventListener('click', saveNewPassword);
+  setupPasswordValidation();
+
+  // === Proposition 2FA ===
+  document.getElementById('totp-propose-skip')?.addEventListener('click', async () => {
+    document.getElementById('totp-propose-modal')?.classList.remove('show');
+    await checkProfilCompleted();
+  });
+  document.getElementById('totp-propose-activate')?.addEventListener('click', async () => {
+    document.getElementById('totp-propose-modal')?.classList.remove('show');
+    await openTotpEnroll();
+    await checkProfilCompleted();
+  });
+
   // === Déconnexion par inactivité (5 min) ===
   setupInactivityTimeout();
 }
@@ -3473,6 +3489,209 @@ async function checkMandatSigne() {
     }
   } catch(e) {
     console.warn('checkMandatSigne:', e);
+  }
+}
+
+
+// ==========================================================================
+// GESTION MOT DE PASSE — Validation, changement, rotation 45j
+// ==========================================================================
+
+const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+
+function validatePassword(pwd) {
+  return {
+    length:   pwd.length >= 8,
+    lower:    /[a-z]/.test(pwd),
+    upper:    /[A-Z]/.test(pwd),
+    digit:    /\d/.test(pwd),
+    special:  /[^a-zA-Z0-9]/.test(pwd),
+    valid:    PWD_REGEX.test(pwd),
+  };
+}
+
+function genererMotDePasse() {
+  const chars = 'abcdefghijkmnpqrstuvwxyz';
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits = '23456789';
+  const specials = '!@#$%&*-_+?';
+  let pwd = '';
+  pwd += upper[Math.floor(Math.random() * upper.length)];
+  pwd += upper[Math.floor(Math.random() * upper.length)];
+  pwd += digits[Math.floor(Math.random() * digits.length)];
+  pwd += digits[Math.floor(Math.random() * digits.length)];
+  pwd += specials[Math.floor(Math.random() * specials.length)];
+  const all = chars + upper + digits + specials;
+  while (pwd.length < 12) pwd += all[Math.floor(Math.random() * all.length)];
+  // Mélanger
+  pwd = pwd.split('').sort(() => Math.random() - 0.5).join('');
+  document.getElementById('nu-password').value = pwd;
+  // Copier dans le presse-papier
+  navigator.clipboard.writeText(pwd).then(() => {
+    const btn = document.querySelector('button[onclick="genererMotDePasse()"]');
+    if (btn) { const old = btn.textContent; btn.textContent = '✅ Copié !'; setTimeout(() => btn.textContent = old, 2000); }
+  }).catch(() => {});
+}
+
+function openChangePasswordModal(isFirst = true) {
+  const modal = document.getElementById('change-password-modal');
+  if (!modal) return;
+  document.getElementById('change-password-title').textContent = isFirst
+    ? '🔐 Choisissez votre mot de passe'
+    : '🔑 Renouvellement de mot de passe';
+  document.getElementById('change-password-subtitle').textContent = isFirst
+    ? 'Pour sécuriser votre compte, choisissez un mot de passe robuste dès maintenant.'
+    : 'Votre mot de passe a plus de 45 jours. Choisissez un nouveau mot de passe pour maintenir la sécurité de votre compte.';
+  document.getElementById('cp-password').value = '';
+  document.getElementById('cp-password2').value = '';
+  document.getElementById('cp-save-btn').disabled = true;
+  document.getElementById('cp-strength').style.display = 'none';
+  modal.classList.add('show');
+}
+
+function closeChangePasswordModal() {
+  document.getElementById('change-password-modal')?.classList.remove('show');
+}
+
+// Validation en temps réel
+function setupPasswordValidation() {
+  const input  = document.getElementById('cp-password');
+  const input2 = document.getElementById('cp-password2');
+  const saveBtn = document.getElementById('cp-save-btn');
+  if (!input) return;
+
+  const criteria = [
+    { id: 'str-length',  key: 'length',  label: '8 caractères minimum' },
+    { id: 'str-lower',   key: 'lower',   label: 'Une lettre minuscule' },
+    { id: 'str-upper',   key: 'upper',   label: 'Une lettre majuscule' },
+    { id: 'str-digit',   key: 'digit',   label: 'Un chiffre' },
+    { id: 'str-special', key: 'special', label: 'Un caractère spécial (!@#$%...)' },
+  ];
+
+  const criteriaEl = document.getElementById('cp-criteria');
+  if (criteriaEl) {
+    criteriaEl.innerHTML = criteria.map(c =>
+      `<div id="${c.id}" style="display:flex;align-items:center;gap:6px;color:var(--mut)">
+        <span class="crit-icon">○</span><span style="font-size:.76rem">${c.label}</span>
+      </div>`
+    ).join('');
+  }
+
+  const checkMatch = () => {
+    const v = validatePassword(input.value);
+    const match = input.value === input2.value && input2.value.length > 0;
+    const matchErr = document.getElementById('cp-match-error');
+    if (matchErr) matchErr.style.display = (input2.value && !match) ? 'block' : 'none';
+    saveBtn.disabled = !(v.valid && match);
+  };
+
+  input.addEventListener('input', () => {
+    const pwd = input.value;
+    const v = validatePassword(pwd);
+    document.getElementById('cp-strength').style.display = pwd.length ? 'block' : 'none';
+
+    // Barres de force
+    const score = [v.length, v.lower || v.upper, v.digit, v.special].filter(Boolean).length;
+    const colors = ['var(--alert)', 'var(--gold)', 'var(--gold)', 'var(--ok)'];
+    for (let i = 1; i <= 4; i++) {
+      const bar = document.getElementById('str-' + i);
+      if (bar) bar.style.background = i <= score ? colors[score-1] : 'var(--line)';
+    }
+
+    // Critères
+    criteria.forEach(c => {
+      const el = document.getElementById(c.id);
+      if (!el) return;
+      const ok = v[c.key];
+      el.style.color = ok ? 'var(--ok)' : 'var(--mut)';
+      el.querySelector('.crit-icon').textContent = ok ? '✓' : '○';
+    });
+
+    checkMatch();
+  });
+
+  input2.addEventListener('input', checkMatch);
+}
+
+async function saveNewPassword() {
+  const pwd  = document.getElementById('cp-password').value;
+  const pwd2 = document.getElementById('cp-password2').value;
+  if (!validatePassword(pwd).valid) { alert('Le mot de passe ne respecte pas les critères de sécurité.'); return; }
+  if (pwd !== pwd2) { alert('Les mots de passe ne correspondent pas.'); return; }
+
+  const btn = document.getElementById('cp-save-btn');
+  btn.disabled = true; btn.textContent = 'Enregistrement…';
+
+  try {
+    const { error } = await sb.auth.updateUser({ password: pwd });
+    if (error) throw new Error(error.message);
+
+    // Mettre à jour password_set et password_changed_at
+    await sb.from('profiles').update({
+      password_set:        true,
+      password_changed_at: new Date().toISOString(),
+    }).eq('id', state.user.id);
+
+    closeChangePasswordModal();
+    document.getElementById('password-renewal-banner').style.display = 'none';
+
+    // Proposer la 2FA si pas encore fait et pas déjà activée
+    const profile = state.profile;
+    if (!profile?.totp_proposed) {
+      await sb.from('profiles').update({ totp_proposed: true }).eq('id', state.user.id);
+      document.getElementById('totp-propose-modal')?.classList.add('show');
+    } else {
+      // Vérifier si le profil est complété
+      await checkProfilCompleted();
+    }
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enregistrer le mot de passe';
+  }
+}
+
+async function checkProfilCompleted() {
+  const p = state.profile;
+  if (!p?.profil_completed && !p?.prenom) {
+    // Ouvrir la modale profil
+    openProfileModal();
+  }
+}
+
+async function checkPasswordStatus() {
+  if (!state.user) return;
+  try {
+    const { data } = await sb.rpc('needs_password_renewal', { p_user_id: state.user.id });
+    const needsRenewal = data;
+
+    if (needsRenewal && !state.profile?.password_set) {
+      // Première connexion → modale bloquante (non-admin)
+      if (!isAdmin()) {
+        openChangePasswordModal(true);
+        return;
+      }
+    }
+
+    if (needsRenewal && isAdmin()) {
+      // Admin → banner non bloquant
+      const banner = document.getElementById('password-renewal-banner');
+      if (banner) banner.style.display = 'flex';
+      return;
+    }
+
+    if (needsRenewal && !isAdmin()) {
+      // DCI → modale bloquante renouvellement
+      openChangePasswordModal(false);
+      return;
+    }
+
+    // Vérifier profil complété (non-admin seulement)
+    if (!isAdmin()) await checkProfilCompleted();
+
+  } catch(e) {
+    console.warn('checkPasswordStatus:', e);
   }
 }
 
