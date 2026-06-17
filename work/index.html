@@ -405,10 +405,13 @@ async function doLogin(){
       throw new Error(msg);
     }
     if(!d.access_token) throw new Error('Token manquant dans la réponse Supabase.');
-    localStorage.setItem('safe_work_token', d.access_token);
-    localStorage.setItem('safe_work_uid', d.user.id);
-    localStorage.setItem('safe_work_email', d.user.email);
+    localStorage.setItem('safe_work_token',         d.access_token);
+    localStorage.setItem('safe_work_refresh_token', d.refresh_token || '');
+    localStorage.setItem('safe_work_uid',           d.user.id);
+    localStorage.setItem('safe_work_email',         d.user.email);
+    localStorage.setItem('safe_work_expires_at',    String(Date.now() + (d.expires_in || 3600) * 1000));
     await initApp(d.access_token, d.user);
+    scheduleTokenRefresh();
   } catch(e){
     errEl.textContent = e.message;
     console.error('[Work login]', e);
@@ -418,8 +421,10 @@ async function doLogin(){
 
 function doLogout(){
   localStorage.removeItem('safe_work_token');
+  localStorage.removeItem('safe_work_refresh_token');
   localStorage.removeItem('safe_work_uid');
   localStorage.removeItem('safe_work_email');
+  localStorage.removeItem('safe_work_expires_at');
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
 }
@@ -1014,22 +1019,74 @@ document.getElementById('wf-overlay').addEventListener('click', function(e){
 });
 
 // Reprise de session — enveloppé pour ne jamais bloquer le chargement
+// ── Refresh token auto ──
+async function refreshWorkToken() {
+  const refreshToken = localStorage.getItem('safe_work_refresh_token');
+  if (!refreshToken) throw new Error('Pas de refresh token — reconnexion requise.');
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+    body: JSON.stringify({ refresh_token: refreshToken })
+  });
+  if (!r.ok) throw new Error('Refresh token invalide — reconnexion requise.');
+  const d = await r.json();
+  localStorage.setItem('safe_work_token',         d.access_token);
+  localStorage.setItem('safe_work_refresh_token', d.refresh_token || refreshToken);
+  localStorage.setItem('safe_work_expires_at',    String(Date.now() + (d.expires_in || 3600) * 1000));
+  H['Authorization'] = 'Bearer ' + d.access_token;
+  return d.access_token;
+}
+
+// Auto-refresh toutes les 50 minutes
+function scheduleTokenRefresh() {
+  setTimeout(async function tick() {
+    try {
+      await refreshWorkToken();
+      console.log('[Work] Token rafraîchi automatiquement.');
+    } catch(e) {
+      console.warn('[Work] Refresh échoué :', e.message);
+      doLogout();
+      return;
+    }
+    setTimeout(tick, 50 * 60 * 1000);
+  }, 50 * 60 * 1000);
+}
+
 (function(){
-  var token, uid, email;
+  var token, uid, email, expiresAt, refreshToken;
   try {
-    token = localStorage.getItem('safe_work_token');
-    uid   = localStorage.getItem('safe_work_uid');
-    email = localStorage.getItem('safe_work_email');
+    token        = localStorage.getItem('safe_work_token');
+    refreshToken = localStorage.getItem('safe_work_refresh_token');
+    uid          = localStorage.getItem('safe_work_uid');
+    email        = localStorage.getItem('safe_work_email');
+    expiresAt    = parseInt(localStorage.getItem('safe_work_expires_at') || '0', 10);
   } catch(e){ return; }
-  if(token && uid){
-    H['Authorization'] = 'Bearer '+token;
-    initApp(token, {id:uid, email:email||''}).catch(function(err){
+
+  if (!token || !uid) return;
+
+  const msLeft = expiresAt - Date.now();
+
+  if (msLeft < 60 * 1000 && refreshToken) {
+    // Token expiré ou quasi-expiré → refresh avant initApp
+    refreshWorkToken().then(function(newToken) {
+      H['Authorization'] = 'Bearer ' + newToken;
+      return initApp(newToken, { id: uid, email: email || '' });
+    }).then(function() {
+      scheduleTokenRefresh();
+    }).catch(function(err) {
+      console.warn('[Work bootstrap] refresh échoué, nettoyage.', err);
+      ['safe_work_token','safe_work_refresh_token','safe_work_uid','safe_work_email','safe_work_expires_at']
+        .forEach(function(k){ try { localStorage.removeItem(k); } catch(e){} });
+    });
+  } else {
+    // Token encore valide → initApp direct
+    H['Authorization'] = 'Bearer ' + token;
+    initApp(token, { id: uid, email: email || '' }).then(function() {
+      scheduleTokenRefresh();
+    }).catch(function(err) {
       console.warn('[Work bootstrap] session invalide, nettoyage.', err);
-      try {
-        localStorage.removeItem('safe_work_token');
-        localStorage.removeItem('safe_work_uid');
-        localStorage.removeItem('safe_work_email');
-      } catch(e2){}
+      ['safe_work_token','safe_work_refresh_token','safe_work_uid','safe_work_email','safe_work_expires_at']
+        .forEach(function(k){ try { localStorage.removeItem(k); } catch(e){} });
     });
   }
 })();
