@@ -294,6 +294,7 @@ async function loadAll() {
   await ensureUserObjectifs();
   renderAll();
   checkRgpdExpiry(); // Vérification RGPD automatique au login
+  if (!isAdmin()) checkMandatSigne(); // Redirection vers signature si mandat absent
   loadBordereaux();  // Bordereaux admin
   loadHelpRequests(); // Demandes d'assistance
 }
@@ -3451,6 +3452,28 @@ async function terminerHelpRequest(id) {
   }).eq('id', id);
   if (error) { alert('Erreur : ' + error.message); return; }
   await loadHelpRequests();
+}
+
+
+// ==========================================================================
+// VÉRIFICATION MANDAT SIGNÉ (non-admin uniquement)
+// ==========================================================================
+async function checkMandatSigne() {
+  if (isAdmin()) return;
+  try {
+    const { data, error } = await sb.from('mandats')
+      .select('id,statut')
+      .eq('user_id', state.user.id)
+      .eq('statut', 'signe')
+      .maybeSingle();
+    if (error) { console.warn('checkMandatSigne:', error); return; }
+    if (!data) {
+      // Aucun mandat signé → redirection vers la page de signature
+      window.location.href = '/mandat.html';
+    }
+  } catch(e) {
+    console.warn('checkMandatSigne:', e);
+  }
 }
 
 
