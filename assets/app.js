@@ -1196,7 +1196,11 @@ function setAvatar(el, photoUrl, name) {
 }
 
 function openProfileModal() {
-  $('#profile-prenom').value = state.profile?.prenom || '';
+  $('#profile-prenom').value   = state.profile?.prenom     || '';
+  if (document.getElementById('profile-nom'))       document.getElementById('profile-nom').value       = state.profile?.nom        || '';
+  if (document.getElementById('profile-telephone')) document.getElementById('profile-telephone').value = state.profile?.telephone  || '';
+  if (document.getElementById('profile-adresse'))   document.getElementById('profile-adresse').value   = state.profile?.adresse    || '';
+  if (document.getElementById('profile-rcpro'))     document.getElementById('profile-rcpro').value     = state.profile?.rcpro_numero || '';
   $('#profile-photo-input').value = '';
   $('#profile-error').textContent = '';
   $('#profile-new-password').value = '';
@@ -1225,7 +1229,11 @@ function previewProfilePhoto(e) {
 }
 
 async function saveProfile() {
-  const prenom = $('#profile-prenom').value.trim() || null;
+  const prenom    = $('#profile-prenom').value.trim() || null;
+  const nom       = (document.getElementById('profile-nom')?.value||'').trim() || null;
+  const telephone = (document.getElementById('profile-telephone')?.value||'').trim() || null;
+  const adresse   = (document.getElementById('profile-adresse')?.value||'').trim() || null;
+  const rcpro     = (document.getElementById('profile-rcpro')?.value||'').trim() || null;
   const file = $('#profile-photo-input').files[0];
   $('#profile-error').textContent = '';
   let photo_url = state.profile?.photo_url || null;
@@ -4226,5 +4234,15 @@ function checkUpsellFirstLogin() {
   }, 2000);
 }
 
+
+function openAddInteraction(contactId) {
+  // Ouvrir directement la modale d'ajout d'échange depuis l'upsell
+  const modal = document.getElementById('add-interaction-modal') || document.getElementById('interaction-modal');
+  if (modal) {
+    if (document.getElementById('interaction-contact-id'))
+      document.getElementById('interaction-contact-id').value = contactId;
+    modal.classList.add('show');
+  }
+}
 
 init()
