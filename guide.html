@@ -129,6 +129,20 @@
     }
   </style>
 </head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/config.js"></script>
+<script>
+(async function checkClause(){
+  try {
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = '/'; return; }
+    const { data } = await sb.from('clauses_confidentialite')
+      .select('id').eq('user_id', session.user.id).maybeSingle();
+    if (!data) { window.location.href = '/clause-confidentialite.html'; }
+  } catch(e) { console.warn('checkClause:', e); }
+})();
+</script>
 <body>
 
 <nav class="toc" aria-label="Sections">
