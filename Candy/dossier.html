@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>C@NDY — Dossier patient</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --rose:#F2D7D9; --rose-deep:#E8BFC2; --rose-light:#FBF0F1;
+      --cerise:#C4717A; --cerise-2:#A85860;
+      --blanc:#FEFAF9; --ardoise:#3D2B2D; --ardoise-2:#5C3F42;
+      --mut:#8C6A6D; --sauge:#7A9E7E; --sauge-2:#5C7D60;
+      --line:rgba(61,43,45,.1); --line-2:rgba(61,43,45,.06);
+      --alert:#C0392B;
+      --ff-disp:'DM Serif Display',serif; --ff-body:'Inter',sans-serif;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:var(--ff-body);background:var(--rose-light);color:var(--ardoise);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+    nav{position:sticky;top:0;z-index:200;background:rgba(254,250,249,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px}
+    .nav-brand{font-family:var(--ff-disp);font-size:1.25rem;color:var(--ardoise);text-decoration:none}
+    .nav-badge{font-family:var(--ff-body);font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--cerise);color:#fff;padding:3px 8px;border-radius:999px;margin-left:8px}
+    .nav-back{font-size:.85rem;color:var(--mut);text-decoration:none;display:flex;align-items:center;gap:5px}
+    .nav-back:hover{color:var(--cerise)}
+
+    .page{max-width:980px;margin:0 auto;padding:32px 24px 80px}
+
+    /* ── HERO PATIENT ── */
+    .patient-hero{background:var(--blanc);border:1px solid var(--line);border-radius:16px;padding:28px 32px;margin-bottom:24px;display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center}
+    .patient-avatar{width:72px;height:72px;border-radius:50%;background:var(--rose-deep);display:flex;align-items:center;justify-content:center;font-family:var(--ff-disp);font-size:1.8rem;color:var(--cerise-2);flex-shrink:0}
+    .patient-hero h1{font-family:var(--ff-disp);font-size:1.7rem;color:var(--ardoise);margin-bottom:4px}
+    .patient-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+    .meta-chip{font-size:.75rem;color:var(--mut);background:var(--rose-light);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+    .secu-block{text-align:right}
+    .secu-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+    .secu-num{font-family:monospace;font-size:1rem;font-weight:700;color:var(--ardoise);letter-spacing:.06em;background:var(--rose-light);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+    .btn-print{font-size:.78rem;color:var(--mut);background:none;border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;margin-top:8px;display:block;text-align:center;transition:all .18s}
+    .btn-print:hover{border-color:var(--cerise);color:var(--cerise)}
+
+    /* ── GRID BLOCS ── */
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+    .grid-full{margin-bottom:18px}
+
+    .bloc{background:var(--blanc);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+    .bloc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line-2)}
+    .bloc-title{display:flex;align-items:center;gap:9px;font-weight:700;font-size:.9rem;color:var(--ardoise)}
+    .bloc-title .ico{font-size:1.1rem}
+    .bloc-edit{font-size:.72rem;color:var(--cerise);cursor:pointer;font-weight:600;background:none;border:none;padding:0}
+    .bloc-edit:hover{text-decoration:underline}
+
+    /* ── ÉTAT CIVIL ── */
+    .civil-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .civil-row{display:flex;flex-direction:column;gap:2px}
+    .civil-label{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+    .civil-val{font-size:.88rem;color:var(--ardoise);font-weight:500}
+
+    /* ── CONSTANTES ── */
+    .constantes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .const-card{background:var(--rose-light);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center}
+    .const-val{font-family:var(--ff-disp);font-size:1.6rem;color:var(--ardoise);line-height:1}
+    .const-unit{font-size:.7rem;color:var(--mut);margin-left:2px}
+    .const-label{font-size:.72rem;color:var(--mut);margin-top:4px}
+    .imc-ok{color:var(--sauge-2)}
+    .imc-warn{color:var(--cerise)}
+
+    /* ── ALLERGIES ── */
+    .allergie-list{display:flex;flex-direction:column;gap:10px}
+    .allergie-item{display:flex;align-items:center;gap:12px;background:rgba(192,57,43,.05);border:1px solid rgba(192,57,43,.15);border-left:3px solid var(--alert);border-radius:9px;padding:12px 14px}
+    .allergie-icon{font-size:1.2rem;flex-shrink:0}
+    .allergie-name{font-weight:700;font-size:.88rem;color:var(--ardoise)}
+    .allergie-desc{font-size:.78rem;color:var(--mut);margin-top:2px}
+    .allergie-badge{margin-left:auto;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(192,57,43,.1);color:var(--alert);flex-shrink:0}
+    .no-allergie{font-size:.88rem;color:var(--sauge-2);display:flex;align-items:center;gap:8px;padding:10px 0}
+
+    /* ── HISTORIQUE ── */
+    .histo-list{display:flex;flex-direction:column;gap:0}
+    .histo-item{display:grid;grid-template-columns:90px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--line-2);position:relative}
+    .histo-item:last-child{border-bottom:none}
+    .histo-date{font-size:.78rem;font-weight:600;color:var(--mut);padding-top:2px;text-align:right}
+    .histo-body{}
+    .histo-type{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+    .histo-type.consult{color:var(--cerise)}
+    .histo-type.ordonnance{color:var(--sauge-2)}
+    .histo-type.examen{color:#7B68EE}
+    .histo-titre{font-size:.88rem;font-weight:600;color:var(--ardoise);margin-bottom:3px}
+    .histo-note{font-size:.82rem;color:var(--mut);line-height:1.55}
+    .histo-medecin{font-size:.72rem;color:var(--mut);margin-top:4px}
+
+    @media(max-width:700px){
+      .patient-hero{grid-template-columns:auto 1fr;gap:16px}
+      .secu-block{display:none}
+      .grid-2{grid-template-columns:1fr}
+      .constantes{grid-template-columns:repeat(3,1fr)}
+      .civil-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/Candy/patients.html" class="nav-brand">C<span style="color:var(--cerise)">@</span>NDY<span class="nav-badge">Démo</span></a>
+  <a href="/Candy/patients.html" class="nav-back">← Liste des patients</a>
+</nav>
+
+<div class="page" id="page-content">
+  <p style="color:var(--mut);padding:40px 0;text-align:center">Chargement du dossier…</p>
+</div>
+
+<script>
+const PATIENTS = [
+  {
+    id:1, nom:'Dupont', prenom:'Marie', naissance:'12/03/1952', age:72, sexe:'F',
+    adresse:'14 rue des Lilas, 69003 Lyon', telephone:'06 12 34 56 78', email:'marie.dupont@email.fr',
+    medecin_traitant:'Dr. Martin', profession:'Retraitée', situation:'Mariée',
+    secu:'3 52 03 69 049 123 45', groupe_sanguin:'A+',
+    poids:68, taille:162,
+    allergies:[
+      { nom:'Pénicilline', type:'Médicament', gravite:'Sévère', desc:'Réaction anaphylactique documentée en 2018. À éviter absolument.' },
+      { nom:'Aspirine', type:'Médicament', gravite:'Modérée', desc:'Urticaire et œdème de Quincke. Substituer par paracétamol.' },
+    ],
+    historique:[
+      { date:'14/06/2026', type:'consult', titre:'Consultation de suivi — HTA', note:'PA : 138/82 mmHg. Traitement bien toléré. Renouvellement ordonnance Amlodipine 5mg. Prochain contrôle dans 3 mois.', medecin:'Dr. Martin' },
+      { date:'02/03/2026', type:'ordonnance', titre:'Ordonnance renouvellement', note:'Amlodipine 5mg — 1 cp/j. Bisoprolol 5mg — 1 cp/j. Validité 6 mois.', medecin:'Dr. Martin' },
+      { date:'10/01/2026', type:'examen', titre:'Bilan sanguin annuel', note:'NFS normale. HbA1c : 5.8% (surveillance). Cholestérol total : 5.2 mmol/L. Créatinine normale.', medecin:'Laboratoire Bio+ Lyon' },
+      { date:'08/10/2025', type:'consult', titre:'Consultation urgente — douleur thoracique', note:'ECG normal. Douleur d\'origine musculaire. Prescription antalgique 5 jours. Pas de signe d\'alerte cardiaque.', medecin:'Dr. Martin' },
+      { date:'12/06/2025', type:'consult', titre:'Consultation de suivi semestrielle', note:'Stabilité tensionnelle. Poids stable. RAS. Bilan annuel prescrit pour janvier 2026.', medecin:'Dr. Martin' },
+    ]
+  },
+  {
+    id:2, nom:'Bernard', prenom:'Luc', naissance:'07/08/1979', age:44, sexe:'M',
+    adresse:'8 avenue Jean Jaurès, 01000 Bourg-en-Bresse', telephone:'07 23 45 67 89', email:'luc.bernard@pro.fr',
+    medecin_traitant:'Dr. Martin', profession:'Technicien', situation:'Pacsé',
+    secu:'3 79 08 01 034 456 78', groupe_sanguin:'O-',
+    poids:82, taille:178,
+    allergies:[
+      { nom:'Latex', type:'Contact', gravite:'Modérée', desc:'Dermatite de contact. Prévenir le personnel soignant avant tout acte.' },
+    ],
+    historique:[
+      { date:'10/06/2026', type:'consult', titre:'Consultation — Lombalgie chronique', note:'Douleurs lombaires récurrentes. Prescription kinésithérapie 10 séances. AINS en cure courte. Conseil ergonomique au poste de travail.', medecin:'Dr. Martin' },
+      { date:'15/03/2026', type:'ordonnance', titre:'Ordonnance kinésithérapie', note:'10 séances de rééducation lombaire. Prescription renouvelable une fois.', medecin:'Dr. Martin' },
+      { date:'20/11/2025', type:'examen', titre:'IRM lombaire', note:'Hernie discale L4-L5 modérée sans compression radiculaire significative. Traitement conservateur recommandé.', medecin:'Centre d\'imagerie Bourg' },
+      { date:'05/09/2025', type:'consult', titre:'Consultation initiale — lombalgie', note:'Premier épisode aigu. Arrêt de travail 5 jours. Antalgiques palier 1. Orientation kinésithérapie.', medecin:'Dr. Martin' },
+    ]
+  },
+  {
+    id:3, nom:'Lefèvre', prenom:'Sophie', naissance:'23/11/1988', age:37, sexe:'F',
+    adresse:'3 impasse des Roses, 74000 Annecy', telephone:'06 87 65 43 21', email:'sophie.lefevre@email.com',
+    medecin_traitant:'Dr. Martin', profession:'Enseignante', situation:'Célibataire',
+    secu:'3 88 11 74 001 234 56', groupe_sanguin:'B+',
+    poids:58, taille:167,
+    allergies:[], historique:[
+      { date:'02/06/2026', type:'consult', titre:'Consultation — rhume et fatigue', note:'Rhinopharyngite virale. Pas d\'antibiotiques indiqués. Repos, hydratation, paracétamol si fièvre.', medecin:'Dr. Martin' },
+      { date:'14/01/2026', type:'consult', titre:'Certificat médical sport', note:'Aptitude à la pratique sportive confirmée. Pas de contre-indication. Certificat valable 1 an.', medecin:'Dr. Martin' },
+    ]
+  },
+  {
+    id:4, nom:'Moreau', prenom:'Paul', naissance:'14/01/1965', age:61, sexe:'M',
+    adresse:'22 rue Victor Hugo, 38000 Grenoble', telephone:'06 11 22 33 44', email:'p.moreau@gmail.com',
+    medecin_traitant:'Dr. Martin', profession:'Cadre', situation:'Divorcé',
+    secu:'3 65 01 38 001 345 67', groupe_sanguin:'AB+',
+    poids:91, taille:180,
+    allergies:[], historique:[
+      { date:'28/05/2026', type:'consult', titre:'Renouvellement traitement — diabète T2', note:'Glycémie à jeun : 7.2 mmol/L. HbA1c : 7.1% (stable). Metformine maintenue. Régime et activité physique rappelés.', medecin:'Dr. Martin' },
+      { date:'10/02/2026', type:'examen', titre:'Bilan diabétologique annuel', note:'Fond d\'œil : normal. Créatinine : normale. Microalbuminurie : négative. Bilan lipidique satisfaisant sous statine.', medecin:'Dr. Martin' },
+    ]
+  },
+  {
+    id:5, nom:'Petit', prenom:'Isabelle', naissance:'30/07/1971', age:54, sexe:'F',
+    adresse:'7 rue du Moulin, 71000 Mâcon', telephone:'06 55 44 33 22', email:'isabelle.petit@orange.fr',
+    medecin_traitant:'Dr. Martin', profession:'Commerçante', situation:'Mariée',
+    secu:'3 71 07 71 001 456 78', groupe_sanguin:'A-',
+    poids:63, taille:164,
+    allergies:[
+      { nom:'Amoxicilline', type:'Médicament', gravite:'Modérée', desc:'Éruption cutanée maculopapuleuse. Préférer macrolides en cas d\'infection bactérienne.' },
+    ],
+    historique:[
+      { date:'20/05/2026', type:'consult', titre:'Consultation ménopause', note:'Symptômes climatériques modérés. Discussion traitement hormonal substitutif. Information patiente. Décision en attente. Prochaine consultation dans 2 mois.', medecin:'Dr. Martin' },
+    ]
+  },
+  {
+    id:6, nom:'Richard', prenom:'Thomas', naissance:'05/04/2001', age:25, sexe:'M',
+    adresse:'45 boulevard de la Paix, 69001 Lyon', telephone:'07 99 88 77 66', email:'thomas.richard@gmail.com',
+    medecin_traitant:'Dr. Martin', profession:'Étudiant', situation:'Célibataire',
+    secu:'3 01 04 69 001 567 89', groupe_sanguin:'O+',
+    poids:72, taille:182,
+    allergies:[], historique:[
+      { date:'15/04/2026', type:'consult', titre:'Consultation — anxiété', note:'Stress lié aux examens universitaires. Pas de traitement médicamenteux. Orientation psychologue. Conseils hygiène de vie.', medecin:'Dr. Martin' },
+    ]
+  },
+  {
+    id:7, nom:'Simon', prenom:'Élise', naissance:'18/09/1945', age:80, sexe:'F',
+    adresse:'2 rue des Acacias, 73000 Chambéry', telephone:'04 79 12 34 56', email:'',
+    medecin_traitant:'Dr. Martin', profession:'Retraitée', situation:'Veuve',
+    secu:'3 45 09 73 001 678 90', groupe_sanguin:'B-',
+    poids:54, taille:155,
+    allergies:[
+      { nom:'Iode', type:'Contact / Médicament', gravite:'Sévère', desc:'Allergie documentée. Contre-indication aux produits de contraste iodés. Contre-indication à la povidone iodée.' },
+    ],
+    historique:[
+      { date:'05/06/2026', type:'consult', titre:'Suivi mensuel polypathologie', note:'HTA contrôlée. Insuffisance cardiaque stable (NYHA II). Arthrose lombaire : douleurs modérées. Adaptation antalgique. Maintien domicile avec aide.', medecin:'Dr. Martin' },
+      { date:'08/05/2026', type:'ordonnance', titre:'Renouvellement ordonnance mensuelle', note:'Ramipril 5mg, Furosémide 40mg, Bisoprolol 2.5mg, Paracétamol 500mg. Renouvellement mensuel.', medecin:'Dr. Martin' },
+    ]
+  },
+  {
+    id:8, nom:'Laurent', prenom:'Jean', naissance:'22/02/1958', age:68, sexe:'M',
+    adresse:'18 rue de la République, 01000 Bourg-en-Bresse', telephone:'06 33 22 11 00', email:'jean.laurent@email.fr',
+    medecin_traitant:'Dr. Martin', profession:'Retraité', situation:'Marié',
+    secu:'3 58 02 01 034 789 01', groupe_sanguin:'A+',
+    poids:78, taille:172,
+    allergies:[], historique:[
+      { date:'01/06/2026', type:'consult', titre:'Consultation — dépistage cancer colorectal', note:'Kit hemoccult remis. Résultat positif → coloscopie prescrite. Orientation gastro-entérologue.', medecin:'Dr. Martin' },
+      { date:'15/03/2026', type:'examen', titre:'PSA et bilan prostate', note:'PSA : 3.2 ng/mL (surveillance). Légère augmentation vs N-1. Contrôle dans 6 mois. Urologue si PSA > 4.', medecin:'Dr. Martin' },
+    ]
+  },
+  {
+    id:9,  nom:'Michel', prenom:'Claire', naissance:'11/06/1995', age:30, sexe:'F',
+    adresse:'6 rue Pasteur, 74600 Seynod', telephone:'07 66 55 44 33', email:'claire.michel@gmail.com',
+    medecin_traitant:'Dr. Martin', profession:'Infirmière', situation:'En couple',
+    secu:'3 95 06 74 001 890 12', groupe_sanguin:'AB-',
+    poids:55, taille:166,
+    allergies:[], historique:[
+      { date:'25/03/2026', type:'consult', titre:'Consultation — contraception', note:'Pilule microprogestative prescrite. Pas de contre-indication. Suivi dans 3 mois puis annuel.', medecin:'Dr. Martin' },
+    ]
+  },
+  {
+    id:10, nom:'Garcia', prenom:'Antoine', naissance:'03/12/1983', age:42, sexe:'M',
+    adresse:'30 avenue de la Gare, 38100 Grenoble', telephone:'06 44 33 22 11', email:'a.garcia@pro.fr',
+    medecin_traitant:'Dr. Martin', profession:'Architecte', situation:'Marié',
+    secu:'3 83 12 38 001 901 23', groupe_sanguin:'O+',
+    poids:76, taille:176,
+    allergies:[
+      { nom:'Aspirine / AINS', type:'Médicament', gravite:'Modérée', desc:'Asthme à l\'aspirine documenté. Éviter tous les AINS. Préférer paracétamol. Informer avant tout acte chirurgical.' },
+    ],
+    historique:[
+      { date:'17/05/2026', type:'consult', titre:'Consultation — asthme allergique', note:'Bonne observance du traitement inhalé. Peak flow : 88% théorique. Rhinite allergique associée. Renouvellement spray.', medecin:'Dr. Martin' },
+      { date:'20/01/2026', type:'examen', titre:'EFR — Exploration Fonctionnelle Respiratoire', note:'VEMS/CV : 76%. Obstruction légère réversible sous bronchodilatateur. Asthme léger persistant confirmé.', medecin:'Service pneumologie CHU Grenoble' },
+    ]
+  },
+  {
+    id:11, nom:'David', prenom:'Nathalie', naissance:'29/10/1969', age:56, sexe:'F',
+    adresse:'11 rue des Fleurs, 01000 Bourg-en-Bresse', telephone:'06 77 66 55 44', email:'nathalie.david@email.fr',
+    medecin_traitant:'Dr. Martin', profession:'Comptable', situation:'Mariée',
+    secu:'3 69 10 01 034 012 34', groupe_sanguin:'A+',
+    poids:67, taille:165,
+    allergies:[], historique:[
+      { date:'08/06/2026', type:'consult', titre:'Suivi thyroïde — hypothyroïdie', note:'TSH : 2.1 mUI/L (dans la norme). Lévothyrox 75μg maintenu. Patiente asymptomatique. Contrôle TSH dans 6 mois.', medecin:'Dr. Martin' },
+    ]
+  },
+  {
+    id:12, nom:'Leroy', prenom:'Marc', naissance:'16/05/2010', age:16, sexe:'M',
+    adresse:'5 place de la Mairie, 69700 Givors', telephone:'04 78 73 11 22', email:'famille.leroy@email.fr',
+    medecin_traitant:'Dr. Martin', profession:'Lycéen', situation:'—',
+    secu:'3 10 05 69 001 123 45', groupe_sanguin:'O+',
+    poids:62, taille:174,
+    allergies:[
+      { nom:'Arachides', type:'Alimentaire', gravite:'Sévère', desc:'Allergie sévère avec antécédent de choc anaphylactique (2023). Adrénaline auto-injectable prescrite (Epipen). Port permanent obligatoire.' },
+    ],
+    historique:[
+      { date:'30/05/2026', type:'consult', titre:'Suivi allergie arachide', note:'Pas de réaction depuis 12 mois. Bonne gestion de l\'éviction. Adrénaline périmée en août — renouvellement prescrit. Consultation allergologue annuelle rappelée.', medecin:'Dr. Martin' },
+      { date:'10/09/2025', type:'ordonnance', titre:'Ordonnance Epipen', note:'Epipen 0.3mg — 2 stylos auto-injecteurs. Port permanent. Renouvellement annuel.', medecin:'Dr. Martin' },
+      { date:'15/04/2024', type:'examen', titre:'Bilan allergologique', note:'IgE spécifiques arachide : 48 kUA/L (très élevé). TPO positif. Pas d\'immunothérapie indiquée à ce stade. Éviction stricte maintenue.', medecin:'Dr. Allard — Allergologue Lyon' },
+    ]
+  },
+];
+
+function getParam(k) { return new URLSearchParams(window.location.search).get(k); }
+
+function calcIMC(p, t) { return (p / ((t/100)*(t/100))).toFixed(1); }
+function imcLabel(i) {
+  if (i < 18.5) return { l:'Insuffisance pondérale', cls:'imc-warn' };
+  if (i < 25)   return { l:'Corpulence normale', cls:'imc-ok' };
+  if (i < 30)   return { l:'Surpoids', cls:'imc-warn' };
+  return { l:'Obésité', cls:'imc-warn' };
+}
+
+function typeLabel(t) {
+  if (t==='consult')    return '<span class="histo-type consult">🩺 Consultation</span>';
+  if (t==='ordonnance') return '<span class="histo-type ordonnance">📋 Ordonnance</span>';
+  if (t==='examen')     return '<span class="histo-type examen">🔬 Examen / Bilan</span>';
+  return '';
+}
+
+function graviteColor(g) {
+  if (g === 'Sévère') return '#C0392B';
+  if (g === 'Modérée') return '#E67E22';
+  return '#7A9E7E';
+}
+
+function render(p) {
+  const imc = parseFloat(calcIMC(p.poids, p.taille));
+  const imcInfo = imcLabel(imc);
+
+  document.title = `C@NDY — ${p.nom} ${p.prenom}`;
+
+  document.getElementById('page-content').innerHTML = `
+    <!-- HERO -->
+    <div class="patient-hero">
+      <div class="patient-avatar">${p.prenom[0]}${p.nom[0]}</div>
+      <div>
+        <h1>${p.nom}, ${p.prenom}</h1>
+        <div class="patient-meta">
+          <span class="meta-chip">📅 Né(e) le ${p.naissance}</span>
+          <span class="meta-chip">${p.age} ans</span>
+          <span class="meta-chip">${p.sexe === 'F' ? '♀ Femme' : '♂ Homme'}</span>
+          <span class="meta-chip">🩸 ${p.groupe_sanguin}</span>
+          <span class="meta-chip">👤 ${p.situation}</span>
+          <span class="meta-chip">💼 ${p.profession}</span>
+        </div>
+      </div>
+      <div class="secu-block">
+        <div class="secu-label">N° Sécurité Sociale</div>
+        <div class="secu-num">${p.secu}</div>
+        <button class="btn-print" onclick="window.print()">🖨 Imprimer le dossier</button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- ÉTAT CIVIL -->
+      <div class="bloc">
+        <div class="bloc-header">
+          <div class="bloc-title"><span class="ico">👤</span> État civil & coordonnées</div>
+          <button class="bloc-edit">Modifier</button>
+        </div>
+        <div class="civil-grid">
+          <div class="civil-row"><span class="civil-label">Adresse</span><span class="civil-val">${p.adresse}</span></div>
+          <div class="civil-row"><span class="civil-label">Téléphone</span><span class="civil-val">${p.telephone}</span></div>
+          <div class="civil-row"><span class="civil-label">E-mail</span><span class="civil-val">${p.email || '—'}</span></div>
+          <div class="civil-row"><span class="civil-label">Médecin traitant</span><span class="civil-val">${p.medecin_traitant}</span></div>
+        </div>
+      </div>
+
+      <!-- CONSTANTES -->
+      <div class="bloc">
+        <div class="bloc-header">
+          <div class="bloc-title"><span class="ico">📊</span> Constantes</div>
+          <button class="bloc-edit">Mettre à jour</button>
+        </div>
+        <div class="constantes">
+          <div class="const-card">
+            <div class="const-val">${p.poids}<span class="const-unit">kg</span></div>
+            <div class="const-label">Poids</div>
+          </div>
+          <div class="const-card">
+            <div class="const-val">${p.taille}<span class="const-unit">cm</span></div>
+            <div class="const-label">Taille</div>
+          </div>
+          <div class="const-card">
+            <div class="const-val ${imcInfo.cls}">${imc}</div>
+            <div class="const-label">IMC</div>
+            <div style="font-size:.65rem;color:var(--mut);margin-top:2px">${imcInfo.l}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALLERGIES -->
+    <div class="bloc grid-full">
+      <div class="bloc-header">
+        <div class="bloc-title"><span class="ico">⚠️</span> Allergies connues</div>
+        <button class="bloc-edit">Ajouter</button>
+      </div>
+      <div class="allergie-list">
+        ${p.allergies.length === 0
+          ? '<div class="no-allergie">✓ Aucune allergie connue à ce jour</div>'
+          : p.allergies.map(a => `
+            <div class="allergie-item">
+              <div class="allergie-icon">🚫</div>
+              <div>
+                <div class="allergie-name">${a.nom}</div>
+                <div class="allergie-desc">${a.type} — ${a.desc}</div>
+              </div>
+              <div class="allergie-badge" style="border-color:${graviteColor(a.gravite)};color:${graviteColor(a.gravite)};background:${graviteColor(a.gravite)}18">${a.gravite}</div>
+            </div>`).join('')
+        }
+      </div>
+    </div>
+
+    <!-- HISTORIQUE -->
+    <div class="bloc grid-full">
+      <div class="bloc-header">
+        <div class="bloc-title"><span class="ico">📅</span> Historique médical</div>
+        <button class="bloc-edit">+ Nouvelle entrée</button>
+      </div>
+      <div class="histo-list">
+        ${p.historique.map(h => `
+          <div class="histo-item">
+            <div class="histo-date">${h.date}</div>
+            <div class="histo-body">
+              ${typeLabel(h.type)}
+              <div class="histo-titre">${h.titre}</div>
+              <div class="histo-note">${h.note}</div>
+              <div class="histo-medecin">Dr. référent : ${h.medecin}</div>
+            </div>
+          </div>`).join('')}
+        ${p.historique.length === 0 ? '<div style="color:var(--mut);font-size:.86rem;padding:10px 0">Aucun antécédent enregistré.</div>' : ''}
+      </div>
+    </div>
+  `;
+
+  // Intercept les boutons "démo"
+  document.querySelectorAll('.bloc-edit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      alert('✏️ Mode démo — la modification n\'est pas disponible.\nLa version complète permet d\'éditer tous les champs du dossier patient.');
+    });
+  });
+}
+
+const id = parseInt(getParam('id'));
+const patient = [1,2,3,4,5,6,7,8,9,10,11,12].map(i => PATIENTS_DATA && PATIENTS_DATA[i-1]).filter(Boolean)[0];
+
+// Données inline
+const PATIENTS_DATA = [
+  {id:1,nom:'Dupont',prenom:'Marie',naissance:'12/03/1952',age:72,sexe:'F',adresse:'14 rue des Lilas, 69003 Lyon',telephone:'06 12 34 56 78',email:'marie.dupont@email.fr',medecin_traitant:'Dr. Martin',profession:'Retraitée',situation:'Mariée',secu:'3 52 03 69 049 123 45',groupe_sanguin:'A+',poids:68,taille:162,allergies:[{nom:'Pénicilline',type:'Médicament',gravite:'Sévère',desc:'Réaction anaphylactique documentée en 2018. À éviter absolument.'},{nom:'Aspirine',type:'Médicament',gravite:'Modérée',desc:'Urticaire et œdème de Quincke. Substituer par paracétamol.'}],historique:[{date:'14/06/2026',type:'consult',titre:'Consultation de suivi — HTA',note:'PA : 138/82 mmHg. Traitement bien toléré. Renouvellement ordonnance Amlodipine 5mg. Prochain contrôle dans 3 mois.',medecin:'Dr. Martin'},{date:'02/03/2026',type:'ordonnance',titre:'Ordonnance renouvellement',note:'Amlodipine 5mg — 1 cp/j. Bisoprolol 5mg — 1 cp/j. Validité 6 mois.',medecin:'Dr. Martin'},{date:'10/01/2026',type:'examen',titre:'Bilan sanguin annuel',note:'NFS normale. HbA1c : 5.8% (surveillance). Cholestérol total : 5.2 mmol/L. Créatinine normale.',medecin:'Laboratoire Bio+ Lyon'},{date:'08/10/2025',type:'consult',titre:'Consultation urgente — douleur thoracique',note:"ECG normal. Douleur d'origine musculaire. Prescription antalgique 5 jours. Pas de signe d'alerte cardiaque.",medecin:'Dr. Martin'},{date:'12/06/2025',type:'consult',titre:'Consultation de suivi semestrielle',note:'Stabilité tensionnelle. Poids stable. RAS. Bilan annuel prescrit pour janvier 2026.',medecin:'Dr. Martin'}]},
+  {id:2,nom:'Bernard',prenom:'Luc',naissance:'07/08/1979',age:44,sexe:'M',adresse:'8 avenue Jean Jaurès, 01000 Bourg-en-Bresse',telephone:'07 23 45 67 89',email:'luc.bernard@pro.fr',medecin_traitant:'Dr. Martin',profession:'Technicien',situation:'Pacsé',secu:'3 79 08 01 034 456 78',groupe_sanguin:'O-',poids:82,taille:178,allergies:[{nom:'Latex',type:'Contact',gravite:'Modérée',desc:'Dermatite de contact. Prévenir le personnel soignant avant tout acte.'}],historique:[{date:'10/06/2026',type:'consult',titre:'Consultation — Lombalgie chronique',note:'Douleurs lombaires récurrentes. Prescription kinésithérapie 10 séances. AINS en cure courte. Conseil ergonomique au poste de travail.',medecin:'Dr. Martin'},{date:'15/03/2026',type:'ordonnance',titre:'Ordonnance kinésithérapie',note:'10 séances de rééducation lombaire. Prescription renouvelable une fois.',medecin:'Dr. Martin'},{date:'20/11/2025',type:'examen',titre:'IRM lombaire',note:"Hernie discale L4-L5 modérée sans compression radiculaire significative. Traitement conservateur recommandé.",medecin:"Centre d'imagerie Bourg"},{date:'05/09/2025',type:'consult',titre:'Consultation initiale — lombalgie',note:'Premier épisode aigu. Arrêt de travail 5 jours. Antalgiques palier 1. Orientation kinésithérapie.',medecin:'Dr. Martin'}]},
+  {id:3,nom:'Lefèvre',prenom:'Sophie',naissance:'23/11/1988',age:37,sexe:'F',adresse:'3 impasse des Roses, 74000 Annecy',telephone:'06 87 65 43 21',email:'sophie.lefevre@email.com',medecin_traitant:'Dr. Martin',profession:'Enseignante',situation:'Célibataire',secu:'3 88 11 74 001 234 56',groupe_sanguin:'B+',poids:58,taille:167,allergies:[],historique:[{date:'02/06/2026',type:'consult',titre:'Consultation — rhume et fatigue',note:'Rhinopharyngite virale. Pas d\'antibiotiques indiqués. Repos, hydratation, paracétamol si fièvre.',medecin:'Dr. Martin'},{date:'14/01/2026',type:'consult',titre:'Certificat médical sport',note:'Aptitude à la pratique sportive confirmée. Pas de contre-indication. Certificat valable 1 an.',medecin:'Dr. Martin'}]},
+  {id:4,nom:'Moreau',prenom:'Paul',naissance:'14/01/1965',age:61,sexe:'M',adresse:'22 rue Victor Hugo, 38000 Grenoble',telephone:'06 11 22 33 44',email:'p.moreau@gmail.com',medecin_traitant:'Dr. Martin',profession:'Cadre',situation:'Divorcé',secu:'3 65 01 38 001 345 67',groupe_sanguin:'AB+',poids:91,taille:180,allergies:[],historique:[{date:'28/05/2026',type:'consult',titre:'Renouvellement traitement — diabète T2',note:'Glycémie à jeun : 7.2 mmol/L. HbA1c : 7.1% (stable). Metformine maintenue. Régime et activité physique rappelés.',medecin:'Dr. Martin'},{date:'10/02/2026',type:'examen',titre:'Bilan diabétologique annuel',note:"Fond d'œil : normal. Créatinine : normale. Microalbuminurie : négative. Bilan lipidique satisfaisant sous statine.",medecin:'Dr. Martin'}]},
+  {id:5,nom:'Petit',prenom:'Isabelle',naissance:'30/07/1971',age:54,sexe:'F',adresse:'7 rue du Moulin, 71000 Mâcon',telephone:'06 55 44 33 22',email:'isabelle.petit@orange.fr',medecin_traitant:'Dr. Martin',profession:'Commerçante',situation:'Mariée',secu:'3 71 07 71 001 456 78',groupe_sanguin:'A-',poids:63,taille:164,allergies:[{nom:'Amoxicilline',type:'Médicament',gravite:'Modérée',desc:'Éruption cutanée maculopapuleuse. Préférer macrolides en cas d\'infection bactérienne.'}],historique:[{date:'20/05/2026',type:'consult',titre:'Consultation ménopause',note:'Symptômes climatériques modérés. Discussion traitement hormonal substitutif. Information patiente. Décision en attente. Prochaine consultation dans 2 mois.',medecin:'Dr. Martin'}]},
+  {id:6,nom:'Richard',prenom:'Thomas',naissance:'05/04/2001',age:25,sexe:'M',adresse:'45 boulevard de la Paix, 69001 Lyon',telephone:'07 99 88 77 66',email:'thomas.richard@gmail.com',medecin_traitant:'Dr. Martin',profession:'Étudiant',situation:'Célibataire',secu:'3 01 04 69 001 567 89',groupe_sanguin:'O+',poids:72,taille:182,allergies:[],historique:[{date:'15/04/2026',type:'consult',titre:'Consultation — anxiété',note:'Stress lié aux examens universitaires. Pas de traitement médicamenteux. Orientation psychologue. Conseils hygiène de vie.',medecin:'Dr. Martin'}]},
+  {id:7,nom:'Simon',prenom:'Élise',naissance:'18/09/1945',age:80,sexe:'F',adresse:'2 rue des Acacias, 73000 Chambéry',telephone:'04 79 12 34 56',email:'',medecin_traitant:'Dr. Martin',profession:'Retraitée',situation:'Veuve',secu:'3 45 09 73 001 678 90',groupe_sanguin:'B-',poids:54,taille:155,allergies:[{nom:'Iode',type:'Contact / Médicament',gravite:'Sévère',desc:"Allergie documentée. Contre-indication aux produits de contraste iodés. Contre-indication à la povidone iodée."}],historique:[{date:'05/06/2026',type:'consult',titre:'Suivi mensuel polypathologie',note:'HTA contrôlée. Insuffisance cardiaque stable (NYHA II). Arthrose lombaire : douleurs modérées. Adaptation antalgique. Maintien domicile avec aide.',medecin:'Dr. Martin'},{date:'08/05/2026',type:'ordonnance',titre:'Renouvellement ordonnance mensuelle',note:'Ramipril 5mg, Furosémide 40mg, Bisoprolol 2.5mg, Paracétamol 500mg. Renouvellement mensuel.',medecin:'Dr. Martin'}]},
+  {id:8,nom:'Laurent',prenom:'Jean',naissance:'22/02/1958',age:68,sexe:'M',adresse:"18 rue de la République, 01000 Bourg-en-Bresse",telephone:'06 33 22 11 00',email:'jean.laurent@email.fr',medecin_traitant:'Dr. Martin',profession:'Retraité',situation:'Marié',secu:'3 58 02 01 034 789 01',groupe_sanguin:'A+',poids:78,taille:172,allergies:[],historique:[{date:'01/06/2026',type:'consult',titre:'Consultation — dépistage cancer colorectal',note:'Kit hemoccult remis. Résultat positif → coloscopie prescrite. Orientation gastro-entérologue.',medecin:'Dr. Martin'},{date:'15/03/2026',type:'examen',titre:'PSA et bilan prostate',note:'PSA : 3.2 ng/mL (surveillance). Légère augmentation vs N-1. Contrôle dans 6 mois. Urologue si PSA > 4.',medecin:'Dr. Martin'}]},
+  {id:9,nom:'Michel',prenom:'Claire',naissance:'11/06/1995',age:30,sexe:'F',adresse:'6 rue Pasteur, 74600 Seynod',telephone:'07 66 55 44 33',email:'claire.michel@gmail.com',medecin_traitant:'Dr. Martin',profession:'Infirmière',situation:'En couple',secu:'3 95 06 74 001 890 12',groupe_sanguin:'AB-',poids:55,taille:166,allergies:[],historique:[{date:'25/03/2026',type:'consult',titre:'Consultation — contraception',note:'Pilule microprogestative prescrite. Pas de contre-indication. Suivi dans 3 mois puis annuel.',medecin:'Dr. Martin'}]},
+  {id:10,nom:'Garcia',prenom:'Antoine',naissance:'03/12/1983',age:42,sexe:'M',adresse:'30 avenue de la Gare, 38100 Grenoble',telephone:'06 44 33 22 11',email:'a.garcia@pro.fr',medecin_traitant:'Dr. Martin',profession:'Architecte',situation:'Marié',secu:'3 83 12 38 001 901 23',groupe_sanguin:'O+',poids:76,taille:176,allergies:[{nom:'Aspirine / AINS',type:'Médicament',gravite:'Modérée',desc:"Asthme à l'aspirine documenté. Éviter tous les AINS. Préférer paracétamol. Informer avant tout acte chirurgical."}],historique:[{date:'17/05/2026',type:'consult',titre:'Consultation — asthme allergique',note:'Bonne observance du traitement inhalé. Peak flow : 88% théorique. Rhinite allergique associée. Renouvellement spray.',medecin:'Dr. Martin'},{date:'20/01/2026',type:'examen',titre:'EFR — Exploration Fonctionnelle Respiratoire',note:'VEMS/CV : 76%. Obstruction légère réversible sous bronchodilatateur. Asthme léger persistant confirmé.',medecin:'Service pneumologie CHU Grenoble'}]},
+  {id:11,nom:'David',prenom:'Nathalie',naissance:'29/10/1969',age:56,sexe:'F',adresse:'11 rue des Fleurs, 01000 Bourg-en-Bresse',telephone:'06 77 66 55 44',email:'nathalie.david@email.fr',medecin_traitant:'Dr. Martin',profession:'Comptable',situation:'Mariée',secu:'3 69 10 01 034 012 34',groupe_sanguin:'A+',poids:67,taille:165,allergies:[],historique:[{date:'08/06/2026',type:'consult',titre:'Suivi thyroïde — hypothyroïdie',note:'TSH : 2.1 mUI/L (dans la norme). Lévothyrox 75μg maintenu. Patiente asymptomatique. Contrôle TSH dans 6 mois.',medecin:'Dr. Martin'}]},
+  {id:12,nom:'Leroy',prenom:'Marc',naissance:'16/05/2010',age:16,sexe:'M',adresse:'5 place de la Mairie, 69700 Givors',telephone:'04 78 73 11 22',email:'famille.leroy@email.fr',medecin_traitant:'Dr. Martin',profession:'Lycéen',situation:'—',secu:'3 10 05 69 001 123 45',groupe_sanguin:'O+',poids:62,taille:174,allergies:[{nom:'Arachides',type:'Alimentaire',gravite:'Sévère',desc:"Allergie sévère avec antécédent de choc anaphylactique (2023). Adrénaline auto-injectable prescrite (Epipen). Port permanent obligatoire."}],historique:[{date:'30/05/2026',type:'consult',titre:'Suivi allergie arachide',note:"Pas de réaction depuis 12 mois. Bonne gestion de l'éviction. Adrénaline périmée en août — renouvellement prescrit. Consultation allergologue annuelle rappelée.",medecin:'Dr. Martin'},{date:'10/09/2025',type:'ordonnance',titre:'Ordonnance Epipen',note:'Epipen 0.3mg — 2 stylos auto-injecteurs. Port permanent. Renouvellement annuel.',medecin:'Dr. Martin'},{date:'15/04/2024',type:'examen',titre:'Bilan allergologique',note:'IgE spécifiques arachide : 48 kUA/L (très élevé). TPO positif. Pas d\'immunothérapie indiquée à ce stade. Éviction stricte maintenue.',medecin:'Dr. Allard — Allergologue Lyon'}]}
+];
+
+const p = PATIENTS_DATA.find(x => x.id === id);
+if (p) {
+  render(p);
+} else {
+  document.getElementById('page-content').innerHTML = `
+    <div style="text-align:center;padding:60px 0">
+      <div style="font-size:2.5rem;margin-bottom:16px">🔍</div>
+      <h2 style="font-family:var(--ff-disp);color:var(--ardoise);margin-bottom:8px">Patient introuvable</h2>
+      <p style="color:var(--mut);margin-bottom:24px">Ce dossier n'existe pas dans la démo.</p>
+      <a href="/Candy/patients.html" style="color:var(--cerise);font-weight:600">← Retour à la liste</a>
+    </div>`;
+}
+</script>
+</body>
+</html>
