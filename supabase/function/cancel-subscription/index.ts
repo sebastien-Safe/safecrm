@@ -28,6 +28,27 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { return json({ error: "invalid_json" }, 400); }
   if (!body.contract_id) return json({ error: "missing_contract_id" }, 400);
 
+  // Rate limiting : max 3 résiliations par heure par utilisateur
+  const rlUserId = body.cancelled_by || "unknown";
+  const rlKey = `cancel:${rlUserId}`;
+  const rlWindow = new Date(Math.floor(Date.now() / 3_600_000) * 3_600_000).toISOString();
+
+  const { data: rl } = await sb
+    .from("rate_limits")
+    .select("count, window_at")
+    .eq("action", rlKey)
+    .maybeSingle();
+
+  if (rl && rl.window_at?.slice(0, 13) === rlWindow.slice(0, 13)) {
+    if (rl.count >= 3) return json({ error: "rate_limit_exceeded" }, 429);
+    await sb.from("rate_limits")
+      .update({ count: rl.count + 1 })
+      .eq("action", rlKey);
+  } else {
+    await sb.from("rate_limits")
+      .upsert({ user_id: "00000000-0000-0000-0000-000000000000", action: rlKey, count: 1, window_at: rlWindow });
+  }
+
   // Récupérer le contrat
   const { data: ct, error: ctErr } = await sb
     .from("contracts")
