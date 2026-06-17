@@ -152,6 +152,19 @@
       <tbody id="patients-tbody"></tbody>
     </table>
   </div>
+<!-- BLOC NOTE -->
+<div style="margin-top:28px;background:var(--blanc);border:1px solid var(--line);border-radius:14px;padding:20px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="font-size:.85rem;font-weight:600;color:var(--ardoise)">📝 Bloc-note</div>
+    <span id="note-saved" style="font-size:.72rem;color:var(--sauge);display:none">Sauvegardé ✓</span>
+  </div>
+  <textarea id="bloc-note" placeholder="Notes rapides, liste de tâches, rappels…"
+    style="width:100%;background:var(--rose-light);border:1px solid var(--line);border-radius:8px;padding:12px;font-family:var(--fb,Inter,sans-serif);font-size:.85rem;color:var(--ardoise);resize:vertical;min-height:100px;outline:none;line-height:1.6;transition:border-color .2s"
+    onfocus="this.style.borderColor='var(--cerise)'" onblur="this.style.borderColor='var(--line)'"
+    oninput="saveNote()"></textarea>
+  <div style="font-size:.72rem;color:var(--mut);margin-top:6px">Mode démo — sauvegardé localement dans votre navigateur.</div>
+</div>
+
 </div>
 
 <!-- MODAL NOUVEAU PATIENT (démo) -->
@@ -244,6 +257,19 @@ function ouvrirPatient(id) {
 }
 
 renderPatients(PATIENTS);
+
+// Bloc-note
+const NOTE_KEY = 'candy_demo_note';
+function saveNote(){
+  const v = document.getElementById('bloc-note').value;
+  localStorage.setItem(NOTE_KEY, v);
+  const s = document.getElementById('note-saved');
+  s.style.display='inline';
+  clearTimeout(saveNote._t);
+  saveNote._t = setTimeout(()=>s.style.display='none', 2000);
+}
+const saved = localStorage.getItem(NOTE_KEY);
+if(saved) document.getElementById('bloc-note').value = saved;
 </script>
 </body>
 </html>
