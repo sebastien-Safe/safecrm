@@ -557,7 +557,7 @@ function renderContacts() {
   }).join('');
 }
 
-const CONTACT_FIELD_IDS = ['c-nom', 'c-entreprise', 'c-email', 'c-telephone', 'c-adresse', 'c-code-postal-ville', 'c-forme-juridique', 'c-siret', 'c-source', 'c-notes'];
+const CONTACT_FIELD_IDS = ['c-nom', 'c-entreprise', 'c-email', 'c-telephone', 'c-adresse', 'c-code-postal-ville', 'c-forme-juridique', 'c-siret', 'c-notes']; // c-source toujours readonly
 const CONTACT_CONSENT_IDS = ['c-consent-telephone', 'c-consent-email', 'c-consent-courrier'];
 
 function setContactFieldsLocked(locked) {
@@ -600,6 +600,7 @@ function openContactModal(id = null) {
   $('#c-forme-juridique').value = c?.forme_juridique || '';
   $('#c-siret').value = c?.siret || '';
   $('#c-source').value = c?.source || state.profile?.prenom || '';
+  $('#c-source').readOnly = true; // toujours automatique
   $('#c-notes').value = c?.notes || '';
   // rgpd_ko géré automatiquement (plus de case à cocher manuelle)
   $('#c-consent-telephone').checked = !!c?.consent_telephone;
