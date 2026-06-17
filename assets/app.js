@@ -1931,6 +1931,13 @@ async function createNewUser() {
     $('#nu-error').textContent = "L'e-mail et le mot de passe sont obligatoires.";
     return;
   }
+
+  // Vérifier que l'email n'est pas déjà utilisé par un autre compte
+  const emailExistant = (state.adminUsers || []).find(u => u.email?.toLowerCase() === email.toLowerCase());
+  if (emailExistant) {
+    $('#nu-error').textContent = "Cet e-mail est déjà utilisé par un compte existant (" + (emailExistant.prenom || emailExistant.email) + "). Utilisez une adresse différente.";
+    return;
+  }
   if (password.length < 8) {
     $('#nu-error').textContent = "Le mot de passe doit faire au moins 8 caractères.";
     return;
