@@ -956,6 +956,16 @@ async function saveContract() {
   // Colonnes ajoutées en v13 — on ne les envoie que si elles existent dans le HTML ET en base
   if (fraisMep !== undefined) payload.frais_mise_en_place = fraisMep === '' ? null : Number(fraisMep);
   if (engagement !== undefined) payload.engagement_mois = engagement === '' ? null : Number(engagement);
+  // Si la case Résilier est cochée → afficher confirmation AVANT de sauvegarder
+  if ($('#ct-resilier')?.checked && id) {
+    // Stocker le payload pour l'utiliser après confirmation
+    window._pendingResilierContractId = id;
+    window._pendingResilierPayload    = payload;
+    document.getElementById('resilier-contract-id').value = id;
+    document.getElementById('resilier-modal').classList.add('show');
+    return; // Ne pas sauvegarder tant que pas confirmé
+  }
+
   let error;
   if (id) {
     ({ error } = await sb.from('contracts').update(payload).eq('id', id));
@@ -963,26 +973,6 @@ async function saveContract() {
     ({ error } = await sb.from('contracts').insert({ ...payload, created_by: state.user.id }));
   }
   if (error) return alert('Erreur : ' + error.message);
-
-  // Si la case Résilier est cochée → déclencher résiliation Stripe + traçabilité
-  if ($('#ct-resilier')?.checked && id) {
-    const contract = state.contracts.find(c => c.id === id);
-    if (contract?.stripe_subscription_id && !contract?.resilié_at) {
-      // Ouvrir la modale de confirmation résiliation (2 clics)
-      closeContractModal();
-      await loadAll();
-      document.getElementById('resilier-contract-id').value = id;
-      document.getElementById('resilier-modal').classList.add('show');
-      return;
-    } else if (!contract?.stripe_subscription_id) {
-      // Pas d'abonnement Stripe : modale de confirmation avant de terminer
-      closeContractModal();
-      await loadAll();
-      document.getElementById('resilier-contract-id').value = id;
-      document.getElementById('resilier-modal').classList.add('show');
-      return;
-    }
-  }
 
   closeContractModal();
   await loadAll();
@@ -3073,9 +3063,20 @@ async function confirmResilierAbonnement() {
   btn.textContent = 'Résiliation en cours…';
 
   try {
-    const contract = state.contracts.find(c => c.id === contractId);
+    // 1. Sauvegarder d'abord les modifications du contrat si payload en attente
+    if (window._pendingResilierPayload && window._pendingResilierContractId === contractId) {
+      const { error: saveErr } = await sb.from('contracts').update(window._pendingResilierPayload).eq('id', contractId);
+      if (saveErr) throw new Error(saveErr.message);
+      window._pendingResilierPayload    = null;
+      window._pendingResilierContractId = null;
+    }
 
-    if (contract?.stripe_subscription_id && !contract?.resilié_at) {
+    const contract = state.contracts.find(c => c.id === contractId) || { id: contractId };
+    // Recharger pour avoir les données à jour
+    await loadContracts();
+    const contractFresh = state.contracts.find(c => c.id === contractId);
+
+    if (contractFresh?.stripe_subscription_id && !contractFresh?.resilié_at) {
       // Abonnement Stripe actif → appel Edge Function
       const { data: { session } } = await sb.auth.getSession();
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/cancel-subscription`, {
@@ -3102,7 +3103,7 @@ async function confirmResilierAbonnement() {
       if (error) throw new Error(error.message);
       if (contract?.contact_id) {
         await sb.from('interactions').insert({
-          contact_id: contract.contact_id,
+          contact_id: contractFresh.contact_id,
           created_by: state.user.id,
           type: 'Autre',
           date: new Date().toISOString().slice(0,10),
