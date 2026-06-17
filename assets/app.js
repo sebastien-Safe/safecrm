@@ -3100,7 +3100,7 @@ async function confirmResilierAbonnement() {
     await loadContracts();
     renderContracts();
     const msg = result.period_end
-      ? `✅ Résiliation enregistrée. L'abonnement se terminera le \${formatDate(result.period_end)}.\`
+      ? `✅ Résiliation enregistrée. L'abonnement se terminera le ${formatDate(result.period_end)}.`
       : '✅ Résiliation enregistrée. Le client ne sera plus débité à la prochaine échéance.';
     alert(msg);
     // Recharger les interactions pour afficher l'événement dans la fiche client
