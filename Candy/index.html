@@ -429,7 +429,7 @@
     S@FE Santé
     <span class="badge-sante">Nouveau</span>
   </a>
-  <div style="display:flex;gap:10px;align-items:center"><a href="/Candy/patients.html" style="background:rgba(196,113,122,.12);color:var(--cerise);border:1px solid rgba(196,113,122,.3);font-size:.82rem;font-weight:600;padding:7px 14px;border-radius:8px;text-decoration:none">👁 Voir la démo</a><a href="#contact" class="nav-cta">Demander une démo</a></div>
+  <div style="display:flex;gap:10px;align-items:center"><a href="#architecture" style="color:var(--cerise);font-size:.82rem;font-weight:600;text-decoration:none">Architecture</a><a href="/Candy/patients.html" style="background:rgba(196,113,122,.12);color:var(--cerise);border:1px solid rgba(196,113,122,.3);font-size:.82rem;font-weight:600;padding:7px 14px;border-radius:8px;text-decoration:none">👁 Voir la démo</a><a href="#contact" class="nav-cta">Demander une démo</a></div>
 </nav>
 
 <!-- HERO -->
@@ -570,6 +570,133 @@
         <div class="data-badge"><span class="secure-dot"></span> RGPD & CNIL</div>
       </div>
     </div>
+  </div>
+</div>
+
+
+<div class="divider"></div>
+
+<!-- ARCHITECTURE -->
+<div class="section" id="architecture">
+  <div class="section-eyebrow">Architecture technique</div>
+  <h2>Comment fonctionne C@NDY<br><em>concrètement</em> dans votre cabinet.</h2>
+  <p class="section-intro">C@NDY repose sur une architecture on-premise : l'application et la base de données s'installent sur un serveur local dans votre cabinet. Vos données ne quittent jamais vos murs — sauf pour le backup chiffré vers un hébergeur certifié HDS, où elles arrivent illisibles.</p>
+
+  <div style="background:var(--blanc);border:1px solid var(--line);border-radius:16px;padding:28px 24px;overflow-x:auto">
+    <svg width="100%" viewBox="0 0 680 660" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;display:block">
+      <title>Architecture C@NDY on-premise — schéma technique</title>
+      <desc>Quatre zones : cabinet médical LAN, cloud HDS certifié, accès distant VPN, et B2Brouter pour la facturation électronique.</desc>
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <!-- ZONE 1 : Cabinet médical -->
+      <rect x="20" y="20" width="400" height="340" rx="14" fill="rgba(122,158,126,.08)" stroke="#7A9E7E" stroke-width="1" stroke-dasharray="6 3"/>
+      <text x="36" y="46" font-family="'DM Serif Display',serif" font-size="13" font-weight="700" fill="#3D2B2D">Cabinet médical — LAN sécurisé</text>
+      <text x="36" y="62" font-family="Inter,sans-serif" font-size="11" fill="#8C6A6D">Données patients ne quittent jamais ce périmètre</text>
+
+      <!-- Serveur local -->
+      <rect x="44" y="80" width="156" height="64" rx="8" fill="#F2D7D9" stroke="#C4717A" stroke-width="1"/>
+      <text x="122" y="108" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="600" fill="#3D2B2D">Serveur local</text>
+      <text x="122" y="126" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">Mini-PC ou NUC</text>
+
+      <!-- PostgreSQL -->
+      <rect x="44" y="168" width="156" height="64" rx="8" fill="#F2D7D9" stroke="#C4717A" stroke-width="1"/>
+      <text x="122" y="196" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="600" fill="#3D2B2D">PostgreSQL</text>
+      <text x="122" y="214" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">Base chiffrée AES-256</text>
+
+      <!-- C@NDY App -->
+      <rect x="44" y="256" width="156" height="56" rx="8" fill="#E8BFC2" stroke="#C4717A" stroke-width="1"/>
+      <text x="122" y="280" text-anchor="middle" font-family="'DM Serif Display',serif" font-size="13" font-weight="700" fill="#3D2B2D">C@NDY App</text>
+      <text x="122" y="298" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#5C3F42">Node.js + Next.js</text>
+
+      <!-- Postes praticiens -->
+      <rect x="236" y="80" width="160" height="52" rx="8" fill="rgba(61,43,45,.06)" stroke="rgba(61,43,45,.2)" stroke-width="0.5"/>
+      <text x="316" y="103" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="600" fill="#3D2B2D">Poste Dr. 1</text>
+      <text x="316" y="121" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">Navigateur HTTPS</text>
+
+      <rect x="236" y="148" width="160" height="52" rx="8" fill="rgba(61,43,45,.06)" stroke="rgba(61,43,45,.2)" stroke-width="0.5"/>
+      <text x="316" y="171" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="600" fill="#3D2B2D">Poste Dr. 2</text>
+      <text x="316" y="189" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">Navigateur HTTPS</text>
+
+      <rect x="236" y="216" width="160" height="52" rx="8" fill="rgba(61,43,45,.06)" stroke="rgba(61,43,45,.2)" stroke-width="0.5"/>
+      <text x="316" y="239" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="600" fill="#3D2B2D">Poste Dr. 3</text>
+      <text x="316" y="257" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">Navigateur HTTPS</text>
+
+      <!-- Connexions internes -->
+      <line x1="122" y1="144" x2="122" y2="168" stroke="#C4717A" stroke-width="1" marker-end="url(#arr)"/>
+      <line x1="122" y1="232" x2="122" y2="256" stroke="#C4717A" stroke-width="1" marker-end="url(#arr)"/>
+      <line x1="200" y1="106" x2="236" y2="106" stroke="#C4717A" stroke-width="1" marker-end="url(#arr)"/>
+      <line x1="200" y1="144" x2="236" y2="174" stroke="#C4717A" stroke-width="0.8" marker-end="url(#arr)"/>
+      <line x1="200" y1="156" x2="236" y2="242" stroke="#C4717A" stroke-width="0.8" marker-end="url(#arr)"/>
+
+      <!-- Pare-feu -->
+      <rect x="44" y="328" width="352" height="24" rx="6" fill="#3D2B2D" stroke="none"/>
+      <text x="220" y="344" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#F2D7D9">Pare-feu + VPN WireGuard</text>
+
+      <!-- ZONE 2 : Cloud HDS -->
+      <rect x="20" y="382" width="400" height="140" rx="14" fill="rgba(83,74,183,.06)" stroke="#534AB7" stroke-width="1" stroke-dasharray="6 3"/>
+      <text x="36" y="406" font-family="'DM Serif Display',serif" font-size="13" font-weight="700" fill="#3D2B2D">Hébergeur certifié HDS</text>
+      <text x="36" y="422" font-family="Inter,sans-serif" font-size="11" fill="#8C6A6D">OVHcloud / Outscale — backup chiffré côté cabinet</text>
+
+      <rect x="44" y="432" width="168" height="64" rx="8" fill="rgba(83,74,183,.1)" stroke="#534AB7" stroke-width="0.5"/>
+      <text x="128" y="458" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="600" fill="#3D2B2D">Backup nuit</text>
+      <text x="128" y="474" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">Chiffré AES-256 + clé S@FE</text>
+
+      <rect x="236" y="432" width="160" height="64" rx="8" fill="rgba(83,74,183,.1)" stroke="#534AB7" stroke-width="0.5"/>
+      <text x="316" y="458" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="600" fill="#3D2B2D">Mises à jour auto</text>
+      <text x="316" y="474" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">Nuit — paquets signés</text>
+
+      <!-- Flèche cabinet → HDS -->
+      <line x1="220" y1="352" x2="220" y2="382" stroke="#534AB7" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+
+      <!-- ZONE 3 : Accès distant -->
+      <rect x="444" y="20" width="216" height="188" rx="14" fill="rgba(196,113,122,.06)" stroke="#C4717A" stroke-width="1" stroke-dasharray="6 3"/>
+      <text x="460" y="46" font-family="'DM Serif Display',serif" font-size="13" font-weight="700" fill="#3D2B2D">Accès distant</text>
+      <text x="460" y="62" font-family="Inter,sans-serif" font-size="11" fill="#8C6A6D">Via VPN chiffré</text>
+
+      <rect x="460" y="74" width="180" height="48" rx="8" fill="rgba(61,43,45,.06)" stroke="rgba(61,43,45,.2)" stroke-width="0.5"/>
+      <text x="550" y="96" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="600" fill="#3D2B2D">Smartphone</text>
+      <text x="550" y="114" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">App mobile HTTPS</text>
+
+      <rect x="460" y="136" width="180" height="48" rx="8" fill="rgba(61,43,45,.06)" stroke="rgba(61,43,45,.2)" stroke-width="0.5"/>
+      <text x="550" y="158" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="600" fill="#3D2B2D">Tablette / PC</text>
+      <text x="550" y="176" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">Navigateur sécurisé</text>
+
+      <!-- Flèche accès distant → pare-feu -->
+      <path d="M444 120 L420 120 L420 340" fill="none" stroke="#C4717A" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+      <text x="422" y="240" font-family="Inter,sans-serif" font-size="10" fill="#C4717A">VPN</text>
+
+      <!-- ZONE 4 : B2Brouter -->
+      <rect x="444" y="228" width="216" height="120" rx="14" fill="rgba(122,158,126,.08)" stroke="#7A9E7E" stroke-width="1" stroke-dasharray="6 3"/>
+      <text x="460" y="252" font-family="'DM Serif Display',serif" font-size="13" font-weight="700" fill="#3D2B2D">B2Brouter PA</text>
+      <text x="460" y="268" font-family="Inter,sans-serif" font-size="11" fill="#8C6A6D">Facturation électronique</text>
+
+      <rect x="460" y="278" width="88" height="48" rx="8" fill="rgba(122,158,126,.15)" stroke="#7A9E7E" stroke-width="0.5"/>
+      <text x="504" y="298" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#3D2B2D">Factur-X</text>
+      <text x="504" y="316" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#5C7D60">e-reporting</text>
+
+      <rect x="564" y="278" width="80" height="48" rx="8" fill="rgba(122,158,126,.15)" stroke="#7A9E7E" stroke-width="0.5"/>
+      <text x="604" y="298" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#3D2B2D">DGFiP</text>
+      <text x="604" y="316" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#5C7D60">Auto</text>
+
+      <!-- Flèche serveur → B2Brouter -->
+      <path d="M420 352 L420 268 L444 268" fill="none" stroke="#7A9E7E" stroke-width="1" marker-end="url(#arr)"/>
+
+      <!-- Légende -->
+      <rect x="20" y="542" width="620" height="96" rx="10" fill="none" stroke="rgba(61,43,45,.12)" stroke-width="0.5" stroke-dasharray="4 3"/>
+      <text x="36" y="564" font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#3D2B2D">Légende</text>
+      <line x1="36" y1="582" x2="70" y2="582" stroke="#C4717A" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="76" y="586" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">Flux LAN interne</text>
+      <line x1="200" y1="582" x2="234" y2="582" stroke="#534AB7" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+      <text x="240" y="586" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">Backup / updates chiffré</text>
+      <line x1="400" y1="582" x2="434" y2="582" stroke="#C4717A" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+      <text x="440" y="586" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">VPN distant</text>
+      <text x="36" y="612" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">Données patients : jamais en clair hors du cabinet. Backup HDS : chiffrement côté cabinet avant envoi — hébergeur ne voit que du chiffré.</text>
+      <text x="36" y="628" font-family="Inter,sans-serif" font-size="10" fill="#8C6A6D">La clé de déchiffrement reste chez S@FE et chez le praticien.</text>
+    </svg>
   </div>
 </div>
 
