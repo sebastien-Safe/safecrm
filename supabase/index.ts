@@ -31,6 +31,29 @@ Deno.serve(async (req) => {
   if (!body.token) return json({ error: "missing_token" }, 400);
   if (!body.consent_cgv || !body.consent_rgpd) return json({ error: "consent_required" }, 400);
 
+  // 0. Rate limiting : max 5 tentatives par IP par heure
+  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim()
+    || req.headers.get("cf-connecting-ip")
+    || "unknown";
+  const rlKey = `checkout:${clientIp}`;
+  const rlWindow = new Date(Math.floor(Date.now() / 3_600_000) * 3_600_000).toISOString();
+
+  const { data: rl } = await sb
+    .from("rate_limits")
+    .select("count, window_at")
+    .eq("action", rlKey)
+    .maybeSingle();
+
+  if (rl && rl.window_at?.slice(0, 13) === rlWindow.slice(0, 13)) {
+    if (rl.count >= 5) return json({ error: "rate_limit_exceeded" }, 429);
+    await sb.from("rate_limits")
+      .update({ count: rl.count + 1 })
+      .eq("action", rlKey);
+  } else {
+    await sb.from("rate_limits")
+      .upsert({ user_id: "00000000-0000-0000-0000-000000000000", action: rlKey, count: 1, window_at: rlWindow });
+  }
+
   // 1. Récupère le bon de commande
   const { data: ol, error: olErr } = await sb
     .from("order_links").select("*").eq("token", body.token).single();
