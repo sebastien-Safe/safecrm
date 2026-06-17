@@ -108,6 +108,7 @@ Deno.serve(async (req) => {
       }
       session = await stripe.checkout.sessions.create({
         mode: "subscription",
+        payment_method_types: ["sepa_debit"], // SEPA obligatoire pour les abonnements
         customer_email: ol.client_email || undefined,
         line_items: lineItems,
         subscription_data: {
@@ -122,6 +123,7 @@ Deno.serve(async (req) => {
       const totalUnique = montant + setup;
       session = await stripe.checkout.sessions.create({
         mode: "payment",
+        payment_method_types: ["card"], // CB + Apple Pay + Google Pay (wallets auto via card)
         customer_email: ol.client_email || undefined,
         line_items: [{
           price_data: {
