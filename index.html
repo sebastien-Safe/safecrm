@@ -91,6 +91,13 @@
         <h3>⚠️ Échéances de contrats à venir (15 jours)</h3>
         <div class="mini-list" id="echeances-list"></div>
       </div>
+      <div class="panel-block alert-block admin-only" id="bordereaux-alert" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <h3 style="margin:0">📋 Bordereaux de commission à envoyer</h3>
+          <select id="bordereau-periode" style="background:var(--panel);border:1px solid var(--line);color:var(--mut-2);border-radius:8px;padding:6px 10px;font-size:.82rem"></select>
+        </div>
+        <div class="mini-list" id="bordereaux-list"></div>
+      </div>
       <div class="stats-grid">
         <div class="stat-card"><div class="n" id="stat-contacts">–</div><div class="l">Contacts au total</div></div>
         <div class="stat-card"><div class="n" id="stat-clients">–</div><div class="l">Clients actifs</div></div>
