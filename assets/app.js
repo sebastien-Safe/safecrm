@@ -4554,33 +4554,21 @@ async function loadCooptationDCI() {
 // ENVOI IDENTIFIANTS PAR EMAIL (mailto)
 // ==========================================================================
 function ouvrirMailIdentifiants(email, password, prenom) {
-  const nom       = prenom || email.split('@')[0];
-  const crmUrl    = 'https://crm.safe-digitalisation.fr';
-  const guideUrl  = 'https://crm.safe-digitalisation.fr/guide.html';
+  var nom      = prenom || email.split('@')[0];
+  var crmUrl   = 'https://crm.safe-digitalisation.fr';
+  var guideUrl = 'https://crm.safe-digitalisation.fr/guide.html';
+  var subject  = encodeURIComponent('[S@FE CRM] Vos identifiants de connexion');
+  var bodyTxt  = 'Bonjour ' + nom + ',\n\n'
+    + 'Bienvenue dans le CRM S@FE ! Voici vos identifiants de connexion :\n\n'
+    + 'Adresse : ' + crmUrl + '\n'
+    + 'Identifiant : ' + email + '\n'
+    + 'Mot de passe temporaire : ' + password + '\n\n'
+    + 'Merci de changer votre mot de passe des votre premiere connexion.\n\n'
+    + 'Guide : ' + guideUrl + '\n\n'
+    + 'Cordialement,\nL equipe S@FE Digitalisation\n01 84 16 26 89';
+  var bodyEnc = encodeURIComponent(bodyTxt);
 
-  const subject = encodeURIComponent('[S@FE CRM] Vos identifiants de connexion');
-  const body    = encodeURIComponent(
-`Bonjour ${nom},
-
-Bienvenue dans le CRM S@FE ! Voici vos identifiants de connexion :
-
-🔗 Adresse : ${crmUrl}
-📧 Identifiant : ${email}
-🔑 Mot de passe temporaire : ${password}
-
-⚠️ Merci de changer votre mot de passe dès votre première connexion.
-
-📖 Guide d'utilisation : ${guideUrl}
-
-Pour toute question, contactez votre administrateur S@FE.
-
-Cordialement,
-L'équipe S@FE Digitalisation
-📞 01 84 16 26 89`
-  );
-
-  // Afficher modale de confirmation avec aperçu
-  let modal = document.getElementById('mail-identifiants-modal');
+  var modal = document.getElementById('mail-identifiants-modal');
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'mail-identifiants-modal';
@@ -4588,40 +4576,41 @@ L'équipe S@FE Digitalisation
     document.body.appendChild(modal);
   }
   modal.className = 'modal show';
-  modal.innerHTML = \`
-    <div class="box" style="max-width:520px">
-      <h3>✅ Compte créé — Envoyer les identifiants</h3>
-      <p class="mut" style="font-size:.85rem;margin-bottom:16px">
-        Le compte de <strong style="color:#fff">\${escapeHtml(nom)}</strong> (\${escapeHtml(email)}) a été créé avec succès.<br>
-        Cliquez sur le bouton ci-dessous pour ouvrir votre client email avec les identifiants pré-remplis.
-      </p>
-      <div style="background:var(--navy-2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:.82rem;line-height:1.8;margin-bottom:20px">
-        <div><span class="mut">Destinataire :</span> <strong style="color:#fff">\${escapeHtml(email)}</strong></div>
-        <div><span class="mut">Identifiant :</span> <strong style="color:#fff">\${escapeHtml(email)}</strong></div>
-        <div><span class="mut">Mot de passe :</span>
-          <strong style="color:var(--gold);font-family:var(--ff-mono)">\${escapeHtml(password)}</strong>
-          <button onclick="navigator.clipboard.writeText('\${escapeHtml(password)}').then(()=>this.textContent='✅ Copié').catch(()=>{})"
-            style="font-size:.7rem;margin-left:8px;padding:2px 8px;border-radius:5px;border:1px solid var(--line);background:none;color:var(--mut);cursor:pointer">
-            📋 Copier
-          </button>
-        </div>
-        <div><span class="mut">CRM :</span> <a href="\${crmUrl}" style="color:var(--accent)">\${crmUrl}</a></div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-out" onclick="document.getElementById('mail-identifiants-modal').classList.remove('show')">
-          Fermer sans envoyer
-        </button>
-        <a class="btn btn-pri" href="mailto:\${encodeURIComponent(email)}?subject=\${subject}&body=\${body}"
-          onclick="setTimeout(()=>document.getElementById('mail-identifiants-modal').classList.remove('show'),500)"
-          style="text-decoration:none">
-          ✉️ Ouvrir mon client email
-        </a>
-      </div>
-      <p class="mut" style="font-size:.74rem;margin-top:12px;text-align:center">
-        ⚠️ Notez ce mot de passe — il ne sera plus affiché après la fermeture de cette fenêtre.
-      </p>
-    </div>\`;
+
+  var html = '';
+  html += '<div class="box" style="max-width:520px">';
+  html +=   '<h3>&#x2705; Compte créé — Envoyer les identifiants</h3>';
+  html +=   '<p class="mut" style="font-size:.85rem;margin-bottom:16px">';
+  html +=     'Le compte de <strong style="color:#fff">' + escapeHtml(nom) + '</strong>';
+  html +=     ' (' + escapeHtml(email) + ') a été créé avec succès.<br>';
+  html +=     'Cliquez sur le bouton ci-dessous pour ouvrir votre client email.';
+  html +=   '</p>';
+  html +=   '<div style="background:var(--navy-2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:.82rem;line-height:1.8;margin-bottom:20px">';
+  html +=     '<div><span class="mut">Destinataire :</span> <strong style="color:#fff">' + escapeHtml(email) + '</strong></div>';
+  html +=     '<div><span class="mut">Identifiant :</span> <strong style="color:#fff">' + escapeHtml(email) + '</strong></div>';
+  html +=     '<div><span class="mut">Mot de passe :</span>';
+  html +=       '<strong style="color:var(--gold);font-family:var(--ff-mono)">' + escapeHtml(password) + '</strong>';
+  html +=       '<button onclick="navigator.clipboard.writeText('' + escapeHtml(password) + '').then(function(){this.textContent='&#x2705; Copié'}).catch(function(){})"';
+  html +=         ' style="font-size:.7rem;margin-left:8px;padding:2px 8px;border-radius:5px;border:1px solid var(--line);background:none;color:var(--mut);cursor:pointer">';
+  html +=         '&#x1F4CB; Copier';
+  html +=       '</button>';
+  html +=     '</div>';
+  html +=     '<div><span class="mut">CRM :</span> <a href="' + crmUrl + '" style="color:var(--accent)">' + crmUrl + '</a></div>';
+  html +=   '</div>';
+  html +=   '<div class="modal-actions">';
+  html +=     '<button class="btn btn-out" onclick="document.getElementById('mail-identifiants-modal').classList.remove('show')">Fermer sans envoyer</button>';
+  html +=     '<a class="btn btn-pri" href="mailto:' + encodeURIComponent(email) + '?subject=' + subject + '&body=' + bodyEnc + '"';
+  html +=       ' onclick="setTimeout(function(){document.getElementById('mail-identifiants-modal').classList.remove('show')},500)"';
+  html +=       ' style="text-decoration:none">&#x2709;&#xFE0F; Ouvrir mon client email</a>';
+  html +=   '</div>';
+  html +=   '<p class="mut" style="font-size:.74rem;margin-top:12px;text-align:center">';
+  html +=     '&#x26A0;&#xFE0F; Notez ce mot de passe — il ne sera plus affiché apres la fermeture.';
+  html +=   '</p>';
+  html += '</div>';
+
+  modal.innerHTML = html;
 }
+
 
 
 // ==========================================================================
