@@ -727,7 +727,7 @@
 <div class="cta-final" id="contact">
   <h2>Prêt à simplifier<br>votre quotidien ?</h2>
   <p>Demandez une démonstration gratuite. Nous configurons S@FE Santé dans votre cabinet en moins d'une heure.</p>
-  <a href="mailto:contact@safe-digitalisation.fr?subject=Demande%20de%20démo%20S@FE%20Santé&body=Bonjour,%0A%0AJe%20souhaite%20obtenir%20une%20démonstration%20de%20S@FE%20Santé%20pour%20mon%20cabinet.%0A%0ANom%20:%0ASpécialité%20:%0ATéléphone%20:%0A%0AMerci." class="btn-white">
+  <a href="mailto:emilie@safe-digitalisation.fr?cc=sebastien@safe-digitalisation.fr&subject=Demande%20de%20démo%20C%40NDY&body=Bonjour,%0A%0AJe%20souhaite%20obtenir%20une%20démonstration%20de%20C%40NDY%20pour%20mon%20cabinet.%0A%0ANom%20:%0ASpécialité%20:%0ATéléphone%20:%0A%0AMerci." class="btn-white">
     ✉️ Nous contacter
   </a>
 </div>
@@ -756,5 +756,27 @@
   });
 </script>
 
+
+<!-- MODALE ONBOARDING VITRINE -->
+<div id="onboarding-index" style="position:fixed;inset:0;z-index:999;background:rgba(61,43,45,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--blanc);border-radius:20px;padding:32px;max-width:440px;width:100%;box-shadow:0 24px 64px rgba(61,43,45,.2);text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:12px">🏥</div>
+    <h3 style="font-family:var(--ff-disp,'DM Serif Display',serif);font-size:1.3rem;color:var(--ardoise);margin-bottom:8px">Bienvenue sur C@NDY</h3>
+    <p style="font-size:.85rem;color:var(--mut);line-height:1.65;margin-bottom:20px">Logiciel de gestion médicale on-premise pour cabinets indépendants.</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;text-align:left">
+      <div style="background:var(--rose-light);border-radius:8px;padding:10px 14px;font-size:.82rem;color:var(--ardoise)">👁 <strong>Voir la démo</strong> — explorez une liste de 12 patients fictifs</div>
+      <div style="background:var(--rose-light);border-radius:8px;padding:10px 14px;font-size:.82rem;color:var(--ardoise)">📐 <strong>Architecture</strong> — découvrez comment fonctionne C@NDY dans votre cabinet</div>
+      <div style="background:var(--rose-light);border-radius:8px;padding:10px 14px;font-size:.82rem;color:var(--ardoise)">📩 <strong>Demander une démo</strong> — contactez notre équipe en bas de page</div>
+    </div>
+    <button onclick="document.getElementById('onboarding-index').style.display='none'" style="width:100%;background:var(--cerise);color:#fff;border:none;border-radius:10px;padding:12px;font-family:var(--fb,Inter,sans-serif);font-weight:600;font-size:.92rem;cursor:pointer">Découvrir C@NDY →</button>
+  </div>
+</div>
+<script>
+if(localStorage.getItem('candy_ob_index')){
+  document.getElementById('onboarding-index').style.display='none';
+} else {
+  localStorage.setItem('candy_ob_index','1');
+}
+</script>
 </body>
 </html>
