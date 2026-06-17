@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Simulateur de commissions — S@FE CRM</title>
+<link rel="icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--navy:#0a1628;--navy-2:#142240;--gold:#f59e0b;--blue:#3b82f6;--blue-2:#2563eb;--green:#22c55e;--mut:#94a3b8;--mut-2:#cbd5e1;--line:rgba(255,255,255,.08);--ok:#22c55e;--alert:#ff4d5e;--r:12px;--ff:'Sora',sans-serif;--fb:'IBM Plex Sans',sans-serif;--fm:'IBM Plex Mono',monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--navy);color:var(--mut-2);line-height:1.6;-webkit-font-smoothing:antialiased}
+nav{position:sticky;top:0;z-index:100;background:rgba(10,22,40,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-brand{font-family:var(--ff);font-size:1rem;font-weight:800;color:#fff;text-decoration:none}
+.nav-brand span{color:var(--gold)}
+.nav-back{font-size:.82rem;color:var(--mut);text-decoration:none;display:flex;align-items:center;gap:5px}
+.nav-back:hover{color:#fff}
+.page{max-width:960px;margin:0 auto;padding:36px 24px 80px}
+h1{font-family:var(--ff);font-size:clamp(1.4rem,3vw,1.9rem);font-weight:800;color:#fff;margin-bottom:6px}
+.subtitle{font-size:.88rem;color:var(--mut);margin-bottom:32px}
+.tabs{display:flex;gap:0;margin-bottom:28px;border-bottom:1px solid var(--line)}
+.tab{font-family:var(--ff);font-size:.8rem;font-weight:600;color:var(--mut);padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;transition:all .18s;white-space:nowrap}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab:hover{color:var(--mut-2)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+.ctrl{display:flex;flex-direction:column;gap:6px}
+.ctrl label{font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-family:var(--fm)}
+.ctrl-row{display:flex;align-items:center;gap:10px}
+.ctrl-row input[type=range]{flex:1;accent-color:var(--gold)}
+.val{font-family:var(--fm);font-size:.82rem;color:#fff;min-width:80px;text-align:right}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+.metric{background:var(--navy-2);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.metric-label{font-size:.68rem;color:var(--mut);margin-bottom:6px;font-family:var(--fm);letter-spacing:.06em;text-transform:uppercase}
+.metric-val{font-family:var(--ff);font-size:1.35rem;font-weight:800;color:#fff;line-height:1}
+.metric-sub{font-size:.7rem;color:var(--mut);margin-top:4px}
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.phase{background:var(--navy-2);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.phase-num{font-size:.68rem;font-family:var(--fm);letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+.phase-title{font-family:var(--ff);font-size:.88rem;font-weight:800;color:#fff;margin-bottom:8px}
+.phase-row{font-size:.78rem;color:var(--mut-2);margin-bottom:3px}
+.phase-row strong{color:#fff}
+.chart-wrap{background:var(--navy-2);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:20px}
+.chart-title{font-family:var(--ff);font-size:.85rem;font-weight:600;color:#fff;margin-bottom:8px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:.75rem;color:var(--mut)}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.alert{border-radius:var(--r);padding:12px 16px;font-size:.84rem;line-height:1.6;margin-bottom:16px}
+.alert-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--gold)}
+.alert-ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:var(--green)}
+.alert-info{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:var(--mut-2)}
+.tbl-wrap{background:var(--navy-2);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+table{width:100%;border-collapse:collapse}
+thead tr{background:rgba(255,255,255,.03);border-bottom:1px solid var(--line)}
+th{font-size:.68rem;font-family:var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:10px 14px;text-align:left}
+td{padding:10px 14px;font-size:.83rem;color:var(--mut-2);border-bottom:1px solid rgba(255,255,255,.04)}
+tr:last-child td{border-bottom:none}
+td.hi{color:#fff;font-weight:600}
+td.gold{color:var(--gold);font-weight:600}
+td.green{color:var(--green);font-weight:600}
+@media(max-width:640px){.ctrl-grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.phases{grid-template-columns:1fr}.tabs{overflow-x:auto}.tab{font-size:.72rem;padding:8px 12px}.nav-back span{display:none}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/index.html" class="nav-brand">S<span>@</span>FE CRM</a>
+  <a href="/guide.html#commissions" class="nav-back">&#8592; Guide utilisateur</a>
+</nav>
+
+<div class="page">
+  <h1>Simulateur de commissions</h1>
+  <p class="subtitle">Projetez vos revenus sur 36 mois &mdash; commissions r&eacute;currentes et non r&eacute;currentes combin&eacute;es.</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('recurrent',this)">&#128200; R&eacute;currentes &mdash; objectif 2&nbsp;000&nbsp;&euro;/mois</button>
+    <button class="tab" onclick="showTab('ponctuel',this)">&#128176; Non r&eacute;currentes &mdash; signatures</button>
+    <button class="tab" onclick="showTab('combine',this)">&#9889; Vision combin&eacute;e</button>
+  </div>
+
+  <!-- ONGLET RECURRENTES -->
+  <div id="tab-recurrent" class="tab-content active">
+    <div class="ctrl-grid">
+      <div class="ctrl"><label>Contrats sign&eacute;s / mois</label>
+        <div class="ctrl-row"><input type="range" min="1" max="8" step="1" value="2" id="r-rythme" oninput="calcR()"><span class="val" id="r-rythme-v">2/mois</span></div></div>
+      <div class="ctrl"><label>Montant moyen abonnement</label>
+        <div class="ctrl-row"><input type="range" min="79" max="249" step="10" value="149" id="r-montant" oninput="calcR()"><span class="val" id="r-montant-v">149 &euro;</span></div></div>
+      <div class="ctrl"><label>Taux de r&eacute;siliation mensuel</label>
+        <div class="ctrl-row"><input type="range" min="0" max="8" step="1" value="3" id="r-churn" oninput="calcR()"><span class="val" id="r-churn-v">3%</span></div></div>
+      <div class="ctrl"><label>Commission r&eacute;currente</label>
+        <div class="ctrl-row"><input type="range" min="8" max="15" step="1" value="10" id="r-pct" oninput="calcR()"><span class="val" id="r-pct-v">10%</span></div></div>
+    </div>
+    <div class="metrics" id="r-metrics"></div>
+    <div class="phases" id="r-phases"></div>
+    <div class="chart-wrap">
+      <div class="chart-title">Progression vers 2&nbsp;000&nbsp;&euro;/mois &mdash; 36 mois</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Commissions r&eacute;currentes</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#22c55e;border:1px dashed #22c55e"></div>Objectif 2&nbsp;000&nbsp;&euro;</div>
+      </div>
+      <div style="position:relative;height:260px"><canvas id="chartR" role="img" aria-label="Courbe progression commissions r&eacute;currentes 36 mois">Courbe de progression vers 2 000 euros par mois.</canvas></div>
+    </div>
+    <div id="r-alert"></div>
+  </div>
+
+  <!-- ONGLET NON RECURRENTES -->
+  <div id="tab-ponctuel" class="tab-content">
+    <div class="alert alert-info">Les commissions non r&eacute;currentes s&rsquo;ajoutent chaque mois selon votre rythme de signature. Elles ne se capitalisent pas mais compl&egrave;tent le revenu mensuel imm&eacute;diatement.</div>
+    <div class="ctrl-grid">
+      <div class="ctrl"><label>Contrats sign&eacute;s / mois (non r&eacute;c.)</label>
+        <div class="ctrl-row"><input type="range" min="0" max="10" step="1" value="2" id="p-rythme" oninput="calcP()"><span class="val" id="p-rythme-v">2/mois</span></div></div>
+      <div class="ctrl"><label>Montant moyen (HT)</label>
+        <div class="ctrl-row"><input type="range" min="100" max="2000" step="50" value="490" id="p-montant" oninput="calcP()"><span class="val" id="p-montant-v">490 &euro;</span></div></div>
+      <div class="ctrl"><label>Commission &agrave; la signature (%)</label>
+        <div class="ctrl-row"><input type="range" min="5" max="20" step="1" value="15" id="p-pct" oninput="calcP()"><span class="val" id="p-pct-v">15%</span></div></div>
+      <div class="ctrl"><label>Mois de pointe (contrats sup.)</label>
+        <div class="ctrl-row"><input type="range" min="0" max="5" step="1" value="1" id="p-extra" oninput="calcP()"><span class="val" id="p-extra-v">+1 contrat</span></div></div>
+    </div>
+    <div class="metrics" id="p-metrics"></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Gamme</th><th>Montant HT</th><th>Commission (15%)</th><th>Commissions sur 12 mois (2/mois)</th></tr></thead>
+        <tbody>
+          <tr><td class="hi">Audit Cyber Essentiel</td><td>490 &euro;</td><td class="gold">73 &euro;</td><td class="green">1&nbsp;752 &euro;</td></tr>
+          <tr><td class="hi">Audit Cyber Pro</td><td>990 &euro;</td><td class="gold">148 &euro;</td><td class="green">3&nbsp;552 &euro;</td></tr>
+          <tr><td class="hi">Audit Cyber Expert</td><td>1&nbsp;990 &euro;</td><td class="gold">298 &euro;</td><td class="green">7&nbsp;152 &euro;</td></tr>
+          <tr><td class="hi">RGPD Audit TPE</td><td>0 &euro;</td><td class="gold">0 &euro;</td><td style="color:var(--mut)">Gratuit &mdash; produit d&rsquo;appel</td></tr>
+          <tr><td class="hi">RGPD PME</td><td>1&nbsp;490 &euro;</td><td class="gold">223 &euro;</td><td class="green">5&nbsp;352 &euro;</td></tr>
+          <tr><td class="hi">RGPD Grand Compte</td><td>2&nbsp;990 &euro;</td><td class="gold">448 &euro;</td><td class="green">10&nbsp;752 &euro;</td></tr>
+          <tr><td class="hi">DPO externalis&eacute; (mise en place)</td><td>0 &euro;</td><td class="gold">0 &euro;</td><td style="color:var(--mut)">R&eacute;currant pur &mdash; voir onglet 1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Revenu mensuel non r&eacute;current &mdash; 36 mois</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Commissions mensuelles non r&eacute;c.</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;opacity:.4"></div>Mois de pointe</div>
+      </div>
+      <div style="position:relative;height:240px"><canvas id="chartP" role="img" aria-label="Revenus mensuels non r&eacute;currents sur 36 mois">Revenus non r&eacute;currents mensuels.</canvas></div>
+    </div>
+    <div id="p-alert"></div>
+  </div>
+
+  <!-- ONGLET COMBINE -->
+  <div id="tab-combine" class="tab-content">
+    <div class="alert alert-info">R&eacute;glage rapide &mdash; ajustez les curseurs des deux onglets pr&eacute;c&eacute;dents pour affiner la projection combin&eacute;e.</div>
+    <div class="metrics" id="c-metrics"></div>
+    <div class="chart-wrap">
+      <div class="chart-title">Revenu total mensuel sur 36 mois &mdash; cumul r&eacute;current + non r&eacute;current</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>R&eacute;current</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Non r&eacute;current</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#22c55e;width:16px;height:2px;border-radius:0"></div>Total</div>
+      </div>
+      <div style="position:relative;height:300px"><canvas id="chartC" role="img" aria-label="Vision combin&eacute;e commissions 36 mois">Vision combin&eacute;e des commissions.</canvas></div>
+    </div>
+    <div class="phases" id="c-phases"></div>
+    <div id="c-alert"></div>
+  </div>
+</div>
+
+<script>
+let chartR, chartP, chartC;
+const TARGET_R = 2000;
+
+function fmt(n){return Math.round(n).toLocaleString('fr-FR')+' \u20ac'}
+function fmtShort(n){return Math.round(n).toLocaleString('fr-FR')+'\u20ac'}
+
+function showTab(name, btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='combine') calcC();
+}
+
+/* ── RECURRENTES ── */
+function getR(){
+  return {
+    rythme:  parseInt(document.getElementById('r-rythme').value),
+    montant: parseInt(document.getElementById('r-montant').value),
+    churn:   parseInt(document.getElementById('r-churn').value)/100,
+    pct:     parseInt(document.getElementById('r-pct').value)/100,
+  };
+}
+
+function calcR(){
+  const {rythme,montant,churn,pct} = getR();
+  document.getElementById('r-rythme-v').textContent  = rythme+'/mois';
+  document.getElementById('r-montant-v').textContent = montant+' \u20ac';
+  document.getElementById('r-churn-v').textContent   = Math.round(churn*100)+'%';
+  document.getElementById('r-pct-v').textContent     = Math.round(pct*100)+'%';
+
+  const commParClient = montant * pct;
+  const clientsNecessaires = Math.ceil(TARGET_R / commParClient);
+  const caObj = clientsNecessaires * montant;
+
+  const data = [];
+  let pf = 0, moisObj = null;
+  for(let m=1; m<=36; m++){
+    pf = pf*(1-churn)+rythme;
+    const comm = Math.round(pf * commParClient);
+    data.push({m, pf:Math.round(pf), comm});
+    if(comm>=TARGET_R && moisObj===null) moisObj=m;
+  }
+
+  document.getElementById('r-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Clients n&eacute;cessaires</div><div class="metric-val">${clientsNecessaires}</div><div class="metric-sub">portefeuille stable</div></div>
+    <div class="metric"><div class="metric-label">CA mensuel objectif</div><div class="metric-val" style="color:var(--gold)">${fmt(caObj)}</div><div class="metric-sub">chiffre d&rsquo;affaires g&eacute;n&eacute;r&eacute;</div></div>
+    <div class="metric"><div class="metric-label">D&eacute;lai estim&eacute;</div><div class="metric-val" style="color:${moisObj?'var(--green)':'var(--alert)'}">${moisObj?moisObj+' mois':'> 36 mois'}</div><div class="metric-sub">${moisObj?'avec ce rythme':'hors port&eacute;e'}</div></div>
+    <div class="metric"><div class="metric-label">Commission / client</div><div class="metric-val">${fmt(commParClient)}</div><div class="metric-sub">par mois r&eacute;current</div></div>`;
+
+  document.getElementById('r-phases').innerHTML = `
+    <div class="phase"><div class="phase-num">Phase 1 &mdash; mois 1 &agrave; 12</div><div class="phase-title">Construction</div>
+      <div class="phase-row">Portefeuille : <strong>${data[11].pf} clients</strong></div>
+      <div class="phase-row">Commissions : <strong>${fmt(data[11].comm)}/mois</strong></div>
+      <div class="phase-row">Objectif : signer r&eacute;guli&egrave;rement</div></div>
+    <div class="phase"><div class="phase-num">Phase 2 &mdash; mois 13 &agrave; 24</div><div class="phase-title">Croissance</div>
+      <div class="phase-row">Portefeuille : <strong>${data[23].pf} clients</strong></div>
+      <div class="phase-row">Commissions : <strong>${fmt(data[23].comm)}/mois</strong></div>
+      <div class="phase-row">Objectif : mont&eacute;e en gamme, churn &lt; 3%</div></div>
+    <div class="phase"><div class="phase-num">Phase 3 &mdash; mois 25 &agrave; 36</div><div class="phase-title">R&eacute;gime de croisi&egrave;re</div>
+      <div class="phase-row">Portefeuille : <strong>${data[35].pf} clients</strong></div>
+      <div class="phase-row">Commissions : <strong>${fmt(data[35].comm)}/mois</strong></div>
+      <div class="phase-row">${moisObj&&moisObj<=36?'Objectif atteint M'+moisObj:'Continuer \u00e0 croitre'}</div></div>`;
+
+  const labels = data.map(d=>'M'+d.m);
+  const vals   = data.map(d=>d.comm);
+  const colors = vals.map(v=>v>=TARGET_R?'#22c55e':'#3b82f6');
+  if(chartR) chartR.destroy();
+  chartR = new Chart(document.getElementById('chartR'),{
+    type:'line',
+    data:{labels, datasets:[
+      {label:'R\u00e9current',data:vals,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.08)',borderWidth:2,pointRadius:2,pointBackgroundColor:colors,fill:true,tension:.3},
+      {label:'Objectif',data:Array(36).fill(TARGET_R),borderColor:'#22c55e',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.datasetIndex===0?fmt(ctx.parsed.y)+'/mois':'Objectif: 2 000 \u20ac'}}},
+    scales:{x:{ticks:{autoSkip:true,maxTicksLimit:12,font:{size:10},color:'#94a3b8'},grid:{color:'rgba(255,255,255,.04)'}},
+            y:{ticks:{callback:v=>fmtShort(v),font:{size:10},color:'#94a3b8'},grid:{color:'rgba(255,255,255,.04)'}}}}});
+
+  const alertEl = document.getElementById('r-alert');
+  if(!moisObj) alertEl.innerHTML='<div class="alert alert-warn">Objectif 2 000 \u20ac/mois non atteint en 36 mois avec ces param\u00e8tres. Augmentez le rythme ou le montant moyen.</div>';
+  else if(moisObj>24) alertEl.innerHTML=`<div class="alert alert-warn">Objectif atteint au mois ${moisObj} &mdash; horizon long. Visez un montant moyen plus &eacute;lev&eacute; pour acc&eacute;l&eacute;rer.</div>`;
+  else alertEl.innerHTML=`<div class="alert alert-ok">Objectif 2 000 \u20ac/mois atteint au mois ${moisObj} &mdash; soit en ${Math.ceil(moisObj/12)} an${moisObj>12?'s':''}.</div>`;
+
+  calcC();
+}
+
+/* ── NON RECURRENTES ── */
+function getP(){
+  return {
+    rythme:  parseInt(document.getElementById('p-rythme').value),
+    montant: parseInt(document.getElementById('p-montant').value),
+    pct:     parseInt(document.getElementById('p-pct').value)/100,
+    extra:   parseInt(document.getElementById('p-extra').value),
+  };
+}
+
+function calcP(){
+  const {rythme,montant,pct,extra} = getP();
+  document.getElementById('p-rythme-v').textContent  = rythme+'/mois';
+  document.getElementById('p-montant-v').textContent = montant+' \u20ac';
+  document.getElementById('p-pct-v').textContent     = Math.round(pct*100)+'%';
+  document.getElementById('p-extra-v').textContent   = '+'+extra+' contrat'+(extra>1?'s':'');
+
+  const commBase  = montant * pct * rythme;
+  const commExtra = montant * pct * extra;
+  const annuel    = commBase * 12 + commExtra * 3; // 3 mois de pointe / an
+
+  document.getElementById('p-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Commission / signature</div><div class="metric-val">${fmt(montant*pct)}</div><div class="metric-sub">au taux s&eacute;lectionn&eacute;</div></div>
+    <div class="metric"><div class="metric-label">Revenu mensuel moyen</div><div class="metric-val" style="color:var(--gold)">${fmt(commBase)}</div><div class="metric-sub">hors mois de pointe</div></div>
+    <div class="metric"><div class="metric-label">Mois de pointe</div><div class="metric-val" style="color:var(--gold)">${fmt(commBase+commExtra)}</div><div class="metric-sub">+${extra} contrat(s) suppl.</div></div>
+    <div class="metric"><div class="metric-label">Revenu annuel estim&eacute;</div><div class="metric-val" style="color:var(--green)">${fmt(annuel)}</div><div class="metric-sub">3 mois de pointe/an</div></div>`;
+
+  // Générer 36 mois avec 3 mois de pointe aléatoires / an
+  const labels=[], vals=[], bgColors=[];
+  const POINTE_MOIS = [3,6,9,3,6,9,3,6,9]; // mois 3,6,9 de chaque année
+  for(let m=1;m<=36;m++){
+    const isPointe = (m%3===0);
+    const v = Math.round(isPointe ? commBase+commExtra : commBase);
+    labels.push('M'+m);
+    vals.push(v);
+    bgColors.push(isPointe?'rgba(245,158,11,.7)':'rgba(245,158,11,.35)');
+  }
+
+  if(chartP) chartP.destroy();
+  chartP = new Chart(document.getElementById('chartP'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Non r\u00e9current',data:vals,backgroundColor:bgColors,borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.parsed.y)+'/mois'}}},
+    scales:{x:{ticks:{autoSkip:true,maxTicksLimit:12,font:{size:10},color:'#94a3b8'},grid:{display:false}},
+            y:{ticks:{callback:v=>fmtShort(v),font:{size:10},color:'#94a3b8'},grid:{color:'rgba(255,255,255,.04)'}}}}});
+
+  const sum36 = vals.reduce((a,b)=>a+b,0);
+  document.getElementById('p-alert').innerHTML = `<div class="alert alert-info">Sur 36 mois, vos commissions non r\u00e9currentes totalisent <strong>${fmt(sum36)}</strong> &mdash; soit une moyenne de <strong>${fmt(sum36/36)}/mois</strong>.</div>`;
+
+  calcC();
+}
+
+/* ── COMBINE ── */
+function calcC(){
+  const {rythme:rR,montant:mR,churn,pct:pR} = getR();
+  const {rythme:rP,montant:mP,pct:pP,extra} = getP();
+  const commParClient = mR*pR;
+  const commPonct = mP*pP*rP;
+  const commPonctExtra = mP*pP*extra;
+
+  const dataR=[], dataP=[], dataT=[];
+  let pf=0;
+  for(let m=1;m<=36;m++){
+    pf = pf*(1-churn)+rR;
+    const rec = Math.round(pf*commParClient);
+    const pon = Math.round(m%3===0 ? commPonct+commPonctExtra : commPonct);
+    const tot = rec+pon;
+    dataR.push(rec); dataP.push(pon); dataT.push(tot);
+  }
+
+  const labels = Array.from({length:36},(_,i)=>'M'+(i+1));
+  const maxTot = Math.max(...dataT);
+  const moisObjR = dataR.findIndex(v=>v>=TARGET_R);
+  const revTotal36 = dataT.reduce((a,b)=>a+b,0);
+
+  document.getElementById('c-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Pic total mensuel</div><div class="metric-val" style="color:var(--green)">${fmt(maxTot)}</div><div class="metric-sub">r\u00e9c. + non r\u00e9c.</div></div>
+    <div class="metric"><div class="metric-label">Revenu total 36 mois</div><div class="metric-val" style="color:var(--gold)">${fmt(revTotal36)}</div><div class="metric-sub">commissions cumul\u00e9es</div></div>
+    <div class="metric"><div class="metric-label">Moyenne mensuelle</div><div class="metric-val">${fmt(revTotal36/36)}</div><div class="metric-sub">sur 3 ans</div></div>
+    <div class="metric"><div class="metric-label">Objectif 2 000 \u20ac r\u00e9c.</div><div class="metric-val" style="color:${moisObjR>=0?'var(--green)':'var(--alert)'}">${moisObjR>=0?'M'+(moisObjR+1):'> 36 mois'}</div><div class="metric-sub">commissions r\u00e9currentes seules</div></div>`;
+
+  if(chartC) chartC.destroy();
+  chartC = new Chart(document.getElementById('chartC'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'R\u00e9current',data:dataR,backgroundColor:'rgba(59,130,246,.6)',borderRadius:2,stack:'s'},
+      {label:'Non r\u00e9current',data:dataP,backgroundColor:'rgba(245,158,11,.6)',borderRadius:2,stack:'s'},
+      {type:'line',label:'Total',data:dataT,borderColor:'#22c55e',borderWidth:2,pointRadius:0,fill:false,tension:.3,stack:undefined}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.parsed.y)}}},
+    scales:{x:{stacked:true,ticks:{autoSkip:true,maxTicksLimit:12,font:{size:10},color:'#94a3b8'},grid:{display:false}},
+            y:{stacked:false,ticks:{callback:v=>fmtShort(v),font:{size:10},color:'#94a3b8'},grid:{color:'rgba(255,255,255,.04)'}}}}});
+
+  const d36=dataT[35];
+  document.getElementById('c-phases').innerHTML = `
+    <div class="phase"><div class="phase-num">An 1 &mdash; mois 1 &agrave; 12</div><div class="phase-title">D\u00e9marrage</div>
+      <div class="phase-row">R\u00e9c. fin M12 : <strong>${fmt(dataR[11])}/mois</strong></div>
+      <div class="phase-row">Non r\u00e9c. moyen : <strong>${fmt(commPonct)}/mois</strong></div>
+      <div class="phase-row">Total M12 : <strong>${fmt(dataT[11])}/mois</strong></div></div>
+    <div class="phase"><div class="phase-num">An 2 &mdash; mois 13 &agrave; 24</div><div class="phase-title">Croissance</div>
+      <div class="phase-row">R\u00e9c. fin M24 : <strong>${fmt(dataR[23])}/mois</strong></div>
+      <div class="phase-row">Non r\u00e9c. moyen : <strong>${fmt(commPonct)}/mois</strong></div>
+      <div class="phase-row">Total M24 : <strong>${fmt(dataT[23])}/mois</strong></div></div>
+    <div class="phase"><div class="phase-num">An 3 &mdash; mois 25 &agrave; 36</div><div class="phase-title">Maturit\u00e9</div>
+      <div class="phase-row">R\u00e9c. fin M36 : <strong>${fmt(dataR[35])}/mois</strong></div>
+      <div class="phase-row">Non r\u00e9c. moyen : <strong>${fmt(commPonct)}/mois</strong></div>
+      <div class="phase-row">Total M36 : <strong>${fmt(d36)}/mois</strong></div></div>`;
+
+  document.getElementById('c-alert').innerHTML = `<div class="alert alert-ok">Sur 3 ans, vos commissions cumul\u00e9es atteignent <strong>${fmt(revTotal36)}</strong> &mdash; avec une courbe de progression constante gr\u00e2ce au socle r\u00e9current.</div>`;
+}
+
+calcR(); calcP();
+</script>
+</body>
+</html>
