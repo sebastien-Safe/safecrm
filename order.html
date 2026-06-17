@@ -269,6 +269,40 @@ function render() {
     $('#btn-pay').textContent = `Accepter et payer ${money(netTTC)} TTC`;
   }
 
+  // Encart mode de paiement
+  const pmInfo = document.getElementById('payment-method-info');
+  if (pmInfo) {
+    pmInfo.style.display = 'block';
+    if (isRecurrent) {
+      pmInfo.style.background = '#eff6ff';
+      pmInfo.style.border = '1px solid #bfdbfe';
+      pmInfo.style.color = '#1e40af';
+      pmInfo.innerHTML = `
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:1.3rem;flex-shrink:0">🏦</span>
+          <div>
+            <strong>Prélèvement SEPA requis</strong><br>
+            Votre abonnement mensuel est réglé par prélèvement bancaire automatique.
+            Sur la page suivante, renseignez votre <strong>IBAN</strong> pour autoriser le prélèvement mensuel.<br>
+            <span style="font-size:.78rem;opacity:.75">Sécurisé par Stripe — Mandat SEPA conforme PSD2. Résiliable à tout moment depuis votre espace client.</span>
+          </div>
+        </div>`;
+    } else {
+      pmInfo.style.background = '#f0fdf4';
+      pmInfo.style.border = '1px solid #bbf7d0';
+      pmInfo.style.color = '#166534';
+      pmInfo.innerHTML = `
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:1.3rem;flex-shrink:0">💳</span>
+          <div>
+            <strong>Carte bancaire — Apple Pay — Google Pay</strong><br>
+            Visa, Mastercard, American Express acceptés. Paiement 3D Secure.<br>
+            <span style="font-size:.78rem;opacity:.75">Aucune donnée de carte stockée par S@FE — traitement sécurisé par Stripe.</span>
+          </div>
+        </div>`;
+    }
+  }
+
   // Horodatage
   function updateTime() {
     $('#horodatage').textContent = new Date().toLocaleString('fr-FR', {
