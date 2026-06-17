@@ -1181,6 +1181,7 @@ function renderUserBadge() {
   setAvatar($('#user-avatar'), state.profile?.photo_url, name);
   // Onglet Administration visible uniquement pour les super-admins
   $all('.admin-only').forEach(el => { el.style.display = isAdmin() ? '' : 'none'; });
+  if (isAdmin()) checkResetFlag();
 }
 
 function setAvatar(el, photoUrl, name) {
@@ -2982,6 +2983,9 @@ function bindEvents() {
 
   // === Bordereaux (rechargement si changement période géré dans loadBordereaux) ===
 
+  // === Réinitialisation données test ===
+  setupResetConfirmInput();
+
   // === Changement de mot de passe ===
   document.getElementById('cp-save-btn')?.addEventListener('click', saveNewPassword);
   setupPasswordValidation();
@@ -3881,6 +3885,66 @@ async function marquerToutesLues() {
     .eq('type', 'new_contract')
     .is('read_at', null);
   await loadNotifContracts();
+}
+
+
+// ==========================================================================
+// RÉINITIALISATION DONNÉES TEST — admin, one-shot
+// ==========================================================================
+
+async function checkResetFlag() {
+  if (!isAdmin()) return;
+  const { data } = await sb.from('app_settings')
+    .select('value').eq('key', 'reset_done').maybeSingle();
+  const wrap = document.getElementById('reset-test-btn-wrap');
+  if (wrap) {
+    wrap.style.display = (data?.value === 'false') ? 'block' : 'none';
+  }
+}
+
+function openResetModal() {
+  document.getElementById('reset-confirm-input').value = '';
+  document.getElementById('reset-confirm-btn').disabled = true;
+  document.getElementById('reset-confirm-btn').style.opacity = '.4';
+  document.getElementById('reset-confirm-btn').style.cursor = 'not-allowed';
+  document.getElementById('reset-test-modal').classList.add('show');
+}
+
+function setupResetConfirmInput() {
+  const input = document.getElementById('reset-confirm-input');
+  const btn   = document.getElementById('reset-confirm-btn');
+  if (!input || !btn) return;
+  input.addEventListener('input', () => {
+    const ok = input.value.trim() === 'RÉINITIALISER';
+    btn.disabled = !ok;
+    btn.style.opacity = ok ? '1' : '.4';
+    btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+  });
+}
+
+async function executeReset() {
+  const input = document.getElementById('reset-confirm-input');
+  if (input.value.trim() !== 'RÉINITIALISER') return;
+
+  const btn = document.getElementById('reset-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = 'Réinitialisation en cours…';
+
+  try {
+    const { data, error } = await sb.rpc('reset_test_data');
+    if (error) throw new Error(error.message);
+
+    document.getElementById('reset-test-modal').classList.remove('show');
+    document.getElementById('reset-test-btn-wrap').style.display = 'none';
+
+    // Recharger les données
+    await renderAll();
+    alert('✅ Réinitialisation effectuée. Toutes les données de test ont été supprimées.');
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '🗑 Réinitialiser définitivement';
+  }
 }
 
 
