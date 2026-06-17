@@ -70,6 +70,12 @@
       <button data-view="admin" class="navlink admin-only" style="display:none">⚙️ Administration</button>
     </nav>
     <div class="sidebar-footer">
+      <div class="admin-only" id="reset-test-btn-wrap" style="display:none;margin-bottom:6px">
+        <button class="btn btn-out btn-sm" onclick="openResetModal()"
+          style="width:100%;color:var(--alert);border-color:var(--alert);font-size:.75rem">
+          ⚠️ Réinit. données test
+        </button>
+      </div>
       <a href="/Candy/" class="btn btn-out btn-sm admin-only" id="candy-link" style="display:none;text-decoration:none;text-align:center;margin-bottom:6px;display:none;align-items:center;gap:6px" title="C@NDY">
         <img src="/Candy/favicon.svg" style="width:16px;height:16px;border-radius:50%;flex-shrink:0"> C@NDY
       </a>
@@ -699,6 +705,34 @@
     <div class="modal-actions">
       <button class="btn btn-out" id="new-user-cancel-btn">Annuler</button>
       <button class="btn btn-pri" id="new-user-save-btn">Créer le compte</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODALE RÉINITIALISATION TEST ================= -->
+<div class="modal" id="reset-test-modal">
+  <div class="box" style="max-width:480px;border:2px solid var(--alert)">
+    <div style="text-align:center;font-size:2.5rem;margin-bottom:12px">⚠️</div>
+    <h3 style="color:var(--alert);text-align:center;margin-bottom:8px">Réinitialisation des données de test</h3>
+    <p class="mut" style="font-size:.88rem;text-align:center;margin-bottom:20px;line-height:1.6">
+      Cette action supprimera <strong style="color:#fff">définitivement</strong> tous les contacts, contrats, tâches, interactions, mandats et notifications.<br>
+      Les comptes utilisateurs seront conservés.<br><br>
+      Cette opération est <strong style="color:var(--alert)">irréversible</strong> et ne pourra être effectuée qu'une seule fois.
+    </p>
+    <div class="field" style="margin-bottom:20px">
+      <label style="font-size:.78rem;font-family:var(--ff-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--mut)">
+        Tapez <strong style="color:#fff">RÉINITIALISER</strong> pour confirmer
+      </label>
+      <input id="reset-confirm-input" type="text" placeholder="RÉINITIALISER"
+        style="background:var(--navy-2);border:1px solid var(--alert);border-radius:10px;padding:10px 14px;color:#fff;font-family:var(--ff-mono);font-size:.9rem;width:100%;outline:none;margin-top:6px">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-out" onclick="$('#reset-test-modal').classList.remove('show')">Annuler</button>
+      <button class="btn" id="reset-confirm-btn"
+        style="background:var(--alert);color:#fff;opacity:.4;cursor:not-allowed"
+        disabled onclick="executeReset()">
+        🗑 Réinitialiser définitivement
+      </button>
     </div>
   </div>
 </div>
