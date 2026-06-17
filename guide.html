@@ -142,6 +142,7 @@
   <a href="#suivi"><span class="toc-dot"></span><span class="toc-label">Suivi client</span></a>
   <a href="#rgpd"><span class="toc-dot"></span><span class="toc-label">RGPD</span></a>
   <a href="#commissions"><span class="toc-dot"></span><span class="toc-label">Commissions</span></a>
+  <a href="#mandat"><span class="toc-dot"></span><span class="toc-label">Mandat & signature</span></a>
 </nav>
 
 <!-- HERO -->
@@ -508,6 +509,82 @@
   </div>
   <div class="info" style="margin-top:12px">
     <strong>Processus de paiement</strong> — En début de mois, l'administrateur génère votre bordereau de commission pour le mois précédent et vous l'envoie par email. Vous émettez ensuite votre <strong>facture</strong> correspondante pour déclencher le virement. Aucune commission n'est versée sans facture.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── MANDAT ── -->
+<section class="section" id="mandat">
+  <div class="section-label">Votre contrat</div>
+  <h2>Signature du mandat d'agent commercial.</h2>
+  <p class="section-intro">À votre première connexion au CRM, vous devez lire et signer votre contrat de mandat avant d'accéder à l'interface. Cette étape est obligatoire et ne se fait qu'une seule fois.</p>
+
+  <div class="flow">
+    <div class="flow-item">
+      <div class="flow-num">1</div>
+      <div class="flow-body">
+        <h4>Lecture du contrat</h4>
+        <p>Le contrat de mandat d'agent commercial S@FE s'affiche dans son intégralité. Lisez-le attentivement — il définit vos droits, vos obligations, votre territoire, vos commissions et les conditions de résiliation.</p>
+        <div class="info-block gold" style="margin-top:10px">
+          <strong>Ce que couvre le contrat</strong> — Objet du mandat, non-exclusivité territoriale, durée indéterminée, obligations réciproques, RC Pro, rémunération sur facture, confidentialité 3 ans, accès CRM, droit applicable (Tribunal de Commerce de Paris).
+        </div>
+      </div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-num">2</div>
+      <div class="flow-body">
+        <h4>Vos informations</h4>
+        <p>Renseignez les champs obligatoires qui figureront dans votre contrat :</p>
+        <div class="screen" style="margin-top:10px">
+          <div class="screen-header">Champs à compléter</div>
+          <div class="screen-row"><span class="screen-label">Prénom / Nom *</span><span class="screen-value">Votre identité telle qu'elle figurera sur le contrat.</span></div>
+          <div class="screen-row"><span class="screen-label">Adresse complète *</span><span class="screen-value">Adresse professionnelle ou personnelle.</span></div>
+          <div class="screen-row"><span class="screen-label">Code postal + Ville *</span><span class="screen-value">Obligatoires pour la validité du contrat.</span></div>
+          <div class="screen-row"><span class="screen-label">Région *</span><span class="screen-value">Zone d'intervention principale — indicatif, sans exclusivité.</span></div>
+          <div class="screen-row"><span class="screen-label">SIRET / SIREN</span><span class="screen-value">Si vous êtes immatriculé (micro-entrepreneur, société).</span></div>
+          <div class="screen-row"><span class="screen-label">N° RSAC</span><span class="screen-value">Si déjà immatriculé au Registre Spécial des Agents Commerciaux. Le contrat peut servir à appuyer votre demande d'immatriculation si vous ne l'êtes pas encore.</span></div>
+          <div class="screen-row"><span class="screen-label">RC Pro</span><span class="screen-value">Cochez si vous avez une assurance Responsabilité Civile Professionnelle et renseignez l'assureur, le numéro de police et la date d'échéance. Fortement recommandée — sans RC Pro, une clause de responsabilité exclusive s'applique.</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-num">3</div>
+      <div class="flow-body">
+        <h4>Signature manuscrite</h4>
+        <p>Signez dans le cadre prévu avec votre souris ou votre doigt (mobile/tablette). La signature est capturée et associée au contenu exact du contrat via un <strong style="color:#fff">hash SHA-256</strong> — toute modification ultérieure invaliderait la signature.</p>
+        <div class="info-block" style="margin-top:10px">
+          <strong>Valeur probatoire</strong> — La signature est horodatée, associée à votre adresse IP, votre navigateur et un code OTP vérifié par email. Elle constitue une preuve de consentement électronique opposable.
+        </div>
+      </div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-num">4</div>
+      <div class="flow-body">
+        <h4>Confirmation par code OTP</h4>
+        <p>Un code à 6 chiffres est envoyé à votre adresse email. Saisissez-le dans le délai de <strong style="color:#fff">15 minutes</strong>. Ce code confirme que vous êtes bien le titulaire de l'adresse email associée au compte.</p>
+        <p style="margin-top:6px">Si vous ne recevez pas le code, vérifiez vos spams ou cliquez sur <strong style="color:#fff">Renvoyer un code</strong>.</p>
+      </div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-num">5</div>
+      <div class="flow-body">
+        <h4>Contrat signé — accès au CRM</h4>
+        <p>Votre contrat est enregistré avec un numéro de référence <strong style="color:#fff">SAFE-AC-2026-XXX</strong> généré automatiquement. Vous accédez immédiatement au CRM. Le contrat est conservé dans la base S@FE.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-block warn" style="margin-top:24px">
+    <strong>RSAC obligatoire</strong> — Le contrat prend pleinement effet à réception par S@FE de votre extrait d'immatriculation au RSAC. Si vous n'êtes pas encore immatriculé, le contrat signé peut être présenté au greffe du tribunal de commerce compétent pour appuyer votre demande. Contactez S@FE pour obtenir un exemplaire.
+  </div>
+
+  <div class="info-block" style="margin-top:12px">
+    <strong>Renouvellement de la grille tarifaire</strong> — En cas de modification des taux de commission, vous recevrez une notification dans le CRM. Une re-signature de l'annexe grille sera requise avant de continuer à utiliser le CRM. Le préavis est de 15 jours.
+  </div>
+
+  <div class="info-block ok" style="margin-top:12px">
+    <strong>Résiliation et accès CRM</strong> — En cas de résiliation du contrat, quelle qu'en soit la cause, votre accès au CRM est révoqué à la date d'effet. Vos contacts restent la propriété de S@FE conformément aux clauses de confidentialité.
   </div>
 </section>
 
