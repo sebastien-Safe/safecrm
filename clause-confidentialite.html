@@ -184,6 +184,17 @@ async function init() {
   if (!session) { window.location.href = '/'; return; }
   currentUser = session.user;
 
+  // Mode visualisation (?view=id)
+  const viewId = new URLSearchParams(window.location.search).get('view');
+  if (viewId) {
+    const { data: clause } = await sb.from('clauses_confidentialite')
+      .select('*').eq('id', viewId).eq('user_id', currentUser.id).maybeSingle();
+    if (clause) {
+      renderViewMode(clause);
+      return;
+    }
+  }
+
   // Vérifier si déjà signé
   const { data: existing } = await sb.from('clauses_confidentialite')
     .select('id').eq('user_id', currentUser.id).maybeSingle();
@@ -282,6 +293,43 @@ async function signer() {
 }
 
 init();
+
+function renderViewMode(clause) {
+  // Masquer la section signature
+  document.querySelector('.sig-section').style.display = 'none';
+  // Afficher un bloc de confirmation en lecture seule
+  const page = document.querySelector('.page');
+  const viewBlock = document.createElement('div');
+  viewBlock.style.cssText = 'background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:14px;padding:24px;margin-top:0';
+  const signedAt = new Date(clause.signed_at).toLocaleString('fr-FR', {
+    timeZone:'Europe/Paris', day:'2-digit', month:'long', year:'numeric',
+    hour:'2-digit', minute:'2-digit'
+  });
+  viewBlock.innerHTML = `
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:2.5rem;margin-bottom:10px">✅</div>
+      <div style="font-family:var(--ff);font-size:1.1rem;font-weight:800;color:#fff">Clause signée électroniquement</div>
+      <div style="font-size:.85rem;color:var(--mut);margin-top:6px">Le ${signedAt} (Europe/Paris)</div>
+    </div>
+    ${clause.signature ? `
+    <div style="margin-bottom:16px">
+      <div style="font-size:.72rem;font-family:var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:8px">Signature apposée</div>
+      <div style="background:#fff;border-radius:10px;overflow:hidden;padding:4px">
+        <img src="${clause.signature}" style="width:100%;max-height:150px;object-fit:contain" alt="Signature">
+      </div>
+    </div>` : ''}
+    <div style="font-size:.78rem;color:var(--mut);line-height:1.6">
+      <strong style="color:var(--mut-2)">Navigateur :</strong> ${clause.user_agent ? clause.user_agent.slice(0,80) + '…' : '—'}<br>
+      <strong style="color:var(--mut-2)">Référence :</strong> ${clause.id}
+    </div>
+    <div style="text-align:center;margin-top:20px">
+      <a href="/guide.html" style="display:inline-block;background:var(--blue-2);color:#fff;font-family:var(--ff);font-weight:700;font-size:.9rem;padding:11px 24px;border-radius:10px;text-decoration:none">← Retour au guide</a>
+    </div>`;
+  page.appendChild(viewBlock);
+  // Scroll vers le bas
+  viewBlock.scrollIntoView({ behavior: 'smooth' });
+}
+
 </script>
 </body>
 </html>
