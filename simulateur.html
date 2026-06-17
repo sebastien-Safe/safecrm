@@ -94,6 +94,17 @@ td.green{color:var(--green);font-weight:600}
         <div class="ctrl-row"><input type="range" min="0" max="8" step="1" value="3" id="r-churn" oninput="calcR()"><span class="val" id="r-churn-v">3%</span></div></div>
       <div class="ctrl"><label>Commission r&eacute;currente</label>
         <div class="ctrl-row"><input type="range" min="8" max="15" step="1" value="10" id="r-pct" oninput="calcR()"><span class="val" id="r-pct-v">10%</span></div></div>
+      <div class="ctrl" style="grid-column:1/-1;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:8px;padding:10px 14px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.84rem">
+          <input type="checkbox" id="r-dci" onchange="calcR()" style="width:16px;height:16px;accent-color:var(--gold);flex-shrink:0">
+          Je suis <strong style="color:var(--gold)">DCI</strong> &mdash; inclure la prime de cooptation &eacute;quipe <strong style="color:var(--gold)">+3% du CA &eacute;quipe</strong>
+        </label>
+        <div id="r-dci-ctrl" style="display:none;margin-top:10px" class="ctrl-row">
+          <label style="min-width:180px;color:var(--mut);font-size:.7rem">CA &eacute;quipe ce mois</label>
+          <input type="range" min="0" max="10000" step="100" value="1500" id="r-dci-ca" oninput="calcR()" style="flex:1;accent-color:var(--gold)">
+          <span class="val" id="r-dci-ca-v">1&nbsp;500 &euro;</span>
+        </div>
+      </div>
     </div>
     <div class="metrics" id="r-metrics"></div>
     <div class="phases" id="r-phases"></div>
