@@ -211,8 +211,20 @@ function filtrerPatients() {
   ) : PATIENTS);
 }
 
+const PATIENT_PAGES = {
+  1: '/Candy/patient-1-dupont-marie.html',
+  2: '/Candy/patient-2-bernard-luc.html',
+  3: '/Candy/patient-3-lefevre-sophie.html',
+  4: '/Candy/patient-4-moreau-paul.html',
+  5: '/Candy/patient-5-petit-isabelle.html',
+};
+
 function ouvrirPatient(id) {
-  window.location.href = '/Candy/dossier.html?id=' + id;
+  if (PATIENT_PAGES[id]) {
+    window.location.href = PATIENT_PAGES[id];
+  } else {
+    window.location.href = '/Candy/dossier.html?id=' + id;
+  }
 }
 
 renderPatients(PATIENTS);
