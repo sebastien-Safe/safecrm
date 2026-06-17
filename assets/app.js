@@ -295,6 +295,7 @@ async function loadAll() {
   renderAll();
   checkRgpdExpiry(); // Vérification RGPD automatique au login
   loadBordereaux();  // Bordereaux admin
+  loadHelpRequests(); // Demandes d'assistance
 }
 
 async function loadContacts() {
@@ -2160,17 +2161,31 @@ function openHelpModal() {
   $('#help-modal').classList.add('show');
 }
 
-function sendHelp() {
+async function sendHelp() {
   const subject = $('#help-subject').value;
   const message = $('#help-message').value.trim();
   if (!message) { alert('Décrivez votre demande.'); return; }
-  const userInfo = state.user
-    ? `${state.profile?.prenom || ''} <${state.user.email}> (id ${state.user.id.slice(0, 8)})`
-    : 'anonyme';
-  const body = `${message}\n\n— Envoyé depuis le CRM S@FE par ${userInfo} le ${new Date().toLocaleString('fr-FR')}.`;
-  const href = `mailto:contact@safe-digitalisation.fr?subject=${encodeURIComponent('[CRM Assistance] ' + subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = href;
-  $('#help-modal').classList.remove('show');
+  const btn = $('#help-send-btn');
+  btn.disabled = true;
+  btn.textContent = 'Envoi…';
+  try {
+    const { error } = await sb.from('help_requests').insert({
+      user_id: state.user.id,
+      sujet:   subject,
+      message,
+      statut:  'ouvert',
+    });
+    if (error) throw new Error(error.message);
+    $('#help-modal').classList.remove('show');
+    $('#help-message').value = '';
+    alert('✅ Votre demande a été transmise à l\'administrateur.');
+    await loadHelpRequests();
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Envoyer';
+  }
 }
 
 // --- Mes données (droits RGPD de l'utilisateur sur le CRM) ---
@@ -3324,6 +3339,118 @@ async function marquerBordereauEnvoye(userId, periode) {
   }, { onConflict: 'user_id,periode' });
   if (error) { alert('Erreur : ' + error.message); return; }
   await renderBordereaux();
+}
+
+
+// ==========================================================================
+// DEMANDES D'ASSISTANCE
+// ==========================================================================
+
+const HELP_SEEN_KEY = 'safe_help_seen'; // { requestId: timestamp }
+
+async function loadHelpRequests() {
+  const block    = document.getElementById('help-requests-alert');
+  const myBlock  = document.getElementById('my-help-requests-alert');
+
+  // Charger toutes les demandes ouvertes
+  const { data, error } = await sb.from('help_requests')
+    .select('*')
+    .eq('statut', 'ouvert')
+    .order('created_at', { ascending: false });
+
+  if (error) { console.error('loadHelpRequests:', error); return; }
+  const requests = data || [];
+
+  // ── VUE ADMIN ──
+  if (isAdmin() && block) {
+    const adminRequests = requests; // toutes les demandes ouvertes
+    if (adminRequests.length) {
+      block.style.display = 'block';
+      const list = document.getElementById('help-requests-list');
+      list.innerHTML = adminRequests.map(r => {
+        const profile = state.profilesById?.[r.user_id];
+        const nom = profile?.prenom || r.user_id.slice(0,8);
+        return `<div class="mini-item">
+          <div>
+            <div class="t">${escapeHtml(nom)} — ${escapeHtml(r.sujet)}</div>
+            <div class="s">${escapeHtml(r.message.slice(0,120))}${r.message.length > 120 ? '…' : ''}</div>
+            <div class="s mut" style="font-size:.75rem">${formatDate(r.created_at.slice(0,10))}</div>
+          </div>
+          <button class="btn btn-ok btn-sm" style="margin-left:8px;font-size:.72rem;background:var(--ok);color:#fff;border:none;flex-shrink:0"
+            onclick="traiterHelpRequest('${r.id}')">
+            ✅ Traité
+          </button>
+        </div>`;
+      }).join('');
+    } else {
+      block.style.display = 'none';
+    }
+  }
+
+  // ── VUE UTILISATEUR (ses propres demandes) ──
+  if (myBlock) {
+    const seen = JSON.parse(localStorage.getItem(HELP_SEEN_KEY) || '{}');
+    const now  = Date.now();
+    const myRequests = requests.filter(r => r.user_id === state.user?.id);
+
+    // Filtrer : afficher si pas vu, ou vu il y a plus de 4h
+    const toShow = myRequests.filter(r => {
+      const seenAt = seen[r.id];
+      return !seenAt || (now - seenAt) > 4 * 60 * 60 * 1000;
+    });
+
+    if (toShow.length) {
+      myBlock.style.display = 'block';
+      const myList = document.getElementById('my-help-requests-list');
+      myList.innerHTML = toShow.map(r => `
+        <div class="mini-item">
+          <div>
+            <div class="t">${escapeHtml(r.sujet)}</div>
+            <div class="s">${escapeHtml(r.message.slice(0,100))}${r.message.length > 100 ? '…' : ''}</div>
+            <div class="s mut" style="font-size:.75rem">Envoyée le ${formatDate(r.created_at.slice(0,10))} — En attente de traitement</div>
+          </div>
+          <button class="btn btn-out btn-sm" style="margin-left:8px;font-size:.72rem;flex-shrink:0"
+            onclick="vuHelpRequest('${r.id}')">
+            👁 Vu
+          </button>
+          <button class="btn btn-danger btn-sm" style="margin-left:4px;font-size:.72rem;flex-shrink:0"
+            onclick="terminerHelpRequest('${r.id}')">
+            ✕ Terminé
+          </button>
+        </div>`).join('');
+    } else {
+      myBlock.style.display = 'none';
+    }
+  }
+}
+
+async function traiterHelpRequest(id) {
+  if (!confirm('Marquer cette demande comme traitée ?')) return;
+  const { error } = await sb.from('help_requests').update({
+    statut:     'traite',
+    treated_at: new Date().toISOString(),
+    treated_by: state.user.id,
+  }).eq('id', id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  await loadHelpRequests();
+}
+
+function vuHelpRequest(id) {
+  const seen = JSON.parse(localStorage.getItem(HELP_SEEN_KEY) || '{}');
+  seen[id] = Date.now();
+  localStorage.setItem(HELP_SEEN_KEY, JSON.stringify(seen));
+  loadHelpRequests();
+}
+
+async function terminerHelpRequest(id) {
+  if (!confirm('Marquer cette demande comme terminée ? Elle disparaîtra de vos alertes.')) return;
+  const { error } = await sb.from('help_requests').update({
+    statut:     'traite',
+    treated_at: new Date().toISOString(),
+    treated_by: state.user.id,
+  }).eq('id', id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  await loadHelpRequests();
 }
 
 
