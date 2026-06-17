@@ -320,6 +320,8 @@ async function loadAll() {
   loadBordereaux();     // Bordereaux admin
   loadNotifContracts(); // Notifications nouveaux contrats (admin)
   loadBordereauDCI();   // Rappel facturation DCI
+  loadMessagesDCI();    // Messages du DCI (niveau 1)
+  loadCooptationDCI();  // Prime cooptation DCI
   loadHelpRequests();   // Demandes d'assistance
   loadUpsellOpportunities(); // Potentiel montée en gamme
   loadChurnRisk();           // Risque résiliation
@@ -4353,5 +4355,197 @@ function openAddInteraction(contactId) {
     modal.classList.add('show');
   }
 }
+
+// ==========================================================================
+// BLOC 5 — GESTION ÉQUIPE DCI
+// ==========================================================================
+
+async function openEquipeModal() {
+  document.getElementById('equipe-modal')?.classList.add('show');
+  await loadEquipe();
+}
+
+async function loadEquipe() {
+  const myId = state.user?.id;
+
+  // Charger les membres de l'équipe (niveau 1 rattachés à ce DCI)
+  const { data: membres, error } = await sb
+    .from('profiles')
+    .select('id, prenom, nom, profil_complet, profil_revocation_flag')
+    .eq('dci_parent_id', myId)
+    .eq('role', 'user');
+
+  if (error) { console.error('loadEquipe:', error); return; }
+  const equipe = membres || [];
+
+  // Stats : CA et contrats de chaque membre
+  const memberIds = equipe.map(m => m.id);
+  let caTotal = 0;
+  let allContracts = [];
+
+  if (memberIds.length) {
+    const { data: cts } = await sb
+      .from('contracts')
+      .select('created_by, montant, statut, recurrence')
+      .in('created_by', memberIds)
+      .not('statut', 'eq', 'Terminé');
+    allContracts = cts || [];
+    caTotal = allContracts.reduce((s, c) => s + (Number(c.montant) || 0), 0);
+  }
+
+  const primeCooptation = Math.round(caTotal * 0.03);
+
+  // Mettre à jour les stats
+  document.getElementById('eq-nb-membres').textContent  = equipe.length;
+  document.getElementById('eq-ca-total').textContent    = caTotal.toLocaleString('fr-FR') + ' €';
+  document.getElementById('eq-cooptation').textContent  = primeCooptation.toLocaleString('fr-FR') + ' €';
+
+  // Rendu des membres
+  const list = document.getElementById('equipe-membres-list');
+  if (!equipe.length) {
+    list.innerHTML = '<div class="mut" style="font-size:.85rem;padding:12px 0;text-align:center">Aucun membre dans votre équipe pour le moment.</div>';
+    return;
+  }
+
+  list.innerHTML = equipe.map(m => {
+    const mCts    = allContracts.filter(c => c.created_by === m.id);
+    const mCA     = mCts.reduce((s, c) => s + (Number(c.montant) || 0), 0);
+    const mPrime  = Math.round(mCA * 0.03);
+    const profil  = m.profil_complet ? '🟢' : '🔴';
+    const revoc   = m.profil_revocation_flag ? ' <span style="font-size:.65rem;color:var(--alert)">⚠ Révocation</span>' : '';
+    return `
+      <div class="panel-block" style="padding:12px 16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-weight:600;font-size:.88rem;color:var(--mut-2)">${profil} ${escapeHtml(m.prenom||'')} ${escapeHtml(m.nom||'')}${revoc}</div>
+            <div class="mut" style="font-size:.76rem;margin-top:3px">
+              ${mCts.length} contrat${mCts.length>1?'s':''} actif${mCts.length>1?'s':''} ·
+              CA : <strong style="color:var(--accent)">${mCA.toLocaleString('fr-FR')} €</strong> ·
+              Votre prime : <strong style="color:var(--gold)">${mPrime.toLocaleString('fr-FR')} €</strong>
+            </div>
+          </div>
+          <button class="btn btn-out btn-sm" style="font-size:.72rem;padding:5px 10px"
+            onclick="envoyerMessageMembre('${m.id}', '${escapeHtml(m.prenom||'')}')">
+            💬 Message
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function envoyerMessageEquipe() {
+  const texte = document.getElementById('equipe-message-text').value.trim();
+  if (!texte) { alert('Rédigez un message avant d'envoyer.'); return; }
+
+  const myId = state.user?.id;
+  const { data: membres } = await sb.from('profiles')
+    .select('id').eq('dci_parent_id', myId).eq('role', 'user');
+
+  if (!membres?.length) { alert('Aucun membre dans votre équipe.'); return; }
+
+  const inserts = membres.map(m => ({
+    user_id: m.id,
+    type:    'message_dci',
+    titre:   '💬 Message de votre DCI',
+    message: texte,
+    data:    { from_id: myId, from_name: state.profile?.prenom || 'Votre DCI' }
+  }));
+
+  const { error } = await sb.from('notifications').insert(inserts);
+  if (error) { alert('Erreur : ' + error.message); return; }
+
+  document.getElementById('equipe-message-text').value = '';
+  alert('✅ Message envoyé à toute votre équipe (' + membres.length + ' membre' + (membres.length>1?'s':'') + ').');
+}
+
+async function envoyerMessageMembre(memberId, prenom) {
+  const texte = prompt(`Message pour ${prenom} :`);
+  if (!texte?.trim()) return;
+
+  const { error } = await sb.from('notifications').insert({
+    user_id: memberId,
+    type:    'message_dci',
+    titre:   '💬 Message de votre DCI',
+    message: texte.trim(),
+    data:    { from_id: state.user?.id, from_name: state.profile?.prenom || 'Votre DCI' }
+  });
+  if (error) { alert('Erreur : ' + error.message); return; }
+  alert('✅ Message envoyé à ' + prenom + '.');
+}
+
+// Notification messages DCI pour les membres niveau 1
+async function loadMessagesDCI() {
+  const block = document.getElementById('messages-dci-alert');
+  if (!block || isAtLeast('dci')) return; // Uniquement pour les level 1
+
+  const { data, error } = await sb.from('notifications')
+    .select('*')
+    .eq('user_id', state.user?.id)
+    .eq('type', 'message_dci')
+    .is('read_at', null)
+    .order('created_at', { ascending: false })
+    .limit(5);
+
+  if (error || !data?.length) { block.style.display = 'none'; return; }
+
+  block.style.display = 'block';
+  const list = document.getElementById('messages-dci-list');
+  list.innerHTML = data.map(n => {
+    const from = n.data?.from_name || 'Votre DCI';
+    return `
+      <div class="mini-item">
+        <div>
+          <div class="t">💬 ${escapeHtml(from)}</div>
+          <div class="s">${escapeHtml(n.message || '')}</div>
+          <div class="s mut" style="font-size:.72rem">${formatDate(n.created_at.slice(0,10))}</div>
+        </div>
+        <button class="btn btn-ok btn-sm" style="font-size:.7rem;margin-left:8px;flex-shrink:0;background:var(--ok);color:#fff;border:none"
+          onclick="marquerNotifLue('${n.id}')">✅ Lu</button>
+      </div>`;
+  }).join('');
+}
+
+// Ajouter prime de cooptation dans loadBordereauDCI
+async function loadCooptationDCI() {
+  if (!isAtLeast('dci') || !isRole('dci')) return;
+  const myId = state.user?.id;
+
+  // CA de l'équipe ce mois
+  const now   = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+  const { data: membres } = await sb.from('profiles')
+    .select('id').eq('dci_parent_id', myId).eq('role', 'user');
+  if (!membres?.length) return;
+
+  const { data: cts } = await sb.from('contracts')
+    .select('montant, date_debut, recurrence, statut')
+    .in('created_by', membres.map(m => m.id))
+    .not('statut', 'eq', 'Terminé');
+
+  if (!cts?.length) return;
+
+  const caEquipe = cts.reduce((s, c) => s + (Number(c.montant) || 0), 0);
+  const prime    = Math.round(caEquipe * 0.03);
+
+  if (prime <= 0) return;
+
+  // Ajouter une ligne dans l'alerte bordereau DCI
+  const list = document.getElementById('my-bordereau-list');
+  if (!list) return;
+  const existing = list.innerHTML;
+  if (existing && prime > 0) {
+    list.innerHTML += `
+      <div class="mini-item" style="margin-top:8px;border-top:1px solid var(--line);padding-top:8px">
+        <div>
+          <div class="t">🤝 Prime de cooptation équipe</div>
+          <div class="s">CA équipe ce mois : ${caEquipe.toLocaleString('fr-FR')} € · Prime 3% : <strong style="color:var(--gold)">${prime.toLocaleString('fr-FR')} €</strong></div>
+          <div class="s mut" style="font-size:.72rem">À inclure dans votre facture mensuelle</div>
+        </div>
+      </div>`;
+  }
+}
+
 
 init()
