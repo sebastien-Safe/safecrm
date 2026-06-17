@@ -476,9 +476,12 @@ function renderDashboard() {
     alertBlock.style.display = 'none';
   }
 
-  $('#stat-contacts').textContent = state.contacts.length;
-  $('#stat-clients').textContent = state.contacts.filter(c => c.statut === 'Client').length;
-  $('#stat-contracts').textContent = state.contracts.filter(c => ['Contrat en cours', 'Envoyé'].includes(c.statut)).length;
+  const myId = state.user?.id;
+  const myContacts  = state.contacts.filter(c => c.created_by === myId);
+  const myContracts = state.contracts.filter(c => c.created_by === myId);
+  $('#stat-contacts').textContent = myContacts.length;
+  $('#stat-clients').textContent = myContacts.filter(c => c.statut === 'Client').length;
+  $('#stat-contracts').textContent = myContracts.filter(c => !['Terminé','Résilié'].includes(c.statut)).length;
   $('#stat-tasks-late').textContent = state.tasks.filter(t => isOverdue(t.echeance, t.statut)).length;
 
   // Tâches à venir / en retard
@@ -535,7 +538,7 @@ function renderContacts() {
   const list = getFilteredContacts();
   const tbody = $('#contacts-tbody');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty">Aucun contact ne correspond aux filtres.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">Aucun contact ne correspond aux filtres.</td></tr>`;
     return;
   }
   tbody.innerHTML = list.map(c => {
@@ -712,7 +715,7 @@ function renderContracts() {
   const list = getFilteredContracts();
   const tbody = $('#contracts-tbody');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="10" class="empty">Aucun contrat ne correspond aux filtres.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="empty">Aucun contrat ne correspond aux filtres.</td></tr>`;
     return;
   }
   tbody.innerHTML = list.map(ct => {
@@ -733,7 +736,6 @@ function renderContracts() {
       <td class="${isOverdue(ct.date_echeance, ct.statut) ? 'overdue' : ''}">${formatDate(ct.date_echeance)}</td>
       <td><span class="badge ${CONTRACT_STATUT_BADGE[ct.statut] || 'badge-gray'}">${escapeHtml(ct.statut)}</span>${ct.resilié_at ? '<br><span style="font-size:.7rem;color:#fc8181;font-weight:600">🔔 Résiliation demandée</span>' : ''}</td>
       <td class="nowrap">${escapeHtml(creatorName(ct.created_by))}</td>
-      <td></td>
     </tr>`;
   }).join('');
 }
