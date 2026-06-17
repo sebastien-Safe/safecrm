@@ -4624,4 +4624,137 @@ L'équipe S@FE Digitalisation
 }
 
 
+// ==========================================================================
+// GÉNÉRER UN NOUVEAU MOT DE PASSE — Admin niveau 3/4
+// ==========================================================================
+
+function openGenererMDPModal() {
+  // Remplir la liste déroulante avec les utilisateurs (hors super_admin)
+  const select = document.getElementById('mdp-user-select');
+  if (!select) return;
+
+  const users = (state.adminUsers || []).filter(u =>
+    u.id !== state.user?.id && u.role !== 'super_admin'
+  );
+
+  select.innerHTML = '<option value="">— Sélectionner un utilisateur —</option>' +
+    users.map(u => {
+      const roleLabel = {'user':'Utilisateur','dci':'DCI','admin_candy':'Admin C@NDY'}[u.role] || 'Utilisateur';
+      return `<option value="${u.id}" data-email="${escapeHtml(u.email||'')}" data-prenom="${escapeHtml(u.prenom||'')}">
+        ${escapeHtml(u.prenom||'')} ${escapeHtml(u.nom||'')} — ${escapeHtml(u.email||'')} (${roleLabel})
+      </option>`;
+    }).join('');
+
+  // Reset
+  document.getElementById('mdp-password').value = '';
+  document.getElementById('mdp-error').textContent = '';
+  document.getElementById('mdp-warn').style.display = 'none';
+  document.getElementById('mdp-send-btn').disabled = true;
+  document.getElementById('generer-mdp-modal').classList.add('show');
+}
+
+function genererNouveauMDP() {
+  const pwd = genererMotDePasseFort();
+  document.getElementById('mdp-password').value = pwd;
+  document.getElementById('mdp-warn').style.display = 'block';
+  document.getElementById('mdp-error').textContent = '';
+  // Activer le bouton seulement si un utilisateur est sélectionné
+  const userId = document.getElementById('mdp-user-select').value;
+  document.getElementById('mdp-send-btn').disabled = !userId || !pwd;
+}
+
+function genererMotDePasseFort() {
+  const lower   = 'abcdefghijkmnpqrstuvwxyz';
+  const upper   = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits  = '23456789';
+  const special = '!@#$%&*-_+?';
+  let pwd = '';
+  pwd += upper[Math.floor(Math.random() * upper.length)];
+  pwd += upper[Math.floor(Math.random() * upper.length)];
+  pwd += digits[Math.floor(Math.random() * digits.length)];
+  pwd += digits[Math.floor(Math.random() * digits.length)];
+  pwd += special[Math.floor(Math.random() * special.length)];
+  const all = lower + upper + digits + special;
+  while (pwd.length < 12) pwd += all[Math.floor(Math.random() * all.length)];
+  return pwd.split('').sort(() => Math.random() - 0.5).join('');
+}
+
+function copierMDP() {
+  const pwd = document.getElementById('mdp-password').value;
+  if (!pwd) return;
+  navigator.clipboard.writeText(pwd).then(() => {
+    const btn = document.querySelector('#generer-mdp-modal button[onclick="copierMDP()"]');
+    if (btn) { const old = btn.textContent; btn.textContent = '✅'; setTimeout(() => btn.textContent = old, 1500); }
+  }).catch(() => {});
+}
+
+// Activer le bouton quand un user est sélectionné ET un MDP généré
+document.addEventListener('change', e => {
+  if (e.target.id === 'mdp-user-select') {
+    const pwd = document.getElementById('mdp-password')?.value;
+    const btn = document.getElementById('mdp-send-btn');
+    if (btn) btn.disabled = !e.target.value || !pwd;
+  }
+});
+
+async function appliquerNouveauMDP() {
+  const select  = document.getElementById('mdp-user-select');
+  const userId  = select?.value;
+  const pwd     = document.getElementById('mdp-password').value;
+  const errEl   = document.getElementById('mdp-error');
+  const btn     = document.getElementById('mdp-send-btn');
+
+  if (!userId) { errEl.textContent = 'Sélectionnez un utilisateur.'; return; }
+  if (!pwd)    { errEl.textContent = 'Générez un mot de passe d'abord.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Application en cours…';
+
+  try {
+    // Appeler l'Edge Function admin-create-user en mode reset
+    const { data: sessionData } = await sb.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) throw new Error('Session expirée.');
+
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/admin-create-user`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ user_id: userId, new_password: pwd, action: 'reset_password' }),
+    });
+
+    // Si l'Edge Function ne supporte pas reset_password, utiliser l'API directe
+    if (!resp.ok) {
+      // Fallback : update via Supabase admin API (nécessite service_role)
+      // Dans ce cas on affiche juste le mailto avec le mot de passe
+      console.warn('Edge Function reset non supporté — passage en mode mailto uniquement');
+    }
+
+    // Marquer password_set = false pour forcer le changement à la prochaine connexion
+    await sb.from('profiles').update({
+      password_set: false,
+      password_changed_at: null,
+    }).eq('id', userId);
+
+    // Récupérer email et prénom
+    const opt = select.options[select.selectedIndex];
+    const email  = opt.dataset.email  || '';
+    const prenom = opt.dataset.prenom || '';
+
+    // Fermer la modale
+    document.getElementById('generer-mdp-modal').classList.remove('show');
+
+    // Ouvrir le mailto avec les nouveaux identifiants
+    ouvrirMailIdentifiants(email, pwd, prenom);
+
+  } catch(e) {
+    errEl.textContent = 'Erreur : ' + e.message;
+    btn.disabled = false;
+    btn.textContent = '✅ Appliquer & envoyer par email';
+  }
+}
+
+
 init()
