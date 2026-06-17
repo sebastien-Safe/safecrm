@@ -3807,7 +3807,7 @@ ${state.profile?.prenom || ''}`
           ⚠️ Le virement sera effectué à réception de votre facture. Sans facture, aucun paiement ne sera déclenché.
         </div>
       </div>
-      <a href="mailto:facturation@safe-digitalisation.fr?subject=${mailSubject}&body=${mailBody}"
+      <a href="mailto:compta@safe-digitalisation.fr?subject=${mailSubject}&body=${mailBody}"
         class="btn btn-pri" style="font-size:.78rem;padding:8px 14px;text-decoration:none">
         ✉️ Envoyer ma facture à S@FE
       </a>
