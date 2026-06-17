@@ -419,8 +419,11 @@ function interactAlert(contractId, contactId, days) {
   if (days <= 3)      dismissed[contractId].seen3 = true;
   else if (days <= 7) dismissed[contractId].seen7 = true;
   localStorage.setItem('safe_dismissed_alerts_v2', JSON.stringify(dismissed));
-  // Basculer sur la fiche contact
-  if (contactId) openContactModal(contactId);
+  // Basculer sur la vue Contacts puis ouvrir la fiche
+  if (contactId) {
+    switchView('contacts');
+    setTimeout(() => openContactModal(contactId), 50);
+  }
   renderDashboard();
 }
 
