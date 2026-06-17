@@ -543,6 +543,7 @@ async function initApp(token, user){
   document.getElementById('dash-prenom').textContent = currentUser.prenom;
 
   await Promise.all([loadStats(), loadContacts(), loadJournal()]);
+  loadNouveauxContrats();
   renderQuickAutomations();
   showView('dashboard');
   loadNouveauxContrats();
@@ -551,6 +552,37 @@ async function initApp(token, user){
 /* ============================================================
    STATS DASHBOARD
    ============================================================ */
+
+// Nouveaux contrats dashboard
+async function loadNouveauxContrats() {
+  const bloc = document.getElementById('dash-nouveaux-contrats');
+  if (!bloc) return;
+  const recent = [...allContracts]
+    .filter(ct => ct.statut !== 'Terminé' && ct.statut !== 'Résilié')
+    .sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0))
+    .slice(0,5);
+  if (!recent.length) {
+    bloc.innerHTML = '<div style="text-align:center;padding:16px;color:var(--mut);font-size:.85rem">Aucun contrat récent.</div>';
+    return;
+  }
+  bloc.innerHTML = recent.map(ct => {
+    const contact   = allContacts.find(c=>c.id===ct.contact_id);
+    const nomClient = contact?.entreprise || contact?.nom || '—';
+    const emoji     = emojiProduit(ct.type);
+    const montant   = ct.montant ? Number(ct.montant).toLocaleString('fr-FR')+' €' : '—';
+    const dateStr   = ct.created_at ? new Date(ct.created_at).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    const sColor    = {'Contrat en cours':'var(--ok)','En attente de signature':'var(--gold)','Envoyé':'var(--accent)'}[ct.statut]||'var(--mut)';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);flex-wrap:wrap;gap:6px">'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +'<span style="font-size:1.3rem">'+emoji+'</span>'
+      +'<div><div style="font-size:.88rem;font-weight:600;color:#fff">'+nomClient+'</div>'
+      +'<div style="font-size:.76rem;color:var(--mut)">'+(ct.type||'—')+(ct.formule?' · '+ct.formule:'')+'</div></div></div>'
+      +'<div style="text-align:right;flex-shrink:0">'
+      +'<div style="font-size:.85rem;font-weight:600;color:var(--gold)">'+montant+'</div>'
+      +'<div style="font-size:.72rem;color:'+sColor+'">'+(ct.statut||'—')+' · '+dateStr+'</div></div></div>';
+  }).join('');
+}
+
 async function loadStats(){
   try {
     const [contacts, contracts, tasks] = await Promise.all([
