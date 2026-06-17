@@ -1165,3 +1165,96 @@ function scheduleTokenRefresh() {
 </script>
 </body>
 </html>
+
+// ==========================================================================
+// BLOC 7 — UNITÉS COMMERCIALES (Super Admin Work)
+// ==========================================================================
+
+let ucData = { dcis: [], membres: [], contrats: [] };
+
+async function loadUC() {
+  try {
+    // Charger les profils DCI
+    const [rDCIs, rMembres, rContrats] = await Promise.all([
+      sbGet('profiles', 'select=id,prenom,nom,role,region,profil_complet,profil_revocation_flag&role=eq.dci'),
+      sbGet('profiles', 'select=id,prenom,nom,role,dci_parent_id,profil_complet,profil_revocation_flag,region&role=eq.user'),
+      sbGet('contracts', 'select=id,created_by,montant,statut,type&statut=neq.Terminé'),
+    ]);
+    ucData.dcis      = rDCIs     || [];
+    ucData.membres   = rMembres  || [];
+    ucData.contrats  = rContrats || [];
+
+    // Stats globales
+    const totalCA = ucData.contrats.reduce((s,c)=>s+(Number(c.montant)||0),0);
+    const totalPrime = Math.round(totalCA * 0.03);
+    document.getElementById('uc-stats').innerHTML = `
+      <div class="stat-card"><div class="stat-n">${ucData.dcis.length}</div><div class="stat-l">DCIs actifs</div></div>
+      <div class="stat-card"><div class="stat-n">${ucData.membres.length}</div><div class="stat-l">Utilisateurs niveau 1</div></div>
+      <div class="stat-card"><div class="stat-n">${totalCA.toLocaleString('fr-FR')} €</div><div class="stat-l">CA total équipes</div></div>
+      <div class="stat-card"><div class="stat-n" style="color:var(--gold)">${totalPrime.toLocaleString('fr-FR')} €</div><div class="stat-l">Primes cooptation totales</div></div>`;
+
+    renderUC();
+  } catch(e) {
+    console.error('loadUC:', e);
+  }
+}
+
+function renderUC() {
+  const filtreRegion = document.getElementById('uc-filtre-region')?.value || '';
+  const filtreStatut = document.getElementById('uc-filtre-statut')?.value || '';
+
+  let dcis = ucData.dcis;
+  if (filtreRegion) dcis = dcis.filter(d => d.region === filtreRegion);
+  if (filtreStatut === 'revocation') dcis = dcis.filter(d => d.profil_revocation_flag);
+  if (filtreStatut === 'actif')      dcis = dcis.filter(d => !d.profil_revocation_flag);
+
+  document.getElementById('uc-count').textContent = dcis.length + ' DCI';
+
+  const tbody = document.getElementById('uc-tbody');
+  if (!dcis.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mut)">Aucun DCI correspondant.</td></tr>';
+  } else {
+    tbody.innerHTML = dcis.map(dci => {
+      const equipe  = ucData.membres.filter(m => m.dci_parent_id === dci.id);
+      const contrats = ucData.contrats.filter(c => equipe.some(m => m.id === c.created_by));
+      const ca      = contrats.reduce((s,c)=>s+(Number(c.montant)||0),0);
+      const prime   = Math.round(ca * 0.03);
+      const profil  = dci.profil_complet ? '🟢' : '🔴';
+      const statut  = dci.profil_revocation_flag
+        ? '<span style="color:var(--alert);font-size:.75rem;font-weight:600">⚠ Révocation</span>'
+        : '<span style="color:var(--ok);font-size:.75rem">Actif</span>';
+      return `<tr>
+        <td style="font-weight:600;color:var(--mut-2)">${esc(dci.prenom||'')} ${esc(dci.nom||'')}</td>
+        <td style="font-size:.82rem;color:var(--mut)">${esc(dci.region||'—')}</td>
+        <td style="font-size:.82rem">
+          <span style="color:var(--mut-2)">${equipe.length} membre${equipe.length>1?'s':''}</span>
+          ${equipe.length?'<div style="font-size:.72rem;color:var(--mut);margin-top:2px">'+equipe.map(m=>esc(m.prenom||'?')).join(', ')+'</div>':''}
+        </td>
+        <td style="font-weight:600;color:var(--accent)">${ca.toLocaleString('fr-FR')} €</td>
+        <td style="font-weight:600;color:var(--gold)">${prime.toLocaleString('fr-FR')} €</td>
+        <td style="text-align:center">${profil}</td>
+        <td>${statut}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Orphelins (niveau 1 sans DCI)
+  const orphelins = ucData.membres.filter(m => !m.dci_parent_id);
+  document.getElementById('uc-orphelins-count').textContent = orphelins.length;
+  const orphList = document.getElementById('uc-orphelins-list');
+  if (!orphelins.length) {
+    orphList.innerHTML = '<div style="color:var(--ok);font-size:.84rem">✅ Tous les utilisateurs sont rattachés à un DCI.</div>';
+  } else {
+    orphList.innerHTML = orphelins.map(m =>
+      `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)">
+        <span style="color:${m.profil_complet?'var(--ok)':'var(--alert)'}">${m.profil_complet?'🟢':'🔴'}</span>
+        <span style="color:var(--mut-2);font-size:.85rem">${esc(m.prenom||'')} ${esc(m.nom||'')}</span>
+        <span style="color:var(--mut);font-size:.75rem">${esc(m.region||'—')}</span>
+        ${m.profil_revocation_flag?'<span style="color:var(--alert);font-size:.72rem">⚠ Révocation</span>':''}
+      </div>`).join('');
+  }
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+
