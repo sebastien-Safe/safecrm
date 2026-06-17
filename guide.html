@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide S@FE CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:    #0a1628;
+      --navy-2:  #142240;
+      --navy-3:  #1e3a5f;
+      --gold:    #f59e0b;
+      --gold-2:  #fbbf24;
+      --blue:    #3b82f6;
+      --blue-2:  #2563eb;
+      --mut:     #94a3b8;
+      --mut-2:   #cbd5e1;
+      --line:    rgba(255,255,255,.08);
+      --ok:      #22c55e;
+      --alert:   #ff4d5e;
+      --ff-disp: 'Sora', sans-serif;
+      --ff-body: 'IBM Plex Sans', sans-serif;
+      --ff-mono: 'IBM Plex Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--ff-body);
+      background: var(--navy);
+      color: var(--mut-2);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,.12) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 80%, rgba(245,158,11,.07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      font-family: var(--ff-mono);
+      font-size: .72rem;
+      font-weight: 500;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(245,158,11,.1);
+      border: 1px solid rgba(245,158,11,.25);
+      border-radius: 999px;
+      padding: 6px 16px;
+      margin-bottom: 28px;
+    }
+
+    .hero h1 {
+      font-family: var(--ff-disp);
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -.03em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      max-width: 14ch;
+    }
+
+    .hero h1 span { color: var(--gold); }
+
+    .hero-sub {
+      font-size: 1.05rem;
+      color: var(--mut);
+      max-width: 48ch;
+      margin-bottom: 40px;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--blue-2);
+      color: #fff;
+      font-family: var(--ff-disp);
+      font-weight: 600;
+      font-size: .95rem;
+      padding: 14px 28px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: background .2s, transform .2s;
+    }
+    .hero-cta:hover { background: var(--blue); transform: translateY(-2px); }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--mut);
+      font-size: .75rem;
+      font-family: var(--ff-mono);
+      letter-spacing: .1em;
+      animation: bob 2s ease-in-out infinite;
+    }
+    @keyframes bob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+    /* ── SECTIONS ── */
+    .section {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 80px 24px;
+    }
+
+    .section-label {
+      font-family: var(--ff-mono);
+      font-size: .7rem;
+      font-weight: 500;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .section h2 {
+      font-family: var(--ff-disp);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -.02em;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+
+    .section-intro {
+      font-size: 1rem;
+      color: var(--mut);
+      max-width: 58ch;
+      margin-bottom: 40px;
+    }
+
+    /* ── CARDS GRILLE ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--navy-2);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      transition: border-color .2s, transform .2s;
+    }
+    .card:hover { border-color: rgba(59,130,246,.35); transform: translateY(-3px); }
+
+    .card-icon {
+      font-size: 1.8rem;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .card h3 {
+      font-family: var(--ff-disp);
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: .88rem;
+      color: var(--mut);
+      line-height: 1.6;
+    }
+
+    .card ul {
+      list-style: none;
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card ul li {
+      font-size: .84rem;
+      color: var(--mut-2);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .card ul li::before {
+      content: '→';
+      color: var(--blue);
+      flex-shrink: 0;
+      font-family: var(--ff-mono);
+    }
+
+    /* ── FLUX ── */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+
+    .flow-item {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 20px;
+      padding-bottom: 32px;
+      position: relative;
+    }
+
+    .flow-item:last-child { padding-bottom: 0; }
+
+    .flow-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--blue-2);
+      color: #fff;
+      font-family: var(--ff-disp);
+      font-weight: 700;
+      font-size: .9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .flow-item:not(:last-child) .flow-num::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: calc(100% + 32px - 40px);
+      background: var(--line);
+    }
+
+    .flow-body { padding-top: 8px; }
+
+    .flow-body h4 {
+      font-family: var(--ff-disp);
+      font-size: .95rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .flow-body p {
+      font-size: .86rem;
+      color: var(--mut);
+      line-height: 1.6;
+    }
+
+    /* ── TABLEAU COMMISSIONS ── */
+    .comm-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .86rem;
+    }
+
+    .comm-table th {
+      font-family: var(--ff-mono);
+      font-size: .68rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--mut);
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .comm-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      color: var(--mut-2);
+    }
+
+    .comm-table tr:last-child td { border-bottom: none; }
+    .comm-table td:first-child { color: #fff; font-weight: 600; }
+
+    .badge-gold {
+      display: inline-block;
+      background: rgba(245,158,11,.15);
+      color: var(--gold);
+      font-family: var(--ff-mono);
+      font-size: .7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    /* ── ALERTE / RGPD ── */
+    .info-block {
+      background: var(--navy-2);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--blue);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-top: 16px;
+      font-size: .88rem;
+      color: var(--mut-2);
+      line-height: 1.7;
+    }
+
+    .info-block.warn { border-left-color: var(--alert); }
+    .info-block.ok   { border-left-color: var(--ok); }
+
+    .info-block strong { color: #fff; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: var(--line);
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      font-size: .78rem;
+      color: var(--mut);
+      font-family: var(--ff-mono);
+    }
+
+    footer a { color: var(--gold); text-decoration: none; }
+
+    /* ── NAV LATÉRALE ── */
+    .toc {
+      position: fixed;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+    }
+
+    .toc a {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--line);
+      border: 1px solid var(--mut);
+      display: block;
+      transition: background .2s, transform .2s;
+      text-decoration: none;
+    }
+
+    .toc a:hover,
+    .toc a.active { background: var(--gold); transform: scale(1.4); border-color: var(--gold); }
+
+    @media(max-width:768px) {
+      .toc { display: none; }
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation latérale -->
+<nav class="toc" aria-label="Sections">
+  <a href="#hero" title="Accueil"></a>
+  <a href="#vues" title="Les vues"></a>
+  <a href="#flux" title="Flux de vente"></a>
+  <a href="#commissions" title="Commissions"></a>
+  <a href="#rgpd" title="RGPD"></a>
+  <a href="#stripe" title="Paiements"></a>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero" id="hero">
+  <div class="hero-badge">Guide utilisateur — S@FE CRM</div>
+  <h1>Votre outil de vente,<br>de A à <span>Z</span>.</h1>
+  <p class="hero-sub">Contacts, contrats, suivi client, paiements Stripe, conformité RGPD — tout ce qu'il faut savoir pour démarrer efficacement.</p>
+  <a href="#vues" class="hero-cta">Commencer la lecture ↓</a>
+  <div class="scroll-hint">↓ scroll</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── VUE 1 : LES 5 VUES ── -->
+<section class="section" id="vues">
+  <div class="section-label">Navigation</div>
+  <h2>Cinq vues, un seul outil.</h2>
+  <p class="section-intro">Le CRM est organisé en cinq espaces accessibles depuis le menu latéral. Chacun a un rôle précis.</p>
+
+  <div class="cards">
+    <div class="card">
+      <span class="card-icon">🏠</span>
+      <h3>Tableau de bord</h3>
+      <p>Vue d'ensemble de votre activité en temps réel.</p>
+      <ul>
+        <li>Alertes échéances à J-7 et J-3</li>
+        <li>Statistiques contacts, clients, contrats</li>
+        <li>Objectifs du mois et progression</li>
+        <li>Bouton Interagir → fiche contact directe</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-icon">👥</span>
+      <h3>Contacts</h3>
+      <p>Votre base prospects et clients, centralisée et sécurisée.</p>
+      <ul>
+        <li>Création et modification de fiches</li>
+        <li>Consentements RGPD par canal</li>
+        <li>Suivi des échanges (📞 ✉️ 🤝 💼 📘)</li>
+        <li>Basculement RGPD KO automatique</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-icon">📄</span>
+      <h3>Contrats</h3>
+      <p>Création, suivi et gestion des prestations signées.</p>
+      <ul>
+        <li>Formules préchargées par type de prestation</li>
+        <li>Bon de commande PDF + envoi par email</li>
+        <li>Tunnel de paiement Stripe intégré</li>
+        <li>Portail client et résiliation abonnement</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-icon">✅</span>
+      <h3>Tâches</h3>
+      <p>Suivi des actions à réaliser, par priorité et échéance.</p>
+      <ul>
+        <li>Liées à un contact ou un contrat</li>
+        <li>Priorité basse / normale / haute</li>
+        <li>Statut À faire / En cours / Terminé</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="card-icon">📊</span>
+      <h3>Résultats</h3>
+      <p>Suivi de vos performances commerciales et commissions.</p>
+      <ul>
+        <li>Chiffre d'affaires signé et récurrent</li>
+        <li>Commissions à la signature et fidélité</li>
+        <li>Objectifs mensuels et annuels</li>
+        <li>Bordereau de commission PDF</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── VUE 2 : FLUX DE VENTE ── -->
+<section class="section" id="flux">
+  <div class="section-label">Processus commercial</div>
+  <h2>Du prospect au paiement en 6 étapes.</h2>
+  <p class="section-intro">Chaque vente suit le même flux, entièrement traçable depuis le CRM.</p>
+
+  <div class="flow">
+    <div class="flow-item">
+      <div class="flow-num">1</div>
+      <div class="flow-body">
+        <h4>Créer le contact</h4>
+        <p>Renseignez nom, entreprise, email, téléphone, SIRET et consentements de contact. La source est remplie automatiquement avec votre prénom.</p>
+      </div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-num">2</div>
+      <div class="flow-body">
+        <h4>Créer le contrat</h4>
+        <p>Choisissez le type de prestation et la formule — le montant, les frais de mise en place et l'engagement se remplissent automatiquement.</p>
+      </div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-num">3</div>
+      <div class="flow-body">
+        <h4>Générer le bon de commande PDF</h4>
+        <p>Un PDF signé S@FE est généré en un clic, prêt à être envoyé au client ou présenté en rendez-vous.</p>
+      </div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-num">4</div>
+      <div class="flow-body">
+        <h4>Envoyer le lien de paiement</h4>
+        <p>Un lien sécurisé est généré et envoyé au client. Il accède à une page de signature + paiement Stripe, sans créer de compte.</p>
+      </div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-num">5</div>
+      <div class="flow-body">
+        <h4>Paiement confirmé</h4>
+        <p>Le contrat passe automatiquement en statut <strong style="color:#fff">Signé</strong>. Pour les abonnements mensuels, Stripe prélève automatiquement chaque mois.</p>
+      </div>
+    </div>
+    <div class="flow-item">
+      <div class="flow-num">6</div>
+      <div class="flow-body">
+        <h4>Suivi et fidélisation</h4>
+        <p>Enregistrez chaque échange dans le suivi client. Les alertes d'échéance vous rappellent de renouveler ou d'agir avant qu'il soit trop tard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── VUE 3 : COMMISSIONS ── -->
+<section class="section" id="commissions">
+  <div class="section-label">Rémunération</div>
+  <h2>Vos commissions, en toute transparence.</h2>
+  <p class="section-intro">Chaque formule génère une commission calculée automatiquement. Voici les principales.</p>
+
+  <table class="comm-table">
+    <thead>
+      <tr>
+        <th>Prestation</th>
+        <th>Formule</th>
+        <th>Commission signature</th>
+        <th>Récurrent</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Référencement Local</td>
+        <td>Essentiel — 79 €/mois</td>
+        <td>75 € <span class="badge-gold">+ bonus fidélité</span></td>
+        <td>15 %</td>
+      </tr>
+      <tr>
+        <td>Référencement Local</td>
+        <td>Boost — 149 €/mois</td>
+        <td>100 € <span class="badge-gold">+ bonus fidélité</span></td>
+        <td>15 %</td>
+      </tr>
+      <tr>
+        <td>Click & Collect</td>
+        <td>Essentiel — 49 €/mois</td>
+        <td>50 € <span class="badge-gold">+ bonus fidélité</span></td>
+        <td>15 %</td>
+      </tr>
+      <tr>
+        <td>RGPD</td>
+        <td>Audit TPE — 1 490 €</td>
+        <td>298 €</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>RGPD</td>
+        <td>Audit+ PME — 2 990 €</td>
+        <td>598 €</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>DPO externalisé</td>
+        <td>189 €/mois</td>
+        <td>50 €</td>
+        <td>10 %</td>
+      </tr>
+      <tr>
+        <td>Cybersécurité</td>
+        <td>Pack Sécurité Essentiel — 990 €</td>
+        <td>198 €</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>Cybersécurité</td>
+        <td>Pack Résilience Pro — 1 990 €</td>
+        <td>398 €</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info-block ok" style="margin-top:20px">
+    <strong>Bonus fidélité</strong> — Sur les abonnements mensuels, un bonus égal à la commission de signature est versé à l'issue de la période d'engagement (6 ou 12 mois), si le client est toujours actif.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── VUE 4 : RGPD ── -->
+<section class="section" id="rgpd">
+  <div class="section-label">Conformité</div>
+  <h2>RGPD intégré, pas ajouté.</h2>
+  <p class="section-intro">Le CRM applique automatiquement les délais légaux de conservation des données personnelles.</p>
+
+  <div class="cards">
+    <div class="card">
+      <span class="card-icon">🔍</span>
+      <h3>Consentements</h3>
+      <p>Chaque contact documente explicitement les canaux autorisés : téléphone, email, courrier postal.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">📋</span>
+      <h3>Suivi des échanges</h3>
+      <p>Chaque interaction (appel, email, visite, LinkedIn, Facebook) est enregistrée et constitue une preuve de relation active.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">⏱️</span>
+      <h3>Basculement automatique</h3>
+      <p>Un prospect sans échange depuis 3 ans bascule en RGPD KO. Un client sans activité depuis 5 ans après son dernier contrat également.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">🔒</span>
+      <h3>Fiche verrouillée</h3>
+      <p>Une fiche RGPD KO est automatiquement verrouillée en lecture seule. Les coordonnées sont effacées. La fiche reste traçable dans le registre.</p>
+    </div>
+  </div>
+
+  <div class="info-block warn" style="margin-top:24px">
+    <strong>Important</strong> — Ne jamais contacter un prospect ou client en RGPD KO, même par un autre canal. La fiche est conservée uniquement à des fins de preuve et de traçabilité légale.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── VUE 5 : STRIPE ── -->
+<section class="section" id="stripe">
+  <div class="section-label">Paiements</div>
+  <h2>Stripe gère l'encaissement.</h2>
+  <p class="section-intro">Vous n'avez jamais accès aux données bancaires du client. Stripe s'en charge entièrement.</p>
+
+  <div class="cards">
+    <div class="card">
+      <span class="card-icon">🔗</span>
+      <h3>Lien de paiement</h3>
+      <p>Générez et envoyez un lien sécurisé depuis la fiche contrat. Le client signe les CGV et paie en ligne sans créer de compte. Valable 7 jours.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">🔄</span>
+      <h3>Abonnements mensuels</h3>
+      <p>Les prestations récurrentes (SEO, Click & Collect, DPO...) sont prélevées automatiquement chaque mois. Tacite reconduction.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">🚫</span>
+      <h3>Résiliation</h3>
+      <p>Depuis la fiche contrat, en deux clics. L'abonnement s'arrête en fin de période en cours. Un événement est automatiquement créé dans le suivi client.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">🔗</span>
+      <h3>Portail client</h3>
+      <p>Générez un lien Stripe sécurisé depuis la fiche contrat et envoyez-le au client. Il accède à ses factures, sa CB et peut résilier lui-même.</p>
+    </div>
+  </div>
+
+  <div class="info-block" style="margin-top:24px">
+    <strong>Les frais de mise en service</strong> sont facturés une seule fois sur la première facture. Les mensualités suivantes ne contiennent que l'abonnement.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<footer>
+  <p>S@FE CRM — Usage interne exclusif · <a href="/">Accéder au CRM</a></p>
+  <p style="margin-top:6px">© 2026 S@FE Digitalisation · SIRET 104 699 558 00011</p>
+</footer>
+
+<script>
+  // Navigation latérale active
+  const sections = document.querySelectorAll('section[id], .hero');
+  const tocLinks = document.querySelectorAll('.toc a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(a => a.classList.remove('active'));
+        const active = document.querySelector(`.toc a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.4 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
