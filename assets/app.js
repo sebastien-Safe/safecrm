@@ -1179,6 +1179,10 @@ function renderUserBadge() {
   // Onglet Administration visible uniquement pour les super-admins
   $all('.admin-only').forEach(el => { el.style.display = isAdmin() ? '' : 'none'; });
   if (isAdmin()) checkResetFlag();
+  applyRoleVisibility();
+  checkProfilComplet();
+  checkMFAExpiry();
+  checkUpsellFirstLogin();
 }
 
 function setAvatar(el, photoUrl, name) {
@@ -4057,6 +4061,169 @@ async function loadChurnRisk() {
       </button>
     </div>`;
   }).join('');
+}
+
+
+// ==========================================================================
+// SYSTÈME DE RÔLES — 4 niveaux
+// ==========================================================================
+// role: 'user' | 'dci' | 'admin_candy' | 'super_admin'
+
+function getRole() {
+  return state.profile?.role || 'user';
+}
+function isRole(r) { return getRole() === r; }
+function isAtLeast(r) {
+  const order = ['user','dci','admin_candy','super_admin'];
+  return order.indexOf(getRole()) >= order.indexOf(r);
+}
+
+// Compatibilité avec l'ancien isAdmin()
+function isAdmin() {
+  return isAtLeast('admin_candy');
+}
+function isSuperAdmin() { return isRole('super_admin'); }
+function isDCI()        { return isRole('dci'); }
+function isUser()       { return isRole('user'); }
+
+// Appliquer la visibilité selon les rôles
+function applyRoleVisibility() {
+  const role = getRole();
+  const order = ['user','dci','admin_candy','super_admin'];
+  const level = order.indexOf(role);
+
+  // Masquer/afficher selon data-min-role
+  document.querySelectorAll('[data-min-role]').forEach(el => {
+    const minRole = el.getAttribute('data-min-role');
+    const minLevel = order.indexOf(minRole);
+    el.style.display = level >= minLevel ? '' : 'none';
+  });
+
+  // Classes spécifiques
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = isAdmin() ? '' : 'none';
+  });
+  document.querySelectorAll('.super-admin-only').forEach(el => {
+    el.style.display = isSuperAdmin() ? '' : 'none';
+  });
+  document.querySelectorAll('.dci-only').forEach(el => {
+    el.style.display = isAtLeast('dci') ? '' : 'none';
+  });
+}
+
+// Vérifier le profil complet + alerte révocation
+async function checkProfilComplet() {
+  if (isAdmin()) return; // admins exemptés
+  const p = state.profile;
+  const champs = ['nom','prenom','adresse','telephone','siret'];
+  const manquants = champs.filter(c => !p?.[c] || String(p[c]).trim() === '');
+
+  if (manquants.length > 0) {
+    // Vérifier le délai depuis profil_alerte_at
+    const alerte = p?.profil_alerte_at ? new Date(p.profil_alerte_at) : null;
+    const joursEcoules = alerte ? Math.floor((Date.now() - alerte) / 86400000) : 0;
+    const flagRevoc = p?.profil_revocation_flag;
+
+    let msg = '⚠️ Votre profil est incomplet. Veuillez renseigner : ' + manquants.join(', ') + '.';
+    if (flagRevoc) {
+      msg += ' Votre compte est signalé pour révocation. Contactez un administrateur.';
+    } else if (joursEcoules >= 1) {
+      msg += ' Sans mise à jour, votre compte sera signalé sous ' + (2 - joursEcoules) + ' jour(s).';
+    }
+
+    // Afficher banner
+    let banner = document.getElementById('profil-incomplet-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'profil-incomplet-banner';
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:600;background:rgba(255,77,94,.15);border-bottom:2px solid var(--alert);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap';
+      document.body.prepend(banner);
+    }
+    banner.innerHTML = `
+      <span style="font-size:.84rem;color:var(--alert)">${msg}</span>
+      <button class="btn btn-pri" style="padding:6px 14px;font-size:.78rem;background:var(--alert);border:none"
+        onclick="openProfileModal()">Compléter mon profil</button>`;
+  }
+}
+
+// MFA toutes les 4h
+const MFA_CHECK_KEY = 'safe_mfa_last_check';
+async function checkMFAExpiry() {
+  if (!state.profile?.totp_proposed) return; // pas de MFA activée
+  const lastCheck = parseInt(localStorage.getItem(MFA_CHECK_KEY) || '0');
+  const elapsed   = Date.now() - lastCheck;
+  const FOUR_HOURS = 4 * 60 * 60 * 1000;
+  if (elapsed < FOUR_HOURS) return;
+
+  // Vérifier si MFA est réellement activée sur le compte
+  const { data: factors } = await sb.auth.mfa.listFactors();
+  const hasTOTP = factors?.totp?.some(f => f.status === 'verified');
+  if (!hasTOTP) return;
+
+  // Ouvrir modale bloquante
+  openMFACheckModal();
+}
+
+function openMFACheckModal() {
+  let modal = document.getElementById('mfa-recheck-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'mfa-recheck-modal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:900;background:rgba(10,22,40,.92);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px';
+    modal.innerHTML = `
+      <div style="background:var(--navy-2);border:1px solid var(--line);border-radius:16px;padding:32px;max-width:400px;width:100%;text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:12px">🔐</div>
+        <h3 style="font-family:var(--ff-disp,Sora,sans-serif);font-size:1.2rem;color:#fff;margin-bottom:8px">Vérification de sécurité</h3>
+        <p style="font-size:.85rem;color:var(--mut);margin-bottom:20px;line-height:1.6">
+          Votre session dure depuis 4 heures. Saisissez le code de votre application d'authentification pour continuer.
+        </p>
+        <input id="mfa-recheck-code" type="text" maxlength="6" placeholder="Code TOTP à 6 chiffres"
+          style="width:100%;background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:8px;padding:12px;color:#fff;font-family:var(--fm,monospace);font-size:1.2rem;letter-spacing:.2em;text-align:center;outline:none;margin-bottom:12px">
+        <div style="color:var(--alert);font-size:.78rem;margin-bottom:12px;display:none" id="mfa-recheck-err">Code incorrect. Réessayez.</div>
+        <button onclick="submitMFARecheck()" class="btn btn-pri" style="width:100%;background:var(--blue-2);color:#fff;border:none;border-radius:8px;padding:12px;font-family:Sora,sans-serif;font-weight:600;font-size:.9rem;cursor:pointer">
+          Vérifier
+        </button>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+  modal.style.display = 'flex';
+}
+
+async function submitMFARecheck() {
+  const code = document.getElementById('mfa-recheck-code').value.trim();
+  if (code.length !== 6) return;
+  try {
+    const { data: factors } = await sb.auth.mfa.listFactors();
+    const factor = factors?.totp?.find(f => f.status === 'verified');
+    if (!factor) return;
+    const { data: challenge } = await sb.auth.mfa.challenge({ factorId: factor.id });
+    const { error } = await sb.auth.mfa.verify({ factorId: factor.id, challengeId: challenge.id, code });
+    if (error) {
+      document.getElementById('mfa-recheck-err').style.display = 'block';
+      return;
+    }
+    localStorage.setItem(MFA_CHECK_KEY, String(Date.now()));
+    document.getElementById('mfa-recheck-modal').style.display = 'none';
+  } catch(e) {
+    document.getElementById('mfa-recheck-err').style.display = 'block';
+  }
+}
+
+// Upsell à la première connexion du jour
+const UPSELL_DAY_KEY = 'safe_upsell_day';
+function checkUpsellFirstLogin() {
+  const today = new Date().toISOString().slice(0,10);
+  const lastDay = localStorage.getItem(UPSELL_DAY_KEY);
+  if (lastDay === today) return;
+  localStorage.setItem(UPSELL_DAY_KEY, today);
+  // Afficher après 2 secondes (laisser le CRM charger)
+  setTimeout(() => {
+    const block = document.getElementById('upsell-alert');
+    if (block && block.innerHTML.trim() !== '') {
+      block.style.display = 'block';
+      block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 2000);
 }
 
 
