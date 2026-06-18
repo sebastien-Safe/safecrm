@@ -39,4 +39,275 @@ p strong{color:#fff}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
 .field{display:flex;flex-direction:column;gap:5px}
 .field label{font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-family:var(--fm)}
-.field input{background:rgba(255,255,255,.06);border:1px solid
+.field input{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:8px;padding:9px 13px;color:#fff;font-family:var(--fb);font-size:.88rem;outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--gold)}
+.field input[readonly]{opacity:.6;cursor:default}
+.canvas-wrap{background:#fff;border-radius:10px;overflow:hidden;position:relative;margin:12px 0;cursor:crosshair}
+#sig-canvas{display:block;width:100%;height:150px;touch-action:none}
+.canvas-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#ccc;font-size:.85rem;pointer-events:none;transition:opacity .3s}
+.sig-actions{display:flex;gap:8px;margin-top:6px}
+.btn-clear{font-size:.78rem;padding:6px 14px;border-radius:7px;border:1px solid rgba(255,77,94,.4);background:rgba(255,77,94,.1);color:var(--alert);cursor:pointer}
+.mention-lu{display:flex;align-items:flex-start;gap:10px;margin-bottom:16px}
+.mention-lu input{width:16px;height:16px;accent-color:var(--gold);flex-shrink:0;margin-top:2px}
+.mention-lu label{font-size:.84rem;color:var(--mut-2);line-height:1.55;cursor:pointer}
+.mention-lu label strong{color:#fff}
+.btn-sign{display:block;width:100%;background:linear-gradient(135deg,var(--gold),#e08f00);color:var(--navy);font-family:var(--ff);font-weight:800;font-size:.95rem;padding:14px;border:none;border-radius:10px;cursor:pointer;transition:all .2s}
+.btn-sign:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(245,158,11,.3)}
+.btn-sign:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.info-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:12px 16px;font-size:.82rem;color:var(--mut-2);margin-bottom:16px;line-height:1.6}
+.info-box strong{color:var(--gold)}
+.horodatage{font-size:.72rem;color:var(--mut);text-align:center;margin-top:8px;font-family:var(--fm)}
+.signed-banner{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:10px;padding:16px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px}
+.signed-banner .ico{font-size:1.4rem;flex-shrink:0}
+.signed-banner .txt{font-size:.85rem;color:var(--mut-2);line-height:1.6}
+.signed-banner .txt strong{color:#22c55e}
+.sig-preview{background:#fff;border-radius:10px;overflow:hidden;margin-top:10px;max-width:300px}
+.sig-preview img{display:block;width:100%}
+@media(max-width:600px){
+  .parties{grid-template-columns:1fr}
+  .info-grid{grid-template-columns:1fr}
+  .page{padding:24px 16px 60px}
+  .doc{padding:20px 18px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="brand">
+    <svg viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#142240" stroke="#f59e0b" stroke-width="2"/>
+      <text x="32" y="46" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="18" fill="#f59e0b">S@FE</text>
+    </svg>
+    <div>
+      <div class="brand-name">S<span>@</span>FE CRM</div>
+      <div class="brand-sub">Engagement de conformité — Clause de confidentialité</div>
+    </div>
+    <a href="/" class="back-link">← Retour au CRM</a>
+  </div>
+
+  <div class="signed-banner" id="signed-banner" style="display:none">
+    <span class="ico">✅</span>
+    <div class="txt">
+      Cette clause a déjà été signée par <strong id="signed-name">—</strong> le <strong id="signed-date">—</strong>.<br>
+      Vous pouvez consulter le document ci-dessous et la signature enregistrée à titre de référence (utilisable lors d'un entretien de recrutement ou d'un contrôle de conformité).
+      <div class="sig-preview" id="sig-preview-wrap" style="display:none">
+        <img id="sig-preview-img" alt="Signature enregistrée">
+      </div>
+    </div>
+  </div>
+
+  <div class="doc">
+    <div class="doc-header">
+      <div class="doc-icon">🔒</div>
+      <div>
+        <div class="doc-tag">Document technique / Engagement de conformité CRM</div>
+        <div class="doc-title">Clause de Confidentialité et de Sécurité</div>
+      </div>
+    </div>
+
+    <div class="parties">
+      <div>
+        <div class="partie-label">S@FE SASU — L'Éditeur</div>
+        <div class="partie-val">Michel Sébastien ALONSO</div>
+        <div class="partie-mut">66 av. des Champs-Élysées, 75008 Paris</div>
+        <div class="partie-mut">SIRET : 104 699 558 00011</div>
+        <div class="partie-mut">contact@safe-digitalisation.fr</div>
+      </div>
+      <div>
+        <div class="partie-label">Le Commercial / Collaborateur</div>
+        <div class="partie-val" id="user-name-display">Chargement…</div>
+        <div class="partie-mut" id="user-email-display"></div>
+      </div>
+    </div>
+
+    <div class="section-title">Engagement de Sécurité S@fe</div>
+    <p>La protection de vos données est au cœur de notre architecture. Toutes les informations centralisées au sein de notre CRM sont sécurisées de manière optimale grâce au protocole <strong>S@fe</strong>, matérialisé par notre label de confiance. Ce sceau garantit une protection robuste de vos flux d'informations, associant la force d'un bouclier numérique à la rigueur de protocoles de chiffrement avancés.</p>
+
+    <div class="section-title">1. Protection et Chiffrement des Données</div>
+    <p>L'ensemble des données clients, prospects et transactions saisies dans le CRM fait l'objet d'un <strong>chiffrement de bout en bout</strong>, tant en cours de transit que lors de leur stockage au repos. Le dispositif S@fe assure de manière stricte que seules les personnes explicitement habilitées par votre organisation disposent des clés d'accès et des privilèges nécessaires pour consulter, modifier ou exporter ces informations.</p>
+
+    <div class="section-title">2. Intégrité et Résilience de l'Infrastructure</div>
+    <p>Conformément aux exigences les plus rigoureuses de notre politique de sécurité, notre infrastructure intègre des mécanismes de <strong>redondance active</strong> et de surveillance proactive en temps réel. Les sauvegardes de données sont exécutées de façon fragmentée et distribuée sur des serveurs sécurisés, prévenant efficacement toute altération accidentelle, perte de données ou tentative d'accès malveillante.</p>
+
+    <div class="section-title">3. Conformité Réglementaire et Confidentialité Strictes</div>
+    <p>Aucune donnée stockée ou traitée au sein de notre CRM ne sera <strong>vendue, partagée ou exposée</strong> à des entités tierces sans un consentement explicite et préalable de votre part, en dehors des obligations légales ou judiciaires impératives. Le protocole S@fe s'aligne totalement avec les dispositions du <strong>Règlement Général sur la Protection des Données (RGPD)</strong>.</p>
+  </div>
+
+  <div class="sig-section" id="sig-section">
+    <h3>Signature électronique</h3>
+
+    <div class="info-grid">
+      <div class="field">
+        <label>Prénom Nom</label>
+        <input id="sig-nom" type="text" readonly placeholder="Chargement…">
+      </div>
+      <div class="field">
+        <label>E-mail</label>
+        <input id="sig-email" type="text" readonly placeholder="Chargement…">
+      </div>
+      <div class="field">
+        <label>Fait à</label>
+        <input id="sig-lieu" type="text" placeholder="Ville de signature">
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input id="sig-date" type="text" readonly>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>Mention obligatoire</strong> — En signant ci-dessous, vous déclarez avoir lu et approuvé l'intégralité de la présente clause de confidentialité et de sécurité. La signature électronique est horodatée et constitue un engagement juridiquement valable, utilisable comme pièce de référence lors des entretiens de recrutement.
+    </div>
+
+    <label style="font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-family:var(--fm);display:block;margin-bottom:6px">Votre signature (tracez ci-dessous)</label>
+    <div class="canvas-wrap">
+      <canvas id="sig-canvas" width="660" height="150"></canvas>
+      <div class="canvas-hint" id="canvas-hint">Signez ici avec votre souris ou votre doigt</div>
+    </div>
+    <div class="sig-actions">
+      <button class="btn-clear" onclick="clearSig()">Effacer</button>
+    </div>
+
+    <div style="height:16px"></div>
+
+    <div class="mention-lu">
+      <input type="checkbox" id="check-lu" onchange="updateBtn()">
+      <label for="check-lu">Je soussigné(e) <strong id="mention-name">—</strong>, déclare avoir lu et approuvé l'intégralité de la présente Clause de Confidentialité et de Sécurité S@FE, et m'engage à en respecter toutes les dispositions.</label>
+    </div>
+
+    <button class="btn-sign" id="btn-sign" disabled onclick="signer()">
+      ✅ Signer la clause
+    </button>
+    <div class="horodatage" id="horodatage"></div>
+  </div>
+
+</div>
+
+<script>
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser = null, hasSig = false;
+let sigCanvas, sigCtx, isDrawing = false;
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '/'; return; }
+  currentUser = session.user;
+
+  const { data: profile } = await sb.from('profiles')
+    .select('prenom, nom').eq('id', currentUser.id).maybeSingle();
+  const fullName = [profile?.prenom, profile?.nom].filter(Boolean).join(' ') || currentUser.email;
+
+  document.getElementById('user-name-display').textContent = fullName;
+  document.getElementById('user-email-display').textContent = currentUser.email;
+  document.getElementById('sig-nom').value  = fullName;
+  document.getElementById('sig-email').value = currentUser.email;
+  document.getElementById('mention-name').textContent = fullName;
+
+  const { data: existing } = await sb.from('clauses_confidentialite')
+    .select('id, signed_at, signature').eq('user_id', currentUser.id).maybeSingle();
+
+  if (existing) {
+    document.getElementById('signed-banner').style.display = 'flex';
+    document.getElementById('signed-name').textContent = fullName;
+    document.getElementById('signed-date').textContent =
+      new Date(existing.signed_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
+    if (existing.signature) {
+      document.getElementById('sig-preview-wrap').style.display = 'block';
+      document.getElementById('sig-preview-img').src = existing.signature;
+    }
+    document.getElementById('sig-section').style.display = 'none';
+    return;
+  }
+
+  const now = new Date();
+  document.getElementById('sig-date').value = now.toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
+  updateHorodatage();
+  setInterval(updateHorodatage, 30000);
+
+  initCanvas();
+}
+
+function updateHorodatage() {
+  document.getElementById('horodatage').textContent =
+    'Horodatage : ' + new Date().toLocaleString('fr-FR', {timeZone:'Europe/Paris'}) + ' (Europe/Paris)';
+}
+
+function initCanvas() {
+  sigCanvas = document.getElementById('sig-canvas');
+  sigCtx = sigCanvas.getContext('2d');
+  sigCtx.strokeStyle = '#1e3a5f'; sigCtx.lineWidth = 2.2;
+  sigCtx.lineCap = 'round'; sigCtx.lineJoin = 'round';
+
+  const getPos = e => {
+    const r = sigCanvas.getBoundingClientRect();
+    const sc = sigCanvas.width / r.width;
+    if (e.touches) return { x:(e.touches[0].clientX-r.left)*sc, y:(e.touches[0].clientY-r.top)*sc };
+    return { x:(e.clientX-r.left)*sc, y:(e.clientY-r.top)*sc };
+  };
+
+  sigCanvas.addEventListener('mousedown',  e => { isDrawing=true; const p=getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); });
+  sigCanvas.addEventListener('mousemove',  e => { if(!isDrawing)return; const p=getPos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); hasSig=true; document.getElementById('canvas-hint').style.opacity='0'; updateBtn(); });
+  sigCanvas.addEventListener('mouseup',    () => isDrawing=false);
+  sigCanvas.addEventListener('mouseleave', () => isDrawing=false);
+  sigCanvas.addEventListener('touchstart', e => { e.preventDefault(); isDrawing=true; const p=getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); }, {passive:false});
+  sigCanvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!isDrawing)return; const p=getPos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); hasSig=true; document.getElementById('canvas-hint').style.opacity='0'; updateBtn(); }, {passive:false});
+  sigCanvas.addEventListener('touchend',   () => isDrawing=false);
+}
+
+function clearSig() {
+  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+  hasSig = false;
+  document.getElementById('canvas-hint').style.opacity='1';
+  updateBtn();
+}
+
+function updateBtn() {
+  const ok = hasSig && document.getElementById('check-lu').checked;
+  const btn = document.getElementById('btn-sign');
+  btn.disabled = !ok;
+}
+
+async function signer() {
+  const lieu = document.getElementById('sig-lieu').value.trim();
+  if (!lieu) { alert('Veuillez indiquer la ville de signature.'); document.getElementById('sig-lieu').focus(); return; }
+  if (!hasSig) { alert('Veuillez apposer votre signature.'); return; }
+
+  const btn = document.getElementById('btn-sign');
+  btn.disabled = true; btn.textContent = 'Enregistrement…';
+
+  try {
+    const sigData = sigCanvas.toDataURL('image/png');
+    const { error } = await sb.from('clauses_confidentialite').insert({
+      user_id:    currentUser.id,
+      signature:  sigData,
+      ip:         null,
+      user_agent: navigator.userAgent,
+    });
+    if (error) throw new Error(error.message);
+
+    await sb.from('profiles').update({
+      clause_confidentialite_signee: true,
+      clause_signee_at: new Date().toISOString()
+    }).eq('id', currentUser.id);
+
+    document.getElementById('sig-section').style.display = 'none';
+    document.getElementById('signed-banner').style.display = 'flex';
+    document.getElementById('signed-name').textContent =
+      document.getElementById('sig-nom').value;
+    document.getElementById('signed-date').textContent =
+      new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
+    document.getElementById('sig-preview-wrap').style.display = 'block';
+    document.getElementById('sig-preview-img').src = sigData;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '✅ Signer la clause';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
