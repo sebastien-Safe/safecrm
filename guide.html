@@ -141,7 +141,7 @@
     // Vérifier clause
     const { data: clause } = await sb.from('clauses_confidentialite')
       .select('id').eq('user_id', session.user.id).maybeSingle();
-    if (!clause) { window.location.href = '/clause-confidentialite.html'; return; }
+    if (!clause) { window.location.href = '/clause.html'; return; }
 
     // Charger le rôle
     const { data: profile } = await sb.from('profiles')

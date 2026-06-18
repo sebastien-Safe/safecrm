@@ -1264,7 +1264,7 @@ function openProfileModal() {
       // Construire un lien vers une page de visualisation
       const dateStr = new Date(data.signed_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
       signedBlock.querySelector('span').textContent = '✅ Clause signée le ' + dateStr;
-      document.getElementById('clause-signed-link').href = '/clause-confidentialite.html?view=' + data.id;
+      document.getElementById('clause-signed-link').href = '/clause.html?view=' + data.id;
     } else {
       signedBlock.style.display   = 'none';
       unsignedBlock.style.display = 'block';
