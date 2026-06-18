@@ -889,12 +889,16 @@ function onFormuleChange(applyPreset = true) {
 }
 
 function updateNetDisplay() {
-  const montant = Number($('#ct-montant').value) || 0;
-  const remiseActive = $('#ct-remise-check').checked;
-  const remise = remiseActive ? (Number($('#ct-remise').value) || 0) : 0;
-  const net = Math.max(0, montant - remise);
-$('#ct-net-wrap').style.display = (remiseActive && remise > 0) ? '' : 'none';
-  $('#ct-net-display').value = formatMoney(net);
+  const montant = Number($('#ct-montant')?.value) || 0;
+  const remiseActive = $('#ct-remise-check')?.checked || false;
+  const remise = remiseActive ? (Number($('#ct-remise')?.value) || 0) : 0;
+  const frais = Number($('#ct-frais-mise-en-place')?.value) || 0;
+  const net = Math.max(0, montant + frais - remise);
+  // ct-net-wrap n'existe plus — ct-net-display est toujours visible
+  const netWrap = $('#ct-net-wrap');
+  if (netWrap) netWrap.style.display = (remiseActive && remise > 0) ? '' : 'none';
+  const netDisplay = $('#ct-net-display');
+  if (netDisplay) netDisplay.value = formatMoney(net);
 }
 
 function autoCalcEcheance() {
