@@ -1397,4 +1397,33 @@ function renderUC() {
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+// ── BURGER WORK (desktop + mobile) ──
+function toggleWorkSidebar() {
+  const btn     = document.getElementById('work-burger-btn');
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('work-mob-overlay');
+  if (!sidebar) return;
+  if (window.innerWidth <= 768) {
+    const isOpen = sidebar.classList.contains('mob-open');
+    if (isOpen) { closeWorkSidebar(); }
+    else { sidebar.classList.add('mob-open'); overlay?.classList.add('show'); btn?.classList.add('open'); document.body.style.overflow='hidden'; }
+  } else {
+    sidebar.classList.toggle('collapsed');
+    btn?.classList.toggle('open', sidebar.classList.contains('collapsed'));
+  }
+}
+function closeWorkSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  document.getElementById('work-mob-overlay')?.classList.remove('show');
+  document.getElementById('work-burger-btn')?.classList.remove('open');
+  sidebar?.classList.remove('mob-open');
+  document.body.style.overflow = '';
+}
+(function(){
+  let sx=0;
+  document.addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
+  document.addEventListener('touchend',e=>{if(window.innerWidth<=768&&e.changedTouches[0].clientX-sx<-50)closeWorkSidebar();},{passive:true});
+})();
+
+
 
