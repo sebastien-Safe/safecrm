@@ -646,6 +646,8 @@ function openContactModal(id = null) {
   $('#c-nom').value = c?.nom || '';
   $('#c-entreprise').value = c?.entreprise || '';
   $('#c-email').value = c?.email || '';
+  if ($('#c-prenom')) $('#c-prenom').value = c?.prenom || '';
+  if ($('#c-linkedin')) $('#c-linkedin').value = c?.linkedin || '';
   $('#c-telephone').value = c?.telephone || '';
   $('#c-adresse').value = c?.adresse || '';
   // Split code_postal_ville en deux champs
@@ -713,11 +715,15 @@ function closeContactModal() {
 async function saveContact() {
   const id = $('#c-id').value;
   const existing = id ? state.contacts.find(x => x.id === id) : null;
-  const nom = $('#c-nom').value.trim();
+  const nom      = $('#c-nom').value.trim();
+  const linkedin = ($('#c-linkedin')?.value || '').trim() || null;
+  const prenom   = ($('#c-prenom')?.value || '').trim() || null;
   if (!nom) { alert('Le nom est obligatoire.'); return; }
   const rgpdKoChecked = false; // géré automatiquement par check_rgpd_expiry()
   const payload = {
     nom,
+    prenom: prenom || null,
+    linkedin: linkedin || null,
     entreprise: $('#c-entreprise').value.trim() || null,
     email: $('#c-email').value.trim() || null,
     telephone: $('#c-telephone').value.trim() || null,
@@ -942,7 +948,7 @@ function openContractModal(id = null) {
     resilierWrap.style.display = canResilier ? '' : 'none';
     resilierCheck.checked = false;
   }
-  $('#ct-notes').value = ct?.notes || '';
+  $('#ct-notes').value = ct ? (ct.notes || '') : ''; // Vide pour nouveau contrat
 
   populateFormuleSelect(ct?.type || '', ct?.formule || null);
 
@@ -1851,12 +1857,12 @@ function openEditUserModal(userId) {
   }
 
   document.getElementById('eu-id').value       = u.id;
-  document.getElementById('eu-prenom').value   = u.prenom    || '';
-  document.getElementById('eu-nom').value      = u.nom       || '';
-  document.getElementById('eu-telephone').value= u.telephone || '';
-  document.getElementById('eu-adresse').value  = u.adresse   || '';
-  document.getElementById('eu-siret').value    = u.siret     || '';
-  document.getElementById('eu-rcpro').value    = u.rcpro_numero || '';
+  document.getElementById('eu-prenom').value   = u.prenom      || '—';
+  document.getElementById('eu-nom').value      = u.nom         || '—';
+  document.getElementById('eu-telephone').value= u.telephone   || '—';
+  document.getElementById('eu-adresse').value  = u.adresse     || '—';
+  document.getElementById('eu-siret').value    = u.siret       || '—';
+  document.getElementById('eu-rcpro').value    = u.rcpro_numero|| '—';
   document.getElementById('eu-role').value     = u.role || 'user';
   document.getElementById('eu-error').textContent = '';
   document.getElementById('edit-user-modal').classList.add('show');
