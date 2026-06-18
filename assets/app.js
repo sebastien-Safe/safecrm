@@ -1323,8 +1323,15 @@ async function saveProfile() {
     photo_url = data.publicUrl + '?t=' + Date.now();
   }
 
-  const { error } = await sb.from('profiles').upsert({ id: state.user.id, prenom, photo_url });
-  if (error) { $('#profile-error').textContent = 'Erreur : ' + error.message; return; }
+const { error } = await sb.from('profiles').upsert({
+  id: state.user.id,
+  prenom,
+  nom,
+  telephone,
+  adresse,
+  rcpro_numero: rcpro,
+  photo_url
+});  if (error) { $('#profile-error').textContent = 'Erreur : ' + error.message; return; }
 
   closeProfileModal();
   await loadProfile();
