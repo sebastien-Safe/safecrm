@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Clause de confidentialité — S@FE CRM</title>
+<link rel="icon" href="/favicon.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/config.js"></script>
+<style>
+:root{--navy:#0a1628;--navy-2:#142240;--gold:#f59e0b;--blue:#3b82f6;--blue-2:#2563eb;--green:#22c55e;--mut:#94a3b8;--mut-2:#cbd5e1;--line:rgba(255,255,255,.08);--alert:#ff4d5e;--r:12px;--ff:'Sora',sans-serif;--fb:'IBM Plex Sans',sans-serif;--fm:'IBM Plex Mono',monospace}
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--navy);color:var(--mut-2);font-family:var(--fb);-webkit-font-smoothing:antialiased}
+.page{max-width:720px;margin:0 auto;padding:48px 24px 80px}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:36px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.brand svg{width:38px;height:44px;flex-shrink:0}
+.brand-name{font-family:var(--ff);font-size:1.1rem;font-weight:800;color:#fff}
+.brand-name span{color:var(--gold)}
+.brand-sub{font-size:.65rem;font-family:var(--fm);letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-top:2px}
+.back-link{margin-left:auto;font-size:.78rem;color:var(--mut);text-decoration:none;display:flex;align-items:center;gap:6px}
+.back-link:hover{color:#fff}
+.doc{background:var(--navy-2);border:1px solid var(--line);border-radius:14px;padding:28px 32px;margin-bottom:24px}
+.doc-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.doc-icon{font-size:1.8rem;flex-shrink:0}
+.doc-tag{font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--mut);margin-bottom:4px;font-family:var(--fm)}
+.doc-title{font-family:var(--ff);font-size:1.25rem;font-weight:800;color:#fff}
+.section-title{font-family:var(--ff);font-size:.95rem;font-weight:700;color:#fff;margin:20px 0 8px;padding-left:10px;border-left:3px solid var(--gold)}
+.section-title:first-of-type{margin-top:0}
+p{font-size:.88rem;line-height:1.75;color:var(--mut-2);margin-bottom:10px}
+p strong{color:#fff}
+.parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:16px}
+.partie-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;font-family:var(--fm)}
+.partie-val{font-size:.85rem;color:#fff;font-weight:600;margin-bottom:2px}
+.partie-mut{font-size:.78rem;color:var(--mut-2)}
+.sig-section{background:var(--navy-2);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px}
+.sig-section h3{font-family:var(--ff);font-size:1rem;font-weight:700;color:#fff;margin-bottom:16px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-family:var(--fm)}
+.field input{background:rgba(255,255,255,.06);border:1px solid
