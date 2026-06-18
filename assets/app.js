@@ -347,7 +347,7 @@ async function loadAll() {
   await ensureUserObjectifs();
   renderAll();
   checkRgpdExpiry(); // Vérification RGPD automatique au login
-  if (!isAdmin()) checkMandatSigne(); // Redirection vers signature si mandat absent
+  //if (!isAdmin()) checkMandatSigne(); // Redirection vers signature si mandat absent
   checkPasswordStatus();             // Vérification mot de passe + renouvellement 45j
   loadBordereaux();     // Bordereaux admin
   loadNotifContracts(); // Notifications nouveaux contrats (admin)
