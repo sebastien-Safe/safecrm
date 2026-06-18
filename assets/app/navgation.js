@@ -126,3 +126,313 @@ function renderDashboard() {
   }
 }
 
+// =========================================================
+// ONGLET RÉSULTATS (admin) — blocs cliquables + détail + bordereau
+// =========================================================
+
+function renderResultats() {
+  const grid = $('#resultats-team-grid');
+  if (!grid) return;
+  $('#resultats-team-view').style.display = '';
+  $('#resultats-detail-view').style.display = 'none';
+  const allUsers = Object.values(state.profilesById)
+    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
+  renderTeamGauges(grid, allUsers, { clickable: true });
+}
+
+function openResultatsDetail(userId) {
+  const u = state.profilesById[userId];
+  if (!u) return;
+  $('#resultats-team-view').style.display = 'none';
+  $('#resultats-detail-view').style.display = '';
+  $('#resultats-detail-name').textContent = u.prenom || u.email || '—';
+
+  // Jauges individuelles
+  const gaugesEl = $('#resultats-detail-gauges');
+  const contacts = computeObjectifValue({ metric_type: 'nouveaux_contacts' }, userId);
+  const ca = computeObjectifValue({ metric_type: 'ca_genere' }, userId);
+  const comm = computeMonthlyCommission(userId);
+  const tContacts = getObjectifTarget(userId, 'nouveaux_contacts');
+  const tCa = getObjectifTarget(userId, 'ca_genere');
+  const tComm = getObjectifTarget(userId, 'commissions');
+  gaugesEl.innerHTML = [
+    { label: 'Entrées en contact', val: contacts, tgt: tContacts, unit: '' },
+    { label: 'CA généré', val: ca, tgt: tCa, unit: '€' },
+    { label: 'Commissions', val: comm, tgt: tComm, unit: '€' },
+  ].map(g => {
+    const pct = g.tgt > 0 ? Math.min(100, (g.val / g.tgt) * 100) : (g.val > 0 ? 100 : 0);
+    return `<div class="gauge-card">
+      <div class="gauge-wrap">${gaugeSvg(pct)}</div>
+      <h4>${escapeHtml(g.label)}</h4>
+      <p class="mut">${g.unit === '€' ? formatMoney(g.val) : g.val} / ${g.unit === '€' ? formatMoney(g.tgt) : g.tgt}</p>
+    </div>`;
+  }).join('');
+
+  // Contrats du mois en cours (nouvelles affaires)
+  const now = new Date();
+  const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  const newContracts = state.contracts.filter(c =>
+    c.created_by === userId &&
+    c.date_debut &&
+    new Date(c.date_debut + 'T00:00:00') >= startMonth &&
+    new Date(c.date_debut + 'T00:00:00') <= endMonth &&
+    ['Contrat en cours', 'Envoyé', 'En attente de signature'].includes(c.statut)
+  );
+  const newTbody = $('#resultats-detail-new-table tbody');
+  newTbody.innerHTML = newContracts.length ? newContracts.map(c => {
+    const contact = state.contacts.find(x => x.id === c.contact_id);
+    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
+    const commSig = preset?.comm_signature_fix || (preset?.comm_signature_pct ? Math.round(Number(c.montant || 0) * preset.comm_signature_pct * 100) / 100 : 0);
+    return `<tr>
+      <td>${escapeHtml(contact?.nom || '—')}</td>
+      <td>${getContractIcon(c.type) + ' ' + getContractIcon(c.type) + ' ' + getContractIcon(c.type) + ' ' + escapeHtml(c.type || '—')}</td>
+      <td>${escapeHtml(c.formule || '—')}</td>
+      <td class="num">${formatMoney(c.montant)}</td>
+      <td class="num">${formatMoney(c.frais_mise_en_place || 0)}</td>
+      <td class="num">${formatMoney(c.remise || 0)}</td>
+      <td class="num" style="color:#f59e0b;font-weight:600">${formatMoney(commSig)}</td>
+      <td class="nowrap">${formatDate(c.date_debut)}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="8" class="empty">Aucune nouvelle affaire ce mois-ci</td></tr>';
+
+  // Abonnements récurrents actifs
+  const recurContracts = state.contracts.filter(c =>
+    c.created_by === userId &&
+    c.recurrence === 'Mensuel' &&
+    ['Contrat en cours'].includes(c.statut)
+  );
+  const recTbody = $('#resultats-detail-recurrent-table tbody');
+  recTbody.innerHTML = recurContracts.length ? recurContracts.map(c => {
+    const contact = state.contacts.find(x => x.id === c.contact_id);
+    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
+    const commRec = preset?.comm_recurrent_pct ? Math.round(Number(c.montant || 0) * preset.comm_recurrent_pct * 100) / 100 : 0;
+    return `<tr>
+      <td>${escapeHtml(contact?.nom || '—')}</td>
+      <td>${escapeHtml(c.type || '—')}</td>
+      <td>${escapeHtml(c.formule || '—')}</td>
+      <td class="num">${formatMoney(c.montant)}/mois</td>
+      <td class="num" style="color:#f59e0b;font-weight:600">${formatMoney(commRec)}/mois</td>
+      <td class="nowrap">${formatDate(c.date_debut)}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="6" class="empty">Aucun abonnement récurrent actif</td></tr>';
+
+  // Stocker l'userId pour le bordereau
+  state._resultatsUserId = userId;
+}
+
+function getObjectifTarget(userId, metricType) {
+  const o = state.objectifs.find(o => o.user_id === userId && o.metric_type === metricType);
+  return o ? computeObjectifTarget(o) : 0;
+}
+function generateBordereauCommission() {
+  const userId = state._resultatsUserId;
+  const u = state.profilesById[userId];
+  const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+  if (!u || !jsPDF) { alert('Données insuffisantes ou jsPDF non chargé.'); return; }
+
+  const now = new Date();
+  const moisLabel = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 190;
+  let y = 15;
+
+  // === EN-TÊTE ===
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(10, 22, 40);
+  doc.text('BORDEREAU DE COMMISSION', 15, y);
+  y += 7;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.text('S@FE Digitalisation — ' + moisLabel, 15, y);
+  y += 6;
+  doc.text('Commercial : ' + (u.prenom || '—'), 15, y);
+  if (u.denomination) { y += 5; doc.text('Société : ' + u.denomination, 15, y); }
+  if (u.siret) { y += 5; doc.text('SIRET : ' + u.siret, 15, y); }
+  if (u.tva) { y += 5; doc.text('TVA : ' + u.tva, 15, y); }
+  if (u.adresse_pro) { y += 5; doc.text('Adresse : ' + u.adresse_pro, 15, y); }
+  y += 5;
+  doc.text('Généré le : ' + now.toLocaleDateString('fr-FR'), 15, y);
+  y += 4;
+  doc.setDrawColor(200); doc.line(15, y, 195, y); y += 6;
+
+  // === SECTION 1 : NOUVELLES AFFAIRES DU MOIS ===
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(10, 22, 40);
+  doc.text('1. Commissions à la signature (mois en cours)', 15, y);
+  y += 8;
+
+  var startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  var endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  var newC = state.contracts.filter(function(c) {
+    return c.created_by === userId && c.date_debut &&
+      new Date(c.date_debut) >= startMonth && new Date(c.date_debut) <= endMonth &&
+      ['Contrat en cours', 'Envoyé', 'En attente de signature'].includes(c.statut);
+  });
+
+  // En-tête tableau
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setFillColor(240, 240, 245);
+  doc.rect(15, y - 3.5, W, 5, 'F');
+  var cols1 = [15, 50, 82, 110, 133, 153, 175];
+  var heads1 = ['Contact', 'Prestation', 'Formule', 'Montant HT', 'MeP HT', 'Remise', 'Commission'];
+  heads1.forEach(function(h, i) { doc.text(h, cols1[i], y); });
+  y += 6;
+
+  doc.setFont('helvetica', 'normal');
+  var totalSig = 0;
+  newC.forEach(function(c) {
+    if (y > 270) { doc.addPage(); y = 20; }
+    var contact = state.contacts.find(function(x) { return x.id === c.contact_id; });
+    var preset = (FORMULE_PRESETS[c.type] || []).find(function(f) { return f.label === c.formule; });
+    var commSig = (preset && preset.comm_signature_fix) || ((preset && preset.comm_signature_pct) ? Math.round(Number(c.montant || 0) * preset.comm_signature_pct * 100) / 100 : 0);
+    totalSig += commSig;
+    doc.text(((contact && contact.nom) || '—').slice(0, 20), cols1[0], y);
+    doc.text((c.type || '—').slice(0, 18), cols1[1], y);
+    doc.text((c.formule || '—').slice(0, 16), cols1[2], y);
+    doc.text(formatMoney(c.montant), cols1[3], y);
+    doc.text(formatMoney(c.frais_mise_en_place || 0), cols1[4], y);
+    doc.text(formatMoney(c.remise || 0), cols1[5], y);
+    doc.setTextColor(37, 99, 235);
+    doc.text(formatMoney(commSig), cols1[6], y);
+    doc.setTextColor(80, 80, 80);
+    y += 5;
+  });
+  if (!newC.length) { doc.text('Aucune nouvelle affaire ce mois-ci.', 15, y); y += 5; }
+  y += 3;
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(10, 22, 40);
+  doc.text('Sous-total commissions signature HT : ' + formatMoney(totalSig), 15, y);
+  y += 10;
+
+  // === SECTION 2 : RÉCURRENT ===
+  doc.setFontSize(12);
+  doc.text('2. Commissions récurrentes (abonnements actifs)', 15, y);
+  y += 8;
+
+  var recC = state.contracts.filter(function(c) {
+    return c.created_by === userId && c.recurrence === 'Mensuel' && c.statut === 'Contrat en cours';
+  });
+
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setFillColor(240, 240, 245);
+  doc.rect(15, y - 3.5, W, 5, 'F');
+  var cols2 = [15, 50, 82, 115, 145, 175];
+  var heads2 = ['Contact', 'Prestation', 'Formule', 'Mensuel HT', 'Commission/mois', 'Depuis'];
+  heads2.forEach(function(h, i) { doc.text(h, cols2[i], y); });
+  y += 6;
+
+  doc.setFont('helvetica', 'normal');
+  var totalRec = 0;
+  recC.forEach(function(c) {
+    if (y > 270) { doc.addPage(); y = 20; }
+    var contact = state.contacts.find(function(x) { return x.id === c.contact_id; });
+    var preset = (FORMULE_PRESETS[c.type] || []).find(function(f) { return f.label === c.formule; });
+    var commRec = (preset && preset.comm_recurrent_pct) ? Math.round(Number(c.montant || 0) * preset.comm_recurrent_pct * 100) / 100 : 0;
+    totalRec += commRec;
+    doc.text(((contact && contact.nom) || '—').slice(0, 20), cols2[0], y);
+    doc.text((c.type || '—').slice(0, 18), cols2[1], y);
+    doc.text((c.formule || '—').slice(0, 16), cols2[2], y);
+    doc.text(formatMoney(c.montant) + '/mois', cols2[3], y);
+    doc.setTextColor(37, 99, 235);
+    doc.text(formatMoney(commRec) + '/mois', cols2[4], y);
+    doc.setTextColor(80, 80, 80);
+    doc.text(formatDate(c.date_debut), cols2[5], y);
+    y += 5;
+  });
+  if (!recC.length) { doc.text('Aucun abonnement récurrent actif.', 15, y); y += 5; }
+  y += 3;
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(10, 22, 40);
+  doc.text('Sous-total commissions récurrentes HT : ' + formatMoney(totalRec) + ' /mois', 15, y);
+  y += 12;
+
+  // === TOTAL TTC ===
+  var totalHT = totalSig + totalRec;
+  var totalTVA = Math.round(totalHT * 0.2 * 100) / 100;
+  var totalTTC = Math.round((totalHT + totalTVA) * 100) / 100;
+
+  doc.setFontSize(11);
+  doc.setTextColor(10, 22, 40);
+  doc.text('Total commissions HT : ' + formatMoney(totalHT), 15, y);
+  y += 6;
+  doc.text('TVA 20 % : ' + formatMoney(totalTVA), 15, y);
+  y += 6;
+  doc.setFontSize(14);
+  doc.setTextColor(37, 99, 235);
+  doc.text('TOTAL TTC À VERSER : ' + formatMoney(totalTTC), 15, y);
+  y += 10;
+
+  doc.setFontSize(8);
+  doc.setTextColor(100, 100, 100);
+  doc.text('Versement dans les 15 jours suivant la clôture du mois.', 15, y);
+  y += 4;
+  doc.text('Barème : SAFEDIRCOM-2026-V1 — En vigueur au 12 juin 2026.', 15, y);
+
+  // === FOOTER ===
+  var pages = doc.internal.getNumberOfPages();
+  for (var p = 1; p <= pages; p++) {
+    doc.setPage(p);
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 150);
+    doc.text('S@FE Digitalisation — SIRET 104 699 558 00011 — Document confidentiel', 15, 290);
+    doc.text('Page ' + p + '/' + pages, 190, 290, { align: 'right' });
+  }
+
+  var filename = 'Bordereau_Commission_' + (u.prenom || 'user').replace(/\s+/g, '_') + '_' + moisLabel.replace(/\s+/g, '_') + '.pdf';
+  doc.save(filename);
+}
+
+async function loadAdminUsers() {
+  const { data, error } = await sb.rpc('admin_list_users');
+  if (error) {
+    alert("Erreur de chargement des utilisateurs : " + error.message);
+    state.adminUsers = [];
+    return;
+  }
+  state.adminUsers = data || [];
+}
+
+function renderAdminUsers() {
+  const tbody = $('#admin-users-table tbody');
+  if (!state.adminUsers.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Aucun utilisateur.</td></tr>';
+    return;
+  }
+  const now = new Date();
+  const roleLabels = {
+    'super_admin': '⚡ Super Admin',
+    'admin_candy': '🍬 Admin C@NDY',
+    'dci':         '🤝 DCI',
+    'user':        '👤 Utilisateur',
+  };
+  tbody.innerHTML = state.adminUsers.map(u => {
+    const banned  = u.banned_until && new Date(u.banned_until) > now;
+    const isSelf  = u.id === state.user.id;
+    const role    = u.role || (u.is_admin ? 'admin_candy' : 'user');
+    const roleLbl = roleLabels[role] || '👤 Utilisateur';
+    const profil  = u.profil_complet ? '🟢' : '🔴';
+    const revoc   = u.profil_revocation_flag ? ' <span class="badge badge-red" style="font-size:.62rem">⚠ Révocation</span>' : '';
+    return `
+      <tr class="${banned ? 'row-banned' : ''}">
+        <td>${escapeHtml(u.prenom || '—')}</td>
+        <td>${escapeHtml(u.email || '—')}</td>
+        <td><span class="badge badge-gray" style="font-size:.72rem">${roleLbl}</span></td>
+        <td style="text-align:center;font-size:1.1rem" title="${u.profil_complet ? 'Profil complet' : 'Profil incomplet'}">${profil}${revoc}</td>
+        <td>${banned ? '<span class="badge badge-red">Révoqué</span>' : '<span class="badge badge-green">Actif</span>'}</td>
+        <td class="nowrap mut" style="font-size:.82rem">${new Date(u.created_at).toLocaleDateString('fr-FR')}</td>
+        <td class="actions">
+          <button class="btn btn-out btn-sm" onclick="openEditUserModal('${u.id}')" ${isSelf ? 'disabled' : ''} title="Modifier">✏️ Modifier</button>
+          <button class="btn btn-out btn-sm" data-admin-message="${u.id}" ${isSelf ? 'disabled' : ''}>Message</button>
+          <button class="btn btn-out btn-sm" data-admin-toggle-admin="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas modifier votre propre rôle"' : ''}>${u.is_admin ? 'Révoquer admin' : 'Rendre admin'}</button>
+          <button class="btn btn-danger btn-sm" data-admin-delete="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas supprimer votre propre compte"' : ''}>Supprimer</button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
