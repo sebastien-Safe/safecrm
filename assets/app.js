@@ -4405,16 +4405,20 @@ async function submitMFARecheck() {
 // Upsell à la première connexion du jour
 const UPSELL_DAY_KEY = 'safe_upsell_day';
 function checkUpsellFirstLogin() {
-  const today = new Date().toISOString().slice(0,10);
+  const today   = new Date().toISOString().slice(0,10);
   const lastDay = localStorage.getItem(UPSELL_DAY_KEY);
   if (lastDay === today) return;
   localStorage.setItem(UPSELL_DAY_KEY, today);
-  // Afficher après 2 secondes (laisser le CRM charger)
+  // Afficher replié après 2 secondes
   setTimeout(() => {
     const block = document.getElementById('upsell-alert');
     if (block && block.innerHTML.trim() !== '') {
       block.style.display = 'block';
-      block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Replié par défaut — l'utilisateur déplie en cliquant
+      const list  = block.querySelector('.mini-list');
+      const arrow = block.querySelector('.upsell-toggle');
+      if (list)  list.style.maxHeight  = '0';
+      if (arrow) arrow.style.transform = 'rotate(-90deg)';
     }
   }, 2000);
 }
