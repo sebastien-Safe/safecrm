@@ -829,8 +829,14 @@
       ⚠️ Clause de confidentialité non signée —
       <a href="/clause-confidentialite.html" style="color:var(--gold);font-weight:600;text-decoration:underline">Signer maintenant →</a>
     </div>
+    <div style="margin-bottom:12px">
+      <button class="btn btn-out" style="width:100%;font-size:.82rem;color:var(--blue-2);border-color:var(--blue-2)"
+        onclick="switchView('admin');$('#profile-modal').classList.remove('show');setTimeout(()=>document.querySelector('[data-admin-tab=rgpd]')?.click(),300)">
+        🔐 Mes données RGPD
+      </button>
+    </div>
     <div class="modal-actions">
-      <button class="btn btn-out" id="profile-cancel-btn">Annuler</button>
+      <button class="btn btn-out" id="profile-cancel-btn">Fermer</button>
       <button class="btn btn-pri" id="profile-save-btn">Enregistrer</button>
     </div>
 
