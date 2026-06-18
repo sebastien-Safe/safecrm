@@ -4872,4 +4872,16 @@ function updateMobMenuRole() {
 })();
 
 
+// ── Afficher/masquer le mot de passe (écran de connexion) ──
+function toggleLoginPasswordVisibility() {
+  const input = document.getElementById('login-password');
+  const btn   = document.getElementById('toggle-login-password');
+  if (!input || !btn) return;
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? '🙈' : '👁';
+  btn.title = isHidden ? 'Masquer le mot de passe' : 'Afficher le mot de passe';
+}
+window.toggleLoginPasswordVisibility = toggleLoginPasswordVisibility;
+
 init()
