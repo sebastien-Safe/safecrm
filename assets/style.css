@@ -397,3 +397,23 @@ button{font-family:var(--ff-body)}
   display:flex;align-items:center;gap:5px;
 }
 
+
+/* ── MODAL GROUP (encadrés dans les modales) ── */
+.modal-group {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: rgba(255,255,255,.02);
+}
+.modal-group-title {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--mut);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
