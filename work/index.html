@@ -44,64 +44,6 @@ h1,h2,h3,h4{font-family:var(--ff-disp);color:#fff;line-height:1.15;letter-spacin
 .btn-logout:hover{border-color:var(--alert);color:var(--alert)}
 
 
-/* ── BURGER MOBILE WORK — bouton dans la topbar ── */
-#work-burger-btn {
-  display: none;
-  background: none;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 7px 9px;
-  cursor: pointer;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-  flex-shrink: 0;
-}
-#work-burger-btn span {
-  display: block;
-  width: 18px;
-  height: 2px;
-  background: var(--mut-2);
-  border-radius: 2px;
-  transition: all .22s;
-}
-#work-burger-btn.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-#work-burger-btn.open span:nth-child(2) { opacity: 0; width: 0; }
-#work-burger-btn.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-#work-mob-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 98;
-  background: rgba(0,0,0,.55);
-  backdrop-filter: blur(2px);
-}
-#work-mob-overlay.show { display: block; }
-
-@media (max-width: 768px) {
-  #work-burger-btn { display: flex; }
-  /* Sidebar mobile : drawer depuis la gauche */
-  .sidebar {
-    position: fixed !important;
-    top: 0;
-    left: -280px;
-    width: 260px;
-    height: 100dvh;
-    z-index: 99;
-    background: var(--navy) !important;
-    border-right: 1px solid var(--line);
-    padding: 16px 0 !important;
-    transition: left .28s cubic-bezier(.4,0,.2,1);
-    overflow-y: auto;
-    display: flex !important;
-    flex-direction: column;
-  }
-  .sidebar.mob-open { left: 0; }
-  .shell { grid-template-columns: 1fr !important; }
-  .main { padding: 18px 16px !important; }
-}
-@media (min-width: 769px) {
-  #work-burger-btn { display: none !important; }
   #work-mob-overlay { display: none !important; }
 }
 /* ---- LAYOUT ---- */
@@ -226,10 +168,59 @@ select option{background:var(--navy-mid)}
 .login-error{color:var(--alert);font-size:.8rem;margin-top:8px;min-height:1.2em}
 
 /* ---- RESPONSIVE ---- */
+
+/* Burger button Work */
+#work-burger-btn{
+  display:none;
+  background:none;
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:7px 9px;
+  cursor:pointer;
+  flex-direction:column;
+  gap:4px;
+  align-items:center;
+  flex-shrink:0;
+  margin-right:4px;
+}
+#work-burger-btn span{
+  display:block;width:18px;height:2px;
+  background:var(--mut-2);border-radius:2px;transition:all .22s;
+}
+#work-burger-btn.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+#work-burger-btn.open span:nth-child(2){opacity:0;width:0}
+#work-burger-btn.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+@media(max-width:860px){#work-burger-btn{display:flex}}
+#work-mob-overlay{
+  display:none;position:fixed;inset:0;z-index:98;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(2px);
+}
+#work-mob-overlay.show{display:block}
 @media(max-width:860px){
+  /* Sidebar : drawer fixe sur mobile, cachée sur tablet moyen */
   .shell{grid-template-columns:1fr}
-  .sidebar{display:none}
   .main{padding:18px 16px}
+  /* Sidebar cachée par défaut sur mobile/tablet */
+  .sidebar{
+    display:flex !important;
+    flex-direction:column;
+    position:fixed;
+    top:0;
+    left:-270px;
+    width:260px;
+    height:100dvh;
+    z-index:99;
+    background:var(--navy) !important;
+    border-right:1px solid var(--line);
+    padding:16px 0 !important;
+    transition:left .28s cubic-bezier(.4,0,.2,1);
+    overflow-y:auto;
+  }
+  .sidebar.mob-open{left:0}
+}
+@media(min-width:861px){
+  #work-burger-btn{display:none !important}
+  #work-mob-overlay{display:none !important}
 }
 </style>
 
@@ -298,10 +289,10 @@ select option{background:var(--navy-mid)}
       <hr class="sidebar-divider">
 <div class="sidebar-section">
   <div class="sidebar-label">Modules</div>
-  <button class="sidebar-item" onclick="window.location.href='https://crm.safe-digitalisation.fr/work/Cyber/index.html'">
+  <button class="sidebar-item" onclick="window.location.href='/work/Cyber/index.html'">
     <span class="ico">🛡</span> Module Cyber
   </button>
-  <button class="sidebar-item" onclick="window.location.href='https://crm.safe-digitalisation.fr/work/Cyber/index.html'">
+  <button class="sidebar-item" onclick="window.location.href='/work/DPO/index.html'">
     <span class="ico">📋</span> Module DPO
   </button>
 </div>
