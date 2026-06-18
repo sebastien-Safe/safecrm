@@ -893,8 +893,8 @@ function updateNetDisplay() {
   const remiseActive = $('#ct-remise-check').checked;
   const remise = remiseActive ? (Number($('#ct-remise').value) || 0) : 0;
   const net = Math.max(0, montant - remise);
-  $('#ct-net-wrap').style.display = remiseActive && remise > 0 ? '' : 'none';
-  $('#ct-net-display').value = formatMoney(net);
+$('#ct-net-wrap').css('display', (remiseActive && remise > 0) ? '' : 'none');
+$('#ct-net-display').val(formatMoney(net));
 }
 
 function autoCalcEcheance() {
