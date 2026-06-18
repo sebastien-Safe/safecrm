@@ -2854,7 +2854,7 @@ const REGISTRE_RGPD = [
     traitement: 'Gestion des contacts (prospects et clients)',
     finalite: "Suivi commercial, mise en relation, exécution des contrats",
     base: "Intérêt légitime (prospection BtoB) / exécution du contrat (clients) (art. 6.1.f et 6.1.b)",
-    categories: "Nom, prénom, entreprise, e-mail, téléphone, adresse, SIRET, consentements, notes commerciales",
+    categories: "Nom, prénom, entreprise, e-mail, Téléphone, adresse, SIRET, consentements, notes commerciales",
     destinataires: "Commerciaux S@FE habilités, hébergeur Supabase",
     duree: "3 ans après dernier contact (prospects) — durée du contrat + 5 ans (clients)",
     securite: "RLS par rôle, journalisation des accès, droit d'opposition (RGPD KO) avec effacement immédiat des coordonnées"
