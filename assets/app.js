@@ -115,6 +115,38 @@ const TASK_TYPE_BADGE = { 'Premier contact': 'badge-blue', 'RDV visio': 'badge-g
 //                        appliqué au montant HT — utilisé quand
 //                        comm_signature_fix n'est pas défini
 // ---------------------------------------------------------
+
+// ==========================================================================
+// TABLE CENTRALISÉE ICÔNES TYPES DE CONTRATS
+// ==========================================================================
+const CONTRACT_ICONS = {
+  'SEO':            '🔍',
+  'Référencement':  '🔍',
+  'Local':          '🔍',
+  'RGPD':           '🛡',
+  'Conformité':     '🛡',
+  'DPO':            '⚖️',
+  'Cyber':          '🔐',
+  'Cybersécurité':  '🔐',
+  'Sécurité':       '🔐',
+  'Assurance':      '🏦',
+  'Courtage':       '🏦',
+  'Web':            '🌐',
+  'Site':           '🌐',
+  'Digital':        '🌐',
+  'Formation':      '🎓',
+  'Audit':          '🔎',
+  'DPO externalisé':'⚖️',
+};
+
+function getContractIcon(type) {
+  if (!type) return '📋';
+  for (const [key, icon] of Object.entries(CONTRACT_ICONS)) {
+    if (type.toLowerCase().includes(key.toLowerCase())) return icon;
+  }
+  return '📋';
+}
+
 const FORMULE_PRESETS = {
   'Référencement Local': [
     { label: 'Essentiel', montant: 79,  recurrence: 'Mensuel',  setup: 190, engagement: 6, comm_signature_fix: 75,  comm_bonus_fidelite: 75,  comm_recurrent_pct: 0.15 },
@@ -1530,7 +1562,7 @@ function openResultatsDetail(userId) {
     const commSig = preset?.comm_signature_fix || (preset?.comm_signature_pct ? Math.round(Number(c.montant || 0) * preset.comm_signature_pct * 100) / 100 : 0);
     return `<tr>
       <td>${escapeHtml(contact?.nom || '—')}</td>
-      <td>${escapeHtml(c.type || '—')}</td>
+      <td>${getContractIcon(c.type) + ' ' + getContractIcon(c.type) + ' ' + getContractIcon(c.type) + ' ' + escapeHtml(c.type || '—')}</td>
       <td>${escapeHtml(c.formule || '—')}</td>
       <td class="num">${formatMoney(c.montant)}</td>
       <td class="num">${formatMoney(c.frais_mise_en_place || 0)}</td>
@@ -1793,15 +1825,17 @@ function openEditUserModal(userId) {
     modal.innerHTML = `
       <div class="box" style="max-width:480px">
         <h3>✏️ Modifier l'utilisateur</h3>
+        <p class="mut" style="font-size:.8rem;margin-bottom:14px">Les informations sont en lecture seule. Seul le rôle est modifiable.</p>
         <input type="hidden" id="eu-id">
-        <div class="field"><label>Prénom *</label><input id="eu-prenom" type="text"></div>
-        <div class="field"><label>Nom *</label><input id="eu-nom" type="text"></div>
-        <div class="field"><label>Téléphone</label><input id="eu-telephone" type="tel"></div>
-        <div class="field"><label>Adresse</label><input id="eu-adresse" type="text"></div>
-        <div class="field"><label>SIRET</label><input id="eu-siret" type="text"></div>
-        <div class="field"><label>N° RC Pro</label><input id="eu-rcpro" type="text"></div>
-        <div class="field"><label>Rôle</label>
-          <select id="eu-role">
+        <div class="field"><label>Prénom</label><input id="eu-prenom" type="text" readonly style="opacity:.6;cursor:default"></div>
+        <div class="field"><label>Nom</label><input id="eu-nom" type="text" readonly style="opacity:.6;cursor:default"></div>
+        <div class="field"><label>Téléphone</label><input id="eu-telephone" type="tel" readonly style="opacity:.6;cursor:default"></div>
+        <div class="field"><label>Adresse</label><input id="eu-adresse" type="text" readonly style="opacity:.6;cursor:default"></div>
+        <div class="field"><label>SIRET</label><input id="eu-siret" type="text" readonly style="opacity:.6;cursor:default"></div>
+        <div class="field"><label>N° RC Pro</label><input id="eu-rcpro" type="text" readonly style="opacity:.6;cursor:default"></div>
+        <div class="field" style="border:1px solid var(--accent);border-radius:8px;padding:10px 12px;background:rgba(59,130,246,.04)">
+          <label style="color:var(--accent)">🎭 Rôle (modifiable)</label>
+          <select id="eu-role" style="margin-top:4px">
             <option value="user">👤 Utilisateur (Niveau 1)</option>
             <option value="dci">🤝 DCI (Niveau 2)</option>
             <option value="admin_candy">🍬 Admin C@NDY (Niveau 3)</option>
@@ -1809,8 +1843,8 @@ function openEditUserModal(userId) {
         </div>
         <p class="error" id="eu-error"></p>
         <div class="modal-actions">
-          <button class="btn btn-out" onclick="$('#edit-user-modal').classList.remove('show')">Annuler</button>
-          <button class="btn btn-pri" onclick="saveEditUser()">Enregistrer</button>
+          <button class="btn btn-out" onclick="$('#edit-user-modal').classList.remove('show')">Fermer</button>
+          <button class="btn btn-pri" onclick="saveEditUser()">Enregistrer le rôle</button>
         </div>
       </div>`;
     document.body.appendChild(modal);
@@ -1836,15 +1870,10 @@ async function saveEditUser() {
   const errEl   = document.getElementById('eu-error');
   if (!prenom) { errEl.textContent = 'Le prénom est obligatoire.'; return; }
 
+  // Seul le rôle est modifiable depuis cette modale
   const { error } = await sb.from('profiles').update({
-    prenom,
-    nom:         nom || null,
-    telephone:   document.getElementById('eu-telephone').value.trim() || null,
-    adresse:     document.getElementById('eu-adresse').value.trim()   || null,
-    siret:       document.getElementById('eu-siret').value.trim()     || null,
-    rcpro_numero:document.getElementById('eu-rcpro').value.trim()     || null,
     role,
-    is_admin:    ['admin_candy','super_admin'].includes(role),
+    is_admin: ['admin_candy','super_admin'].includes(role),
   }).eq('id', id);
 
   if (error) { errEl.textContent = 'Erreur : ' + error.message; return; }
@@ -4121,7 +4150,36 @@ async function loadUpsellOpportunities() {
 
   if (!top.length) { block.style.display = 'none'; return; }
 
-  block.style.display = 'block';
+  // Accordéon : replié par défaut, animation fluide
+  if (block.style.display === 'none' || !block.dataset.initialized) {
+    block.style.display = 'block';
+    block.dataset.initialized = '1';
+    // Ajouter le header accordéon si pas déjà présent
+    if (!block.querySelector('.upsell-toggle')) {
+      const h3 = block.querySelector('h3');
+      if (h3) {
+        h3.style.cursor = 'pointer';
+        h3.style.userSelect = 'none';
+        h3.style.display = 'flex';
+        h3.style.alignItems = 'center';
+        h3.style.justifyContent = 'space-between';
+        const arrow = document.createElement('span');
+        arrow.className = 'upsell-toggle';
+        arrow.textContent = '▼';
+        arrow.style.cssText = 'font-size:.7rem;color:var(--mut);transition:transform .3s;transform:rotate(-90deg)';
+        h3.appendChild(arrow);
+        const body = block.querySelector('.mini-list');
+        if (body) {
+          body.style.cssText = 'max-height:0;overflow:hidden;transition:max-height .35s ease';
+        }
+        h3.onclick = () => {
+          const isOpen = arrow.style.transform === 'rotate(0deg)';
+          arrow.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
+          if (body) body.style.maxHeight = isOpen ? '0' : body.scrollHeight + 'px';
+        };
+      }
+    }
+  }
   list.innerHTML = top.map(o => {
     const nom = escapeHtml((o.contact.entreprise || o.contact.nom || '—').slice(0, 30));
     const actives   = o.gammes_actives.map(g => `<span style="background:rgba(34,197,94,.12);color:#16a34a;font-size:.7rem;padding:1px 6px;border-radius:999px">${escapeHtml(g)}</span>`).join(' ');
