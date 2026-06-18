@@ -43,6 +43,67 @@ h1,h2,h3,h4{font-family:var(--ff-disp);color:#fff;line-height:1.15;letter-spacin
 .btn-logout{background:transparent;border:1px solid var(--line);color:var(--mut);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem;font-family:var(--ff-body);transition:.15s}
 .btn-logout:hover{border-color:var(--alert);color:var(--alert)}
 
+
+/* ── BURGER MOBILE WORK — bouton dans la topbar ── */
+#work-burger-btn {
+  display: none;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 9px;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  flex-shrink: 0;
+}
+#work-burger-btn span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--mut-2);
+  border-radius: 2px;
+  transition: all .22s;
+}
+#work-burger-btn.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+#work-burger-btn.open span:nth-child(2) { opacity: 0; width: 0; }
+#work-burger-btn.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+#work-mob-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 98;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(2px);
+}
+#work-mob-overlay.show { display: block; }
+
+@media (max-width: 768px) {
+  #work-burger-btn { display: flex; }
+  /* Sidebar mobile : drawer depuis la gauche */
+  .sidebar {
+    position: fixed !important;
+    top: 0;
+    left: -280px;
+    width: 260px;
+    height: 100dvh;
+    z-index: 99;
+    background: var(--navy) !important;
+    border-right: 1px solid var(--line);
+    padding: 16px 0 !important;
+    transition: left .28s cubic-bezier(.4,0,.2,1);
+    overflow-y: auto;
+    display: flex !important;
+    flex-direction: column;
+  }
+  .sidebar.mob-open { left: 0; }
+  .shell { grid-template-columns: 1fr !important; }
+  .main { padding: 18px 16px !important; }
+}
+@media (min-width: 769px) {
+  #work-burger-btn { display: none !important; }
+  #work-mob-overlay { display: none !important; }
+}
 /* ---- LAYOUT ---- */
 .shell{position:relative;z-index:1;display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 64px)}
 .sidebar{border-right:1px solid var(--line);padding:20px 0;background:rgba(10,17,36,.4)}
@@ -172,68 +233,6 @@ select option{background:var(--navy-mid)}
 }
 </style>
 
-<style id="work-burger-css">
-/* ── BURGER WORK — Desktop ET Mobile ── */
-#work-burger-btn {
-  display: none;
-  position: fixed;
-  top: 14px;
-  left: 14px;
-  z-index: 850;
-  background: var(--navy-mid, #1a2d4a);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 10px;
-  padding: 9px 11px;
-  cursor: pointer;
-  flex-direction: column;
-  gap: 5px;
-  align-items: center;
-  box-shadow: 0 2px 16px rgba(0,0,0,.4);
-}
-#work-burger-btn span {
-  display: block;
-  width: 20px;
-  height: 2px;
-  background: #fff;
-  border-radius: 2px;
-  transition: all .25s;
-}
-#work-burger-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-#work-burger-btn.open span:nth-child(2) { opacity: 0; }
-#work-burger-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-#work-mob-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 840;
-  background: rgba(0,0,0,.5);
-  backdrop-filter: blur(2px);
-}
-#work-mob-overlay.show { display: block; }
-/* Sur mobile : cacher la sidebar native, afficher le burger */
-@media (max-width: 768px) {
-  .sidebar { display: none !important; }
-  #work-burger-btn { display: flex !important; }
-  .main { padding-top: 58px !important; }
-  .sidebar.mob-open {
-    display: flex !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    z-index: 860 !important;
-    height: 100dvh !important;
-    box-shadow: 4px 0 24px rgba(0,0,0,.5) !important;
-  }
-}
-/* Sur desktop : burger visible via bouton toggle dans la topbar */
-@media (min-width: 769px) {
-  #work-burger-btn { display: flex; position: static; background: none; border: none; box-shadow: none; padding: 8px; }
-  #work-burger-btn span { background: var(--mut-2, #cbd5e1); }
-  #work-mob-overlay { display: none !important; }
-  .sidebar { transition: width .28s ease, opacity .28s ease; overflow: hidden; }
-  .sidebar.collapsed { width: 0 !important; opacity: 0; pointer-events: none; }
-}
-</style>
 </head>
 <body>
 
@@ -263,14 +262,8 @@ select option{background:var(--navy-mid)}
     </div>
   </div>
 
-  <div class="shell">
-<!-- BURGER WORK (desktop + mobile) -->
-<button id="work-burger-btn" aria-label="Menu" onclick="toggleWorkSidebar()">
-  <span></span><span></span><span></span>
-</button>
 <div id="work-mob-overlay" onclick="closeWorkSidebar()"></div>
-
-
+  <div class="shell">
     <!-- Sidebar -->
     <nav class="sidebar">
       <div class="sidebar-section">
@@ -1305,6 +1298,50 @@ function scheduleTokenRefresh() {
     });
   }
 })();
+
+// ── BURGER MOBILE WORK ──
+function toggleWorkSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('work-mob-overlay');
+  const btn     = document.getElementById('work-burger-btn');
+  if (!sidebar) return;
+  const isOpen = sidebar.classList.contains('mob-open');
+  if (isOpen) {
+    closeWorkSidebar();
+  } else {
+    sidebar.classList.add('mob-open');
+    overlay.classList.add('show');
+    btn.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+function closeWorkSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('work-mob-overlay');
+  const btn     = document.getElementById('work-burger-btn');
+  sidebar?.classList.remove('mob-open');
+  overlay?.classList.remove('show');
+  btn?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Fermer la sidebar mobile après clic sur un item
+document.addEventListener('click', e => {
+  if (window.innerWidth > 768) return;
+  if (e.target.closest('.sidebar-item') && !e.target.closest('#work-burger-btn')) {
+    closeWorkSidebar();
+  }
+});
+// Swipe gauche pour fermer
+(function() {
+  let startX = 0;
+  document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (window.innerWidth <= 768 && e.changedTouches[0].clientX - startX < -50) {
+      closeWorkSidebar();
+    }
+  }, { passive: true });
+})();
+
 </script>
 </body>
 </html>
@@ -1399,34 +1436,6 @@ function renderUC() {
 }
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// ── BURGER WORK (desktop + mobile) ──
-function toggleWorkSidebar() {
-  const btn     = document.getElementById('work-burger-btn');
-  const sidebar = document.querySelector('.sidebar');
-  const overlay = document.getElementById('work-mob-overlay');
-  if (!sidebar) return;
-  if (window.innerWidth <= 768) {
-    const isOpen = sidebar.classList.contains('mob-open');
-    if (isOpen) { closeWorkSidebar(); }
-    else { sidebar.classList.add('mob-open'); overlay?.classList.add('show'); btn?.classList.add('open'); document.body.style.overflow='hidden'; }
-  } else {
-    sidebar.classList.toggle('collapsed');
-    btn?.classList.toggle('open', sidebar.classList.contains('collapsed'));
-  }
-}
-function closeWorkSidebar() {
-  const sidebar = document.querySelector('.sidebar');
-  document.getElementById('work-mob-overlay')?.classList.remove('show');
-  document.getElementById('work-burger-btn')?.classList.remove('open');
-  sidebar?.classList.remove('mob-open');
-  document.body.style.overflow = '';
-}
-(function(){
-  let sx=0;
-  document.addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
-  document.addEventListener('touchend',e=>{if(window.innerWidth<=768&&e.changedTouches[0].clientX-sx<-50)closeWorkSidebar();},{passive:true});
-})();
 
 
 
