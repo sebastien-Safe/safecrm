@@ -2595,8 +2595,8 @@ async function challengeTOTPIfNeeded() {
     const { data: factorsData } = await sb.auth.mfa.listFactors();
     const totp = (factorsData?.totp || []).find(f => f.status === 'verified');
 
-    // Aucun TOTP enrôlé → enrôlement obligatoire
-    if (!totp) return await _forceTotpEnrollment();
+    // Aucun TOTP enrôlé → pas de MFA (enrôlement volontaire uniquement)
+    if (!totp) return true;
 
     // TOTP enrôlé → vérifier le niveau d'assurance
     const { data: aalData } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -4391,11 +4391,11 @@ async function appliquerNouveauMDP() {
     }
 
     // Débloquer le compte si suspendu (ban temporaire suite à 5 tentatives)
-    await sb.rpc('admin_set_banned', { target_user_id: userId, banned: false }).catch(() => {});
+    try { await sb.rpc('admin_set_banned', { target_user_id: userId, banned: false }); } catch (_) {}
     // Réinitialiser le compteur d'échecs
     const opt2 = select.options[select.selectedIndex];
     if (opt2?.dataset?.email) {
-      await sb.rpc('reset_login_attempts', { user_email: opt2.dataset.email }).catch(() => {});
+      try { await sb.rpc('reset_login_attempts', { user_email: opt2.dataset.email }); } catch (_) {}
     }
 
     // Marquer password_set = false pour forcer le changement à la prochaine connexion
