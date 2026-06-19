@@ -29,10 +29,10 @@ html,body{min-height:100%;background:var(--navy);color:var(--mut-2);font-family:
 .section-title:first-of-type{margin-top:0}
 p{font-size:.88rem;line-height:1.75;color:var(--mut-2);margin-bottom:10px}
 p strong{color:#fff}
-.parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:16px}
-.partie-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;font-family:var(--fm)}
-.partie-val{font-size:.85rem;color:#fff;font-weight:600;margin-bottom:2px}
-.partie-mut{font-size:.78rem;color:var(--mut-2)}
+.parties{display:block;margin:20px 0;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:20px 24px}
+.partie-val{font-size:1rem;color:#fff;font-weight:800;margin-bottom:6px;letter-spacing:.01em}
+.partie-mut{font-size:.82rem;color:var(--mut-2);line-height:1.7}
+.partie-orias{font-size:.82rem;color:var(--mut-2);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .sig-section{background:var(--navy-2);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px}
 .sig-section h3{font-family:var(--ff);font-size:1rem;font-weight:700;color:#fff;margin-bottom:16px}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
@@ -101,17 +101,14 @@ p strong{color:#fff}
     </div>
 
     <div class="parties">
-      <div>
-        <div class="partie-label">S@FE SASU — L'Éditeur</div>
-        <div class="partie-val">Michel Sébastien ALONSO</div>
-        <div class="partie-mut">66 av. des Champs-Élysées, 75008 Paris</div>
-        <div class="partie-mut">SIRET : 104 699 558 00011</div>
-        <div class="partie-mut">contact@safe-digitalisation.fr</div>
-      </div>
-      <div>
-        <div class="partie-label">Le Commercial / Collaborateur</div>
-        <div class="partie-val" id="user-name-display">—</div>
-        <div class="partie-mut" id="user-email-display"></div>
+      <div class="partie-val">S@FE</div>
+      <div class="partie-mut">66 av. des Champs-Élysées, 75008 Paris</div>
+      <div class="partie-mut">SIRET : 104 699 558 00011</div>
+      <div class="partie-mut">www.safe-digitalisation.fr &nbsp;|&nbsp; www.safe-assurances.fr</div>
+      <div class="partie-orias">
+        S@FE est immatriculé(e) au Registre Unique des Intermédiaires en Assurance, Banque et Finance (ORIAS)
+        sous le numéro d'immatriculation <strong style="color:#fff">226008336</strong>
+        en qualité de <strong style="color:#fff">Courtier en assurance (COA)</strong>.
       </div>
     </div>
 
