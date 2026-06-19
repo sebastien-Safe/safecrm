@@ -180,6 +180,7 @@ button{font-family:var(--ff-body)}
 .badge-green{background:rgba(34,197,94,.14);color:var(--ok)}
 .badge-gray{background:rgba(148,163,184,.14);color:var(--mut)}
 .badge-red{background:rgba(255,77,94,.14);color:var(--alert)}
+.badge-orange{background:rgba(245,158,11,.18);color:#f59e0b}
 .tag-row{display:flex;gap:5px;flex-wrap:wrap}
 
 /* ---------- PROFIL & AVATAR ---------- */

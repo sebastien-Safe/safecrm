@@ -100,6 +100,14 @@ const TASK_TYPE_BADGE = { 'Premier contact': 'badge-blue', 'RDV visio': 'badge-g
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
+    // Vérifier si la session dépasse 8h dès le démarrage (ex: rechargement de page)
+    const signinAt = parseInt(localStorage.getItem('safe_signin_at') || '0', 10);
+    if (signinAt && Date.now() - signinAt > SESSION_MAX_MS) {
+      localStorage.removeItem('safe_signin_at');
+      await sb.auth.signOut();
+      showLogin();
+      return;
+    }
     state.user = session.user;
     showApp();
   } else {
@@ -214,29 +222,92 @@ async function showApp() {
 }
 
 async function login() {
-  const email = $('#login-email').value.trim();
+  const email    = $('#login-email').value.trim();
   const password = $('#login-password').value;
-  $('#login-error').textContent = '';
+  const errEl    = $('#login-error');
+  errEl.textContent = '';
+
   if (!email || !password) {
-    $('#login-error').textContent = 'Merci de renseigner e-mail et mot de passe.';
+    errEl.textContent = 'Merci de renseigner e-mail et mot de passe.';
     return;
   }
+
+  // Vérifier le verrou local (sessionStorage, réinitialisé à la fermeture de l'onglet)
+  const failKey  = 'safe_login_fails_' + btoa(email);
+  const failData = JSON.parse(sessionStorage.getItem(failKey) || '{"count":0}');
+  if (failData.count >= 5) {
+    errEl.textContent = '🔒 Compte suspendu. Contactez votre administrateur pour débloquer votre accès.';
+    return;
+  }
+
   const { error } = await sb.auth.signInWithPassword({ email, password });
   if (error) {
-    $('#login-error').textContent = "Connexion impossible : " + error.message;
+    // Détecter un compte déjà banni côté Supabase
+    if (error.message?.toLowerCase().includes('ban')) {
+      errEl.textContent = '🔒 Compte suspendu. Contactez votre administrateur.';
+      return;
+    }
+
+    // Incrémenter côté serveur + bannissement au 5ᵉ échec
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/record-login-failure`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body:    JSON.stringify({ email }),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        failData.count = data.attempts || failData.count + 1;
+        sessionStorage.setItem(failKey, JSON.stringify(failData));
+        if (data.banned) {
+          errEl.textContent = '🔒 Compte suspendu après 5 tentatives échouées. Contactez votre administrateur.';
+          return;
+        }
+        if (data.remaining === 1) {
+          errEl.textContent = `Identifiants incorrects. ⚠️ Dernière tentative avant suspension du compte.`;
+          return;
+        }
+        if (data.remaining > 0) {
+          errEl.textContent = `Identifiants incorrects (${data.remaining} tentative${data.remaining > 1 ? 's' : ''} restante${data.remaining > 1 ? 's' : ''}).`;
+          return;
+        }
+      }
+    } catch (_) {}
+
+    errEl.textContent = 'Identifiants incorrects.';
     return;
   }
-  // Si l'utilisateur a un facteur TOTP enrôlé, on lui demande le code à 6 chiffres
+
+  // Succès → réinitialiser le compteur local + marquer l'heure de connexion (limite 8h)
+  sessionStorage.removeItem(failKey);
+  localStorage.setItem('safe_signin_at', String(Date.now()));
+
+  // TOTP obligatoire (enrôlement forcé si absent, trust 2h si déjà validé)
   const ok = await challengeTOTPIfNeeded();
   if (!ok) {
-    $('#login-error').textContent = "Connexion annulée (double authentification).";
+    errEl.textContent = 'Connexion annulée (double authentification requise).';
     return;
   }
 }
 
 async function logout() {
+  localStorage.removeItem('safe_signin_at');
   await sb.auth.signOut();
 }
+
+// Vérification de la durée de session (8h max) — appelée toutes les 5 minutes
+const SESSION_MAX_MS = 8 * 3600 * 1000; // 8 heures
+function checkSessionExpiry() {
+  if (!state.user) return;
+  const signinAt = parseInt(localStorage.getItem('safe_signin_at') || '0', 10);
+  if (!signinAt) return;
+  if (Date.now() - signinAt > SESSION_MAX_MS) {
+    console.warn('[S@FE CRM] Session expirée après 8h — déconnexion automatique.');
+    localStorage.removeItem('safe_signin_at');
+    sb.auth.signOut();
+  }
+}
+setInterval(checkSessionExpiry, 5 * 60 * 1000); // toutes les 5 min
 
 // ---------------------------------------------------------
 // CHARGEMENT DES DONNÉES
@@ -353,9 +424,10 @@ function renderAll() {
 // ---------------------------------------------------------
 function switchView(view) {
   if (!view) return;
+  if (view === 'admin' && !isAdmin()) return; // guard : vue admin réservée aux administrateurs
   $all('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   $all('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
-  if (view === 'admin' && isAdmin()) renderAdmin();
+  if (view === 'admin') renderAdmin();
   if (view === 'resultats') renderResultats();
 }
 
@@ -1622,24 +1694,34 @@ function renderAdminUsers() {
     'user':        '👤 Utilisateur (Niveau 1)',
   };
   tbody.innerHTML = state.adminUsers.map(u => {
-    const banned  = u.banned_until && new Date(u.banned_until) > now;
-    const isSelf  = u.id === state.user.id;
-    const role    = u.role || (u.is_admin ? 'admin_candy' : 'user');
-    const roleLbl = roleLabels[role] || '👤 Utilisateur';
-    const profil  = u.profil_completed ? '🟢' : '🔴';
-    const revoc   = u.profil_revocation_flag ? ' <span class="badge badge-red" style="font-size:.62rem">⚠ Révocation</span>' : '';
+    const bannedUntil  = u.banned_until ? new Date(u.banned_until) : null;
+    const isBanned     = bannedUntil && bannedUntil > now;
+    // Distinguer blocage temporaire (< 1h = login failures) vs révocation permanente
+    const isLocked     = isBanned && bannedUntil < new Date(now.getTime() + 3600_000);
+    const isRevoked    = isBanned && !isLocked;
+    const isSelf       = u.id === state.user.id;
+    const role         = u.role || (u.is_admin ? 'admin_candy' : 'user');
+    const roleLbl      = roleLabels[role] || '👤 Utilisateur';
+    const profil       = u.profil_completed ? '🟢' : '🔴';
+    const revoc        = u.profil_revocation_flag ? ' <span class="badge badge-red" style="font-size:.62rem">⚠ Révocation</span>' : '';
+
+    let statutBadge;
+    if (isLocked)       statutBadge = '<span class="badge badge-orange" title="Bloqué après 5 tentatives échouées">🔒 Bloqué</span>';
+    else if (isRevoked) statutBadge = '<span class="badge badge-red">Révoqué</span>';
+    else                statutBadge = '<span class="badge badge-green">Actif</span>';
+
     return `
-      <tr class="${banned ? 'row-banned' : ''}">
+      <tr class="${isBanned ? 'row-banned' : ''}">
         <td>${escapeHtml(u.prenom || '—')}</td>
         <td>${escapeHtml(u.email || '—')}</td>
         <td><span class="badge badge-gray" style="font-size:.72rem">${roleLbl}</span></td>
         <td style="text-align:center;font-size:1.1rem" title="${u.profil_completed ? 'Profil complet' : 'Profil incomplet'}">${profil}${revoc}</td>
-        <td>${banned ? '<span class="badge badge-red">Révoqué</span>' : '<span class="badge badge-green">Actif</span>'}</td>
+        <td>${statutBadge}</td>
         <td class="nowrap mut" style="font-size:.82rem">${new Date(u.created_at).toLocaleDateString('fr-FR')}</td>
         <td class="actions">
           <button class="btn btn-out btn-sm" onclick="openEditUserModal('${u.id}')" ${isSelf ? 'disabled' : ''} title="Modifier">✏️ Modifier</button>
           <button class="btn btn-out btn-sm" data-admin-message="${u.id}" ${isSelf ? 'disabled' : ''}>Message</button>
-          <button class="btn btn-out btn-sm" data-admin-toggle-admin="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas modifier votre propre rôle"' : ''}>${u.is_admin ? 'Révoquer admin' : 'Rendre admin'}</button>
+          ${isLocked ? `<button class="btn btn-pri btn-sm" onclick="adminDebloquer('${u.id}','${escapeHtml(u.email||'')}')">🔓 Débloquer</button>` : `<button class="btn btn-out btn-sm" data-admin-toggle-admin="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas modifier votre propre rôle"' : ''}>${u.is_admin ? 'Révoquer admin' : 'Rendre admin'}</button>`}
           <button class="btn btn-danger btn-sm" data-admin-delete="${u.id}" ${isSelf ? 'disabled title="Vous ne pouvez pas supprimer votre propre compte"' : ''}>Supprimer</button>
         </td>
       </tr>`;
@@ -1770,6 +1852,22 @@ async function adminToggleBan(userId, banned) {
   if (error) { alert("Erreur : " + error.message); return; }
   await loadAdminUsers();
   renderAdminUsers();
+}
+
+// Déblocage d'un compte temporairement suspendu suite à 5 tentatives échouées
+async function adminDebloquer(userId, email) {
+  if (!confirm(`Débloquer le compte de ${email} ?\n\nLe compteur d'échecs sera réinitialisé.`)) return;
+  const { error } = await sb.rpc('admin_set_banned', { target_user_id: userId, banned: false });
+  if (error) { alert('Erreur déblocage : ' + error.message); return; }
+  // Réinitialiser le compteur d'échecs en base
+  const { error: e2 } = await sb.rpc('reset_login_attempts', { user_email: email });
+  if (e2) console.warn('reset_login_attempts:', e2.message);
+  await loadAdminUsers();
+  renderAdminUsers();
+  if (typeof logRgpd === 'function') logRgpd('profil_modifie', 'Admin', {
+    donnees: 'Déblocage compte après suspension', criticite: 'Attention',
+    details: { user_id: userId, email },
+  });
 }
 
 function openNewUserModal() {
@@ -2483,35 +2581,56 @@ async function disableTotp() {
   } catch (e) { alert('Erreur : ' + (e.message || e)); }
 }
 
-// Vérification TOTP après login (appelé depuis handleLogin)
+// Vérification TOTP après login — obligatoire pour tous les utilisateurs
+// Trust device : si le code a été validé il y a moins de 2h sur ce navigateur, on ne le redemande pas.
 async function challengeTOTPIfNeeded() {
   try {
-    const { data: aalData } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (!aalData) return true;
-    if (aalData.currentLevel === aalData.nextLevel) return true;
-    // L'utilisateur a un facteur TOTP non vérifié pour cette session — challenger
+    const userId   = state.user?.id || '';
+    const trustKey = 'safe_totp_trust_' + userId;
+    const trustExp = parseInt(localStorage.getItem(trustKey) || '0', 10);
+
+    // Appareil de confiance encore valide (< 2h) → pas de challenge
+    if (trustExp > Date.now()) return true;
+
     const { data: factorsData } = await sb.auth.mfa.listFactors();
     const totp = (factorsData?.totp || []).find(f => f.status === 'verified');
-    if (!totp) return true;
+
+    // Aucun TOTP enrôlé → enrôlement obligatoire
+    if (!totp) return await _forceTotpEnrollment();
+
+    // TOTP enrôlé → vérifier le niveau d'assurance
+    const { data: aalData } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalData && aalData.currentLevel === aalData.nextLevel) {
+      // Déjà vérifié dans cette session → marquer trust 2h
+      localStorage.setItem(trustKey, String(Date.now() + 2 * 3600 * 1000));
+      return true;
+    }
+
+    // Demander le code TOTP
     return await new Promise((resolve) => {
       const modal = $('#totp-challenge-modal');
-      const err = $('#totp-challenge-error'); err.style.display = 'none';
+      const err   = $('#totp-challenge-error');
+      err.style.display = 'none';
       $('#totp-challenge-code').value = '';
       modal.classList.add('show');
+
       $('#totp-challenge-cancel').onclick = async () => {
         modal.classList.remove('show');
         await sb.auth.signOut();
         resolve(false);
       };
+
       $('#totp-challenge-verify').onclick = async () => {
         const code = $('#totp-challenge-code').value.trim();
-        if (!/^\d{6}$/.test(code)) { err.textContent = 'Code à 6 chiffres.'; err.style.display = 'block'; return; }
+        if (!/^\d{6}$/.test(code)) { err.textContent = 'Code à 6 chiffres requis.'; err.style.display = 'block'; return; }
         try {
           const ch = await sb.auth.mfa.challenge({ factorId: totp.id });
           if (ch.error) throw ch.error;
           const v = await sb.auth.mfa.verify({ factorId: totp.id, challengeId: ch.data.id, code });
           if (v.error) throw v.error;
           modal.classList.remove('show');
+          // Marquer l'appareil de confiance pour 2h
+          localStorage.setItem(trustKey, String(Date.now() + 2 * 3600 * 1000));
           resolve(true);
         } catch (e) {
           err.textContent = 'Code refusé : ' + (e.message || e);
@@ -2520,6 +2639,108 @@ async function challengeTOTPIfNeeded() {
       };
     });
   } catch (e) { console.warn('AAL check:', e); return true; }
+}
+
+// Enrôlement TOTP forcé — non annulable — appelé si aucun TOTP enrôlé au login
+async function _forceTotpEnrollment() {
+  return new Promise((resolve) => {
+    let overlay = document.getElementById('totp-force-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'totp-force-overlay';
+      overlay.style.cssText = `
+        position:fixed;inset:0;z-index:9999;background:rgba(10,22,40,.97);
+        display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;
+        padding:24px;text-align:center;color:#e2e8f0`;
+      overlay.innerHTML = `
+        <div style="max-width:420px;width:100%">
+          <div style="font-size:2.5rem;margin-bottom:8px">🔐</div>
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:6px">Double authentification obligatoire</h2>
+          <p style="font-size:.85rem;color:#94a3b8;margin-bottom:20px">
+            Configurez Google Authenticator ou Authy pour accéder au CRM.<br>
+            Cette étape est requise pour tous les utilisateurs.
+          </p>
+          <div id="totp-force-qr" style="background:#fff;display:inline-block;padding:10px;border-radius:8px;margin-bottom:12px"></div>
+          <p style="font-size:.75rem;color:#94a3b8;margin-bottom:4px">Clé manuelle :</p>
+          <input id="totp-force-secret" type="text" readonly
+            style="width:100%;text-align:center;font-family:monospace;font-size:.85rem;
+                   background:#1e293b;border:1px solid #334155;border-radius:6px;
+                   padding:8px;color:#f1f5f9;margin-bottom:14px">
+          <div class="field">
+            <input id="totp-force-code" type="text" maxlength="6" placeholder="Code à 6 chiffres"
+              style="width:100%;text-align:center;font-size:1.4rem;letter-spacing:.35em;
+                     font-family:monospace;background:#1e293b;border:1px solid #334155;
+                     border-radius:8px;padding:12px;color:#f1f5f9">
+          </div>
+          <p id="totp-force-error" style="color:#fc8181;font-size:.82rem;margin-bottom:10px;display:none"></p>
+          <button id="totp-force-verify" class="btn btn-pri" style="width:100%;justify-content:center">
+            Activer et continuer →
+          </button>
+          <p style="font-size:.72rem;color:#64748b;margin-top:14px">
+            Scannez le QR code avec votre application d'authentification.
+          </p>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
+
+    overlay.style.display = 'flex';
+
+    // Lancer l'enrôlement TOTP
+    (async () => {
+      try {
+        // Nettoyer d'éventuels anciens facteurs non vérifiés
+        const { data: fd } = await sb.auth.mfa.listFactors();
+        for (const f of (fd?.totp || []).filter(f => f.status !== 'verified')) {
+          try { await sb.auth.mfa.unenroll({ factorId: f.id }); } catch (_) {}
+        }
+
+        const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp' });
+        if (error || !data?.totp) {
+          document.getElementById('totp-force-error').textContent = 'Erreur Supabase MFA : ' + (error?.message || 'inconnu');
+          document.getElementById('totp-force-error').style.display = 'block';
+          return;
+        }
+
+        overlay._factorId = data.id;
+        document.getElementById('totp-force-secret').value = data.totp.secret;
+
+        const qrEl = document.getElementById('totp-force-qr');
+        if (typeof QRCode !== 'undefined') {
+          new QRCode(qrEl, { text: data.totp.uri, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.M });
+        } else if (data.totp.qr_code) {
+          const img = document.createElement('img');
+          img.src = data.totp.qr_code; img.width = 160;
+          qrEl.appendChild(img);
+        }
+      } catch (e) {
+        document.getElementById('totp-force-error').textContent = 'Erreur : ' + e.message;
+        document.getElementById('totp-force-error').style.display = 'block';
+      }
+    })();
+
+    document.getElementById('totp-force-verify').onclick = async () => {
+      const code     = (document.getElementById('totp-force-code').value || '').trim();
+      const errEl    = document.getElementById('totp-force-error');
+      const factorId = overlay._factorId;
+      errEl.style.display = 'none';
+      if (!/^\d{6}$/.test(code)) { errEl.textContent = 'Code à 6 chiffres requis.'; errEl.style.display = 'block'; return; }
+      if (!factorId)             { errEl.textContent = 'Enrôlement non initialisé.'; errEl.style.display = 'block'; return; }
+      try {
+        const ch = await sb.auth.mfa.challenge({ factorId });
+        if (ch.error) throw ch.error;
+        const v = await sb.auth.mfa.verify({ factorId, challengeId: ch.data.id, code });
+        if (v.error) throw v.error;
+        overlay.style.display = 'none';
+        // Marquer trust 2h
+        const trustKey = 'safe_totp_trust_' + (state.user?.id || '');
+        localStorage.setItem(trustKey, String(Date.now() + 2 * 3600 * 1000));
+        resolve(true);
+      } catch (e) {
+        errEl.textContent = 'Code refusé : ' + (e.message || e);
+        errEl.style.display = 'block';
+      }
+    };
+  });
 }
 
 // --- Registre RGPD (Article 30) ---
@@ -4167,6 +4388,14 @@ async function appliquerNouveauMDP() {
       // Fallback : update via Supabase admin API (nécessite service_role)
       // Dans ce cas on affiche juste le mailto avec le mot de passe
       console.warn('Edge Function reset non supporté — passage en mode mailto uniquement');
+    }
+
+    // Débloquer le compte si suspendu (ban temporaire suite à 5 tentatives)
+    await sb.rpc('admin_set_banned', { target_user_id: userId, banned: false }).catch(() => {});
+    // Réinitialiser le compteur d'échecs
+    const opt2 = select.options[select.selectedIndex];
+    if (opt2?.dataset?.email) {
+      await sb.rpc('reset_login_attempts', { user_email: opt2.dataset.email }).catch(() => {});
     }
 
     // Marquer password_set = false pour forcer le changement à la prochaine connexion

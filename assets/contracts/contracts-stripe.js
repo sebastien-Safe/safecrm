@@ -17,13 +17,14 @@ async function demanderResiliation(contractId) {
 
   if (error) { alert('Erreur : ' + error.message); return; }
 
-  await sb.from('audit_logs').insert({
-    user_id: state.user.id,
-    action: 'demande_resiliation_creee',
-    entity_type: 'contract',
-    entity_id: contractId,
-    details: { par: state.profile?.prenom || state.user?.email },
-  }).then(() => {});
+  if (typeof logRgpd === 'function') await logRgpd('demande_resiliation_creee', 'Contrats', {
+    entityType: 'contract',
+    entityId:   contractId,
+    donnees:    'Demande de résiliation',
+    criticite:  'Attention',
+    resultat:   'Succès',
+    details:    { par: state.profile?.prenom || state.user?.email },
+  });
 
   alert('✅ Demande transmise. Un administrateur va traiter votre demande de résiliation.');
   closeContractModal();
@@ -102,13 +103,14 @@ async function rejeterResiliation(contractId) {
 
   if (error) { alert('Erreur : ' + error.message); return; }
 
-  await sb.from('audit_logs').insert({
-    user_id: state.user.id,
-    action: 'demande_resiliation_rejetee',
-    entity_type: 'contract',
-    entity_id: contractId,
-    details: { par: state.profile?.prenom || state.user?.email },
-  }).then(() => {});
+  if (typeof logRgpd === 'function') await logRgpd('demande_resiliation_rejetee', 'Contrats', {
+    entityType: 'contract',
+    entityId:   contractId,
+    donnees:    'Demande de résiliation',
+    criticite:  'Attention',
+    resultat:   'Succès',
+    details:    { par: state.profile?.prenom || state.user?.email },
+  });
 
   await loadContracts();
   renderContracts();
