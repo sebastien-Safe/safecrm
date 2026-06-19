@@ -66,9 +66,16 @@ p strong{color:#fff}
   .page{padding:24px 16px 60px}
   .doc{padding:20px 18px}
 }
+.btn-dl-pdf{position:fixed;top:16px;right:16px;width:44px;height:44px;border-radius:50%;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:var(--gold);font-size:1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;z-index:200;padding:0}
+.btn-dl-pdf:hover{background:rgba(245,158,11,.25);transform:scale(1.1);box-shadow:0 4px 16px rgba(245,158,11,.2)}
+.btn-dl-pdf .tip{position:absolute;right:52px;top:50%;transform:translateY(-50%);white-space:nowrap;background:var(--navy-2);border:1px solid var(--line);border-radius:7px;padding:5px 11px;font-size:.74rem;color:#fff;font-family:var(--fb);pointer-events:none;opacity:0;transition:opacity .15s}
+.btn-dl-pdf:hover .tip{opacity:1}
 </style>
 </head>
 <body>
+<button class="btn-dl-pdf" onclick="downloadClausePDF()">
+  📄<span class="tip">Télécharger au format PDF</span>
+</button>
 <div class="page">
 
   <div class="brand">
@@ -176,6 +183,57 @@ p strong{color:#fff}
 </div>
 
 <script>
+function downloadClausePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W = 210, M = 20;
+
+  doc.setFillColor(10, 22, 40);
+  doc.rect(0, 0, W, 297, 'F');
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(18); doc.setTextColor(245,158,11);
+  doc.text('S@FE CRM', M, 22);
+  doc.setFontSize(9); doc.setTextColor(148,163,184);
+  doc.text('Clause de Confidentialite et de Securite', M, 29);
+  doc.setDrawColor(245,158,11); doc.setLineWidth(0.5);
+  doc.line(M, 33, W-M, 33);
+
+  let y = 43;
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(148,163,184);
+  doc.text('S@FE — 66 av. des Champs-Elysees, 75008 Paris — SIRET : 104 699 558 00011', M, y); y += 5;
+  doc.text('ORIAS : 226008336 — Courtier en assurance (COA)', M, y); y += 9;
+
+  const sections = [
+    ['Engagement de Securite S@fe',
+     "La protection des donnees est au coeur de notre architecture. Toutes les informations centralisees au sein de notre CRM sont securisees de maniere optimale grace au protocole S@fe, matérialise par notre label de confiance. Ce sceau garantit une protection robuste de vos flux d'informations, associant la force d'un bouclier numerique a la rigueur de protocoles de chiffrement avances."],
+    ['1. Protection et Chiffrement des Donnees',
+     "L'ensemble des donnees clients, prospects et transactions saisies dans le CRM fait l'objet d'un chiffrement de bout en bout, tant en cours de transit que lors de leur stockage au repos. Le dispositif S@fe assure de maniere stricte que seules les personnes explicitement habilitees disposent des cles d'acces et des privileges necessaires pour consulter, modifier ou exporter ces informations."],
+    ['2. Integrite et Resilience de l\'Infrastructure',
+     "Conformement aux exigences les plus rigoureuses de notre politique de securite, notre infrastructure integre des mecanismes de redondance active et de surveillance proactive en temps reel. Les sauvegardes sont executees de facon fragmentee et distribuee sur des serveurs securises, prevenant efficacement toute alteration accidentelle, perte de donnees ou tentative d'acces malveillante."],
+    ['3. Conformite Reglementaire et Confidentialite Strictes',
+     "Aucune donnee stockee ou traitee au sein de notre CRM ne sera vendue, partagee ou exposee a des entites tierces sans un consentement explicite et prealable de votre part, en dehors des obligations legales ou judiciaires imperatives. Le protocole S@fe s'aligne totalement avec les dispositions du Reglement General sur la Protection des Donnees (RGPD)."],
+  ];
+
+  sections.forEach(([titre, texte]) => {
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(245,158,11);
+    doc.text(titre, M, y); y += 6;
+    doc.setFont('helvetica','normal'); doc.setTextColor(203,213,225); doc.setFontSize(9);
+    const lines = doc.splitTextToSize(texte, W - 2*M);
+    lines.forEach(l => {
+      if (y > 272) { doc.addPage(); doc.setFillColor(10,22,40); doc.rect(0,0,W,297,'F'); y = 20; }
+      doc.text(l, M, y); y += 5;
+    });
+    y += 5;
+  });
+
+  y += 4;
+  doc.setFontSize(7); doc.setTextColor(100,116,139);
+  doc.text('Document genere par S@FE CRM — safe-digitalisation.fr — ' + new Date().toLocaleDateString('fr-FR'), M, y);
+
+  doc.save('Clause-de-Confidentialite-SAFE-CRM.pdf');
+}
+
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let hasSig = false, sigCanvas, sigCtx, isDrawing = false;
 
