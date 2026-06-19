@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Signature du contrat de mandat — S@FE CRM</title>
@@ -27,8 +27,9 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%;background:var(--navy);color:var(--mut-2);font-family:var(--ff-body);line-height:1.6;-webkit-font-smoothing:antialiased}
 
-    /* ── LAYOUT ── */
     .page{max-width:780px;margin:0 auto;padding:40px 24px 80px}
+
+    /* ── LOGO ── */
     .logo-bar{display:flex;align-items:center;gap:14px;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--line)}
     .logo-bar svg{width:40px;height:46px;flex-shrink:0}
     .logo-bar .brand{font-family:var(--ff-disp);font-size:1.2rem;font-weight:800;color:#fff}
@@ -54,21 +55,28 @@
     .section-sub{color:var(--mut);font-size:.9rem;margin-bottom:24px}
 
     /* ── CONTRAT ── */
-    .contrat{background:var(--navy-2);border:1px solid var(--line);border-radius:14px;padding:28px;max-height:520px;overflow-y:auto;font-size:.85rem;line-height:1.8;color:var(--mut-2)}
+    .contrat{background:var(--navy-2);border:1px solid var(--line);border-radius:14px;padding:28px;max-height:560px;overflow-y:auto;font-size:.85rem;line-height:1.8;color:var(--mut-2)}
     .contrat h3{font-family:var(--ff-disp);font-size:1rem;font-weight:700;color:#fff;margin:20px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
     .contrat h3:first-child{margin-top:0}
+    .contrat h4{font-family:var(--ff-disp);font-size:.9rem;font-weight:700;color:var(--gold-2);margin:16px 0 6px}
     .contrat p{margin-bottom:10px}
     .contrat ul{margin:8px 0 10px 20px}
     .contrat ul li{margin-bottom:4px}
+
     .contrat .parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
     .contrat .partie-label{font-family:var(--ff-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
     .contrat .partie-val{font-size:.83rem;color:#fff;font-weight:500}
     .contrat .partie-mut{font-size:.8rem;color:var(--mut-2)}
-    .contrat table{width:100%;border-collapse:collapse;font-size:.8rem;margin:10px 0}
-    .contrat table th{font-family:var(--ff-mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
-    .contrat table td{padding:8px 10px;border-bottom:1px solid var(--line);color:var(--mut-2)}
-    .contrat table td:first-child{color:#fff;font-weight:500}
     .contrat .ref{font-family:var(--ff-mono);font-size:.75rem;color:var(--gold);margin-bottom:16px}
+
+    /* ── TABLEAU GRILLE ── */
+    .contrat table{width:100%;border-collapse:collapse;font-size:.79rem;margin:12px 0}
+    .contrat table th{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+    .contrat table td{padding:7px 9px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--mut-2);vertical-align:top}
+    .contrat table td:first-child{color:#fff;font-weight:500}
+    .contrat table .section-row td{background:rgba(245,158,11,.06);color:var(--gold-2);font-family:var(--ff-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-top:1px solid rgba(245,158,11,.2)}
+    .contrat table .total-row td{border-top:1px solid var(--line);color:var(--gold);font-weight:600}
+
     .scroll-hint{text-align:center;font-family:var(--ff-mono);font-size:.68rem;color:var(--mut);margin-top:8px;animation:bob 2s infinite}
     @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
 
@@ -126,8 +134,7 @@
       .form-grid{grid-template-columns:1fr}
       .rcpro-fields.show{grid-template-columns:1fr}
       .contrat .parties{grid-template-columns:1fr}
-      .steps{gap:0}
-      .step-label{font-size:.6rem}
+      .contrat table{font-size:.72rem}
     }
   </style>
 </head>
@@ -179,63 +186,77 @@
       </div>
 
       <h3>Article 1 — Objet du mandat</h3>
-      <p>Le présent contrat a pour objet de confier au Mandataire, à titre non exclusif, la mission de promouvoir, prospecter et conclure des contrats de prestation de services au nom et pour le compte du Mandant, dans les conditions définies ci-après.</p>
-      <p>Les services couverts par le présent mandat sont l'ensemble des offres commercialisées par S@FE Digitalisation à la date de signature : référencement local Google Business Profile, conformité RGPD et DPO externalisé. Toute nouvelle offre lancée par le Mandant est automatiquement intégrée au périmètre du mandat sauf notification contraire adressée par écrit au Mandataire.</p>
+      <p>Le présent contrat confie au Mandataire, à titre non exclusif, la mission de promouvoir, prospecter et conclure des contrats de prestation de services au nom et pour le compte du Mandant, dans les conditions définies ci-après.</p>
+      <p>Le périmètre du mandat couvre l'ensemble des offres commercialisées par S@FE Digitalisation à la date de signature :</p>
+      <ul>
+        <li><strong>Référencement Local</strong> — visibilité Google Business Profile (formules Essentiel, Boost, Prestige)</li>
+        <li><strong>Mise en conformité RGPD</strong> — audit et accompagnement réglementaire (TPE, PME, ETI)</li>
+        <li><strong>DPO externalisé</strong> — délégué à la protection des données en abonnement mensuel</li>
+        <li><strong>Cybersécurité</strong> — audits de vulnérabilité et packs de sécurisation</li>
+        <li><strong>Click &amp; Collect</strong> — solution de commande en ligne pour commerces de proximité (formules Essentiel, Pro, Premium)</li>
+        <li><strong>Options à la carte</strong> — prestations ponctuelles complémentaires</li>
+      </ul>
+      <p>Toute nouvelle offre lancée par le Mandant est automatiquement intégrée au périmètre du mandat, sauf notification contraire adressée par écrit au Mandataire dans les 15 jours du lancement.</p>
 
       <h3>Article 2 — Territoire et non-exclusivité</h3>
-      <p>Le Mandataire est autorisé à opérer sur l'ensemble du territoire national, sans exclusivité géographique. La région d'intervention déclarée lors de la signature est enregistrée à titre indicatif et statistique, sans constituer de restriction ou de droit d'exclusivité. L'attribution des commissions est déterminée par l'identité de l'agent ayant initié et enregistré le contact dans le CRM S@FE.</p>
+      <p>Le Mandataire est autorisé à opérer sur l'ensemble du territoire national, sans exclusivité géographique. La région d'intervention déclarée lors de la signature est enregistrée à titre indicatif et statistique ; elle ne constitue ni une restriction d'activité, ni un droit d'exclusivité territoriale. L'attribution des commissions est déterminée par l'identité de l'agent ayant initié et enregistré le premier contact dans le CRM S@FE.</p>
 
       <h3>Article 3 — Durée et entrée en vigueur</h3>
-      <p>Le présent contrat prend effet à compter de la date de signature électronique par les deux parties, <strong>sous réserve de la communication par le Mandataire d'une copie de son extrait d'immatriculation au Registre Spécial des Agents Commerciaux (RSAC) du greffe du tribunal de commerce compétent</strong>, conformément à l'article L.134-1 du Code de commerce.</p>
+      <p>Le présent contrat prend effet à compter de la date de signature électronique par les deux parties, <strong>sous réserve de la communication par le Mandataire d'une copie de son extrait d'immatriculation au Registre Spécial des Agents Commerciaux (RSAC)</strong>, conformément à l'article L.134-1 du Code de commerce.</p>
       <p>Le présent contrat peut être présenté par le Mandataire au greffe du tribunal de commerce compétent pour appuyer sa demande d'immatriculation au RSAC préalablement à la prise d'effet du mandat. Dans ce cas, les effets du présent contrat demeurent suspendus jusqu'à réception par S@FE SASU de l'extrait RSAC correspondant.</p>
-      <p>Il est conclu pour une durée indéterminée. Il peut être résilié par l'une ou l'autre des parties sous réserve d'un préavis de 30 jours notifié par lettre recommandée avec accusé de réception ou par e-mail avec confirmation de lecture adressé à contact@safe-digitalisation.fr.</p>
-      <p>En cas de résiliation à l'initiative du Mandant, sans faute grave imputable au Mandataire, celui-ci bénéficiera d'une indemnité compensatrice limitée à <strong>trois (3) mois de commissions récurrentes</strong>, calculée sur la moyenne mensuelle des commissions récurrentes effectivement perçues au cours des six (6) derniers mois précédant la date d'effet de la résiliation. Cette limitation est expressément acceptée par le Mandataire en contrepartie de la mise à disposition gratuite des outils CRM, de la formation initiale et des supports commerciaux. Aucune indemnité n'est due en cas de résiliation pour faute grave.</p>
+      <p>Il est conclu pour une durée indéterminée. Il peut être résilié par l'une ou l'autre des parties moyennant un préavis de <strong>30 jours</strong>, notifié par lettre recommandée avec accusé de réception ou par e-mail avec confirmation de lecture adressé à contact@safe-digitalisation.fr.</p>
+      <p>En cas de résiliation à l'initiative du Mandant, sans faute grave imputable au Mandataire, celui-ci bénéficie d'une <strong>indemnité compensatrice limitée à trois (3) mois de commissions récurrentes</strong>, calculée sur la moyenne mensuelle des commissions récurrentes effectivement perçues au cours des six (6) derniers mois précédant la date d'effet de la résiliation. Cette limitation est acceptée expressément par le Mandataire en contrepartie de la mise à disposition gratuite du CRM, de la formation initiale et des supports commerciaux. Aucune indemnité n'est due en cas de résiliation pour faute grave.</p>
 
       <h3>Article 4 — Statut et indépendance</h3>
       <p>Le Mandataire exerce sa mission en qualité de prestataire indépendant, sans lien de subordination avec le Mandant. Il organise librement son activité, son temps de travail et ses déplacements. Le présent contrat n'emporte aucune relation de travail salarié entre les parties.</p>
-      <p>Le Mandataire fait son affaire de toutes les obligations sociales et fiscales liées à son statut (cotisations URSSAF, déclarations fiscales, assurances).</p>
+      <p>Le Mandataire est seul responsable de ses obligations sociales et fiscales (cotisations URSSAF, déclarations fiscales, assurances).</p>
 
       <h3>Article 5 — Obligations du Mandataire</h3>
       <ul>
-        <li>Consacrer les efforts nécessaires au développement du portefeuille S@FE sur sa zone d'intervention, selon sa propre organisation.</li>
-        <li>Utiliser exclusivement les supports commerciaux fournis par le Mandant sans en modifier le contenu sans accord préalable écrit.</li>
+        <li>Consacrer les efforts nécessaires au développement du portefeuille S@FE, selon sa propre organisation.</li>
+        <li>Utiliser exclusivement les supports commerciaux fournis par le Mandant, sans en modifier le contenu sans accord écrit préalable.</li>
         <li>Enregistrer chaque contact et chaque interaction dans le CRM S@FE, qui constitue le seul système de référence pour l'attribution des commissions.</li>
         <li>Transmettre fidèlement les commandes et contrats conclus selon les modalités définies conjointement.</li>
         <li>Informer le Mandant de toute évolution du marché, des besoins clients et des actions de la concurrence.</li>
-        <li>Ne représenter aucune entreprise proposant des services directement concurrents sans information préalable écrite du Mandant.</li>
+        <li>Ne représenter aucune entreprise proposant des services directement concurrents, sans information préalable écrite du Mandant.</li>
         <li>Respecter strictement la politique tarifaire du Mandant. Toute remise nécessite une autorisation écrite préalable.</li>
         <li>Maintenir à jour son inscription au RSAC et informer le Mandant de tout changement de situation juridique dans un délai de 15 jours.</li>
       </ul>
 
       <h3>Article 6 — Assurance Responsabilité Civile Professionnelle</h3>
-      <p>Le Mandataire est vivement encouragé à souscrire une assurance Responsabilité Civile Professionnelle (RC Pro) couvrant les dommages pouvant résulter de l'exercice de sa mission. S'il ne dispose pas d'une telle assurance à la date de signature, il s'engage à en souscrire une dans un délai de <strong>90 jours</strong> et à en communiquer les références au Mandant.</p>
-      <p><strong>Clause de responsabilité exclusive :</strong> en l'absence de couverture RC Pro, le Mandataire assume seul et entièrement la responsabilité des dommages causés à des tiers dans l'exercice de sa mission. S@FE SASU est expressément exonérée de toute responsabilité solidaire ou in solidum du fait des actes ou omissions du Mandataire non couverts par une assurance RC Pro. Le Mandataire garantit S@FE SASU contre tout recours de tiers à ce titre.</p>
+      <p>Le Mandataire est vivement encouragé à souscrire une assurance RC Pro couvrant les dommages pouvant résulter de l'exercice de sa mission. S'il n'en dispose pas à la date de signature, il s'engage à en souscrire une dans un délai de <strong>90 jours</strong> et à en communiquer les références au Mandant.</p>
+      <p><strong>Clause de responsabilité exclusive :</strong> en l'absence de couverture RC Pro, le Mandataire assume seul et entièrement la responsabilité des dommages causés à des tiers dans l'exercice de sa mission. S@FE SASU est expressément exonérée de toute responsabilité solidaire ou in solidum du fait des actes ou omissions du Mandataire. Le Mandataire garantit S@FE SASU contre tout recours de tiers à ce titre.</p>
 
       <h3>Article 7 — Obligations du Mandant</h3>
       <ul>
         <li>Fournir au Mandataire l'ensemble des supports commerciaux, argumentaires et accès CRM nécessaires à l'exercice de sa mission.</li>
-        <li>Valider ou refuser les propositions commerciales transmises par le Mandataire dans un délai de 5 jours ouvrés.</li>
+        <li>Valider ou refuser les propositions commerciales transmises par le Mandataire dans un délai de <strong>5 jours ouvrés</strong>.</li>
         <li>Verser les commissions dans les conditions prévues à l'article 8.</li>
-        <li>Informer le Mandataire de toute évolution tarifaire avec un préavis de 15 jours. Toute modification de la grille de commissionnement fera l'objet d'une notification dans le CRM et nécessitera une validation explicite du Mandataire.</li>
+        <li>Informer le Mandataire de toute évolution tarifaire avec un préavis de <strong>15 jours</strong>. Toute modification de la grille de commissionnement fait l'objet d'une notification dans le CRM et nécessite une validation explicite du Mandataire.</li>
         <li>Assurer un accompagnement au démarrage comprenant une formation aux offres et aux outils CRM.</li>
       </ul>
 
       <h3>Article 8 — Rémunération et commissions</h3>
-      <p>La rémunération du Mandataire est exclusivement constituée de commissions. Le détail complet figure dans la <strong>Grille de commissionnement</strong> (Annexe 1 du présent contrat), qui en fait partie intégrante.</p>
-      <p><strong>Commission à la signature :</strong> versée à la première facturation client, calculée sur le montant HT de la prestation ou des frais de mise en place selon la grille en vigueur.</p>
-      <p><strong>Commission récurrente :</strong> versée mensuellement sur chaque abonnement actif du portefeuille du Mandataire, calculée sur le montant HT de l'abonnement mensuel encaissé.</p>
-      <p><strong>Bonus de fidélité :</strong> versé en une fois à l'issue de la période d'engagement contractuel du client, si l'abonnement est toujours actif, selon les montants de la grille.</p>
-      <p><strong>Modalités de paiement :</strong> un relevé de commissions détaillé est transmis au Mandataire le dernier jour ouvré de chaque mois pour le mois écoulé. Le versement intervient à réception de la <strong>facture émise par le Mandataire</strong> correspondant au relevé. Aucun versement n'est effectué sans facture préalable.</p>
+      <p>La rémunération du Mandataire est exclusivement constituée de commissions, dont le détail figure dans l'<strong>Annexe 1 — Grille de commissionnement SAFE-AC-2026-V1</strong>, partie intégrante du présent contrat.</p>
+
+      <p><strong>Commission à la signature (one-shot) :</strong> versée à la première facturation du client. Son montant est soit un forfait fixe défini dans la grille, soit un pourcentage du montant HT de la prestation selon l'offre concernée.</p>
+
+      <p><strong>Bonus de fidélité :</strong> versé en une fois au terme de la période d'engagement contractuel du client, si l'abonnement est toujours actif à cette date. <em>Clause anti-churn :</em> aucun bonus n'est dû si le client résilie dans les 90 premiers jours suivant la signature. Ce bonus ne s'applique qu'aux offres pour lesquelles il est explicitement prévu dans la grille.</p>
+
+      <p><strong>Commission récurrente :</strong> versée mensuellement sur chaque abonnement actif du portefeuille du Mandataire, calculée sur le montant HT de l'abonnement mensuel encaissé, au taux défini dans la grille par type de prestation.</p>
+
+      <p><strong>Modalités de paiement :</strong> un relevé de commissions détaillé est transmis au Mandataire le dernier jour ouvré de chaque mois pour le mois écoulé. Le versement intervient à réception de la <strong>facture émise par le Mandataire</strong> correspondant au relevé. Aucun paiement n'est effectué sans facture préalable.</p>
+
       <p>En cas de litige ou d'impayé client, la commission correspondante est suspendue. Si l'impayé est résolu, la commission est versée dans le mois suivant l'encaissement.</p>
 
       <h3>Article 9 — Accès au CRM et outils</h3>
-      <p>Le Mandant met à disposition du Mandataire un accès au CRM S@FE pour la durée du présent contrat. Cet accès est personnel, non cessible et strictement limité à l'exercice de la mission. En cas de résiliation du présent contrat, quelle qu'en soit la cause, l'accès au CRM est révoqué à la date d'effet de la résiliation.</p>
+      <p>Le Mandant met à disposition du Mandataire un accès au CRM S@FE pour la durée du présent contrat. Cet accès est personnel, non cessible et strictement limité à l'exercice de la mission. En cas de résiliation, quelle qu'en soit la cause, l'accès est révoqué à la date d'effet de la résiliation.</p>
 
       <h3>Article 10 — Confidentialité</h3>
-      <p>Le Mandataire s'engage à considérer comme strictement confidentielles toutes les informations commerciales, tarifaires, techniques ou stratégiques auxquelles il aura accès. Cette obligation s'applique pendant toute la durée du contrat et durant <strong>3 ans</strong> après son terme. Le Mandataire s'interdit de démarcher directement les clients du Mandant pour son propre compte ou pour celui d'un concurrent pendant cette même période.</p>
+      <p>Le Mandataire s'engage à considérer comme strictement confidentielles toutes les informations commerciales, tarifaires, techniques ou stratégiques auxquelles il a accès. Cette obligation s'applique pendant toute la durée du contrat et durant <strong>3 ans</strong> après son terme. Le Mandataire s'interdit de démarcher directement les clients du Mandant pour son propre compte ou pour celui d'un concurrent pendant cette même période.</p>
 
       <h3>Article 11 — Protection des données personnelles</h3>
-      <p>Le Mandataire agit en qualité de sous-traitant au sens de l'article 28 du RGPD pour les données personnelles collectées pour le compte du Mandant. Il s'engage à ne les utiliser qu'aux fins du présent mandat, à respecter les règles de collecte et de consentement définies dans le CRM, et à ne pas les conserver au-delà de la durée nécessaire.</p>
+      <p>Le Mandataire agit en qualité de sous-traitant au sens de l'article 28 du RGPD pour les données personnelles collectées pour le compte du Mandant. Il s'engage à ne les utiliser qu'aux fins du présent mandat, à respecter les règles de collecte et de consentement définies dans le CRM, et à ne pas les conserver au-delà de la durée nécessaire à l'exécution de sa mission.</p>
 
       <h3>Article 12 — Propriété intellectuelle</h3>
       <p>Les supports commerciaux, fiches produit, argumentaires et tout document fourni par le Mandant restent la propriété exclusive de S@FE SASU. Le Mandataire dispose d'une licence d'utilisation limitée, non exclusive et non cessible, pour la durée du présent contrat uniquement.</p>
@@ -243,7 +264,128 @@
       <h3>Article 13 — Droit applicable et juridiction</h3>
       <p>Le présent contrat est régi par le droit français, et notamment par les articles L.134-1 et suivants du Code de commerce. Tout litige non résolu à l'amiable dans un délai de 30 jours sera soumis à la compétence exclusive du <strong>Tribunal de Commerce de Paris</strong>.</p>
 
-      <p style="margin-top:20px;font-size:.78rem;color:var(--mut)">Fait par voie électronique. La signature électronique avec vérification OTP constitue l'accord des parties sur l'ensemble des clauses du présent contrat.</p>
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- ANNEXE 1 — GRILLE DE COMMISSIONNEMENT                      -->
+      <!-- Barème : SAFE-AC-2026-V1 — En vigueur au 12 juin 2026      -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <h3>Annexe 1 — Grille de commissionnement SAFE-AC-2026-V1</h3>
+      <p style="font-size:.8rem;color:var(--mut);margin-bottom:12px">La présente grille fait partie intégrante du contrat. Elle peut être révisée par le Mandant avec un préavis de 15 jours et validation explicite du Mandataire (article 7).</p>
+
+      <h4>Référencement Local</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Formule</th>
+            <th>Mensuel HT</th>
+            <th>MeP HT</th>
+            <th>Engagement</th>
+            <th>Comm. signature</th>
+            <th>Bonus fidélité</th>
+            <th>Comm. récurrente</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Essentiel</td><td>79 €</td><td>190 €</td><td>6 mois</td><td>75 € fixe</td><td>75 € (mois 7)</td><td>15 % / mois</td></tr>
+          <tr><td>Boost</td><td>149 €</td><td>290 €</td><td>6 mois</td><td>100 € fixe</td><td>100 € (mois 7)</td><td>15 % / mois</td></tr>
+          <tr><td>Prestige</td><td>249 €</td><td>—</td><td>3 mois</td><td>—</td><td>—</td><td>15 % / mois</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Click &amp; Collect</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Formule</th>
+            <th>Mensuel HT</th>
+            <th>MeP HT</th>
+            <th>Engagement</th>
+            <th>Comm. signature</th>
+            <th>Bonus fidélité</th>
+            <th>Comm. récurrente</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Essentiel</td><td>39 €</td><td>150 €</td><td>3 mois</td><td>50 € fixe</td><td>50 € (mois 4)</td><td>15 % / mois</td></tr>
+          <tr><td>Pro</td><td>79 €</td><td>250 €</td><td>3 mois</td><td>100 € fixe</td><td>100 € (mois 4)</td><td>15 % / mois</td></tr>
+          <tr><td>Premium</td><td>129 €</td><td>—</td><td>3 mois</td><td>—</td><td>—</td><td>15 % / mois</td></tr>
+        </tbody>
+      </table>
+
+      <h4>DPO externalisé</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Formule</th>
+            <th>Mensuel HT</th>
+            <th>Engagement</th>
+            <th>Comm. signature</th>
+            <th>Bonus fidélité</th>
+            <th>Comm. récurrente</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Abonnement DPO</td><td>189 €</td><td>12 mois</td><td>50 € fixe</td><td>—</td><td>10 % / mois</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Mise en conformité RGPD</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Formule</th>
+            <th>Montant HT</th>
+            <th>Type</th>
+            <th>Commission à la signature</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Diagnostic</td><td>Offert</td><td>Ponctuel</td><td>—</td></tr>
+          <tr><td>Audit RGPD TPE</td><td>1 490 €</td><td>Ponctuel</td><td>298 € fixe</td></tr>
+          <tr><td>Audit RGPD+ PME</td><td>2 990 €</td><td>Ponctuel</td><td>598 € fixe</td></tr>
+          <tr><td>Audit ETI (sur devis)</td><td>à partir de 5 500 €</td><td>Ponctuel</td><td>20 % du montant HT</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Cybersécurité</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Formule</th>
+            <th>Montant HT</th>
+            <th>Type</th>
+            <th>Commission à la signature</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Audit de vulnérabilité</td><td>490 €</td><td>Ponctuel</td><td>98 € fixe</td></tr>
+          <tr><td>Pack Sécurité Essentiel</td><td>990 €</td><td>Ponctuel</td><td>198 € fixe</td></tr>
+          <tr><td>Pack Résilience Pro</td><td>1 990 €</td><td>Ponctuel</td><td>398 € fixe</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Options à la carte</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Option</th>
+            <th>Montant HT</th>
+            <th>Type</th>
+            <th>Commission</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Landing page SEO</td><td>390 €</td><td>Ponctuel</td><td>10 % du montant HT</td></tr>
+          <tr><td>Google Ads setup</td><td>290 €</td><td>Ponctuel</td><td>10 % du montant HT</td></tr>
+          <tr><td>Formation GBP (2h)</td><td>220 €</td><td>Ponctuel</td><td>10 % du montant HT</td></tr>
+          <tr><td>Audit concurrentiel</td><td>290 €</td><td>Ponctuel</td><td>10 % du montant HT</td></tr>
+          <tr><td>Sensibilisation phishing</td><td>290 €</td><td>Ponctuel</td><td>10 % du montant HT</td></tr>
+          <tr><td>Veille menaces</td><td>89 €/mois</td><td>Mensuel</td><td>10 % / mois</td></tr>
+        </tbody>
+      </table>
+
+      <p style="margin-top:16px;font-size:.78rem;color:var(--mut)"><strong style="color:var(--gold)">Formules personnalisées / sur devis :</strong> commission de 10 % du montant HT pour les prestations ponctuelles, et 10 % mensuel pour les abonnements, sauf accord écrit différent.</p>
+
+      <p style="margin-top:16px;font-size:.78rem;color:var(--mut)">Fait par voie électronique. La signature électronique avec vérification OTP constitue l'accord des parties sur l'ensemble des clauses du présent contrat, y compris la présente annexe.</p>
     </div>
     <p class="scroll-hint">↓ Faites défiler pour lire l'intégralité du contrat</p>
 
@@ -293,11 +435,11 @@
       </label>
       <div class="rcpro-fields" id="rcpro-fields">
         <div class="field"><label>Assureur</label><input id="f-rcpro-assureur" type="text" placeholder="Ex : AXA, Hiscox…"></div>
-        <div class="field"><label>RC PRO</label><input id="f-rcpro-numero" type="text" placeholder="N° de contrat d'assurance"></div>
+        <div class="field"><label>N° de contrat RC Pro</label><input id="f-rcpro-numero" type="text" placeholder="N° de contrat d'assurance"></div>
         <div class="field"><label>Date d'échéance</label><input id="f-rcpro-echeance" type="date"></div>
       </div>
       <div class="info-block warn" id="rcpro-warn" style="display:none">
-        <strong>Absence de RC Pro</strong> — En l'absence de couverture RC Pro, vous assumez seul et entièrement la responsabilité des dommages causés à des tiers dans l'exercice de votre mission, conformément à l'article 6 du contrat. Vous vous engagez à souscrire une RC Pro dans les 90 jours suivant la signature.
+        <strong>Absence de RC Pro</strong> — En l'absence de couverture RC Pro, vous assumez seul et entièrement la responsabilité des dommages causés à des tiers dans l'exercice de votre mission (article 6). Vous vous engagez à souscrire une RC Pro dans les 90 jours suivant la signature.
       </div>
     </div>
 
@@ -313,7 +455,7 @@
     <p class="section-sub">Signez dans le cadre ci-dessous en utilisant votre souris ou votre doigt.</p>
 
     <div class="info-block ok">
-      <strong>Ce que vous signez</strong> — En apposant votre signature, vous déclarez avoir lu et accepté l'intégralité du contrat de mandat S@FE, y compris la grille de commissionnement en annexe.
+      <strong>Ce que vous signez</strong> — En apposant votre signature, vous déclarez avoir lu et accepté l'intégralité du contrat de mandat S@FE, y compris la grille de commissionnement (Annexe 1).
     </div>
 
     <div class="canvas-wrap">
@@ -377,14 +519,12 @@ let sigCanvas, sigCtx, isDrawing = false, hasSig = false;
 let currentUser = null;
 let mandatNumero = null;
 
-// ── Init ──
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = '/'; return; }
   currentUser = session.user;
   document.getElementById('otp-email').textContent = currentUser.email;
 
-  // Vérifier si déjà signé
   const { data: existing } = await sb.from('mandats')
     .select('id,statut,numero')
     .eq('user_id', currentUser.id)
@@ -392,7 +532,6 @@ async function init() {
     .maybeSingle();
   if (existing) { window.location.href = '/'; return; }
 
-  // Générer le numéro de contrat
   const { data: numData } = await sb.rpc('next_mandat_numero');
   if (numData) {
     mandatNumero = numData;
@@ -402,17 +541,15 @@ async function init() {
 
   initCanvas();
 
-  // Pré-remplir prénom/nom depuis le profil
   const { data: profile } = await sb.from('profiles').select('prenom').eq('id', currentUser.id).maybeSingle();
   if (profile?.prenom) document.getElementById('f-prenom').value = profile.prenom;
 }
 
-// ── Navigation ──
 function goStep(n) {
   document.getElementById('step-' + currentStep)?.classList.remove('active');
   document.querySelectorAll('.step').forEach(s => {
     const sn = parseInt(s.dataset.step);
-    s.classList.remove('active','done');
+    s.classList.remove('active', 'done');
     if (sn < n) s.classList.add('done');
     else if (sn === n) s.classList.add('active');
   });
@@ -422,17 +559,15 @@ function goStep(n) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ── Étape 1 ──
 document.getElementById('btn-step1-next').addEventListener('click', () => goStep(2));
 
-// ── Étape 2 ──
 document.getElementById('has-rcpro').addEventListener('change', function() {
   document.getElementById('rcpro-fields').classList.toggle('show', this.checked);
   document.getElementById('rcpro-warn').style.display = this.checked ? 'none' : 'block';
 });
 
 document.getElementById('btn-step2-next').addEventListener('click', () => {
-  const required = ['f-prenom','f-nom','f-adresse','f-cp','f-ville','f-region'];
+  const required = ['f-prenom', 'f-nom', 'f-adresse', 'f-cp', 'f-ville', 'f-region'];
   for (const id of required) {
     if (!document.getElementById(id).value.trim()) {
       alert('Veuillez remplir tous les champs obligatoires (*).');
@@ -440,7 +575,6 @@ document.getElementById('btn-step2-next').addEventListener('click', () => {
       return;
     }
   }
-  // Mettre à jour la section mandataire dans le contrat
   const prenom = document.getElementById('f-prenom').value.trim();
   const nom    = document.getElementById('f-nom').value.trim();
   document.getElementById('mandataire-nom').textContent = prenom + ' ' + nom;
@@ -452,7 +586,6 @@ document.getElementById('btn-step2-next').addEventListener('click', () => {
   goStep(3);
 });
 
-// ── Canvas signature ──
 function initCanvas() {
   sigCanvas = document.getElementById('sig-canvas');
   sigCtx    = sigCanvas.getContext('2d');
@@ -462,28 +595,27 @@ function initCanvas() {
   sigCtx.lineJoin    = 'round';
 
   const getPos = e => {
-    const r = sigCanvas.getBoundingClientRect();
+    const r  = sigCanvas.getBoundingClientRect();
     const sc = sigCanvas.width / r.width;
-    if (e.touches) return { x:(e.touches[0].clientX-r.left)*sc, y:(e.touches[0].clientY-r.top)*sc };
-    return { x:(e.clientX-r.left)*sc, y:(e.clientY-r.top)*sc };
+    if (e.touches) return { x: (e.touches[0].clientX - r.left) * sc, y: (e.touches[0].clientY - r.top) * sc };
+    return { x: (e.clientX - r.left) * sc, y: (e.clientY - r.top) * sc };
   };
 
-  sigCanvas.addEventListener('mousedown',  e => { isDrawing=true; const p=getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); });
-  sigCanvas.addEventListener('mousemove',  e => { if(!isDrawing) return; const p=getPos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); hasSig=true; document.getElementById('canvas-label').style.opacity='0'; });
-  sigCanvas.addEventListener('mouseup',    () => isDrawing=false);
-  sigCanvas.addEventListener('mouseleave', () => isDrawing=false);
-  sigCanvas.addEventListener('touchstart', e => { e.preventDefault(); isDrawing=true; const p=getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); }, {passive:false});
-  sigCanvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!isDrawing) return; const p=getPos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); hasSig=true; document.getElementById('canvas-label').style.opacity='0'; }, {passive:false});
-  sigCanvas.addEventListener('touchend',   () => isDrawing=false);
+  sigCanvas.addEventListener('mousedown',  e => { isDrawing = true; const p = getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); });
+  sigCanvas.addEventListener('mousemove',  e => { if (!isDrawing) return; const p = getPos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); hasSig = true; document.getElementById('canvas-label').style.opacity = '0'; });
+  sigCanvas.addEventListener('mouseup',    () => isDrawing = false);
+  sigCanvas.addEventListener('mouseleave', () => isDrawing = false);
+  sigCanvas.addEventListener('touchstart', e => { e.preventDefault(); isDrawing = true; const p = getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); }, { passive: false });
+  sigCanvas.addEventListener('touchmove',  e => { e.preventDefault(); if (!isDrawing) return; const p = getPos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); hasSig = true; document.getElementById('canvas-label').style.opacity = '0'; }, { passive: false });
+  sigCanvas.addEventListener('touchend',   () => isDrawing = false);
 
   document.getElementById('btn-clear-sig').addEventListener('click', () => {
     sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
     hasSig = false;
-    document.getElementById('canvas-label').style.opacity='1';
+    document.getElementById('canvas-label').style.opacity = '1';
   });
 }
 
-// ── Étape 3 : envoyer OTP ──
 document.getElementById('btn-send-otp').addEventListener('click', async () => {
   if (!hasSig) {
     document.getElementById('sig-error').classList.add('show');
@@ -494,22 +626,18 @@ document.getElementById('btn-send-otp').addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = 'Envoi en cours…';
   try {
-    // Générer OTP 6 chiffres
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code    = Math.floor(100000 + Math.random() * 900000).toString();
     const expires = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
-    // Invalider anciens OTP
     await sb.from('mandat_otp').update({ used: true }).eq('user_id', currentUser.id).eq('used', false);
-
-    // Insérer nouveau OTP
     await sb.from('mandat_otp').insert({ user_id: currentUser.id, code, expires_at: expires });
 
-    // Envoyer via mailto (fallback) — idéalement Edge Function email
-    const mailto = `mailto:${currentUser.email}?subject=${encodeURIComponent('[S@FE CRM] Code de signature : ' + code)}&body=${encodeURIComponent('Votre code de confirmation de signature : ' + code + '\n\nCe code est valable 15 minutes.\n\nSi vous n\'êtes pas à l\'origine de cette demande, ignorez ce message.')}`;
-    window.open(mailto);
+    const subject = '[S@FE CRM] Code de signature : ' + code;
+    const body    = 'Votre code de confirmation de signature : ' + code + '\n\nCe code est valable 15 minutes.\n\nSi vous n\'êtes pas à l\'origine de cette demande, ignorez ce message.';
+    window.open('mailto:' + currentUser.email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body));
 
     goStep(4);
-  } catch(e) {
+  } catch (e) {
     alert('Erreur : ' + e.message);
   } finally {
     btn.disabled = false;
@@ -519,15 +647,14 @@ document.getElementById('btn-send-otp').addEventListener('click', async () => {
 
 document.getElementById('btn-resend-otp').addEventListener('click', () => goStep(3));
 
-// ── Étape 4 : confirmer OTP et signer ──
 document.getElementById('btn-confirm-sign').addEventListener('click', async () => {
   const code = document.getElementById('otp-code').value.trim();
   if (code.length !== 6) { document.getElementById('otp-error').classList.add('show'); return; }
   const btn = document.getElementById('btn-confirm-sign');
-  btn.disabled = true; btn.textContent = 'Vérification…';
+  btn.disabled = true;
+  btn.textContent = 'Vérification…';
 
   try {
-    // Vérifier OTP
     const { data: otpData, error: otpErr } = await sb.from('mandat_otp')
       .select('*')
       .eq('user_id', currentUser.id)
@@ -538,57 +665,51 @@ document.getElementById('btn-confirm-sign').addEventListener('click', async () =
 
     if (otpErr || !otpData) {
       document.getElementById('otp-error').classList.add('show');
-      btn.disabled = false; btn.textContent = '✅ Confirmer et signer le contrat';
+      btn.disabled = false;
+      btn.textContent = '✅ Confirmer et signer le contrat';
       return;
     }
     document.getElementById('otp-error').classList.remove('show');
 
-    // Marquer OTP utilisé
     await sb.from('mandat_otp').update({ used: true }).eq('id', otpData.id);
 
-    // Récupérer la signature en base64
-    const sigData = sigCanvas.toDataURL('image/png');
+    const sigData    = sigCanvas.toDataURL('image/png');
+    const contratTxt = document.getElementById('contrat-text').innerText;
+    const msgBuffer  = new TextEncoder().encode(contratTxt);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const docHash    = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // Hash du contenu du contrat
-    const contratText = document.getElementById('contrat-text').innerText;
-    const msgBuffer   = new TextEncoder().encode(contratText);
-    const hashBuffer  = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray   = Array.from(new Uint8Array(hashBuffer));
-    const docHash     = hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
-
-    const now = new Date().toISOString();
+    const now      = new Date().toISOString();
     const hasRcpro = document.getElementById('has-rcpro').checked;
 
-    // Enregistrer le mandat
     const { error: mandatErr } = await sb.from('mandats').insert({
-      user_id:          currentUser.id,
-      numero:           mandatNumero,
-      prenom:           document.getElementById('f-prenom').value.trim(),
-      nom:              document.getElementById('f-nom').value.trim(),
-      adresse:          document.getElementById('f-adresse').value.trim(),
-      code_postal:      document.getElementById('f-cp').value.trim(),
-      ville:            document.getElementById('f-ville').value.trim(),
-      region:           document.getElementById('f-region').value,
-      siret:            document.getElementById('f-siret').value.trim() || null,
-      rsac_numero:      document.getElementById('f-rsac').value.trim() || null,
-      rsac_greffe:      document.getElementById('f-greffe').value.trim() || null,
-      rcpro_assureur:   hasRcpro ? document.getElementById('f-rcpro-assureur').value.trim() || null : null,
-      rcpro_numero:     hasRcpro ? document.getElementById('f-rcpro-numero').value.trim() || null : null,
-      rcpro_echeance:   hasRcpro ? document.getElementById('f-rcpro-echeance').value || null : null,
-      has_rcpro:        hasRcpro,
-      signature_svg:    sigData,
-      signed_at:        now,
-      otp_verified_at:  now,
-      doc_hash:         docHash,
-      statut:           'signe',
-      grille_version:   '2026-06',
+      user_id:            currentUser.id,
+      numero:             mandatNumero,
+      prenom:             document.getElementById('f-prenom').value.trim(),
+      nom:                document.getElementById('f-nom').value.trim(),
+      adresse:            document.getElementById('f-adresse').value.trim(),
+      code_postal:        document.getElementById('f-cp').value.trim(),
+      ville:              document.getElementById('f-ville').value.trim(),
+      region:             document.getElementById('f-region').value,
+      siret:              document.getElementById('f-siret').value.trim()           || null,
+      rsac_numero:        document.getElementById('f-rsac').value.trim()            || null,
+      rsac_greffe:        document.getElementById('f-greffe').value.trim()          || null,
+      rcpro_assureur:     hasRcpro ? (document.getElementById('f-rcpro-assureur').value.trim()  || null) : null,
+      rcpro_numero:       hasRcpro ? (document.getElementById('f-rcpro-numero').value.trim()    || null) : null,
+      rcpro_echeance:     hasRcpro ? (document.getElementById('f-rcpro-echeance').value         || null) : null,
+      has_rcpro:          hasRcpro,
+      signature_svg:      sigData,
+      signed_at:          now,
+      otp_verified_at:    now,
+      doc_hash:           docHash,
+      statut:             'signe',
+      grille_version:     'SAFE-AC-2026-V1',
       grille_acceptee_at: now,
     });
 
     if (mandatErr) throw new Error(mandatErr.message);
-
     goStep(5);
-  } catch(e) {
+  } catch (e) {
     alert('Erreur : ' + e.message);
     btn.disabled = false;
     btn.textContent = '✅ Confirmer et signer le contrat';
