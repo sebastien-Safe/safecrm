@@ -58,6 +58,23 @@ Deno.serve(async (req) => {
     return json({ error: "invalid_json" }, 400);
   }
 
+  // ── CAS 1 : réinitialisation du mot de passe d'un utilisateur existant ──
+  if (body.action === "reset_password") {
+    const userId      = body.user_id;
+    const newPassword = body.new_password;
+
+    if (!userId)                           return json({ error: "missing_user_id" }, 400);
+    if (!newPassword || newPassword.length < 8) return json({ error: "password_too_short" }, 400);
+
+    const { error: updateErr } = await sbAdmin.auth.admin.updateUserById(userId, {
+      password: newPassword,
+    });
+    if (updateErr) return json({ error: "reset_failed", details: updateErr.message }, 400);
+
+    return json({ ok: true });
+  }
+
+  // ── CAS 2 : création d'un nouvel utilisateur ──
   const email = body.email;
   const password = body.password;
   const prenom = body.prenom || null;

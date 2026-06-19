@@ -4383,11 +4383,9 @@ async function appliquerNouveauMDP() {
       body: JSON.stringify({ user_id: userId, new_password: pwd, action: 'reset_password' }),
     });
 
-    // Si l'Edge Function ne supporte pas reset_password, utiliser l'API directe
     if (!resp.ok) {
-      // Fallback : update via Supabase admin API (nécessite service_role)
-      // Dans ce cas on affiche juste le mailto avec le mot de passe
-      console.warn('Edge Function reset non supporté — passage en mode mailto uniquement');
+      const errBody = await resp.json().catch(() => ({}));
+      throw new Error(errBody.details || errBody.error || `Erreur Edge Function (${resp.status})`);
     }
 
     // Débloquer le compte si suspendu (ban temporaire suite à 5 tentatives)
