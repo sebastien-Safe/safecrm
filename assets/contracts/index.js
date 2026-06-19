@@ -41,6 +41,10 @@ window.openResilierModal          = openResilierModal;
 window.closeResilierModal         = closeResilierModal;
 window.confirmResilierAbonnement  = confirmResilierAbonnement;
 window.openCustomerPortal         = openCustomerPortal;
+window.demanderResiliation        = demanderResiliation;
+window.validerResiliation         = validerResiliation;
+window.rejeterResiliation         = rejeterResiliation;
+window.resynchroResiliation       = resynchroResiliation;
 
 // Notifications (contracts-notifications.js)
 window.loadNotifContracts         = loadNotifContracts;

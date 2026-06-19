@@ -4,6 +4,149 @@
 // Extrait de app.js
 // ==========================================================================
 
+// --------------------------------------------------------------------------
+// Niveau 1/2 : soumettre une demande de résiliation (sans toucher à Stripe)
+// --------------------------------------------------------------------------
+async function demanderResiliation(contractId) {
+  if (!confirm('Confirmer la demande de résiliation de cet abonnement ?\n\nUn administrateur devra valider cette demande avant tout traitement.')) return;
+
+  const { error } = await sb.from('contracts').update({
+    statut: 'Demande de résiliation',
+    resiliation_demande_at: new Date().toISOString(),
+  }).eq('id', contractId);
+
+  if (error) { alert('Erreur : ' + error.message); return; }
+
+  await sb.from('audit_logs').insert({
+    user_id: state.user.id,
+    action: 'demande_resiliation_creee',
+    entity_type: 'contract',
+    entity_id: contractId,
+    details: { par: state.profile?.prenom || state.user?.email },
+  }).then(() => {});
+
+  alert('✅ Demande transmise. Un administrateur va traiter votre demande de résiliation.');
+  closeContractModal();
+  await loadContracts();
+  renderContracts();
+}
+
+// --------------------------------------------------------------------------
+// Admin : valider une résiliation depuis le bandeau dashboard
+// --------------------------------------------------------------------------
+async function validerResiliation(contractId) {
+  const contract = state.contracts.find(c => c.id === contractId);
+  if (!contract) { alert('Contrat introuvable.'); return; }
+  const contact = state.contacts.find(c => c.id === contract.contact_id);
+
+  const clientNom  = contact?.nom || 'client';
+  const refContrat = 'CT-' + contractId.slice(0, 8).toUpperCase();
+  const produit    = [contract.type, contract.formule].filter(Boolean).join(' — ');
+
+  // 1. Ouvrir le client mail (prise en compte)
+  if (contact?.email) {
+    const subject = encodeURIComponent('Confirmation de prise en compte de votre demande de résiliation');
+    const body = encodeURIComponent(
+      `Bonjour ${clientNom},\n\n` +
+      `Nous vous confirmons avoir bien pris en compte votre demande de résiliation concernant votre contrat n°${refContrat}${produit ? ' (' + produit + ')' : ''}.\n\n` +
+      `Conformément à nos conditions contractuelles, votre abonnement restera actif jusqu'à la fin de la période de facturation en cours. La résiliation prendra effet à cette échéance.\n\n` +
+      `Nous vous remercions pour la confiance que vous nous avez accordée et restons à votre disposition pour toute question complémentaire.\n\n` +
+      `Cordialement,\n` +
+      `L'équipe S@FE\n` +
+      `contact@safe-digitalisation.fr`
+    );
+    const a = document.createElement('a');
+    a.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // 2. Appeler l'Edge Function cancel-subscription
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/cancel-subscription`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ contract_id: contractId, cancelled_by: state.profile?.prenom || state.user?.email || 'Admin' }),
+    });
+    const result = await resp.json();
+    if (!resp.ok) {
+      await sb.from('contracts').update({ statut: 'Erreur résiliation' }).eq('id', contractId);
+      alert('⚠️ Erreur Stripe : ' + (result.details || result.error || 'inconnue'));
+    }
+  } catch(e) {
+    await sb.from('contracts').update({ statut: 'Erreur résiliation' }).eq('id', contractId);
+    alert('⚠️ Erreur réseau : ' + e.message);
+  }
+
+  await loadContracts();
+  renderContracts();
+  if (typeof renderResiliationAlerts === 'function') renderResiliationAlerts();
+}
+
+// --------------------------------------------------------------------------
+// Admin : rejeter une demande de résiliation
+// --------------------------------------------------------------------------
+async function rejeterResiliation(contractId) {
+  if (!confirm('Rejeter cette demande et remettre le contrat en "Contrat en cours" ?')) return;
+
+  const { error } = await sb.from('contracts').update({
+    statut: 'Contrat en cours',
+    resiliation_demande_at: null,
+  }).eq('id', contractId);
+
+  if (error) { alert('Erreur : ' + error.message); return; }
+
+  await sb.from('audit_logs').insert({
+    user_id: state.user.id,
+    action: 'demande_resiliation_rejetee',
+    entity_type: 'contract',
+    entity_id: contractId,
+    details: { par: state.profile?.prenom || state.user?.email },
+  }).then(() => {});
+
+  await loadContracts();
+  renderContracts();
+  if (typeof renderResiliationAlerts === 'function') renderResiliationAlerts();
+}
+
+// --------------------------------------------------------------------------
+// Admin : relancer la synchronisation Stripe pour un contrat en erreur
+// --------------------------------------------------------------------------
+async function resynchroResiliation(contractId) {
+  if (!confirm('Relancer la synchronisation Stripe pour ce contrat ?')) return;
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/cancel-subscription`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ contract_id: contractId, cancelled_by: state.profile?.prenom || state.user?.email || 'Admin', resync: true }),
+    });
+    const result = await resp.json();
+    if (!resp.ok) {
+      alert('⚠️ Erreur Stripe : ' + (result.details || result.error || 'inconnue'));
+    } else {
+      alert('✅ Synchronisation effectuée. Statut mis à jour.');
+    }
+  } catch(e) {
+    alert('⚠️ Erreur réseau : ' + e.message);
+  }
+
+  await loadContracts();
+  renderContracts();
+  if (typeof renderResiliationAlerts === 'function') renderResiliationAlerts();
+}
+
 function openResilierModal(contractId) {
   document.getElementById('resilier-contract-id').value = contractId;
   document.getElementById('resilier-modal').classList.add('show');

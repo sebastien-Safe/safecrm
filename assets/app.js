@@ -388,6 +388,7 @@ function renderDashboard() {
   const name = state.profile?.prenom || (state.user?.email ? state.user.email.split('@')[0] : 'Utilisateur');
   $('#dashboard-title').textContent = `Tableau de bord de ${name}`;
   updateDashboardClock();
+  if (isAdmin()) renderResiliationAlerts();
 
   // Alerte échéances de contrats (en retard ou dans les 15 prochains jours)
   const today = todayISO();
@@ -866,6 +867,62 @@ function renderAdminOverview() {
         </div>
         <div class="gauge-sub mut" style="text-align:center;margin-top:6px">Cumul depuis le 1ᵉʳ du mois</div>
       </div>`;
+  }).join('');
+}
+
+// --------------------------------------------------------------------------
+// Bandeau résiliations en attente (sidebar + dashboard admin)
+// --------------------------------------------------------------------------
+function renderResiliationAlerts() {
+  if (!isAdmin()) return;
+
+  const STATUTS_ALERT = ['Demande de résiliation', 'Résiliation en attente Stripe', 'Erreur résiliation'];
+  const pending = (state.contracts || []).filter(c => STATUTS_ALERT.includes(c.statut));
+
+  // Sidebar
+  const sidebarEl = document.getElementById('resiliation-pending-alert');
+  const listEl    = document.getElementById('resiliation-pending-list');
+  if (!sidebarEl || !listEl) return;
+
+  if (!pending.length) { sidebarEl.style.display = 'none'; return; }
+  sidebarEl.style.display = '';
+
+  listEl.innerHTML = pending.map(ct => {
+    const contact = (state.contacts || []).find(c => c.id === ct.contact_id);
+    const clientNom  = contact?.nom || '—';
+    const refContrat = 'CT-' + ct.id.slice(0, 8).toUpperCase();
+    const dateDemande = ct.resiliation_demande_at ? formatDate(ct.resiliation_demande_at.slice(0,10)) : '—';
+    const stripeId   = ct.stripe_subscription_id || '';
+
+    const isErreur  = ct.statut === 'Erreur résiliation';
+    const isAttente = ct.statut === 'Résiliation en attente Stripe';
+    const isDemande = ct.statut === 'Demande de résiliation';
+
+    return `<div class="mini-item" style="flex-direction:column;align-items:flex-start;gap:8px;padding:12px;border-left:3px solid ${isErreur ? '#fc8181' : '#f59e0b'}">
+      <div style="display:flex;justify-content:space-between;width:100%;flex-wrap:wrap;gap:4px">
+        <strong style="font-size:.85rem">${escapeHtml(clientNom)}</strong>
+        <span class="badge ${isErreur ? 'badge-red' : 'badge-orange'}" style="font-size:.7rem">${escapeHtml(ct.statut)}</span>
+      </div>
+      <div class="mut" style="font-size:.78rem">
+        ${escapeHtml(refContrat)} · ${escapeHtml(ct.type || '—')}${ct.formule ? ' ' + escapeHtml(ct.formule) : ''}<br>
+        Demande le : ${dateDemande}
+      </div>
+      ${isErreur ? `
+        <div style="background:rgba(252,129,129,.08);border:1px solid rgba(252,129,129,.3);border-radius:6px;padding:8px 10px;font-size:.78rem;color:#fc8181;width:100%;box-sizing:border-box">
+          ⚠️ Résiliation non confirmée par Stripe après 48 h.<br>
+          Vérifiez l'abonnement directement dans Stripe.
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${stripeId ? `<a href="https://dashboard.stripe.com/subscriptions/${escapeHtml(stripeId)}" target="_blank" rel="noopener" class="btn btn-out btn-sm" style="font-size:.75rem">🔗 Ouvrir dans Stripe</a>` : ''}
+          <button class="btn btn-pri btn-sm" style="font-size:.75rem" onclick="resynchroResiliation('${escapeHtml(ct.id)}')">🔄 Relancer</button>
+        </div>` : ''}
+      ${isDemande ? `
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-danger btn-sm" style="font-size:.75rem" onclick="validerResiliation('${escapeHtml(ct.id)}')">✅ Résiliation validée</button>
+          <button class="btn btn-out btn-sm" style="font-size:.75rem" onclick="rejeterResiliation('${escapeHtml(ct.id)}')">✗ Rejeter</button>
+        </div>` : ''}
+      ${isAttente ? `<span class="mut" style="font-size:.75rem">🔄 Traitement Stripe en cours…</span>` : ''}
+    </div>`;
   }).join('');
 }
 
@@ -2414,6 +2471,10 @@ function bindEvents() {
   });
   document.getElementById('resilier-cancel-btn')?.addEventListener('click', closeResilierModal);
   document.getElementById('resilier-confirm-btn')?.addEventListener('click', confirmResilierAbonnement);
+  document.getElementById('contract-demander-resiliation-btn')?.addEventListener('click', () => {
+    const contractId = document.getElementById('contract-demander-resiliation-btn').dataset.contractId;
+    demanderResiliation(contractId);
+  });
 
   // === Portail client Stripe ===
   document.getElementById('contract-portal-btn')?.addEventListener('click', () => {

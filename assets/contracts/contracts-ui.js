@@ -39,7 +39,12 @@ function renderContracts() {
       <td>${escapeHtml(ct.recurrence)}</td>
       <td>${formatDate(ct.date_debut)}</td>
       <td class="${isOverdue(ct.date_echeance, ct.statut) ? 'overdue' : ''}">${formatDate(ct.date_echeance)}</td>
-      <td><span class="badge ${CONTRACT_STATUT_BADGE[ct.statut] || 'badge-gray'}">${escapeHtml(ct.statut)}</span>${ct.resilié_at ? '<br><span style="font-size:.7rem;color:#fc8181;font-weight:600">🔔 Résiliation demandée</span>' : ''}</td>
+      <td><span class="badge ${CONTRACT_STATUT_BADGE[ct.statut] || 'badge-gray'}">${escapeHtml(ct.statut)}</span>${
+        ct.statut === 'Demande de résiliation'          ? '<br><span style="font-size:.7rem;color:#f59e0b;font-weight:600">⏳ En attente admin</span>' :
+        ct.statut === 'Résiliation en attente Stripe'   ? '<br><span style="font-size:.7rem;color:#f59e0b;font-weight:600">🔄 Traitement en cours</span>' :
+        ct.statut === 'Erreur résiliation'              ? '<br><span style="font-size:.7rem;color:#fc8181;font-weight:600">⚠️ Erreur — vérifier Stripe</span>' :
+        ct.resilié_at                                   ? '<br><span style="font-size:.7rem;color:#fc8181;font-weight:600">🔔 Résilié</span>' : ''
+      }</td>
       <td class="nowrap">${escapeHtml(creatorName(ct.created_by))}</td>
     </tr>`;
   }).join('');
@@ -105,17 +110,30 @@ function openContractModal(id = null) {
   $('#contract-pdf-btn').style.display = ct ? 'inline-flex' : 'none';
   const sendBtn = $('#contract-send-btn');
   if (sendBtn) sendBtn.style.display = (ct && editable) ? 'inline-flex' : 'none';
-  // Bouton Résilier : visible si abonnement mensuel actif avec stripe_subscription_id
+  // Bouton Résilier : admin uniquement, déclenche Stripe directement
   const resilierBtn = $('#contract-resilier-btn');
   if (resilierBtn) {
+    const resiliationEnCours = ['Demande de résiliation','Résiliation en attente Stripe','Résilié','Erreur résiliation'].includes(ct?.statut);
     const canResilier = ct
+      && isAdmin()
       && ct.recurrence === 'Mensuel'
       && ct.stripe_subscription_id
       && !ct.resilié_at
-      && ct.statut !== 'Terminé'
-      && (isAdmin() || ct.created_by === state.user?.id);
+      && !resiliationEnCours;
     resilierBtn.style.display = canResilier ? 'inline-flex' : 'none';
     resilierBtn.dataset.contractId = ct?.id || '';
+  }
+  // Bouton Demander résiliation : niveau 1/2 uniquement
+  const demanderBtn = $('#contract-demander-resiliation-btn');
+  if (demanderBtn) {
+    const canDemander = ct
+      && !isAdmin()
+      && ct.recurrence === 'Mensuel'
+      && ct.stripe_subscription_id
+      && ct.statut === 'Contrat en cours'
+      && ct.created_by === state.user?.id;
+    demanderBtn.style.display = canDemander ? 'inline-flex' : 'none';
+    demanderBtn.dataset.contractId = ct?.id || '';
   }
   // Bouton Portail client : visible si abonnement mensuel avec stripe_subscription_id
   const portalBtn = $('#contract-portal-btn');

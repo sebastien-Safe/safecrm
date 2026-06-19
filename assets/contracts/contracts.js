@@ -5,7 +5,8 @@
 
 const CONTRACT_STATUT_BADGE = {
   'En attente de signature': 'badge-gray', 'Envoyé': 'badge-blue', 'Contrat en cours': 'badge-gold',
-  'Paiement échoué': 'badge-red', 'Terminé': 'badge-green', 'Résilié': 'badge-red'
+  'Paiement échoué': 'badge-red', 'Terminé': 'badge-green', 'Résilié': 'badge-red',
+  'Demande de résiliation': 'badge-orange', 'Résiliation en attente Stripe': 'badge-orange', 'Erreur résiliation': 'badge-red'
 };
 
 // ==========================================================================
