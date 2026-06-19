@@ -159,8 +159,8 @@
   <div class="mob-sec admin-only" id="mob-sec-outils" style="display:none">
     <div class="mob-sec-lbl">🛠️ Outils</div>
     <a class="mob-lk" href="/work/" onclick="closeMobMenu()"><span class="ico">🛡️</span> S@FE Work</a>
-    <button class="mob-lk" onclick="closeMobMenu();switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)"><span class="ico">📒</span> Registre RGPD</button>
     <button class="mob-lk admin-only" id="mob-lk-admin" onclick="mobNav('admin')"><span class="ico">⚙️</span> Administration</button>
+    <button class="mob-lk" onclick="closeMobMenu();switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)"><span class="ico">📒</span> Registre RGPD</button>
   </div>
   <div class="mob-sec super-admin-only" id="mob-sec-danger" style="display:none">
     <div class="mob-divider" style="margin:4px 0 8px"></div>
@@ -243,6 +243,7 @@
       <div class="nav-sep admin-only" style="display:none"></div>
       <div class="nav-section-lbl admin-only" style="display:none">🛠️ OUTILS</div>
       <a href="/work/" class="navlink admin-only" style="display:none;text-decoration:none">🛡️ S@FE WORK</a>
+      <button class="navlink admin-only" data-view="admin" style="display:none">⚙️ Administration</button>
       <button class="navlink admin-only" style="display:none" onclick="switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)">📒 Registre RGPD</button>
     </nav>
     <div class="sidebar-footer">
