@@ -146,23 +146,21 @@
   </div>
   <div class="mob-sec">
     <div class="mob-sec-lbl">Navigation</div>
-    <button class="mob-lk mob-active" id="mob-lk-dashboard" onclick="mobNav('dashboard')"><span class="ico">&#127968;</span> Tableau de bord</button>
-    <button class="mob-lk" id="mob-lk-contacts" onclick="mobNav('contacts')"><span class="ico">&#128101;</span> Contacts</button>
-    <button class="mob-lk" id="mob-lk-contracts" onclick="mobNav('contracts')"><span class="ico">&#128196;</span> Contrats</button>
-    <button class="mob-lk" id="mob-lk-tasks" onclick="mobNav('tasks')"><span class="ico">&#9989;</span> T&#226;ches</button>
-    <button class="mob-lk" id="mob-lk-objectifs" onclick="mobNav('objectifs')"><span class="ico">&#128202;</span> R&#233;sultats</button>
-    <button class="mob-lk admin-only" id="mob-lk-admin" style="display:none" onclick="mobNav('admin')"><span class="ico">&#9881;&#65039;</span> Administration</button>
+    <button class="mob-lk mob-active" id="mob-lk-dashboard" onclick="mobNav('dashboard')"><span class="ico">🏠</span> Tableau de bord</button>
+    <button class="mob-lk" id="mob-lk-contacts" onclick="mobNav('contacts')"><span class="ico">👥</span> Contacts</button>
+    <button class="mob-lk" id="mob-lk-contracts" onclick="mobNav('contracts')"><span class="ico">📄</span> Contrats</button>
+    <button class="mob-lk" id="mob-lk-resultats" onclick="mobNav('resultats')"><span class="ico">📊</span> R&#233;sultats</button>
   </div>
   <div class="mob-divider"></div>
   <div class="mob-sec dci-only" id="mob-sec-dci" style="display:none">
-    <div class="mob-sec-lbl">Mon &#233;quipe</div>
-    <button class="mob-lk" onclick="closeMobMenu();openEquipeModal()"><span class="ico">&#129309;</span> G&#233;rer mon &#233;quipe</button>
+    <div class="mob-sec-lbl">&#128100; Gestion</div>
+    <button class="mob-lk" onclick="closeMobMenu();openEquipeModal()"><span class="ico">🤝</span> G&#233;rer mon &#233;quipe</button>
   </div>
   <div class="mob-sec admin-only" id="mob-sec-outils" style="display:none">
-    <div class="mob-sec-lbl">Outils</div>
-    <a class="mob-lk" href="/Candy/" onclick="closeMobMenu()"><img src="/Candy/favicon.svg" style="width:16px;height:16px;border-radius:50%"> C@NDY</a>
-    <a class="mob-lk" href="/Candy/management.html" onclick="closeMobMenu()"><img src="/Candy/favicon.svg" style="width:16px;height:16px;border-radius:50%"> C@NDY Projet</a>
-    <a class="mob-lk" href="/work/" onclick="closeMobMenu()"><span class="ico">&#128737;</span> S@FE Work</a>
+    <div class="mob-sec-lbl">🛠️ Outils</div>
+    <a class="mob-lk" href="/work/" onclick="closeMobMenu()"><span class="ico">🛡️</span> S@FE Work</a>
+    <button class="mob-lk" onclick="closeMobMenu();switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)"><span class="ico">📒</span> Registre RGPD</button>
+    <button class="mob-lk admin-only" id="mob-lk-admin" onclick="mobNav('admin')"><span class="ico">⚙️</span> Administration</button>
   </div>
   <div class="mob-sec super-admin-only" id="mob-sec-danger" style="display:none">
     <div class="mob-divider" style="margin:4px 0 8px"></div>
@@ -225,43 +223,42 @@
     <img src="assets/logo.png" alt="S@FE" class="brand-logo">
     <nav class="navlinks">
       <button data-view="dashboard" class="navlink active">🏠 Tableau de bord</button>
+
+      <div class="nav-sep"></div>
+
       <button data-view="contacts" class="navlink">👥 Contacts</button>
       <button data-view="contracts" class="navlink">📄 Contrats</button>
-      <button data-view="tasks" class="navlink">✅ Tâches</button>
-      <button data-view="objectifs" class="navlink">📊 Résultats</button>
-      <button data-view="admin" class="navlink admin-only" style="display:none">⚙️ Administration</button>
+
+      <!-- Section GESTION (DCI et Admin) -->
+      <div class="nav-sep dci-only" style="display:none"></div>
+      <div class="nav-section-lbl dci-only" style="display:none">👨‍💼 GESTION</div>
+      <button class="navlink dci-only" style="display:none" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
+
+      <!-- Résultats — visible pour tous -->
+      <button data-view="resultats" class="navlink" id="nav-resultats">📊 Résultats</button>
+
+      <!-- Section OUTILS (Admin uniquement) -->
+      <div class="nav-sep admin-only" style="display:none"></div>
+      <div class="nav-section-lbl admin-only" style="display:none">🛠️ OUTILS</div>
+      <a href="/work/" class="navlink admin-only" style="display:none;text-decoration:none">🛡️ S@FE WORK</a>
+      <button class="navlink admin-only" style="display:none" onclick="switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)">📒 Registre RGPD</button>
     </nav>
     <div class="sidebar-footer">
-      <div class="dci-only" id="equipe-btn-wrap" style="display:none;margin-bottom:6px">
-        <button class="btn btn-out btn-sm" onclick="openEquipeModal()"
-          style="width:100%;font-size:.75rem;display:flex;align-items:center;gap:6px;justify-content:center">
-          🤝 Gérer mon équipe
-        </button>
-      </div>
-      <div class="admin-only" id="reset-test-btn-wrap" style="display:none;margin-bottom:6px">
+      <div class="super-admin-only" id="reset-test-btn-wrap" style="display:none">
         <button class="btn btn-out btn-sm" onclick="openResetModal()"
           style="width:100%;color:var(--alert);border-color:var(--alert);font-size:.75rem">
           ⚠️ Réinit. données test
         </button>
       </div>
-      <a href="/Candy/" class="btn btn-out btn-sm admin-only" id="candy-link" style="display:none;text-decoration:none;text-align:center;margin-bottom:6px;display:none;align-items:center;gap:6px" title="C@NDY">
-        <img src="/Candy/favicon.svg" style="width:16px;height:16px;border-radius:50%;flex-shrink:0"> C@NDY
-      </a>
-      <a href="/Candy/management.html" class="btn btn-out btn-sm admin-only" id="candy-mgmt-link" style="display:none;text-decoration:none;text-align:center;margin-bottom:6px;align-items:center;gap:6px;font-size:.72rem" title="C@NDY — Management">
-        <img src="/Candy/favicon.svg" style="width:14px;height:14px;border-radius:50%;flex-shrink:0"> C@NDY Projet
-      </a>
-      <a href="/work/" class="btn btn-out btn-sm admin-only" id="work-link" style="display:none;text-decoration:none;text-align:center;margin-bottom:6px;align-items:center;gap:6px" title="S@FE Work">
-        <img src="/work/favicon.svg" style="width:16px;height:16px;flex-shrink:0"> S@FE Work
-      </a>
       <button class="btn btn-out btn-sm" onclick="openHelp('contextual')" title="Centre d'aide"
-        style="width:100%;display:flex;align-items:center;gap:7px;justify-content:center;margin-bottom:6px;font-size:.78rem;border-color:rgba(245,158,11,.4);color:#f59e0b">
+        style="width:100%;display:flex;align-items:center;gap:7px;justify-content:center;font-size:.78rem;border-color:rgba(245,158,11,.4);color:#f59e0b">
         ❓ Centre d'aide
       </button>
       <button class="profile-btn" id="profile-btn" title="Modifier mon profil">
         <div class="avatar" id="user-avatar"></div>
         <span id="user-name"></span>
       </button>
-      <button id="logout-btn" class="btn btn-out btn-sm">Déconnexion</button>
+      <button id="logout-btn" class="btn btn-out btn-sm">🚪 Déconnexion</button>
     </div>
   </aside>
 
@@ -421,7 +418,19 @@
       </div>
     </section>
 
-    <!-- ---------- OBJECTIFS ---------- -->
+    <!-- ---------- RÉSULTATS (cockpit commercial) ---------- -->
+    <section id="view-resultats" class="view">
+      <div class="view-head" id="resultats-view-head">
+        <div>
+          <h2 id="resultats-view-title">Résultats</h2>
+          <p id="resultats-view-subtitle" class="mut"></p>
+        </div>
+        <div class="view-head-actions" id="resultats-view-actions"></div>
+      </div>
+      <div id="resultats-main-container"></div>
+    </section>
+
+    <!-- ---------- OBJECTIFS (personnel — Niveau 1) ---------- -->
     <section id="view-objectifs" class="view">
       <div class="view-head">
         <div>
@@ -453,11 +462,9 @@
       </div>
       <div class="admin-tabs">
         <button class="navlink active" data-admin-tab="overview">Vue d'ensemble</button>
-        <button class="navlink" data-admin-tab="resultats">Résultats</button>
         <button class="navlink" data-admin-tab="per-user">Par utilisateur</button>
         <button class="navlink" data-admin-tab="users">Gestion des utilisateurs</button>
-        <button class="navlink" data-admin-tab="rgpd-ko">Contacts RGPD KO</button>
-        <button class="navlink" data-admin-tab="registre">Registre RGPD</button>
+        <button class="navlink" data-admin-tab="registre">📒 Registre RGPD</button>
       </div>
 
       <div class="admin-panel" id="admin-panel-overview">
@@ -467,37 +474,7 @@
         </div>
       </div>
 
-      <div class="admin-panel" id="admin-panel-resultats" style="display:none">
-        <div class="panel-block" id="resultats-team-view">
-          <h3 style="margin-bottom:14px">Performance de l'équipe</h3>
-          <p class="mut" style="margin-bottom:18px">Cliquez sur un utilisateur pour voir le détail de sa production et générer son bordereau de commission.</p>
-          <div id="resultats-team-grid" class="per-user-grid"></div>
-        </div>
-        <div class="panel-block" id="resultats-detail-view" style="display:none">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
-            <div>
-              <button class="btn btn-out btn-sm" id="resultats-back-btn">← Retour à l'équipe</button>
-              <span id="resultats-detail-name" style="font-family:var(--ff-disp);font-weight:700;color:#fff;font-size:1.2rem;margin-left:14px"></span>
-            </div>
-            <button class="btn btn-pri btn-sm" id="resultats-bordereau-btn">📄 Bordereau de commission</button>
-          </div>
-          <div id="resultats-detail-gauges" class="gauges-grid" style="margin-bottom:22px"></div>
-          <h4 style="color:#fff;margin-bottom:10px">Affaires du mois en cours</h4>
-          <div class="scrollx">
-            <table class="tbl" id="resultats-detail-new-table">
-              <thead><tr><th>Contact</th><th>Prestation</th><th>Formule</th><th>Montant HT</th><th>MeP</th><th>Remise</th><th>Commission signature</th><th>Date</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <h4 style="color:#fff;margin:18px 0 10px">Abonnements récurrents actifs</h4>
-          <div class="scrollx">
-            <table class="tbl" id="resultats-detail-recurrent-table">
-              <thead><tr><th>Contact</th><th>Prestation</th><th>Formule</th><th>Mensuel HT</th><th>Commission /mois</th><th>Depuis</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <!-- Panel Résultats supprimé — déplacé dans vue dédiée Gestion → Résultats -->
 
       <div class="admin-panel" id="admin-panel-per-user" style="display:none">
         <div class="panel-block">
@@ -538,24 +515,7 @@
         </div>
       </div>
 
-      <div class="admin-panel" id="admin-panel-rgpd-ko" style="display:none">
-        <div class="panel-block">
-          <h3>Contacts marqués RGPD KO</h3>
-          <p class="mut" style="margin-bottom:14px">En tant que super-administrateur, vous pouvez ré-ouvrir une fiche RGPD KO (ex : erreur de manipulation). La modification est journalisée.</p>
-          <div class="scrollx">
-            <table class="tbl" id="admin-rgpd-ko-table">
-              <thead><tr>
-                <th>Contact</th>
-                <th>Entreprise</th>
-                <th>Ajouté par</th>
-                <th>Date</th>
-                <th class="actions">Actions</th>
-              </tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <!-- Panel RGPD KO supprimé (simplifié selon nouvelle structure) -->
 
       <div class="admin-panel" id="admin-panel-registre" style="display:none">
 
@@ -890,7 +850,15 @@
     <div class="field"><label>Adresse *</label><input id="profile-adresse" type="text" placeholder="Adresse complète"></div>
     <div class="field"><label>SIRET *</label><input id="profile-siret" type="text" placeholder="14 chiffres"></div>
     <div class="field"><label>RC Pro</label><input id="profile-rcpro" type="text" placeholder="Référence assurance RC Pro"></div>
-    <p class="mut" style="font-size:.74rem;margin-top:-6px">* Champs obligatoires.</p>
+    <div style="border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:8px">
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#64748b;margin-bottom:10px">📍 Géographie commerciale</div>
+      <div class="field-row">
+        <div class="field"><label>Région</label><input id="profile-region" type="text" placeholder="Ex : Île-de-France"></div>
+        <div class="field"><label>Département</label><input id="profile-departement" type="text" placeholder="Ex : Seine-et-Marne (77)"></div>
+      </div>
+      <div class="field"><label>Secteur commercial</label><input id="profile-secteur" type="text" placeholder="Ex : Secteur Est — Grande couronne"></div>
+    </div>
+    <p class="mut" style="font-size:.74rem;margin-top:6px">* Champs obligatoires.</p>
     <p class="error" id="profile-error"></p>
     <div id="clause-signed-block" style="display:none;margin-top:8px;padding:10px 12px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:.8rem;color:var(--ok);display:flex;align-items:center;justify-content:space-between;gap:10px">
       <span>✅ Clause de confidentialité signée</span>

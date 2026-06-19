@@ -284,7 +284,8 @@ async function loadProfile() {
 }
 
 async function loadAllProfiles() {
-  const { data, error } = await sb.from('profiles').select('id, prenom, is_admin');
+  const { data, error } = await sb.from('profiles')
+    .select('id, prenom, nom, is_admin, role, dci_parent_id, region, departement, secteur, siret, denomination, adresse_pro, tva');
   if (error) { console.error('Erreur chargement profils :', error.message); state.profilesById = {}; return; }
   state.profilesById = {};
   (data || []).forEach(p => { state.profilesById[p.id] = p; });
@@ -351,10 +352,11 @@ function renderAll() {
 // NAVIGATION
 // ---------------------------------------------------------
 function switchView(view) {
-  if (!view) return; // ignore les clics sur des navlink sans data-view (sous-onglets admin)
+  if (!view) return;
   $all('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   $all('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
   if (view === 'admin' && isAdmin()) renderAdmin();
+  if (view === 'resultats') renderResultats();
 }
 
 // ---------------------------------------------------------
@@ -671,8 +673,11 @@ function openProfileModal() {
   if (document.getElementById('profile-nom'))       document.getElementById('profile-nom').value       = state.profile?.nom        || '';
   if (document.getElementById('profile-telephone')) document.getElementById('profile-telephone').value = state.profile?.telephone  || '';
   if (document.getElementById('profile-adresse'))   document.getElementById('profile-adresse').value   = state.profile?.adresse    || '';
-  if (document.getElementById('profile-rcpro'))     document.getElementById('profile-rcpro').value     = state.profile?.rcpro_numero || '';
-  if (document.getElementById('profile-siret'))     document.getElementById('profile-siret').value     = state.profile?.siret || '';
+  if (document.getElementById('profile-rcpro'))        document.getElementById('profile-rcpro').value        = state.profile?.rcpro_numero  || '';
+  if (document.getElementById('profile-siret'))        document.getElementById('profile-siret').value        = state.profile?.siret         || '';
+  if (document.getElementById('profile-region'))       document.getElementById('profile-region').value       = state.profile?.region        || '';
+  if (document.getElementById('profile-departement'))  document.getElementById('profile-departement').value  = state.profile?.departement   || '';
+  if (document.getElementById('profile-secteur'))      document.getElementById('profile-secteur').value      = state.profile?.secteur       || '';
 
   // Vérifier si la clause est signée
   (async () => {
@@ -725,12 +730,15 @@ function previewProfilePhoto(e) {
 }
 
 async function saveProfile() {
-  const prenom    = $('#profile-prenom').value.trim() || null;
-  const nom       = (document.getElementById('profile-nom')?.value||'').trim() || null;
-  const telephone = (document.getElementById('profile-telephone')?.value||'').trim() || null;
-  const adresse   = (document.getElementById('profile-adresse')?.value||'').trim() || null;
-  const rcpro     = (document.getElementById('profile-rcpro')?.value||'').trim() || null;
-  const siret     = (document.getElementById('profile-siret')?.value||'').trim() || null;
+  const prenom      = $('#profile-prenom').value.trim() || null;
+  const nom         = (document.getElementById('profile-nom')?.value||'').trim() || null;
+  const telephone   = (document.getElementById('profile-telephone')?.value||'').trim() || null;
+  const adresse     = (document.getElementById('profile-adresse')?.value||'').trim() || null;
+  const rcpro       = (document.getElementById('profile-rcpro')?.value||'').trim() || null;
+  const siret       = (document.getElementById('profile-siret')?.value||'').trim() || null;
+  const region      = (document.getElementById('profile-region')?.value||'').trim() || null;
+  const departement = (document.getElementById('profile-departement')?.value||'').trim() || null;
+  const secteur     = (document.getElementById('profile-secteur')?.value||'').trim() || null;
   const file = $('#profile-photo-input').files[0];
   $('#profile-error').textContent = '';
   let photo_url = state.profile?.photo_url || null;
@@ -760,6 +768,9 @@ const { error } = await sb.from('profiles').upsert({
   siret,
   rcpro_numero: rcpro,
   photo_url,
+  region,
+  departement,
+  secteur,
   profil_completed: !!(prenom && nom && telephone && adresse && siret)
 });  if (error) { $('#profile-error').textContent = 'Erreur : ' + error.message; return; }
 
@@ -816,15 +827,13 @@ function currentJoursTravailles() {
 function switchAdminTab(tab) {
   state.adminView = tab;
   $all('[data-admin-tab]').forEach(b => b.classList.toggle('active', b.dataset.adminTab === tab));
-  ['overview', 'resultats', 'per-user', 'users', 'rgpd-ko', 'registre'].forEach(t => {
+  ['overview', 'per-user', 'users', 'registre'].forEach(t => {
     const el = $('#admin-panel-' + t);
     if (el) el.style.display = (t === tab) ? '' : 'none';
   });
   if (tab === 'users') loadAdminUsers().then(renderAdminUsers);
   if (tab === 'overview') renderAdminOverview();
-  if (tab === 'resultats') renderResultats();
   if (tab === 'per-user') renderAdminPerUser();
-  if (tab === 'rgpd-ko') renderAdminRgpdKo();
   if (tab === 'registre') renderRegistreRGPD();
 }
 
@@ -1011,99 +1020,411 @@ function renderAdminPerUser() {
 }
 
 // =========================================================
-// ONGLET RÉSULTATS (admin) — blocs cliquables + détail + bordereau
+// MODULE RÉSULTATS — Cockpit commercial (Gestion → Résultats)
 // =========================================================
 
+// Filtres actifs du cockpit
+let _resultatsFilters = { region: '', departement: '', secteur: '', niveau2: '', niveau1: '', statut: '' };
+let _resultatsDetailUserId = null; // userId affiché en drill-down
+
+// Point d'entrée : adapte l'affichage selon le rôle
 function renderResultats() {
-  const grid = $('#resultats-team-grid');
-  if (!grid) return;
-  $('#resultats-team-view').style.display = '';
-  $('#resultats-detail-view').style.display = 'none';
-  const allUsers = Object.values(state.profilesById)
-    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
-  renderTeamGauges(grid, allUsers, { clickable: true });
+  const container  = document.getElementById('resultats-main-container');
+  const title      = document.getElementById('resultats-view-title');
+  const subtitle   = document.getElementById('resultats-view-subtitle');
+  const actionsEl  = document.getElementById('resultats-view-actions');
+  if (!container) return;
+
+  _resultatsDetailUserId = null;
+
+  if (!isAtLeast('dci')) {
+    // Niveau 1 → affiche ses propres objectifs dans view-objectifs
+    $all('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === 'objectifs' || b.dataset.view === 'resultats'));
+    $all('.view').forEach(v => {
+      v.classList.toggle('active',
+        v.id === 'view-objectifs' || (v.id === 'view-resultats' && false));
+    });
+    renderObjectifs();
+    return;
+  }
+
+  if (title)   title.textContent   = '📊 Résultats';
+  if (subtitle) subtitle.textContent = isRole('dci')
+    ? 'Cockpit de votre secteur — production de votre équipe'
+    : 'Cockpit commercial — performance par secteur et par équipe';
+  if (actionsEl) actionsEl.innerHTML = '';
+
+  container.innerHTML = '<p class="empty" style="padding:20px">Chargement…</p>';
+  renderResultatsCockpit(container);
 }
 
-function openResultatsDetail(userId) {
-  const u = state.profilesById[userId];
-  if (!u) return;
-  $('#resultats-team-view').style.display = 'none';
-  $('#resultats-detail-view').style.display = '';
-  $('#resultats-detail-name').textContent = u.prenom || u.email || '—';
+// Vue cockpit : filtres + cartes secteurs
+async function renderResultatsCockpit(container) {
+  // Récupérer les bordereaux pour afficher les statuts de commission
+  let bordereaux = [];
+  try {
+    const { data } = await sb.from('bordereau_log').select('*').order('generated_at', { ascending: false });
+    bordereaux = data || [];
+  } catch(e) {}
+  state._bordereaux = bordereaux;
 
-  // Jauges individuelles
-  const gaugesEl = $('#resultats-detail-gauges');
-  const contacts = computeObjectifValue({ metric_type: 'nouveaux_contacts' }, userId);
-  const ca = computeObjectifValue({ metric_type: 'ca_genere' }, userId);
-  const comm = computeMonthlyCommission(userId);
-  const tContacts = getObjectifTarget(userId, 'nouveaux_contacts');
-  const tCa = getObjectifTarget(userId, 'ca_genere');
-  const tComm = getObjectifTarget(userId, 'commissions');
-  gaugesEl.innerHTML = [
-    { label: 'Entrées en contact', val: contacts, tgt: tContacts, unit: '' },
-    { label: 'CA généré', val: ca, tgt: tCa, unit: '€' },
-    { label: 'Commissions', val: comm, tgt: tComm, unit: '€' },
-  ].map(g => {
-    const pct = g.tgt > 0 ? Math.min(100, (g.val / g.tgt) * 100) : (g.val > 0 ? 100 : 0);
-    return `<div class="gauge-card">
-      <div class="gauge-wrap">${gaugeSvg(pct)}</div>
-      <h4>${escapeHtml(g.label)}</h4>
-      <p class="mut">${g.unit === '€' ? formatMoney(g.val) : g.val} / ${g.unit === '€' ? formatMoney(g.tgt) : g.tgt}</p>
-    </div>`;
-  }).join('');
-
-  // Contrats du mois en cours (nouvelles affaires)
+  // Construire les cartes par secteur
+  const allProfiles = Object.values(state.profilesById);
   const now = new Date();
   const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-  const newContracts = state.contracts.filter(c =>
-    c.created_by === userId &&
-    c.date_debut &&
-    new Date(c.date_debut + 'T00:00:00') >= startMonth &&
-    new Date(c.date_debut + 'T00:00:00') <= endMonth &&
-    ['Contrat en cours', 'Envoyé', 'En attente de signature'].includes(c.statut)
-  );
-  const newTbody = $('#resultats-detail-new-table tbody');
-  newTbody.innerHTML = newContracts.length ? newContracts.map(c => {
-    const contact = state.contacts.find(x => x.id === c.contact_id);
-    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
-    const commSig = preset?.comm_signature_fix || (preset?.comm_signature_pct ? Math.round(Number(c.montant || 0) * preset.comm_signature_pct * 100) / 100 : 0);
-    return `<tr>
-      <td>${escapeHtml(contact?.nom || '—')}</td>
-      <td>${getContractIcon(c.type) + ' ' + getContractIcon(c.type) + ' ' + getContractIcon(c.type) + ' ' + escapeHtml(c.type || '—')}</td>
-      <td>${escapeHtml(c.formule || '—')}</td>
-      <td class="num">${formatMoney(c.montant)}</td>
-      <td class="num">${formatMoney(c.frais_mise_en_place || 0)}</td>
-      <td class="num">${formatMoney(c.remise || 0)}</td>
-      <td class="num" style="color:#f59e0b;font-weight:600">${formatMoney(commSig)}</td>
-      <td class="nowrap">${formatDate(c.date_debut)}</td>
-    </tr>`;
-  }).join('') : '<tr><td colspan="8" class="empty">Aucune nouvelle affaire ce mois-ci</td></tr>';
+  const endMonth   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-  // Abonnements récurrents actifs
-  const recurContracts = state.contracts.filter(c =>
-    c.created_by === userId &&
-    c.recurrence === 'Mensuel' &&
-    ['Contrat en cours'].includes(c.statut)
-  );
-  const recTbody = $('#resultats-detail-recurrent-table tbody');
-  recTbody.innerHTML = recurContracts.length ? recurContracts.map(c => {
-    const contact = state.contacts.find(x => x.id === c.contact_id);
-    const preset = (FORMULE_PRESETS[c.type] || []).find(f => f.label === c.formule);
-    const commRec = preset?.comm_recurrent_pct ? Math.round(Number(c.montant || 0) * preset.comm_recurrent_pct * 100) / 100 : 0;
-    return `<tr>
-      <td>${escapeHtml(contact?.nom || '—')}</td>
-      <td>${escapeHtml(c.type || '—')}</td>
-      <td>${escapeHtml(c.formule || '—')}</td>
-      <td class="num">${formatMoney(c.montant)}/mois</td>
-      <td class="num" style="color:#f59e0b;font-weight:600">${formatMoney(commRec)}/mois</td>
-      <td class="nowrap">${formatDate(c.date_debut)}</td>
-    </tr>`;
-  }).join('') : '<tr><td colspan="6" class="empty">Aucun abonnement récurrent actif</td></tr>';
+  // Déterminer les Niveau 2 visibles selon le rôle
+  let niveau2Users = allProfiles.filter(p => p.role === 'dci');
+  if (isRole('dci')) niveau2Users = niveau2Users.filter(p => p.id === state.user.id);
 
-  // Stocker l'userId pour le bordereau
-  state._resultatsUserId = userId;
+  // Filtres actifs
+  const f = _resultatsFilters;
+  if (f.region)      niveau2Users = niveau2Users.filter(p => (p.region||'').toLowerCase().includes(f.region.toLowerCase()));
+  if (f.departement) niveau2Users = niveau2Users.filter(p => (p.departement||'').toLowerCase().includes(f.departement.toLowerCase()));
+  if (f.secteur)     niveau2Users = niveau2Users.filter(p => (p.secteur||'').toLowerCase().includes(f.secteur.toLowerCase()));
+  if (f.niveau2)     niveau2Users = niveau2Users.filter(p => p.id === f.niveau2);
+
+  // Construire les données pour les cartes
+  const cards = [];
+  for (const dci of niveau2Users) {
+    // Niveau 1 rattachés
+    let niveau1 = allProfiles.filter(p => p.dci_parent_id === dci.id && p.role === 'user');
+    if (f.niveau1) niveau1 = niveau1.filter(p => p.id === f.niveau1);
+
+    // Liste d'utilisateurs pour calcul : DCI + ses Niveau 1
+    const teamIds = [dci.id, ...niveau1.map(p => p.id)];
+
+    // KPIs
+    const contratsActifs = state.contracts.filter(c => teamIds.includes(c.created_by) && c.statut === 'Contrat en cours').length;
+    const contratsSigPeriode = state.contracts.filter(c => {
+      if (!teamIds.includes(c.created_by)) return false;
+      if (!c.date_debut) return false;
+      const d = new Date(c.date_debut + 'T00:00:00');
+      return d >= startMonth && d <= endMonth && ['Contrat en cours','Terminé'].includes(c.statut);
+    }).length;
+    const ca = state.contracts
+      .filter(c => teamIds.includes(c.created_by) && ['Contrat en cours','Terminé'].includes(c.statut) && c.date_debut && new Date(c.date_debut+'T00:00:00') >= startMonth)
+      .reduce((s, c) => s + Math.max(0, (Number(c.montant)||0) - (Number(c.remise)||0)), 0);
+    const caRecurrent = state.contracts
+      .filter(c => teamIds.includes(c.created_by) && c.recurrence === 'Mensuel' && c.statut === 'Contrat en cours')
+      .reduce((s, c) => s + Math.max(0, (Number(c.montant)||0) - (Number(c.remise)||0)), 0);
+    const totalContacts = state.contacts.filter(c => teamIds.includes(c.created_by)).length;
+    const tauxTransfo = totalContacts > 0 ? Math.round((contratsSigPeriode / totalContacts) * 100) : 0;
+
+    // Objectifs
+    const tCa    = getObjectifTarget(dci.id, 'ca_genere');
+    const tComm  = getObjectifTarget(dci.id, 'commissions');
+    const rComm  = computeMonthlyCommission(dci.id);
+    const tauxAtteinte = tCa > 0 ? Math.round((ca / tCa) * 100) : 0;
+
+    // Dernière activité
+    const lastContrat = state.contracts
+      .filter(c => teamIds.includes(c.created_by))
+      .map(c => c.updated_at || c.created_at)
+      .sort().pop();
+    const lastContact = state.contacts
+      .filter(c => teamIds.includes(c.created_by))
+      .map(c => c.updated_at || c.created_at)
+      .sort().pop();
+    const lastActivity = [lastContrat, lastContact].filter(Boolean).sort().pop();
+
+    // Bordereau DCI
+    const periodeKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const bord = bordereaux.find(b => b.user_id === dci.id && b.periode === periodeKey);
+
+    cards.push({ dci, niveau1, contratsActifs, contratsSigPeriode, ca, caRecurrent, tauxTransfo, tauxAtteinte, tCa, tComm, rComm, lastActivity, bord, periodeKey });
+  }
+
+  // Rendu filtres
+  const filtersHtml = _buildResultatsFilters(allProfiles, niveau2Users);
+
+  if (!cards.length) {
+    container.innerHTML = filtersHtml + `<p class="empty" style="padding:30px 0">Aucun secteur trouvé${Object.values(f).some(Boolean) ? ' pour ces filtres.' : '.'}</p>`;
+    _bindResultatsFilters();
+    return;
+  }
+
+  // Rendu cartes
+  const cardsHtml = cards.map(c => _buildSecteurCard(c)).join('');
+  container.innerHTML = filtersHtml + `<div class="secteur-card-grid">${cardsHtml}</div>`;
+  _bindResultatsFilters();
 }
+
+function _buildResultatsFilters(allProfiles, niveau2Users) {
+  const regions  = [...new Set(allProfiles.filter(p => p.region).map(p => p.region))].sort();
+  const depts    = [...new Set(allProfiles.filter(p => p.departement).map(p => p.departement))].sort();
+  const secteurs = [...new Set(allProfiles.filter(p => p.secteur).map(p => p.secteur))].sort();
+  const f = _resultatsFilters;
+  return `
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;align-items:flex-end">
+    <div>
+      <div style="font-size:.7rem;font-weight:700;color:#64748b;margin-bottom:3px;text-transform:uppercase;letter-spacing:.08em">Région</div>
+      <select id="rf-region" class="form-control" style="font-size:.82rem;padding:6px 10px">
+        <option value="">Toutes</option>
+        ${regions.map(r => `<option value="${escapeHtml(r)}" ${f.region===r?'selected':''}>${escapeHtml(r)}</option>`).join('')}
+      </select>
+    </div>
+    <div>
+      <div style="font-size:.7rem;font-weight:700;color:#64748b;margin-bottom:3px;text-transform:uppercase;letter-spacing:.08em">Département</div>
+      <select id="rf-departement" class="form-control" style="font-size:.82rem;padding:6px 10px">
+        <option value="">Tous</option>
+        ${depts.map(d => `<option value="${escapeHtml(d)}" ${f.departement===d?'selected':''}>${escapeHtml(d)}</option>`).join('')}
+      </select>
+    </div>
+    <div>
+      <div style="font-size:.7rem;font-weight:700;color:#64748b;margin-bottom:3px;text-transform:uppercase;letter-spacing:.08em">Secteur</div>
+      <select id="rf-secteur" class="form-control" style="font-size:.82rem;padding:6px 10px">
+        <option value="">Tous</option>
+        ${secteurs.map(s => `<option value="${escapeHtml(s)}" ${f.secteur===s?'selected':''}>${escapeHtml(s)}</option>`).join('')}
+      </select>
+    </div>
+    <div>
+      <div style="font-size:.7rem;font-weight:700;color:#64748b;margin-bottom:3px;text-transform:uppercase;letter-spacing:.08em">Niveau 2</div>
+      <select id="rf-niveau2" class="form-control" style="font-size:.82rem;padding:6px 10px">
+        <option value="">Tous</option>
+        ${niveau2Users.map(u => `<option value="${u.id}" ${f.niveau2===u.id?'selected':''}>${escapeHtml((u.prenom||'')+(u.nom?' '+u.nom:''))}</option>`).join('')}
+      </select>
+    </div>
+    <button class="btn btn-out btn-sm" onclick="_resetResultatsFilters()" style="font-size:.76rem">↺ Réinitialiser</button>
+  </div>`;
+}
+
+function _bindResultatsFilters() {
+  const apply = () => {
+    _resultatsFilters.region      = document.getElementById('rf-region')?.value || '';
+    _resultatsFilters.departement = document.getElementById('rf-departement')?.value || '';
+    _resultatsFilters.secteur     = document.getElementById('rf-secteur')?.value || '';
+    _resultatsFilters.niveau2     = document.getElementById('rf-niveau2')?.value || '';
+    const c = document.getElementById('resultats-main-container');
+    if (c) renderResultatsCockpit(c);
+  };
+  ['rf-region','rf-departement','rf-secteur','rf-niveau2'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', apply);
+  });
+}
+
+function _resetResultatsFilters() {
+  _resultatsFilters = { region: '', departement: '', secteur: '', niveau2: '', niveau1: '', statut: '' };
+  const c = document.getElementById('resultats-main-container');
+  if (c) renderResultatsCockpit(c);
+}
+
+// Construction d'une carte secteur
+function _buildSecteurCard(c) {
+  const dci = c.dci;
+  const nom = [dci.prenom, dci.nom].filter(Boolean).join(' ') || '—';
+  const geo = [dci.region, dci.departement, dci.secteur].filter(Boolean).join(' · ') || '<span class="mut" style="font-size:.75rem">Géographie non renseignée</span>';
+
+  // Badge statut commission
+  let commBadge = '';
+  if (c.bord) {
+    const statut = c.bord.statut || 'Bordereau envoyé';
+    const cls = { 'Bordereau envoyé': 'commission-envoyé', 'Facture en attente': 'commission-attente', 'Facture reçue': 'commission-recue', 'Facture payée': 'commission-payée' }[statut] || 'commission-envoyé';
+    const ico = { 'Bordereau envoyé': '🔵', 'Facture en attente': '🟣', 'Facture reçue': '🟢', 'Facture payée': '👍' }[statut] || '🔵';
+    commBadge = `<span class="commission-badge ${cls}">${ico} ${escapeHtml(statut)}</span>`;
+  }
+
+  // Bouton bordereau / suivi commission
+  const bordBtns = _buildBordereauButtons(dci.id, c.bord, c.periodeKey);
+
+  const taux = c.tauxAtteinte;
+  const tauxColor = taux >= 100 ? '#22c55e' : taux >= 75 ? '#f59e0b' : '#3b82f6';
+
+  return `
+  <div class="secteur-card" onclick="openResultatsDetail('${escapeHtml(dci.id)}')" id="sc-${escapeHtml(dci.id)}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px">
+      <div>
+        <div style="font-family:var(--ff-disp);font-weight:700;color:#fff;font-size:1rem">${escapeHtml(nom)}</div>
+        <div style="font-size:.78rem;color:#64748b;margin-top:3px">🤝 DCI (Niveau 2)</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:.72rem;font-weight:700;color:${tauxColor}">${taux}%</div>
+        <div style="font-size:.65rem;color:#64748b">d'objectif</div>
+      </div>
+    </div>
+    <div style="font-size:.78rem;color:#94a3b8;margin-bottom:12px">📍 ${geo}</div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-size:.72rem;color:#64748b">Niveau 1 rattachés</span>
+      <span style="font-size:.8rem;font-weight:700;color:#fff">${c.niveau1.length}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px">
+        <div style="font-size:.65rem;color:#64748b;margin-bottom:2px">Contrats actifs</div>
+        <div style="font-size:1.1rem;font-weight:700;color:#fff">${c.contratsActifs}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px">
+        <div style="font-size:.65rem;color:#64748b;margin-bottom:2px">Signés ce mois</div>
+        <div style="font-size:1.1rem;font-weight:700;color:#3b82f6">${c.contratsSigPeriode}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px">
+        <div style="font-size:.65rem;color:#64748b;margin-bottom:2px">CA ce mois</div>
+        <div style="font-size:.9rem;font-weight:700;color:#f59e0b">${formatMoney(c.ca)}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px">
+        <div style="font-size:.65rem;color:#64748b;margin-bottom:2px">CA récurrent</div>
+        <div style="font-size:.9rem;font-weight:700;color:#22c55e">${formatMoney(c.caRecurrent)}/m</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:.75rem;color:#64748b">Taux de transfo</span>
+      <span style="font-size:.8rem;font-weight:700;color:#fff">${c.tauxTransfo}%</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:.75rem;color:#64748b">Dernière activité</span>
+      <span style="font-size:.78rem;color:#94a3b8">${c.lastActivity ? new Date(c.lastActivity).toLocaleDateString('fr-FR') : '—'}</span>
+    </div>
+    ${commBadge ? `<div style="margin-bottom:10px">${commBadge}</div>` : ''}
+    <div onclick="event.stopPropagation()" style="display:flex;flex-wrap:wrap;gap:6px">
+      ${bordBtns}
+    </div>
+  </div>`;
+}
+
+// Boutons bordereau selon statut
+function _buildBordereauButtons(userId, bord, periodeKey) {
+  if (!bord) {
+    return `<button class="btn btn-out btn-sm" onclick="event.stopPropagation();_genererBordereauCockpit('${escapeHtml(userId)}','${escapeHtml(periodeKey)}')" style="font-size:.75rem">
+      📄 Envoyer le bordereau
+    </button>`;
+  }
+  const statut = bord.statut || 'Bordereau envoyé';
+  const btn = [];
+  if (statut === 'Bordereau envoyé' || statut === 'Facture en attente') {
+    btn.push(`<button class="btn btn-out btn-sm" onclick="event.stopPropagation();_updateCommissionStatut('${escapeHtml(bord.id)}','Facture reçue')" style="font-size:.72rem;color:#4ade80;border-color:rgba(34,197,94,.4)">🟢 Marquer facture reçue</button>`);
+  }
+  if (statut === 'Facture reçue') {
+    btn.push(`<button class="btn btn-out btn-sm" onclick="event.stopPropagation();_updateCommissionStatut('${escapeHtml(bord.id)}','Facture payée')" style="font-size:.72rem;color:#fbbf24;border-color:rgba(245,158,11,.4)">👍 Marquer payée</button>`);
+  }
+  btn.push(`<button class="btn btn-out btn-sm" onclick="event.stopPropagation();openResultatsDetail('${escapeHtml(userId)}')" style="font-size:.72rem">📊 Détail</button>`);
+  return btn.join('');
+}
+
+// Générer un bordereau depuis le cockpit
+async function _genererBordereauCockpit(userId, periodeKey) {
+  state._resultatsUserId = userId;
+  const u = state.profilesById[userId];
+  if (!u) return;
+  await generateBordereauCommission();
+  // Mettre à jour le statut dans la DB
+  const now = new Date().toISOString();
+  const nomAdmin = [state.profile?.prenom, state.profile?.nom].filter(Boolean).join(' ');
+  const history  = [
+    { statut: 'Bordereau envoyé',  date: now, user_id: state.user.id, user_nom: nomAdmin },
+    { statut: 'Facture en attente', date: now, auto: true },
+  ];
+  await sb.from('bordereau_log').upsert({
+    user_id: userId, periode: periodeKey,
+    statut: 'Facture en attente',
+    statut_history: history,
+    sent_at: now, sent_by: state.user.id,
+  }, { onConflict: 'user_id,periode' });
+  // Rafraîchir
+  const c = document.getElementById('resultats-main-container');
+  if (c) await renderResultatsCockpit(c);
+}
+
+// Mettre à jour le statut commission
+async function _updateCommissionStatut(bordereauId, newStatut) {
+  const bord = (state._bordereaux || []).find(b => b.id === bordereauId);
+  if (!bord) return;
+  const now     = new Date().toISOString();
+  const nomUser = [state.profile?.prenom, state.profile?.nom].filter(Boolean).join(' ');
+  const history = [...(bord.statut_history || []), { statut: newStatut, date: now, user_id: state.user.id, user_nom: nomUser }];
+  const { error } = await sb.from('bordereau_log')
+    .update({ statut: newStatut, statut_history: history })
+    .eq('id', bordereauId);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  const c = document.getElementById('resultats-main-container');
+  if (c) await renderResultatsCockpit(c);
+}
+
+// Vue détail d'un secteur (drill-down Niveau 1)
+function openResultatsDetail(userId) {
+  const dci = state.profilesById[userId];
+  if (!dci) return;
+  _resultatsDetailUserId = userId;
+
+  const niveau1 = Object.values(state.profilesById).filter(p => p.dci_parent_id === userId && p.role === 'user');
+  const container = document.getElementById('resultats-main-container');
+  if (!container) return;
+
+  const now = new Date();
+  const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endMonth   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  const periodeKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  // DCI row
+  const dciRow = _buildUserDetailRow(dci, startMonth, endMonth);
+
+  // Niveau 1 rows
+  const n1Rows = niveau1.map(u => _buildUserDetailRow(u, startMonth, endMonth)).join('');
+
+  const backLabel = isRole('dci') ? '' : `<button class="btn btn-out btn-sm" onclick="renderResultats()" style="margin-bottom:16px">← Retour au cockpit</button>`;
+
+  container.innerHTML = `
+    ${backLabel}
+    <div style="margin-bottom:20px">
+      <div style="font-family:var(--ff-disp);font-weight:700;color:#fff;font-size:1.2rem">
+        Secteur : ${escapeHtml([dci.region, dci.departement, dci.secteur].filter(Boolean).join(' · ') || 'Non renseigné')}
+      </div>
+      <div style="font-size:.82rem;color:#64748b;margin-top:2px">DCI responsable : ${escapeHtml([dci.prenom,dci.nom].filter(Boolean).join(' ')||'—')}</div>
+    </div>
+
+    <!-- Détail DCI -->
+    <div style="margin-bottom:24px">
+      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:10px">👨‍💼 DCI (Niveau 2)</div>
+      <div class="panel-block" style="margin-bottom:0">
+        ${_buildUserDetailCard(dci, startMonth, endMonth, periodeKey)}
+      </div>
+    </div>
+
+    <!-- Niveau 1 rattachés -->
+    <div>
+      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:10px">👤 Niveau 1 rattachés (${niveau1.length})</div>
+      ${niveau1.length
+        ? `<div style="display:flex;flex-direction:column;gap:12px">${niveau1.map(u => `<div class="panel-block" style="margin-bottom:0">${_buildUserDetailCard(u, startMonth, endMonth, periodeKey)}</div>`).join('')}</div>`
+        : '<p class="empty">Aucun Niveau 1 rattaché à ce DCI.</p>'}
+    </div>`;
+}
+
+function _buildUserDetailCard(u, startMonth, endMonth, periodeKey) {
+  const nom          = [u.prenom, u.nom].filter(Boolean).join(' ') || '—';
+  const geo          = [u.region, u.departement, u.secteur].filter(Boolean).join(' · ') || '—';
+  const contratsSig  = state.contracts.filter(c => c.created_by === u.id && c.date_debut && new Date(c.date_debut+'T00:00:00') >= startMonth && new Date(c.date_debut+'T00:00:00') <= endMonth && ['Contrat en cours','Terminé'].includes(c.statut)).length;
+  const contratsAct  = state.contracts.filter(c => c.created_by === u.id && c.statut === 'Contrat en cours').length;
+  const ca           = state.contracts.filter(c => c.created_by === u.id && ['Contrat en cours','Terminé'].includes(c.statut) && c.date_debut && new Date(c.date_debut+'T00:00:00') >= startMonth).reduce((s,c) => s + Math.max(0,(Number(c.montant)||0)-(Number(c.remise)||0)), 0);
+  const caRec        = state.contracts.filter(c => c.created_by === u.id && c.recurrence === 'Mensuel' && c.statut === 'Contrat en cours').reduce((s,c) => s + Math.max(0,(Number(c.montant)||0)-(Number(c.remise)||0)), 0);
+  const totalContact = state.contacts.filter(c => c.created_by === u.id).length;
+  const tauxTransfo  = totalContact > 0 ? Math.round((contratsSig / totalContact) * 100) : 0;
+  const tCa          = getObjectifTarget(u.id, 'ca_genere');
+  const tauxAtteinte = tCa > 0 ? Math.round((ca / tCa) * 100) : 0;
+  const tComm        = getObjectifTarget(u.id, 'commissions');
+  const rComm        = computeMonthlyCommission(u.id);
+  const tauxColor    = tauxAtteinte >= 100 ? '#22c55e' : tauxAtteinte >= 75 ? '#f59e0b' : '#3b82f6';
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-weight:700;color:#fff;font-size:.95rem">${escapeHtml(nom)}</div>
+        <div style="font-size:.76rem;color:#64748b;margin-top:2px">📍 ${escapeHtml(geo)}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,auto);gap:16px;text-align:right">
+        <div><div style="font-size:.65rem;color:#64748b">Actifs</div><div style="font-weight:700;color:#fff">${contratsAct}</div></div>
+        <div><div style="font-size:.65rem;color:#64748b">Signés</div><div style="font-weight:700;color:#3b82f6">${contratsSig}</div></div>
+        <div><div style="font-size:.65rem;color:#64748b">CA mois</div><div style="font-weight:700;color:#f59e0b">${formatMoney(ca)}</div></div>
+        <div><div style="font-size:.65rem;color:#64748b">Récurrent</div><div style="font-weight:700;color:#22c55e">${formatMoney(caRec)}/m</div></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:10px">
+      <span style="font-size:.78rem;color:#94a3b8">Taux de transfo : <b style="color:#fff">${tauxTransfo}%</b></span>
+      <span style="font-size:.78rem;color:#94a3b8">Objectif CA : <b style="color:#fff">${formatMoney(tCa)}</b></span>
+      <span style="font-size:.78rem;color:#94a3b8">Atteinte : <b style="color:${tauxColor}">${tauxAtteinte}%</b></span>
+      <span style="font-size:.78rem;color:#94a3b8">Commissions : <b style="color:#f59e0b">${formatMoney(rComm)} / ${formatMoney(tComm)}</b></span>
+    </div>`;
+}
+
+function _buildUserDetailRow(u, startMonth, endMonth) { return ''; } // utilisé plus bas si nécessaire
 
 function getObjectifTarget(userId, metricType) {
   const o = state.objectifs.find(o => o.user_id === userId && o.metric_type === metricType);
@@ -1296,9 +1617,9 @@ function renderAdminUsers() {
   const now = new Date();
   const roleLabels = {
     'super_admin': '⚡ Super Admin',
-    'admin_candy': '🍬 Admin C@NDY',
-    'dci':         '🤝 DCI',
-    'user':        '👤 Utilisateur',
+    'admin_candy': '⚙️ Admin (Niveau 3)',
+    'dci':         '🤝 DCI (Niveau 2)',
+    'user':        '👤 Utilisateur (Niveau 1)',
   };
   tbody.innerHTML = state.adminUsers.map(u => {
     const banned  = u.banned_until && new Date(u.banned_until) > now;
@@ -1351,7 +1672,7 @@ function openEditUserModal(userId) {
           <select id="eu-role" style="margin-top:4px">
             <option value="user">👤 Utilisateur (Niveau 1)</option>
             <option value="dci">🤝 DCI (Niveau 2)</option>
-            <option value="admin_candy">🍬 Admin C@NDY (Niveau 3)</option>
+            <option value="admin_candy">⚙️ Admin (Niveau 3)</option>
           </select>
         </div>
         <p class="error" id="eu-error"></p>
@@ -2385,6 +2706,9 @@ function bindEvents() {
 
   // --- Administration ---
   $all('[data-admin-tab]').forEach(b => b.addEventListener('click', () => switchAdminTab(b.dataset.adminTab)));
+  // Résultats : back depuis le détail
+  $('#resultats-back-btn')?.addEventListener('click', renderResultats);
+  $('#resultats-bordereau-btn')?.addEventListener('click', generateBordereauCommission);
   $('#btn-new-user').addEventListener('click', openNewUserModal);
   $('#new-user-cancel-btn').addEventListener('click', closeNewUserModal);
   $('#new-user-save-btn').addEventListener('click', createNewUser);
@@ -3901,8 +4225,11 @@ function updateMobMenuRole() {
   const dci   = typeof isAtLeast === 'function' && isAtLeast('dci');
   const sup   = typeof isSuperAdmin === 'function' && isSuperAdmin();
   document.querySelectorAll('#mob-drawer .admin-only').forEach(el => el.style.display = admin ? '' : 'none');
+  document.querySelectorAll('#mob-drawer .dci-only').forEach(el => el.style.display = dci ? '' : 'none');
   const dciSec = document.getElementById('mob-sec-dci');
   if (dciSec) dciSec.style.display = dci ? '' : 'none';
+  const outilsSec = document.getElementById('mob-sec-outils');
+  if (outilsSec) outilsSec.style.display = admin ? '' : 'none';
   const dangerSec = document.getElementById('mob-sec-danger');
   if (dangerSec) dangerSec.style.display = sup ? '' : 'none';
 }
