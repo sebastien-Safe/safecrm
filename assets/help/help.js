@@ -500,3 +500,94 @@ function initHelp() {
   checkUndocumentedViews();
   maybeStartWelcomeTutorial();
 }
+
+// ============================================================
+// Modale demande d'assistance
+// ============================================================
+function openAssistanceModal() {
+  // Pré-sélectionner le module selon la vue active
+  const view = typeof state !== 'undefined' ? state.view : '';
+  const moduleMap = {
+    contacts:  'Contacts',
+    contracts: 'Contrats',
+    tasks:     'Contrats',
+    objectifs: 'Administration',
+    admin:     'Administration',
+  };
+  const select = document.getElementById('assistance-module');
+  if (select && moduleMap[view]) select.value = moduleMap[view];
+
+  // Réinitialiser urgence et message
+  selectUrgence('Normal');
+  const msg = document.getElementById('assistance-message');
+  if (msg) msg.value = '';
+
+  document.getElementById('assistance-backdrop').style.display = 'block';
+  document.getElementById('assistance-modal').style.display    = 'block';
+  setTimeout(() => document.getElementById('assistance-message')?.focus(), 150);
+}
+
+function closeAssistanceModal() {
+  document.getElementById('assistance-backdrop').style.display = 'none';
+  document.getElementById('assistance-modal').style.display    = 'none';
+}
+
+function selectUrgence(level) {
+  document.getElementById('assistance-urgence').value = level;
+  ['Normal', 'Urgent', 'Bloquant'].forEach(l => {
+    const el = document.getElementById('urg-' + l.toLowerCase());
+    if (!el) return;
+    const active = l === level;
+    const colors = { Normal: '#3b82f6', Urgent: '#f59e0b', Bloquant: '#ef4444' };
+    const bgs    = { Normal: '#eff6ff', Urgent: '#fffbeb', Bloquant: '#fef2f2' };
+    el.style.borderColor = active ? colors[l]   : '#e5e7eb';
+    el.style.color       = active ? colors[l]   : '#64748b';
+    el.style.background  = active ? bgs[l]      : '#f8fafc';
+  });
+}
+
+function sendAssistanceRequest() {
+  const message = (document.getElementById('assistance-message')?.value || '').trim();
+  if (!message) {
+    document.getElementById('assistance-message')?.focus();
+    document.getElementById('assistance-message')?.style && (document.getElementById('assistance-message').style.borderColor = '#ef4444');
+    return;
+  }
+  if (document.getElementById('assistance-message')) {
+    document.getElementById('assistance-message').style.borderColor = '';
+  }
+
+  const module   = document.getElementById('assistance-module')?.value  || 'Autre';
+  const urgence  = document.getElementById('assistance-urgence')?.value  || 'Normal';
+  const prenom   = typeof state !== 'undefined' ? (state.profile?.prenom || '') : '';
+  const nom      = typeof state !== 'undefined' ? (state.profile?.nom    || '') : '';
+  const email    = typeof state !== 'undefined' ? (state.user?.email     || '') : '';
+  const fullName = [prenom, nom].filter(Boolean).join(' ') || 'Utilisateur';
+  const view     = typeof state !== 'undefined' ? (state.view || '') : '';
+
+  const subject = `[S@FE CRM] Demande d'assistance — ${module} — Urgence : ${urgence}`;
+  const body = [
+    `Bonjour,`,
+    ``,
+    `Je rencontre un problème avec le CRM S@FE et sollicite votre assistance.`,
+    ``,
+    `─── Informations ───────────────────────`,
+    `Utilisateur : ${fullName}`,
+    `Email       : ${email}`,
+    `Module      : ${module}`,
+    `Vue active  : ${view || 'N/A'}`,
+    `Urgence     : ${urgence}`,
+    `Date        : ${new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}`,
+    `────────────────────────────────────────`,
+    ``,
+    `Description du problème :`,
+    message,
+    ``,
+    `Cordialement,`,
+    fullName,
+  ].join('\n');
+
+  const mailto = `mailto:contact@safe-digitalisation.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailto;
+  closeAssistanceModal();
+}

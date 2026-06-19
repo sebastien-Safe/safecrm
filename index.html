@@ -1444,12 +1444,93 @@ window.addEventListener('appinstalled', () => {
   <div id="help-body" style="flex:1;overflow-y:auto"></div>
 
   <!-- Footer -->
-  <div style="padding:12px 18px;border-top:1px solid #e5e7eb;background:#f8fafc;flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
-    <span style="font-size:.72rem;color:#94a3b8">S@FE CRM — Documentation intégrée</span>
-    <button class="btn btn-out btn-sm" onclick="startTutorial(typeof state!=='undefined'?state.view:'dashboard')"
-            style="font-size:.75rem">🎯 Relancer le tutoriel</button>
+  <div style="padding:12px 18px;border-top:1px solid #e5e7eb;background:#f8fafc;flex-shrink:0">
+    <button class="btn btn-pri btn-sm" onclick="openAssistanceModal()"
+            style="width:100%;font-size:.82rem;margin-bottom:8px;background:#0a1628;border-color:#0a1628">
+      📧 Demander de l'assistance
+    </button>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:.72rem;color:#94a3b8">S@FE CRM — Documentation intégrée</span>
+      <button class="btn btn-out btn-sm" onclick="startTutorial(typeof state!=='undefined'?state.view:'dashboard')"
+              style="font-size:.75rem">🎯 Tutoriel</button>
+    </div>
   </div>
 </aside>
+
+<!-- Modale Demande d'assistance -->
+<div id="assistance-backdrop"
+     onclick="closeAssistanceModal()"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1300;backdrop-filter:blur(2px)"></div>
+
+<div id="assistance-modal"
+     style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1301;width:480px;max-width:calc(100vw - 32px);background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden">
+
+  <!-- Header modale -->
+  <div style="background:#0a1628;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-family:Sora,sans-serif;font-weight:700;color:#fff;font-size:.95rem">📧 Demande d'assistance</div>
+      <div style="font-size:.74rem;color:rgba(255,255,255,.5);margin-top:2px">Votre chargé de compte S@FE vous répondra sous 24h</div>
+    </div>
+    <button onclick="closeAssistanceModal()"
+            style="background:none;border:none;color:rgba(255,255,255,.6);font-size:1.1rem;cursor:pointer;padding:4px;line-height:1">✕</button>
+  </div>
+
+  <!-- Corps -->
+  <div style="padding:20px 22px">
+
+    <!-- Module -->
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:5px">Module concerné</label>
+      <select id="assistance-module" class="form-control" style="font-size:.85rem">
+        <option value="Contacts">👥 Contacts</option>
+        <option value="Contrats">📄 Contrats</option>
+        <option value="Facturation">💶 Facturation / Stripe</option>
+        <option value="RGPD">🔐 RGPD</option>
+        <option value="Administration">⚙️ Administration</option>
+        <option value="Autre">🔧 Autre</option>
+      </select>
+    </div>
+
+    <!-- Urgence -->
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:5px">Niveau d'urgence</label>
+      <div style="display:flex;gap:8px">
+        <label id="urg-normal"   class="urg-btn urg-selected" onclick="selectUrgence('Normal')"
+               style="flex:1;text-align:center;padding:8px;border:2px solid #3b82f6;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;color:#3b82f6;background:#eff6ff;transition:all .15s">
+          🟢 Normal
+        </label>
+        <label id="urg-urgent"   class="urg-btn" onclick="selectUrgence('Urgent')"
+               style="flex:1;text-align:center;padding:8px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;color:#64748b;background:#f8fafc;transition:all .15s">
+          🟠 Urgent
+        </label>
+        <label id="urg-bloquant" class="urg-btn" onclick="selectUrgence('Bloquant')"
+               style="flex:1;text-align:center;padding:8px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;color:#64748b;background:#f8fafc;transition:all .15s">
+          🔴 Bloquant
+        </label>
+      </div>
+      <input type="hidden" id="assistance-urgence" value="Normal">
+    </div>
+
+    <!-- Description -->
+    <div style="margin-bottom:6px">
+      <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:5px">
+        Description du problème <span style="color:#ef4444">*</span>
+      </label>
+      <textarea id="assistance-message" class="form-control" rows="5"
+                placeholder="Décrivez votre problème avec le plus de détails possibles : ce que vous avez fait, ce qui s'est passé, le message d'erreur éventuel…"
+                style="resize:vertical;font-size:.84rem;line-height:1.5"></textarea>
+    </div>
+    <p style="font-size:.73rem;color:#94a3b8;margin-bottom:0">Votre nom et votre email seront inclus automatiquement dans le message.</p>
+  </div>
+
+  <!-- Actions -->
+  <div style="padding:14px 22px 18px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9">
+    <button class="btn btn-out btn-sm" onclick="closeAssistanceModal()">Annuler</button>
+    <button class="btn btn-pri btn-sm" onclick="sendAssistanceRequest()" style="background:#0a1628;border-color:#0a1628">
+      📧 Ouvrir mon client mail
+    </button>
+  </div>
+</div>
 
 <!-- Tutoriel — Overlay sombre -->
 <div id="tuto-overlay"
