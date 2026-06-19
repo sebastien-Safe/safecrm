@@ -112,12 +112,15 @@ function switchRgpdSubTab(tab) {
 
 // ============================================================
 // Override de renderRegistreRGPD (app.js) pour injecter les sous-onglets
+// Note : on utilise window.renderRegistreRGPD = ... (pas une déclaration function)
+// pour éviter le hoisting qui referait pointer _renderRegistreOriginal vers
+// la nouvelle fonction elle-même (récursion infinie).
 // ============================================================
 const _renderRegistreOriginal = typeof renderRegistreRGPD === 'function' ? renderRegistreRGPD : function () {};
-function renderRegistreRGPD() {
+window.renderRegistreRGPD = function renderRegistreRGPD() {
   _renderRegistreOriginal();
   initRgpdSubTabs();
-}
+};
 
 // ============================================================
 // Journal RGPD — rendu principal
