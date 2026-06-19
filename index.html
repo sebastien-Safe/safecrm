@@ -844,8 +844,9 @@
     <div class="field"><label>Nom *</label><input id="profile-nom" type="text" placeholder="Nom de famille"></div>
     <div class="field"><label>Téléphone *</label><input id="profile-telephone" type="tel" placeholder="06 XX XX XX XX"></div>
     <div class="field"><label>Adresse *</label><input id="profile-adresse" type="text" placeholder="Adresse complète"></div>
+    <div class="field"><label>SIRET *</label><input id="profile-siret" type="text" placeholder="14 chiffres"></div>
     <div class="field"><label>RC Pro</label><input id="profile-rcpro" type="text" placeholder="Référence assurance RC Pro"></div>
-    <p class="mut" style="font-size:.74rem;margin-top:-6px">* Champs obligatoires. SIRET : renseigné dans votre contrat de mandat.</p>
+    <p class="mut" style="font-size:.74rem;margin-top:-6px">* Champs obligatoires.</p>
     <p class="error" id="profile-error"></p>
     <div id="clause-signed-block" style="display:none;margin-top:8px;padding:10px 12px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:.8rem;color:var(--ok);display:flex;align-items:center;justify-content:space-between;gap:10px">
       <span>✅ Clause de confidentialité signée</span>
@@ -1247,7 +1248,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="assets/config.js"></script>
-<script src="assets/contract-pdf.js"></script>
+<script src="assets/contracts/contracts.js"></script>
+<script src="assets/contracts/contracts-formulas.js"></script>
+<script src="assets/contracts/contracts-pdf.js"></script>
+<script src="assets/contracts/contracts.service.js"></script>
+<script src="assets/contracts/contracts-ui.js"></script>
+<script src="assets/contracts/contracts-stripe.js"></script>
+<script src="assets/contracts/contracts-notifications.js"></script>
+<script src="assets/contracts/index.js"></script>
 <script src="assets/app.js"></script>
 
 <script>

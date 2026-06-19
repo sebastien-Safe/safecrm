@@ -85,101 +85,12 @@ function gaugeSvg(pct) {
 }
 
 const CONTACT_STATUT_BADGE = { 'Prospect': 'badge-blue', 'Client': 'badge-green', 'Inactif': 'badge-gray' };
-const CONTRACT_STATUT_BADGE = {
-  'En attente de signature': 'badge-gray', 'Envoyé': 'badge-blue', 'Contrat en cours': 'badge-gold',
-  'Paiement échoué': 'badge-red', 'Terminé': 'badge-green', 'Résilié': 'badge-red'
-};
+// → déplacé dans contracts/contracts.js : CONTRACT_STATUT_BADGE
 const PRIORITY_BADGE = { 'Basse': 'badge-gray', 'Normale': 'badge-blue', 'Haute': 'badge-red' };
 const ACTIVITE_BADGE = { 'Digitalisation': 'badge-blue', 'RGPD': 'badge-gold', 'Assurance': 'badge-green', 'Autre': 'badge-gray' };
 const TASK_TYPE_BADGE = { 'Premier contact': 'badge-blue', 'RDV visio': 'badge-gold', 'RDV terrain': 'badge-green', 'Autre': 'badge-gray' };
 
-// ---------------------------------------------------------
-// GRILLE TARIFAIRE (issue de safe-digitalisation.fr)
-// Formules pré-remplies par type de prestation : montant HT,
-// récurrence, frais de mise en place et engagement minimum
-// (ajoutés automatiquement en note). Les types non listés ici
-// (Audit RGPD, Gestion Fiche Google Business, Courtage Assurance,
-// Autre) n'ont pas de tarif catalogue publié : la formule reste
-// "Personnalisé / Sur devis" avec saisie libre.
-// ---------------------------------------------------------
-// ---------------------------------------------------------
-// FORMULES & COMMISSIONS
-// Barème : SAFEDIRCOM-2026-V1 — En vigueur au 12 juin 2026
-//
-// Structure par formule :
-//   comm_signature_fix : montant fixe versé le mois de signature
-//   comm_bonus_fidelite: montant fixe versé au mois 4 si client
-//                        toujours actif (clause anti-churn 90j)
-//   comm_recurrent_pct : taux mensuel sur le montant HT
-//   comm_signature_pct : taux one-shot (audits/cyber/options)
-//                        appliqué au montant HT — utilisé quand
-//                        comm_signature_fix n'est pas défini
-// ---------------------------------------------------------
-
-// ==========================================================================
-// TABLE CENTRALISÉE ICÔNES TYPES DE CONTRATS
-// ==========================================================================
-const CONTRACT_ICONS = {
-  'SEO':            '🔍',
-  'Référencement':  '🔍',
-  'Local':          '🔍',
-  'RGPD':           '🛡',
-  'Conformité':     '🛡',
-  'DPO':            '⚖️',
-  'Cyber':          '🔐',
-  'Cybersécurité':  '🔐',
-  'Sécurité':       '🔐',
-  'Assurance':      '🏦',
-  'Courtage':       '🏦',
-  'Web':            '🌐',
-  'Site':           '🌐',
-  'Digital':        '🌐',
-  'Formation':      '🎓',
-  'Audit':          '🔎',
-  'DPO externalisé':'⚖️',
-};
-
-function getContractIcon(type) {
-  if (!type) return '📋';
-  for (const [key, icon] of Object.entries(CONTRACT_ICONS)) {
-    if (type.toLowerCase().includes(key.toLowerCase())) return icon;
-  }
-  return '📋';
-}
-
-const FORMULE_PRESETS = {
-  'Référencement Local': [
-    { label: 'Essentiel', montant: 79,  recurrence: 'Mensuel',  setup: 190, engagement: 6, comm_signature_fix: 75,  comm_bonus_fidelite: 75,  comm_recurrent_pct: 0.15 },
-    { label: 'Boost',     montant: 149, recurrence: 'Mensuel',  setup: 290, engagement: 6, comm_signature_fix: 100, comm_bonus_fidelite: 100, comm_recurrent_pct: 0.15 },
-    { label: 'Prestige',  montant: 249, recurrence: 'Mensuel',  setup: 0,   engagement: 3, comm_signature_fix: 0,   comm_bonus_fidelite: 0,   comm_recurrent_pct: 0.15 },
-  ],
-  'Mise en conformité RGPD': [
-    { label: 'Diagnostic (offert)',     montant: 0,    recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0,    comm_recurrent_pct: 0 },
-    { label: 'Audit RGPD TPE',          montant: 1490, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_fix: 298,  comm_recurrent_pct: 0 },
-    { label: 'Audit RGPD+ PME',         montant: 2990, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_fix: 598,  comm_recurrent_pct: 0 },
-    { label: 'Audit ETI (sur devis)',   montant: 5500, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.20, comm_recurrent_pct: 0 },
-  ],
-  'DPO externalisé': [
-    { label: 'Abonnement DPO', montant: 189, recurrence: 'Mensuel', setup: 0, engagement: 12, comm_signature_fix: 50, comm_recurrent_pct: 0.10 },
-  ],
-  'Cybersécurité': [
-    { label: 'Audit de vulnérabilité',  montant: 490,  recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 5,  comm_signature_fix: 98,  comm_recurrent_pct: 0 },
-    { label: 'Pack Sécurité Essentiel', montant: 990,  recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 10, comm_signature_fix: 198, comm_recurrent_pct: 0 },
-    { label: 'Pack Résilience Pro',     montant: 1990, recurrence: 'Ponctuel', setup: 0, engagement: 0, deliveryDays: 15, comm_signature_fix: 398, comm_recurrent_pct: 0 },
-  ],
-  'Options à la carte': [
-    { label: 'Landing page SEO',         montant: 390, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.10, comm_recurrent_pct: 0 },
-    { label: 'Google Ads setup',         montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.10, comm_recurrent_pct: 0 },
-    { label: 'Formation GBP 2h',         montant: 220, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.10, comm_recurrent_pct: 0 },
-    { label: 'Audit concurrentiel',      montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.10, comm_recurrent_pct: 0 },
-    { label: 'Sensibilisation phishing', montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.10, comm_recurrent_pct: 0 },
-    { label: 'Veille menaces',           montant: 89,  recurrence: 'Mensuel',  setup: 0, engagement: 0, comm_signature_pct: 0,    comm_recurrent_pct: 0.10 },
-  ],
-};
-const FORMULE_CUSTOM = '__custom__';
-
-// Fallback pour les formules personnalisées ou sans grille rattachée
-const COMMISSION_FALLBACK = { comm_signature_pct: 0.10, comm_recurrent_pct: 0.10 };
+// → déplacé dans contracts/contracts.js : CONTRACT_ICONS, getContractIcon, FORMULE_PRESETS, FORMULE_CUSTOM, COMMISSION_FALLBACK
 
 function contactName(id) {
   const c = state.contacts.find(c => c.id === id);
@@ -187,9 +98,7 @@ function contactName(id) {
   return c.entreprise ? `${c.nom} (${c.entreprise})` : c.nom;
 }
 
-function contractLabel(ct) {
-  return `${contactName(ct.contact_id)} — ${ct.type}${ct.formule ? ' / ' + ct.formule : ''}`;
-}
+// → déplacé dans contracts/contracts.js : contractLabel
 
 // ---------------------------------------------------------
 // AUTHENTIFICATION
@@ -365,11 +274,7 @@ async function loadContacts() {
   state.contacts = data || [];
 }
 
-async function loadContracts() {
-  const { data, error } = await sb.from('contracts').select('*, stripe_subscription_id, resilié_at').order('created_at', { ascending: false });
-  if (error) return alert('Erreur chargement contrats : ' + error.message);
-  state.contracts = data || [];
-}
+// → déplacé dans contracts/contracts.service.js : loadContracts
 
 async function loadTasks() {
   const { data, error } = await sb.from('tasks').select('*').order('echeance', { ascending: true, nullsFirst: false });
@@ -768,297 +673,9 @@ async function deleteContact() {
   await loadAll();
 }
 
-// ---------------------------------------------------------
-// CONTRATS
-// ---------------------------------------------------------
-function getFilteredContracts() {
-  const statut = $('#contracts-filter-statut').value;
-  const recurrence = $('#contracts-filter-recurrence').value;
-  return state.contracts.filter(ct => {
-    if (statut && ct.statut !== statut) return false;
-    if (recurrence && ct.recurrence !== recurrence) return false;
-    return true;
-  });
-}
-
-function renderContracts() {
-  const list = getFilteredContracts();
-  const tbody = $('#contracts-tbody');
-  if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="9" class="empty">Aucun contrat ne correspond aux filtres.</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = list.map(ct => {
-    const montant = Number(ct.montant) || 0;
-    const remise = Number(ct.remise) || 0;
-    const net = Math.max(0, montant - remise);
-    const montantCell = remise > 0
-      ? `${formatMoney(net)}<br><span class="mut" style="font-size:.74rem">(remise -${formatMoney(remise)})</span>`
-      : formatMoney(montant);
-    return `
-    <tr style="cursor:pointer" onclick="openContractModal('${ct.id}')">
-      <td>${escapeHtml(contactName(ct.contact_id))}</td>
-      <td>${escapeHtml(ct.type)}</td>
-      <td>${escapeHtml(ct.formule || '—')}</td>
-      <td>${montantCell}</td>
-      <td>${escapeHtml(ct.recurrence)}</td>
-      <td>${formatDate(ct.date_debut)}</td>
-      <td class="${isOverdue(ct.date_echeance, ct.statut) ? 'overdue' : ''}">${formatDate(ct.date_echeance)}</td>
-      <td><span class="badge ${CONTRACT_STATUT_BADGE[ct.statut] || 'badge-gray'}">${escapeHtml(ct.statut)}</span>${ct.resilié_at ? '<br><span style="font-size:.7rem;color:#fc8181;font-weight:600">🔔 Résiliation demandée</span>' : ''}</td>
-      <td class="nowrap">${escapeHtml(creatorName(ct.created_by))}</td>
-    </tr>`;
-  }).join('');
-}
-
-function populateContactSelects() {
-  const opts = state.contacts.map(c => `<option value="${c.id}">${escapeHtml(contactName(c.id))}</option>`).join('');
-  $('#ct-contact').innerHTML = '<option value="">— Sélectionner un contact —</option>' + opts;
-  $('#t-contact').innerHTML = '<option value="">— Aucun —</option>' + opts;
-}
-
-function populateContractSelects() {
-  const opts = state.contracts.map(ct => `<option value="${ct.id}">${escapeHtml(contractLabel(ct))}</option>`).join('');
-  $('#t-contract').innerHTML = '<option value="">— Aucun —</option>' + opts;
-}
-
-function populateFormuleSelect(type, currentFormule) {
-  const sel = $('#ct-formule-select');
-  const customInput = $('#ct-formule-custom');
-  const presets = FORMULE_PRESETS[type] || [];
-
-  let opts = presets.map(f => {
-    const unit = f.recurrence === 'Mensuel' ? '/mois' : (f.recurrence === 'Annuel' ? '/an' : ' (forfait)');
-    const setup = f.setup ? ` + ${f.setup} € mise en place` : '';
-    return `<option value="${escapeHtml(f.label)}">${escapeHtml(f.label)} — ${f.montant} € HT${unit}${setup}</option>`;
-  }).join('');
-  opts += `<option value="${FORMULE_CUSTOM}">Personnalisé / Sur devis</option>`;
-  sel.innerHTML = opts;
-
-  const match = presets.find(f => f.label === currentFormule);
-  if (match) {
-    sel.value = match.label;
-    customInput.style.display = 'none';
-    customInput.value = '';
-  } else {
-    sel.value = FORMULE_CUSTOM;
-    customInput.style.display = '';
-    customInput.value = currentFormule || '';
-  }
-}
-
-function onFormuleChange(applyPreset = true) {
-  const sel = $('#ct-formule-select');
-  const type = $('#ct-type').value.trim();
-  const customInput = $('#ct-formule-custom');
-
-  if (sel.value === FORMULE_CUSTOM) {
-    customInput.style.display = '';
-    updateNetDisplay();
-    return;
-  }
-  customInput.style.display = 'none';
-  customInput.value = '';
-
-  if (!applyPreset) { updateNetDisplay(); return; }
-
-  const preset = (FORMULE_PRESETS[type] || []).find(f => f.label === sel.value);
-  if (preset) {
-    $('#ct-montant').value = preset.montant;
-    $('#ct-recurrence').value = preset.recurrence;
-    const mepEl = $('#ct-frais-mise-en-place');
-    const engEl = $('#ct-engagement-mois');
-    if (mepEl) mepEl.value = preset.setup || 0;
-    if (engEl) engEl.value = preset.engagement || 0;
-    const note = $('#ct-notes');
-    const extraNotes = [];
-    if (preset.setup) {
-      extraNotes.push(`Frais de mise en place : ${preset.setup} € HT (facturés au 1er mois, non remboursables).`);
-    }
-    if (preset.engagement) {
-      extraNotes.push(`Engagement minimum : ${preset.engagement} mois.`);
-    }
-    extraNotes.forEach(n => {
-      const key = n.split(' :')[0];
-      if (!note.value.includes(key)) {
-        note.value = note.value ? note.value + '\n' + n : n;
-      }
-    });
-  }
-  updateNetDisplay();
-  autoCalcEcheance();
-}
-
-function updateNetDisplay() {
-  const montant = Number($('#ct-montant')?.value) || 0;
-  const remiseActive = $('#ct-remise-check')?.checked || false;
-  const remise = remiseActive ? (Number($('#ct-remise')?.value) || 0) : 0;
-  const frais = Number($('#ct-frais-mise-en-place')?.value) || 0;
-  const net = Math.max(0, montant + frais - remise);
-  // ct-net-wrap n'existe plus — ct-net-display est toujours visible
-  const netWrap = $('#ct-net-wrap');
-  if (netWrap) netWrap.style.display = (remiseActive && remise > 0) ? '' : 'none';
-  const netDisplay = $('#ct-net-display');
-  if (netDisplay) netDisplay.value = formatMoney(net);
-}
-
-function autoCalcEcheance() {
-  const type = $('#ct-type').value.trim();
-  const formuleSel = $('#ct-formule-select').value;
-  const preset = (FORMULE_PRESETS[type] || []).find(f => f.label === formuleSel);
-  const dateDebut = $('#ct-date-debut').value;
-  if (!preset || !dateDebut) return;
-  const d = new Date(dateDebut + 'T00:00:00');
-  if (preset.engagement) {
-    d.setMonth(d.getMonth() + preset.engagement);
-  } else if (preset.deliveryDays) {
-    d.setDate(d.getDate() + preset.deliveryDays);
-  } else {
-    return;
-  }
-  $('#ct-date-echeance').value = d.toISOString().slice(0, 10);
-}
-
-function onContractTypeChange() {
-  populateFormuleSelect($('#ct-type').value.trim(), null);
-  onFormuleChange(true);
-}
-
-function openContractModal(id = null) {
-  // Toujours rafraîchir les selects avant ouverture (les contacts peuvent
-  // avoir été ajoutés/modifiés depuis le dernier rendu)
-  populateContactSelects();
-
-  const ct = id ? state.contracts.find(x => x.id === id) : null;
-  $('#contract-modal-title').textContent = ct ? 'Modifier le contrat' : 'Nouveau contrat';
-  $('#ct-id').value = ct?.id || '';
-  $('#ct-contact').value = ct?.contact_id || '';
-  $('#ct-type').value = ct?.type || '';
-  $('#ct-montant').value = ct?.montant ?? '';
-  $('#ct-recurrence').value = ct?.recurrence || 'Ponctuel';
-  const mepField = $('#ct-frais-mise-en-place');
-  const engField = $('#ct-engagement-mois');
-  if (mepField) mepField.value = ct?.frais_mise_en_place ?? '';
-  if (engField) engField.value = ct?.engagement_mois ?? '';
-  $('#ct-date-debut').value = ct?.date_debut || '';
-  $('#ct-date-echeance').value = ct?.date_echeance || '';
-  $('#ct-statut').value = ct?.statut || 'En attente de signature';
-  const statutDisplay = $('#ct-statut-display');
-  if (statutDisplay) statutDisplay.value = ct?.statut || 'En attente de signature';
-  // Case Résilier visible uniquement pour les admins
-  const resilierWrap = $('#ct-resilier-wrap');
-  const resilierCheck = $('#ct-resilier');
-  if (resilierWrap && resilierCheck) {
-    const canResilier = isAdmin() && ct && ct.statut !== 'Résilié' && ct.statut !== 'Terminé';
-    resilierWrap.style.display = canResilier ? '' : 'none';
-    resilierCheck.checked = false;
-  }
-  $('#ct-notes').value = ct ? (ct.notes || '') : ''; // Vide pour nouveau contrat
-
-  populateFormuleSelect(ct?.type || '', ct?.formule || null);
-
-  const remise = Number(ct?.remise) || 0;
-  $('#ct-remise-check').checked = remise > 0;
-  $('#ct-remise').value = remise > 0 ? remise : '';
-  $('#ct-remise').style.display = remise > 0 ? '' : 'none';
-  updateNetDisplay();
-
-  // Verrouillage si l'utilisateur n'est pas propriétaire du contrat
-  const editable = !ct || isAdmin() || ct.created_by === state.user?.id;
-  const fieldIds = ['ct-contact', 'ct-type', 'ct-formule-select', 'ct-formule-custom', 'ct-montant', 'ct-recurrence', 'ct-frais-mise-en-place', 'ct-engagement-mois', 'ct-date-debut', 'ct-date-echeance', 'ct-statut', 'ct-notes', 'ct-remise-check', 'ct-remise'];
-  fieldIds.forEach(fid => { const el = $('#' + fid); if (el) el.disabled = !editable; });
-  $('#contract-save-btn').style.display = editable ? '' : 'none';
-  $('#contract-delete-btn').style.display = (ct && editable) ? 'inline-flex' : 'none';
-  $('#contract-pdf-btn').style.display = ct ? 'inline-flex' : 'none';
-  const sendBtn = $('#contract-send-btn');
-  if (sendBtn) sendBtn.style.display = (ct && editable) ? 'inline-flex' : 'none';
-  // Bouton Résilier : visible si abonnement mensuel actif avec stripe_subscription_id
-  const resilierBtn = $('#contract-resilier-btn');
-  if (resilierBtn) {
-    const canResilier = ct
-      && ct.recurrence === 'Mensuel'
-      && ct.stripe_subscription_id
-      && !ct.resilié_at
-      && ct.statut !== 'Terminé'
-      && (isAdmin() || ct.created_by === state.user?.id);
-    resilierBtn.style.display = canResilier ? 'inline-flex' : 'none';
-    resilierBtn.dataset.contractId = ct?.id || '';
-  }
-  // Bouton Portail client : visible si abonnement mensuel avec stripe_subscription_id
-  const portalBtn = $('#contract-portal-btn');
-  if (portalBtn) {
-    const canPortal = ct
-      && ct.recurrence === 'Mensuel'
-      && ct.stripe_subscription_id
-      && (isAdmin() || ct.created_by === state.user?.id);
-    portalBtn.style.display = canPortal ? 'inline-flex' : 'none';
-    portalBtn.dataset.contractId = ct?.id || '';
-  }
-  $('#contract-modal').classList.add('show');
-}
-
-function closeContractModal() {
-  $('#contract-modal').classList.remove('show');
-}
-
-async function saveContract() {
-  const id = $('#ct-id').value;
-  const contact_id = $('#ct-contact').value;
-  const type = $('#ct-type').value.trim();
-  if (!contact_id || !type) { alert('Le contact et le type de prestation sont obligatoires.'); return; }
-  const montant = $('#ct-montant').value;
-  const formuleSel = $('#ct-formule-select').value;
-  const formule = formuleSel === FORMULE_CUSTOM
-    ? ($('#ct-formule-custom').value.trim() || null)
-    : formuleSel;
-  const remise = $('#ct-remise-check').checked ? (Number($('#ct-remise').value) || 0) : 0;
-  const fraisMep = $('#ct-frais-mise-en-place')?.value;
-  const engagement = $('#ct-engagement-mois')?.value;
-  const payload = {
-    contact_id,
-    type,
-    formule,
-    montant: montant === '' ? null : Number(montant),
-    remise,
-    recurrence: $('#ct-recurrence').value,
-    date_debut: $('#ct-date-debut').value || null,
-    date_echeance: $('#ct-date-echeance').value || null,
-    statut: $('#ct-statut').value || 'En attente de signature',
-    notes: $('#ct-notes').value.trim() || null,
-  };
-  // Colonnes ajoutées en v13 — on ne les envoie que si elles existent dans le HTML ET en base
-  if (fraisMep !== undefined) payload.frais_mise_en_place = fraisMep === '' ? null : Number(fraisMep);
-  if (engagement !== undefined) payload.engagement_mois = engagement === '' ? null : Number(engagement);
-  // Si la case Résilier est cochée → afficher confirmation AVANT de sauvegarder
-  if ($('#ct-resilier')?.checked && id) {
-    // Stocker le payload pour l'utiliser après confirmation
-    window._pendingResilierContractId = id;
-    window._pendingResilierPayload    = payload;
-    document.getElementById('resilier-contract-id').value = id;
-    document.getElementById('resilier-modal').classList.add('show');
-    return; // Ne pas sauvegarder tant que pas confirmé
-  }
-
-  let error;
-  if (id) {
-    ({ error } = await sb.from('contracts').update(payload).eq('id', id));
-  } else {
-    ({ error } = await sb.from('contracts').insert({ ...payload, created_by: state.user.id }));
-  }
-  if (error) return alert('Erreur : ' + error.message);
-
-  closeContractModal();
-  await loadAll();
-}
-
-async function deleteContract() {
-  const id = $('#ct-id').value;
-  if (!id) return;
-  if (!confirm('Supprimer ce contrat ?')) return;
-  const { error } = await sb.from('contracts').delete().eq('id', id);
-  if (error) return alert('Erreur : ' + error.message);
-  closeContractModal();
-  await loadAll();
-}
+// → déplacé dans contracts/contracts-ui.js : getFilteredContracts, renderContracts, populateContactSelects, populateContractSelects, openContractModal, closeContractModal
+// → déplacé dans contracts/contracts-formulas.js : populateFormuleSelect, onFormuleChange, updateNetDisplay, autoCalcEcheance, onContractTypeChange
+// → déplacé dans contracts/contracts.service.js : saveContract, deleteContract
 
 // ---------------------------------------------------------
 // TÂCHES
@@ -1246,6 +863,7 @@ function openProfileModal() {
   if (document.getElementById('profile-telephone')) document.getElementById('profile-telephone').value = state.profile?.telephone  || '';
   if (document.getElementById('profile-adresse'))   document.getElementById('profile-adresse').value   = state.profile?.adresse    || '';
   if (document.getElementById('profile-rcpro'))     document.getElementById('profile-rcpro').value     = state.profile?.rcpro_numero || '';
+  if (document.getElementById('profile-siret'))     document.getElementById('profile-siret').value     = state.profile?.siret || '';
 
   // Vérifier si la clause est signée
   (async () => {
@@ -1303,6 +921,7 @@ async function saveProfile() {
   const telephone = (document.getElementById('profile-telephone')?.value||'').trim() || null;
   const adresse   = (document.getElementById('profile-adresse')?.value||'').trim() || null;
   const rcpro     = (document.getElementById('profile-rcpro')?.value||'').trim() || null;
+  const siret     = (document.getElementById('profile-siret')?.value||'').trim() || null;
   const file = $('#profile-photo-input').files[0];
   $('#profile-error').textContent = '';
   let photo_url = state.profile?.photo_url || null;
@@ -1329,8 +948,10 @@ const { error } = await sb.from('profiles').upsert({
   nom,
   telephone,
   adresse,
+  siret,
   rcpro_numero: rcpro,
-  photo_url
+  photo_url,
+  profil_completed: !!(prenom && nom && telephone && adresse && siret)
 });  if (error) { $('#profile-error').textContent = 'Erreur : ' + error.message; return; }
 
   closeProfileModal();
@@ -1809,14 +1430,14 @@ function renderAdminUsers() {
     const isSelf  = u.id === state.user.id;
     const role    = u.role || (u.is_admin ? 'admin_candy' : 'user');
     const roleLbl = roleLabels[role] || '👤 Utilisateur';
-    const profil  = u.profil_complet ? '🟢' : '🔴';
+    const profil  = u.profil_completed ? '🟢' : '🔴';
     const revoc   = u.profil_revocation_flag ? ' <span class="badge badge-red" style="font-size:.62rem">⚠ Révocation</span>' : '';
     return `
       <tr class="${banned ? 'row-banned' : ''}">
         <td>${escapeHtml(u.prenom || '—')}</td>
         <td>${escapeHtml(u.email || '—')}</td>
         <td><span class="badge badge-gray" style="font-size:.72rem">${roleLbl}</span></td>
-        <td style="text-align:center;font-size:1.1rem" title="${u.profil_complet ? 'Profil complet' : 'Profil incomplet'}">${profil}${revoc}</td>
+        <td style="text-align:center;font-size:1.1rem" title="${u.profil_completed ? 'Profil complet' : 'Profil incomplet'}">${profil}${revoc}</td>
         <td>${banned ? '<span class="badge badge-red">Révoqué</span>' : '<span class="badge badge-green">Actif</span>'}</td>
         <td class="nowrap mut" style="font-size:.82rem">${new Date(u.created_at).toLocaleDateString('fr-FR')}</td>
         <td class="actions">
@@ -2580,99 +2201,7 @@ async function confirmTransferContact() {
 }
 
 // --- Envoi du bon de commande au client (lien de paiement Stripe) ---
-async function sendOrderLink() {
-  const id = $('#ct-id').value;
-  if (!id) { alert('Enregistrez le contrat avant de l\'envoyer.'); return; }
-  const contract = state.contracts.find(c => c.id === id);
-  if (!contract) { alert('Contrat introuvable.'); return; }
-  const contact = state.contacts.find(c => c.id === contract.contact_id);
-  if (!contact) { alert('Contact lié introuvable.'); return; }
-  if (!texte) { alert("Rédigez un message avant d'envoyer."); return; }
-
-  if (!confirm(
-    `Créer un lien de paiement pour ${contact.nom || '—'} (${contact.email}) ?\n\n` +
-    `Produit : ${contract.type || '—'} — ${contract.formule || '—'}\n` +
-    `Montant : ${Number(contract.montant || 0).toFixed(2)} € HT${contract.recurrence === 'Mensuel' ? ' / mois' : ''}\n\n` +
-    `Un lien sera généré. Le contrat doit rester en statut "Devis envoyé" pour que le client puisse y accéder.`
-  )) return;
-
-  // L'UUID du contrat sert de token (déjà aléatoire et indevinable)
-  const orderUrl = `${location.origin}/order.html?id=${contract.id}&name=${encodeURIComponent(contact.nom || '')}&email=${encodeURIComponent(contact.email || '')}&entreprise=${encodeURIComponent(contact.entreprise || '')}&siret=${encodeURIComponent(contact.siret || '')}`;
-
-  // Copie dans le presse-papier
-  try { await navigator.clipboard.writeText(orderUrl); } catch (_) {}
-
-  // Ouvre le client mail avec le lien pré-rempli
-  const subject = encodeURIComponent(`Votre bon de commande S@FE — ${contract.type}${contract.formule ? ' ' + contract.formule : ''}`);
-  const body = encodeURIComponent(
-    `Bonjour ${contact.nom || ''},\n\n` +
-    `Veuillez trouver ci-dessous le lien vers votre bon de commande S@FE :\n\n` +
-    `${orderUrl}\n\n` +
-    `Ce lien vous permettra de :\n` +
-    `• Consulter le récapitulatif de votre commande\n` +
-    `• Lire et accepter nos Conditions Générales de Vente\n` +
-    `• Procéder au paiement sécurisé en ligne (CB / SEPA)\n\n` +
-    `Pour toute question, n'hésitez pas à me contacter.\n\n` +
-    `Cordialement,\n` +
-    `${state.profile?.prenom || 'L\'équipe S@FE'}\n` +
-    `S@FE Digitalisation\n` +
-    `01 84 16 26 29 — contact@safe-digitalisation.fr`
-  );
-  window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
-
-  await sb.from('contracts').update({ statut: 'Envoyé' }).eq('id', contract.id);
-
-  alert(
-    `✅ Lien créé et copié dans le presse-papier !\n\n` +
-    `Votre client mail s'est ouvert avec le lien pré-rempli.\n` +
-    `Vous pouvez aussi coller le lien dans WhatsApp ou un SMS.\n\n` +
-    `Lien : ${orderUrl}`
-  );
-}
-
-// --- Bon de commande PDF (Bon de commande + CGV combinés) ---
-function generateContractPDF() {
-  const id = $('#ct-id').value;
-  if (!id) { 
-    alert('Enregistrez le contrat avant de générer le bon de commande.'); 
-    return; 
-  }
-  
-  const contract = state.contracts.find(c => c.id === id);
-  if (!contract) { 
-    alert('Contrat introuvable.'); 
-    return; 
-  }
-  
-  const contact = state.contacts.find(c => c.id === contract.contact_id);
-  if (!contact) { 
-    alert('Contact lié introuvable.'); 
-    return; 
-  }
-  
-  // Validation des mentions légales obligatoires sur une facture/bon de commande (Facturation)
-  if (!contact.siret || !contact.code_postal_ville) {
-    if (!confirm("Le SIRET ou l'adresse de facturation (code postal + ville) du client ne sont pas renseignés. Les bons de commande doivent comporter ces mentions obligatoires.\n\nGénérer quand même un PDF avec lignes à compléter manuellement ?")) {
-      return;
-    }
-  }
-  
-  // Appel du générateur de PDF (Vérifiez bien que votre fichier contract-pdf.js attend les mêmes propriétés)
-  const res = window.ContractPDF.generate({
-    id: contract.id, // Transmet l'UUID qui sera utilisé par slice(0,8) pour la Réf BON-XXXXXXXX
-    type: contract.type,
-    formule: contract.formule,
-    montant: contract.montant,
-    recurrence: contract.recurrence,
-    frais_mise_en_place: contract.frais_mise_en_place,
-    engagement_mois: contract.engagement_mois,
-    remise: contract.remise,
-  }, contact);
-  
-  if (res && res.filename) {
-    alert(`Bon de commande téléchargé : ${res.filename}`);
-  }
-}
+// → déplacé dans contracts/contracts-pdf.js : sendOrderLink, generateContractPDF
 // =========================================================
 // DOUBLE AUTHENTIFICATION TOTP (QR code)
 // =========================================================
@@ -3288,118 +2817,7 @@ async function deleteInteraction() {
 // RÉSILIATION ABONNEMENT STRIPE
 // ==========================================================================
 
-function openResilierModal(contractId) {
-  document.getElementById('resilier-contract-id').value = contractId;
-  document.getElementById('resilier-modal').classList.add('show');
-}
-
-function closeResilierModal() {
-  document.getElementById('resilier-modal').classList.remove('show');
-}
-
-async function confirmResilierAbonnement() {
-  const contractId = document.getElementById('resilier-contract-id').value;
-  const btn = document.getElementById('resilier-confirm-btn');
-  btn.disabled = true;
-  btn.textContent = 'Résiliation en cours…';
-
-  try {
-    // 1. Sauvegarder d'abord les modifications du contrat si payload en attente
-    if (window._pendingResilierPayload && window._pendingResilierContractId === contractId) {
-      const { error: saveErr } = await sb.from('contracts').update(window._pendingResilierPayload).eq('id', contractId);
-      if (saveErr) throw new Error(saveErr.message);
-      window._pendingResilierPayload    = null;
-      window._pendingResilierContractId = null;
-    }
-
-    const contract = state.contracts.find(c => c.id === contractId) || { id: contractId };
-    // Recharger pour avoir les données à jour
-    await loadContracts();
-    const contractFresh = state.contracts.find(c => c.id === contractId);
-
-    if (contractFresh?.stripe_subscription_id && !contractFresh?.resilié_at) {
-      // Abonnement Stripe actif → appel Edge Function
-      const { data: { session } } = await sb.auth.getSession();
-      const resp = await fetch(`${SUPABASE_URL}/functions/v1/cancel-subscription`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-          'apikey': SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({ contract_id: contractId, cancelled_by: state.profile?.prenom || state.user?.email || 'Admin' }),
-      });
-      const result = await resp.json();
-      if (!resp.ok) throw new Error(result.details || result.error || 'Erreur inconnue');
-      const msg = result.period_end
-        ? `✅ Résiliation enregistrée. L'abonnement se terminera le ${formatDate(result.period_end)}.`
-        : '✅ Résiliation enregistrée. Le client ne sera plus débité à la prochaine échéance.';
-      alert(msg);
-    } else {
-      // Pas d'abonnement Stripe → résiliation directe dans Supabase
-      const { error } = await sb.from('contracts').update({
-        statut: 'Terminé',
-        resilié_at: new Date().toISOString(),
-      }).eq('id', contractId);
-      if (error) throw new Error(error.message);
-      if (contract?.contact_id) {
-        await sb.from('interactions').insert({
-          contact_id: contractFresh.contact_id,
-          created_by: state.user.id,
-          type: 'Autre',
-          date: new Date().toISOString().slice(0,10),
-          objet: 'Résiliation contrat',
-          contenu: 'Contrat résilié manuellement par l\'administrateur.',
-          suite_a_donner: null,
-        });
-      }
-      alert('✅ Contrat résilié.');
-    }
-
-    closeResilierModal();
-    await loadContracts();
-    await loadInteractions();
-    renderContracts();
-  } catch(e) {
-    alert('Erreur : ' + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Confirmer la résiliation';
-  }
-}
-
-
-// ==========================================================================
-// PORTAIL CLIENT STRIPE
-// ==========================================================================
-
-async function openCustomerPortal(contractId) {
-  const btn = document.getElementById('contract-portal-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Génération du lien…'; }
-
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/customer-portal`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-        'apikey': SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({ contract_id: contractId }),
-    });
-    const result = await resp.json();
-    if (!resp.ok) throw new Error(result.details || result.error || 'Erreur inconnue');
-
-    // Copier le lien dans le presse-papier
-    await navigator.clipboard.writeText(result.url);
-    alert('✅ Lien copié dans le presse-papier !\n\nEnvoyez-le au client par email :\n' + result.url);
-  } catch(e) {
-    alert('Erreur : ' + e.message);
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '🔗 Portail client'; }
-  }
-}
+// → déplacé dans contracts/contracts-stripe.js : openResilierModal, closeResilierModal, confirmResilierAbonnement, openCustomerPortal
 
 
 // ==========================================================================
@@ -4008,60 +3426,7 @@ function dernierJourOuvreMois(year, month) {
 // NOTIFICATIONS NOUVEAUX CONTRATS — dashboard admin
 // ==========================================================================
 
-async function loadNotifContracts() {
-  if (!isAdmin()) return;
-  const block = document.getElementById('notif-contracts-alert');
-  if (!block) return;
-
-  const { data, error } = await sb
-    .from('notifications')
-    .select('*')
-    .eq('type', 'new_contract')
-    .is('read_at', null)
-    .order('created_at', { ascending: false })
-    .limit(10);
-
-  if (error || !data?.length) { block.style.display = 'none'; return; }
-
-  block.style.display = 'block';
-  const list = document.getElementById('notif-contracts-list');
-  list.innerHTML = data.map(n => {
-    const d  = n.data || {};
-    const dt = formatDate(n.created_at.slice(0, 10));
-    const montant = d.montant ? ` — ${Number(d.montant).toLocaleString('fr-FR')} € HT` : '';
-    return `<div class="mini-item">
-      <div>
-        <div class="t">${escapeHtml(n.message || '')}${escapeHtml(montant)}</div>
-        <div class="s mut" style="font-size:.75rem">${dt}</div>
-      </div>
-      <div style="display:flex;gap:6px;flex-shrink:0;margin-left:8px">
-        ${d.contact_id ? `<button class="btn btn-out btn-sm" style="font-size:.72rem;padding:4px 8px"
-          onclick="switchView('contacts');openContactModal('${d.contact_id}')">
-          👤 Voir
-        </button>` : ''}
-        <button class="btn btn-ok btn-sm" style="font-size:.72rem;background:var(--ok);color:#fff;border:none;padding:4px 8px"
-          onclick="marquerNotifLue('${n.id}')">
-          ✅ Lu
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function marquerNotifLue(id) {
-  await sb.from('notifications')
-    .update({ read_at: new Date().toISOString() })
-    .eq('id', id);
-  await loadNotifContracts();
-}
-
-async function marquerToutesLues() {
-  await sb.from('notifications')
-    .update({ read_at: new Date().toISOString() })
-    .eq('type', 'new_contract')
-    .is('read_at', null);
-  await loadNotifContracts();
-}
+// → déplacé dans contracts/contracts-notifications.js : loadNotifContracts, marquerNotifLue, marquerToutesLues
 
 
 // ==========================================================================
@@ -4460,7 +3825,7 @@ async function loadEquipe() {
   // Charger les membres de l'équipe (niveau 1 rattachés à ce DCI)
   const { data: membres, error } = await sb
     .from('profiles')
-    .select('id, prenom, nom, profil_complet, profil_revocation_flag')
+    .select('id, prenom, nom, profil_completed, profil_revocation_flag')
     .eq('dci_parent_id', myId)
     .eq('role', 'user');
 
@@ -4500,7 +3865,7 @@ async function loadEquipe() {
     const mCts    = allContracts.filter(c => c.created_by === m.id);
     const mCA     = mCts.reduce((s, c) => s + (Number(c.montant) || 0), 0);
     const mPrime  = Math.round(mCA * 0.03);
-    const profil  = m.profil_complet ? '🟢' : '🔴';
+    const profil  = m.profil_completed ? '🟢' : '🔴';
     const revoc   = m.profil_revocation_flag ? ' <span style="font-size:.65rem;color:var(--alert)">⚠ Révocation</span>' : '';
     return `
       <div class="panel-block" style="padding:12px 16px">
