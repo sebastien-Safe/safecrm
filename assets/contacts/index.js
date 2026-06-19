@@ -29,10 +29,11 @@ window.saveInteraction          = saveInteraction;
 window.deleteInteraction        = deleteInteraction;
 window.openAddInteraction       = openAddInteraction;
 
-// Adresse & RGPD (contacts-address.js)
-window.autoCompleteAdresse      = autoCompleteAdresse;
+// Adresse, RGPD & bandeau profil (contacts-address.js)
+window.autoCompleteAdresse         = autoCompleteAdresse;
 window.initContactAddressListeners = initContactAddressListeners;
-window.checkRgpdExpiry          = checkRgpdExpiry;
+window.checkRgpdExpiry             = checkRgpdExpiry;
+window.checkProfilComplet          = checkProfilComplet;
 
 // Transfert (contacts-transfer.js)
 window.openTransferModal        = openTransferModal;

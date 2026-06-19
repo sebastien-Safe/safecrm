@@ -106,6 +106,40 @@ function initContactAddressListeners() {
   });
 }
 
+async function checkProfilComplet() {
+  if (isAdmin()) return;
+  const p = state.profile;
+  const champs = ['nom','prenom','adresse','telephone','siret'];
+  const manquants = champs.filter(c => !p?.[c] || String(p[c]).trim() === '');
+
+  if (manquants.length > 0) {
+    const alerte = p?.profil_alerte_at ? new Date(p.profil_alerte_at) : null;
+    const joursEcoules = alerte ? Math.floor((Date.now() - alerte) / 86400000) : 0;
+    const flagRevoc = p?.profil_revocation_flag;
+
+    let msg = '⚠️ Votre profil est incomplet. Veuillez renseigner : ' + manquants.join(', ') + '.';
+    if (flagRevoc) {
+      msg += ' Votre compte est signalé pour révocation. Contactez un administrateur.';
+    } else if (joursEcoules >= 1) {
+      msg += ' Sans mise à jour, votre compte sera signalé sous ' + (2 - joursEcoules) + ' jour(s).';
+    }
+
+    let banner = document.getElementById('profil-incomplet-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'profil-incomplet-banner';
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:600;background:rgba(255,77,94,.15);border-bottom:2px solid var(--alert);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap';
+      document.body.prepend(banner);
+    }
+    banner.innerHTML = `
+      <span style="font-size:.84rem;color:var(--alert)">${msg}</span>
+      <button class="btn btn-pri" style="padding:6px 14px;font-size:.78rem;background:var(--alert);border:none"
+        onclick="openProfileModal()">Compléter mon profil</button>`;
+  } else {
+    document.getElementById('profil-incomplet-banner')?.remove();
+  }
+}
+
 async function checkRgpdExpiry() {
   try {
     await sb.rpc('check_rgpd_expiry');
