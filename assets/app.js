@@ -763,6 +763,11 @@ const { error } = await sb.from('profiles').upsert({
   profil_completed: !!(prenom && nom && telephone && adresse && siret)
 });  if (error) { $('#profile-error').textContent = 'Erreur : ' + error.message; return; }
 
+  if (typeof logRgpd === 'function') await logRgpd('profil_modifie', 'Profil', {
+    entityType: 'profile', entityId: state.user.id,
+    donnees: 'prénom, nom, téléphone, adresse, SIRET, photo',
+    criticite: 'Attention',
+  });
   closeProfileModal();
   await loadProfile();
   renderUserBadge();
@@ -1265,6 +1270,11 @@ function generateBordereauCommission() {
 
   var filename = 'Bordereau_Commission_' + (u.prenom || 'user').replace(/\s+/g, '_') + '_' + moisLabel.replace(/\s+/g, '_') + '.pdf';
   doc.save(filename);
+  if (typeof logRgpd === 'function') logRgpd('export_bordereau_commission', 'Contrats', {
+    donnees: 'prénom commercial, SIRET, TVA, commissions, montants contrats',
+    criticite: 'Attention',
+    details: { commercial: u.prenom || null, periode: moisLabel },
+  });
 }
 
 async function loadAdminUsers() {
@@ -2292,6 +2302,10 @@ function exportRegistrePDF() {
     y += 3;
   });
   doc.save(`registre-rgpd-safe-${new Date().toISOString().slice(0,10)}.pdf`);
+  if (typeof logRgpd === 'function') logRgpd('export_registre_pdf', 'RGPD', {
+    donnees: 'Registre Article 30 RGPD complet',
+    criticite: 'Critique',
+  });
 }
 
 function bindEvents() {

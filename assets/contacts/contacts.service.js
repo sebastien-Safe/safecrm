@@ -45,7 +45,21 @@ async function saveContact() {
   } else {
     ({ error } = await sb.from('contacts').insert({ ...payload, created_by: state.user.id }));
   }
-  if (error) return alert('Erreur : ' + error.message);
+  if (error) {
+    if (typeof logRgpd === 'function') await logRgpd(id ? 'contact_modifie' : 'contact_cree', 'Contacts', {
+      entityType: 'contact', entityId: id || null,
+      donnees: 'nom, prénom, email, téléphone, adresse, entreprise, SIRET, consentements',
+      criticite: 'Attention', resultat: 'Erreur',
+      details: { erreur: error.message, nom: payload.nom },
+    });
+    return alert('Erreur : ' + error.message);
+  }
+  if (typeof logRgpd === 'function') await logRgpd(id ? 'contact_modifie' : 'contact_cree', 'Contacts', {
+    entityType: 'contact', entityId: id || null,
+    donnees: 'nom, prénom, email, téléphone, adresse, entreprise, SIRET, consentements',
+    criticite: id ? 'Attention' : 'Info',
+    details: { nom: payload.nom, entreprise: payload.entreprise || null },
+  });
   closeContactModal();
   await loadAll();
 }
@@ -53,9 +67,16 @@ async function saveContact() {
 async function deleteContact() {
   const id = $('#c-id').value;
   if (!id) return;
+  const contact = state.contacts.find(c => c.id === id);
   if (!confirm('Supprimer ce contact ? Les contrats et tâches associés seront aussi détachés ou supprimés.')) return;
   const { error } = await sb.from('contacts').delete().eq('id', id);
   if (error) return alert('Erreur : ' + error.message);
+  if (typeof logRgpd === 'function') await logRgpd('contact_supprime', 'Contacts', {
+    entityType: 'contact', entityId: id,
+    donnees: 'toutes les données personnelles du contact',
+    criticite: 'Critique',
+    details: { nom: contact?.nom || null, entreprise: contact?.entreprise || null },
+  });
   closeContactModal();
   await loadAll();
 }

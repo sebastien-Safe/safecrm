@@ -52,7 +52,21 @@ async function saveContract() {
   } else {
     ({ error } = await sb.from('contracts').insert({ ...payload, created_by: state.user.id }));
   }
-  if (error) return alert('Erreur : ' + error.message);
+  if (error) {
+    if (typeof logRgpd === 'function') await logRgpd(id ? 'contrat_modifie' : 'contrat_cree', 'Contrats', {
+      entityType: 'contract', entityId: id || null,
+      donnees: 'type prestation, montant, échéances, statut',
+      criticite: 'Attention', resultat: 'Erreur',
+      details: { erreur: error.message, type, contact_id },
+    });
+    return alert('Erreur : ' + error.message);
+  }
+  if (typeof logRgpd === 'function') await logRgpd(id ? 'contrat_modifie' : 'contrat_cree', 'Contrats', {
+    entityType: 'contract', entityId: id || null,
+    donnees: 'type prestation, formule, montant, récurrence, échéances',
+    criticite: id ? 'Attention' : 'Info',
+    details: { type, formule: payload.formule || null, montant: payload.montant, contact_id },
+  });
 
   closeContractModal();
   await loadAll();
@@ -61,9 +75,16 @@ async function saveContract() {
 async function deleteContract() {
   const id = $('#ct-id').value;
   if (!id) return;
+  const contract = state.contracts.find(c => c.id === id);
   if (!confirm('Supprimer ce contrat ?')) return;
   const { error } = await sb.from('contracts').delete().eq('id', id);
   if (error) return alert('Erreur : ' + error.message);
+  if (typeof logRgpd === 'function') await logRgpd('contrat_supprime', 'Contrats', {
+    entityType: 'contract', entityId: id,
+    donnees: 'toutes les données du contrat',
+    criticite: 'Critique',
+    details: { type: contract?.type || null, contact_id: contract?.contact_id || null, montant: contract?.montant || null },
+  });
   closeContractModal();
   await loadAll();
 }

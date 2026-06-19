@@ -75,6 +75,12 @@ async function saveInteraction() {
     ({ error } = await sb.from('interactions').insert(payload));
   }
   if (error) { alert('Erreur : ' + error.message); return; }
+  if (typeof logRgpd === 'function') await logRgpd(id ? 'interaction_modifiee' : 'interaction_creee', 'Contacts', {
+    entityType: 'contact', entityId: contactId,
+    donnees: 'type échange, date, objet, contenu, suite à donner',
+    criticite: 'Info',
+    details: { type, objet: payload.objet },
+  });
   await loadInteractions();
   await loadContacts();
   renderInteractions(contactId);
@@ -84,9 +90,16 @@ async function saveInteraction() {
 async function deleteInteraction() {
   const id        = document.getElementById('int-id').value;
   const contactId = document.getElementById('int-contact-id').value;
+  const inter     = id ? (state.interactions || []).find(i => i.id === id) : null;
   if (!id || !confirm('Supprimer cet échange ?')) return;
   const { error } = await sb.from('interactions').delete().eq('id', id);
   if (error) { alert('Erreur : ' + error.message); return; }
+  if (typeof logRgpd === 'function') await logRgpd('interaction_supprimee', 'Contacts', {
+    entityType: 'contact', entityId: contactId,
+    donnees: 'échange (type, objet, contenu)',
+    criticite: 'Attention',
+    details: { objet: inter?.objet || null, type: inter?.type || null },
+  });
   await loadInteractions();
   renderInteractions(contactId);
   closeInteractionModal();

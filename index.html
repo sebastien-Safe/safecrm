@@ -553,29 +553,57 @@
       </div>
 
       <div class="admin-panel" id="admin-panel-registre" style="display:none">
-        <div class="panel-block">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px">
-            <div>
-              <h3 style="margin:0">Registre des activités de traitement (Article 30 RGPD)</h3>
-              <p class="mut" style="margin-top:6px">Responsable de traitement : <b>S@FE SAS</b> — SIRET 104 699 558 00011. DPO interne : <b id="reg-dpo-name">Sébastien Alonso</b> — contact : <a href="mailto:contact@safe-digitalisation.fr" style="color:var(--accent)">contact@safe-digitalisation.fr</a>.</p>
+
+        <!-- Sous-navigation RGPD -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--border,#e5e7eb);padding-bottom:12px">
+          <button class="btn btn-out btn-sm active" data-rgpd-tab="registre-traitements">📋 Registre des traitements</button>
+          <button class="btn btn-out btn-sm" data-rgpd-tab="journal-rgpd">📝 Journal RGPD</button>
+          <button class="btn btn-out btn-sm" data-rgpd-tab="demandes-droits">📩 Demandes de droits</button>
+          <button class="btn btn-out btn-sm" data-rgpd-tab="rapports-conformite">📊 Rapports de conformité</button>
+        </div>
+
+        <!-- Sous-panel : Registre des traitements (Article 30) -->
+        <div id="rgpd-panel-registre-traitements">
+          <div class="panel-block">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+              <div>
+                <h3 style="margin:0">Registre des activités de traitement (Article 30 RGPD)</h3>
+                <p class="mut" style="margin-top:6px">Responsable de traitement : <b>S@FE SAS</b> — SIRET 104 699 558 00011. DPO interne : <b id="reg-dpo-name">Sébastien Alonso</b> — contact : <a href="mailto:contact@safe-digitalisation.fr" style="color:var(--accent)">contact@safe-digitalisation.fr</a>.</p>
+              </div>
+              <button class="btn btn-out btn-sm" id="btn-export-registre">📄 Exporter PDF</button>
             </div>
-            <button class="btn btn-out btn-sm" id="btn-export-registre">📄 Exporter PDF</button>
-          </div>
-          <div class="scrollx">
-            <table class="tbl" id="registre-rgpd-table">
-              <thead><tr>
-                <th>Traitement</th>
-                <th>Finalité</th>
-                <th>Base légale</th>
-                <th>Catégories de données</th>
-                <th>Destinataires</th>
-                <th>Durée de conservation</th>
-                <th>Mesures de sécurité</th>
-              </tr></thead>
-              <tbody id="registre-rgpd-body"></tbody>
-            </table>
+            <div class="scrollx">
+              <table class="tbl" id="registre-rgpd-table">
+                <thead><tr>
+                  <th>Traitement</th>
+                  <th>Finalité</th>
+                  <th>Base légale</th>
+                  <th>Catégories de données</th>
+                  <th>Destinataires</th>
+                  <th>Durée de conservation</th>
+                  <th>Mesures de sécurité</th>
+                </tr></thead>
+                <tbody id="registre-rgpd-body"></tbody>
+              </table>
+            </div>
           </div>
         </div>
+
+        <!-- Sous-panel : Journal RGPD -->
+        <div id="rgpd-panel-journal-rgpd" style="display:none">
+          <div id="journal-rgpd-container"><p class="empty" style="padding:20px">Chargement du journal…</p></div>
+        </div>
+
+        <!-- Sous-panel : Demandes d'exercice des droits -->
+        <div id="rgpd-panel-demandes-droits" style="display:none">
+          <div id="demandes-droits-container"></div>
+        </div>
+
+        <!-- Sous-panel : Rapports de conformité -->
+        <div id="rgpd-panel-rapports-conformite" style="display:none">
+          <div id="rapports-conformite-container"></div>
+        </div>
+
       </div>
     </section>
 
@@ -1275,6 +1303,7 @@
 <script src="assets/contracts/contracts-notifications.js"></script>
 <script src="assets/contracts/index.js"></script>
 <script src="assets/app.js"></script>
+<script src="assets/rgpd/rgpd-journal.js"></script>
 
 <script>
 // ── PWA Service Worker ──
