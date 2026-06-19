@@ -72,7 +72,7 @@ footer a{color:var(--blue)}
   <div id="state-success" class="msg" style="display:none"><div class="ic">🎉</div><h1>Merci, c'est confirmé !</h1><p>Votre paiement a été accepté et votre commande est enregistrée. Vous recevrez un e-mail de confirmation de Stripe. Votre chargé de clientèle S@FE prendra contact avec vous sous 48h.</p></div>
 
   <!-- État : annulé (retour Stripe sans paiement) -->
-  <div id="state-cancel" class="msg" style="display:none"><div class="ic">↩️</div><h1>Paiement annulé</h1><p>Vous avez quitté la page de paiement. Votre bon de commande est toujours valide — vous pouvez réessayer en cliquant ci-dessous.</p><button class="btn btn-pay" style="max-width:320px;margin:18px auto 0" onclick="location.search='?token='+ORDER_TOKEN">Réessayer le paiement</button></div>
+  <div id="state-cancel" class="msg" style="display:none"><div class="ic">↩️</div><h1>Paiement annulé</h1><p>Vous avez quitté la page de paiement. Votre bon de commande est toujours valide — vous pouvez réessayer en cliquant ci-dessous.</p><button class="btn btn-pay" style="max-width:320px;margin:18px auto 0" onclick="location.search='?id='+ORDER_ID">Réessayer le paiement</button></div>
 
   <!-- État : formulaire principal -->
   <div id="state-order" style="display:none">
@@ -147,71 +147,79 @@ footer a{color:var(--blue)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/config.js"></script>
 <script>
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const params = new URLSearchParams(location.search);
+const params   = new URLSearchParams(location.search);
 const ORDER_ID = params.get('id');
-const ORDER_TOKEN = ORDER_ID;
-const STATUS = params.get('status');
+const STATUS   = params.get('status');
 let ORDER = null;
 
 function $(s) { return document.querySelector(s); }
 function show(id) { document.querySelectorAll('[id^="state-"]').forEach(el => el.style.display = 'none'); $(id).style.display = ''; }
 function money(n) { return Number(n || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'; }
 
-// Détection mode test (clé anon commençant par sb_publishable ou clé contenant "test")
-if (SUPABASE_ANON_KEY.includes('test') || location.hostname === 'localhost') {
+// Détection mode test
+if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
   $('#test-banner').style.display = 'block';
 }
 
 async function init() {
-  if (!ORDER_ID) { show('#state-error'); $('#err-title').textContent = 'Lien invalide'; $('#err-msg').textContent = 'Ce lien ne contient pas de référence de commande.'; return; }
+  if (!ORDER_ID) {
+    show('#state-error');
+    $('#err-title').textContent = 'Lien invalide';
+    $('#err-msg').textContent = 'Ce lien ne contient pas de référence de commande.';
+    return;
+  }
 
   if (STATUS === 'success') { show('#state-success'); return; }
   if (STATUS === 'cancel')  { show('#state-cancel');  return; }
 
-  const { data, error } = await sb
-    .from('contracts')
-    .select('id, type, formule, montant, remise, recurrence, frais_mise_en_place, statut, created_at')
-    .eq('id', ORDER_ID)
-    .single();
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/get-order-data`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body:    JSON.stringify({ contract_id: ORDER_ID }),
+    });
+    const data = await resp.json();
 
-  if (error || !data) {
-    show('#state-error');
-    $('#err-title').textContent = 'Commande introuvable';
-    $('#err-msg').textContent = 'Ce lien n\'est associé à aucun bon de commande, ou la commande a déjà été validée.';
-    return;
-  }
-  if (data.statut !== 'En attente de signature' && data.statut !== 'Envoyé') {
-    show('#state-paid');
-    return;
-  }
-
-  // Vérification expiration : lien valable 7 jours après création
-  if (data.created_at) {
-    const createdAt  = new Date(data.created_at);
-    const expiresAt  = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000);
-    if (new Date() > expiresAt) {
-      show('#state-error');
-      document.getElementById('err-title').textContent = 'Lien expiré';
-      document.getElementById('err-msg').textContent = 'Ce lien de paiement a expiré (validité 7 jours). Contactez votre conseiller S@FE pour en obtenir un nouveau.';
+    if (!resp.ok || data.error) {
+      if (data.error === 'already_paid') {
+        show('#state-paid');
+      } else if (data.error === 'expired') {
+        show('#state-error');
+        $('#err-title').textContent = 'Lien expiré';
+        $('#err-msg').textContent   = 'Ce lien de paiement a expiré (validité 7 jours). Contactez votre conseiller S@FE pour en obtenir un nouveau.';
+      } else if (data.error === 'not_found') {
+        show('#state-error');
+        $('#err-title').textContent = 'Commande introuvable';
+        $('#err-msg').textContent   = "Ce lien n'est associé à aucun bon de commande valide.";
+      } else {
+        show('#state-error');
+        $('#err-title').textContent = 'Erreur';
+        $('#err-msg').textContent   = data.message || data.error || 'Erreur inattendue.';
+      }
       return;
     }
-  }
 
-  ORDER = {
-    id: data.id,
-    client_name: params.get('name') || '',
-    client_email: params.get('email') || '',
-    client_entreprise: params.get('entreprise') || '',
-    client_siret: params.get('siret') || '',
-    produit: data.type,
-    formule: data.formule,
-    montant: data.montant,
-    frais_mise_en_place: data.frais_mise_en_place || 0,
-    remise: data.remise,
-    recurrence: data.recurrence,
-  };
-  render();
+    const { contract, contact } = data;
+    ORDER = {
+      id:                contract.id,
+      client_name:       contact ? `${contact.prenom || ''} ${contact.nom || ''}`.trim() : '',
+      client_email:      contact?.email      || '',
+      client_entreprise: contact?.entreprise || '',
+      client_siret:      contact?.siret      || '',
+      produit:           contract.type,
+      formule:           contract.formule,
+      montant:           contract.montant,
+      frais_mise_en_place: contract.frais_mise_en_place || 0,
+      remise:            contract.remise || 0,
+      recurrence:        contract.recurrence,
+      engagement_mois:   contract.engagement_mois,
+    };
+    render();
+  } catch (e) {
+    show('#state-error');
+    $('#err-title').textContent = 'Erreur de connexion';
+    $('#err-msg').textContent   = 'Impossible de charger votre bon de commande. Vérifiez votre connexion internet et réessayez.';
+  }
 }
 
 function render() {
@@ -283,7 +291,7 @@ function render() {
             <strong>Prélèvement SEPA requis</strong><br>
             Votre abonnement mensuel est réglé par prélèvement bancaire automatique.
             Sur la page suivante, renseignez votre <strong>IBAN</strong> pour autoriser le prélèvement mensuel.<br>
-            <span style="font-size:.78rem;opacity:.75">Sécurisé par Stripe — Mandat SEPA conforme PSD2. Résiliable à tout moment depuis votre espace client.</span>
+            <span style="font-size:.78rem;opacity:.75">Sécurisé par Stripe — Mandat SEPA conforme PSD2. Résiliable sur demande auprès de votre chargé de clientèle S@FE (préavis 30 jours, Art. 10 CGV).</span>
           </div>
         </div>`;
     } else {
