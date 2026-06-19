@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S@FE — Grille d'évaluation DCI</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:#070f1d;font-family:'IBM Plex Sans',sans-serif;color:#fff}
+
+/* ── PIN SCREEN ── */
+#pin-screen{position:fixed;inset:0;background:#070f1d;display:flex;align-items:center;justify-content:center;z-index:1000}
+#pin-box{background:#0a1628;border:2px solid rgba(184,149,42,.4);border-radius:20px;padding:48px 56px;text-align:center;width:360px}
+.pin-logo{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:28px}
+.pin-logo-text{font-family:'Sora',sans-serif;font-size:32px;font-weight:800}
+.pin-logo-text span{color:#b8952a}
+.pin-title{font-family:'Sora',sans-serif;font-size:16px;color:#94a3b8;margin-bottom:24px}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:24px}
+.pin-dot{width:16px;height:16px;border-radius:50%;background:#1e3a5f;border:2px solid #2a4a7f;transition:all .15s}
+.pin-dot.filled{background:#b8952a;border-color:#b8952a}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pin-key{background:#0d1b36;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px;font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:#fff;cursor:pointer;transition:all .15s;user-select:none}
+.pin-key:hover{background:#162a4a;border-color:rgba(184,149,42,.5)}
+.pin-key:active{transform:scale(.94)}
+.pin-key.del{font-size:16px;color:#94a3b8}
+.pin-key.clear{font-size:14px;color:#ef4444}
+#pin-error{color:#ef4444;font-size:14px;margin-top:16px;min-height:20px;font-style:italic}
+
+/* ── MAIN APP ── */
+#app{display:none;padding:0 0 60px}
+header{background:#0a1628;border-bottom:3px solid #b8952a;padding:16px 32px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:10}
+.hdr-logo{display:flex;align-items:center;gap:10px}
+.hdr-logo svg{width:30px;height:34px}
+.hdr-brand{font-family:'Sora',sans-serif;font-size:16px;font-weight:800}
+.hdr-brand span{color:#b8952a}
+.hdr-brand-sub{font-size:9px;letter-spacing:.2em;color:#5a6a88;text-transform:uppercase}
+.hdr-div{width:1px;height:28px;background:rgba(255,255,255,.12)}
+.hdr-title{font-family:'Sora',sans-serif;font-size:20px;font-weight:700}
+.hdr-sub{font-size:13px;font-style:italic;color:#b8952a;margin-top:2px}
+.hdr-actions{margin-left:auto;display:flex;gap:10px}
+.btn{padding:9px 20px;border-radius:9px;font-family:'Sora',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-gold{background:#b8952a;color:#fff}
+.btn-gold:hover{background:#d4a832}
+.btn-outline{background:rgba(255,255,255,.07);color:#94a3b8;border:1px solid rgba(255,255,255,.12)}
+.btn-outline:hover{background:rgba(255,255,255,.12);color:#fff}
+.btn-red{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+.btn-red:hover{background:rgba(239,68,68,.2)}
+
+/* ── CONTENT ── */
+.content{padding:32px}
+.section-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:#5a6a88;text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px}
+
+/* ── GRID TABLE ── */
+.grid-wrap{overflow-x:auto;border-radius:16px;border:1px solid rgba(255,255,255,.08)}
+table{width:100%;border-collapse:collapse;min-width:900px}
+thead tr:first-child th{background:#0d1b36;padding:14px 16px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#5a6a88;border-bottom:1px solid rgba(255,255,255,.08)}
+thead tr:first-child th:first-child{color:#94a3b8;text-align:left}
+.th-cand{text-align:center;min-width:130px}
+.th-cand-name{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:#fff;display:block}
+.th-cand-zone{font-size:11px;color:#5a6a88;display:block;margin-top:2px}
+.th-cand-name-input{background:transparent;border:none;border-bottom:1px dashed rgba(255,255,255,.2);color:#fff;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;text-align:center;width:100%;outline:none;padding:2px 4px}
+.th-cand-name-input::placeholder{color:#334155}
+.th-cand-zone-input{background:transparent;border:none;font-size:11px;color:#5a6a88;text-align:center;width:100%;outline:none;padding:2px 4px}
+.th-cand-zone-input::placeholder{color:#1e293b}
+
+tbody tr{border-bottom:1px solid rgba(255,255,255,.05)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover td{background:rgba(255,255,255,.02)}
+.td-crit{padding:14px 16px;font-size:14px;color:#c8d0e4;font-weight:500;white-space:nowrap;background:#0a1628}
+.td-crit-sub{font-size:11px;color:#5a6a88;margin-top:3px}
+.td-score{text-align:center;padding:10px 8px}
+
+/* ── STARS ── */
+.stars{display:flex;gap:4px;justify-content:center}
+.star{font-size:22px;cursor:pointer;color:#1e3a5f;transition:color .1s;line-height:1}
+.star:hover,.star.on{color:#f0c040}
+
+/* ── TOTAL ROW ── */
+.tr-total td{background:#0d1b36;border-top:2px solid rgba(184,149,42,.3)}
+.td-total-label{padding:14px 16px;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:#b8952a;text-align:left}
+.td-total-score{text-align:center;padding:14px 8px}
+.total-badge{display:inline-block;font-family:'Sora',sans-serif;font-size:18px;font-weight:800;padding:6px 16px;border-radius:8px;min-width:64px}
+.total-high{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+.total-mid{background:rgba(234,179,8,.1);color:#facc15;border:1px solid rgba(234,179,8,.2)}
+.total-low{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+.total-zero{background:rgba(255,255,255,.04);color:#334155;border:1px solid rgba(255,255,255,.08)}
+
+/* ── RANK ROW ── */
+.tr-rank td{background:#0d1b36}
+.td-rank-label{padding:10px 16px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;color:#5a6a88;text-transform:uppercase;letter-spacing:.08em}
+.td-rank-badge{text-align:center;padding:10px 8px}
+.rank-badge{display:inline-block;font-family:'Sora',sans-serif;font-size:13px;font-weight:800;padding:4px 12px;border-radius:6px}
+.rank-1{background:rgba(234,179,8,.2);color:#f0c040;border:1px solid rgba(234,179,8,.3)}
+.rank-2{background:rgba(148,163,184,.1);color:#94a3b8;border:1px solid rgba(148,163,184,.2)}
+.rank-3{background:rgba(180,83,9,.1);color:#c2782a;border:1px solid rgba(180,83,9,.2)}
+.rank-n{background:rgba(255,255,255,.04);color:#334155;border:1px solid rgba(255,255,255,.06)}
+
+/* ── NOTES ZONE ── */
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:24px}
+.note-card{background:#0a1628;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px}
+.note-card-name{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:4px}
+.note-card-tag{font-size:11px;font-style:italic;color:#5a6a88;margin-bottom:10px}
+.note-textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 12px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#c8d0e4;min-height:80px;resize:vertical;outline:none;line-height:1.5}
+.note-textarea:focus{border-color:rgba(184,149,42,.4)}
+.note-textarea::placeholder{color:#334155}
+
+/* ── DECISION ── */
+.decision-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:24px}
+.decision-card{background:#0a1628;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px}
+.decision-card-name{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:12px}
+.decision-opts{display:flex;flex-direction:column;gap:8px}
+.decision-opt{display:flex;align-items:center;gap:10px;cursor:pointer}
+.decision-opt input{accent-color:#b8952a;width:16px;height:16px;cursor:pointer}
+.decision-opt label{font-size:14px;color:#c8d0e4;cursor:pointer}
+.dec-go{color:#4ade80!important}
+.dec-wait{color:#facc15!important}
+.dec-no{color:#f87171!important}
+
+/* ── PRINT ── */
+@media print{
+  #pin-screen{display:none!important}
+  #app{display:block!important}
+  header .hdr-actions{display:none}
+  .no-print{display:none!important}
+  body{background:#fff;color:#000}
+  .td-crit{background:#f8f9fb!important}
+  .tr-total td,.tr-rank td{background:#f0f3f8!important}
+  .grid-wrap{border:1px solid #ccc}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ PIN SCREEN ═══════════════ -->
+<div id="pin-screen">
+  <div id="pin-box">
+    <div class="pin-logo">
+      <svg viewBox="0 0 64 72" fill="none" width="36" height="40"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg>
+      <div class="pin-logo-text">S<span>@</span>FE</div>
+    </div>
+    <div class="pin-title">Grille d'évaluation DCI — Accès administrateur</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key clear" onclick="pinClear()">Effacer</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+    </div>
+    <div id="pin-error"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ MAIN APP ═══════════════ -->
+<div id="app">
+  <header>
+    <div class="hdr-logo">
+      <svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg>
+      <div><div class="hdr-brand">S<span>@</span>FE</div><div class="hdr-brand-sub">Digitalisation</div></div>
+    </div>
+    <div class="hdr-div"></div>
+    <div><div class="hdr-title">Grille d'évaluation</div><div class="hdr-sub">Recrutement DCI — Réunion du 22 juin 2026</div></div>
+    <div class="hdr-actions no-print">
+      <button class="btn btn-outline" onclick="resetAll()">↺ Réinitialiser</button>
+      <button class="btn btn-gold" onclick="window.print()">🖨 Imprimer</button>
+      <button class="btn btn-outline" onclick="window.close()">← Retour présentation</button>
+    </div>
+  </header>
+
+  <div class="content">
+    <!-- GRILLE -->
+    <div class="section-title">Évaluation par critère — score 1 à 5 étoiles</div>
+    <div class="grid-wrap">
+      <table id="eval-table">
+        <thead>
+          <tr>
+            <th style="text-align:left">Critère d'évaluation</th>
+            <!-- candidat headers injected by JS -->
+          </tr>
+        </thead>
+        <tbody>
+          <!-- rows injected by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- NOTES LIBRES -->
+    <div class="section-title" style="margin-top:40px">Notes libres par candidat</div>
+    <div class="notes-grid" id="notes-grid"></div>
+
+    <!-- DÉCISION -->
+    <div class="section-title" style="margin-top:40px">Décision préliminaire</div>
+    <div class="decision-grid" id="decision-grid"></div>
+  </div>
+</div>
+
+<script>
+// ── CONFIGURATION ────────────────────────────────────────────────────
+const PIN = '2206';
+
+const CANDIDATS = [
+  { name: 'Meena L.',   zone: 'IDF',        editable: false },
+  { name: 'Bastien I.', zone: 'AURA',       editable: false },
+  { name: 'Alexis T.',  zone: 'PACA',       editable: false },
+  { name: 'Thomas G.',  zone: 'Pays Basque',editable: false },
+  { name: '',           zone: '',           editable: true  },
+  { name: '',           zone: '',           editable: true  },
+];
+
+const CRITERES = [
+  { label: 'Communication & élocution',     sub: 'Clarté, confiance, ton' },
+  { label: 'Profil commercial',              sub: 'Énergie, assertivité, persuasion' },
+  { label: 'Réalisme financier',             sub: 'Acceptation du modèle 100% variable' },
+  { label: 'Connaissance du marché',         sub: 'Compréhension TPE, RGPD, Digital' },
+  { label: 'Réseau & prescripteurs',         sub: 'Potentiel de recommandation' },
+  { label: 'Maîtrise outils digitaux',       sub: 'CRM, LinkedIn, prospection digitale' },
+  { label: 'Disponibilité & engagement',     sub: 'Timing, motivation, projet de vie' },
+];
+
+// ── PIN LOGIC ────────────────────────────────────────────────────────
+let pinValue = '';
+
+function pinKey(k) {
+  if (pinValue.length >= 4) return;
+  pinValue += k;
+  updateDots();
+  if (pinValue.length === 4) checkPin();
+}
+function pinDel() {
+  pinValue = pinValue.slice(0,-1);
+  updateDots();
+  document.getElementById('pin-error').textContent = '';
+}
+function pinClear() {
+  pinValue = '';
+  updateDots();
+  document.getElementById('pin-error').textContent = '';
+}
+function updateDots() {
+  for (let i=0;i<4;i++) {
+    document.getElementById('d'+i).classList.toggle('filled', i < pinValue.length);
+  }
+}
+function checkPin() {
+  if (pinValue === PIN) {
+    sessionStorage.setItem('safe_admin_auth','ok');
+    document.getElementById('pin-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    buildTable();
+    buildNotes();
+    buildDecisions();
+    loadState();
+  } else {
+    document.getElementById('pin-error').textContent = 'Code incorrect. Réessayez.';
+    pinValue = '';
+    updateDots();
+    setTimeout(()=>{ document.getElementById('pin-error').textContent=''; }, 2000);
+  }
+}
+document.addEventListener('keydown', e => {
+  if (document.getElementById('pin-screen').style.display === 'none') return;
+  if (e.key >= '0' && e.key <= '9') pinKey(e.key);
+  else if (e.key === 'Backspace') pinDel();
+  else if (e.key === 'Escape') pinClear();
+});
+
+// Auto-login si déjà authentifié
+if (sessionStorage.getItem('safe_admin_auth') === 'ok') {
+  document.getElementById('pin-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  window.addEventListener('load', () => { buildTable(); buildNotes(); buildDecisions(); loadState(); });
+}
+
+// ── TABLE BUILDER ─────────────────────────────────────────────────────
+const scores = Array.from({length: CRITERES.length}, () => new Array(CANDIDATS.length).fill(0));
+
+function buildTable() {
+  const thead = document.querySelector('#eval-table thead tr');
+  CANDIDATS.forEach((c, ci) => {
+    const th = document.createElement('th');
+    th.className = 'th-cand';
+    if (c.editable) {
+      th.innerHTML = `<input class="th-cand-name-input" placeholder="Candidat ${ci+1}" data-ci="${ci}" data-field="name" oninput="updateCandName(this)">
+        <input class="th-cand-zone-input" placeholder="Zone" data-ci="${ci}" data-field="zone" oninput="updateCandName(this)">`;
+    } else {
+      th.innerHTML = `<span class="th-cand-name">${c.name}</span><span class="th-cand-zone">${c.zone}</span>`;
+    }
+    thead.appendChild(th);
+  });
+
+  const tbody = document.querySelector('#eval-table tbody');
+
+  // Criteria rows
+  CRITERES.forEach((cr, ri) => {
+    const tr = document.createElement('tr');
+    let html = `<td class="td-crit">${cr.label}<div class="td-crit-sub">${cr.sub}</div></td>`;
+    CANDIDATS.forEach((_, ci) => {
+      html += `<td class="td-score"><div class="stars" data-ri="${ri}" data-ci="${ci}">`;
+      for (let s=1;s<=5;s++) html += `<span class="star" data-v="${s}" onclick="setScore(${ri},${ci},${s})">★</span>`;
+      html += `</div></td>`;
+    });
+    tr.innerHTML = html;
+    tbody.appendChild(tr);
+  });
+
+  // Total row
+  const trTot = document.createElement('tr');
+  trTot.className = 'tr-total';
+  let totHtml = `<td class="td-total-label">Total (/${CRITERES.length*5})</td>`;
+  CANDIDATS.forEach((_, ci) => {
+    totHtml += `<td class="td-total-score"><span class="total-badge total-zero" id="tot-${ci}">0</span></td>`;
+  });
+  trTot.innerHTML = totHtml;
+  tbody.appendChild(trTot);
+
+  // Rank row
+  const trRank = document.createElement('tr');
+  trRank.className = 'tr-rank';
+  let rankHtml = `<td class="td-rank-label">Classement</td>`;
+  CANDIDATS.forEach((_, ci) => {
+    rankHtml += `<td class="td-rank-badge"><span class="rank-badge rank-n" id="rank-${ci}">—</span></td>`;
+  });
+  trRank.innerHTML = rankHtml;
+  tbody.appendChild(trRank);
+}
+
+function setScore(ri, ci, v) {
+  scores[ri][ci] = scores[ri][ci] === v ? 0 : v;
+  renderStars(ri, ci);
+  updateTotals();
+  saveState();
+}
+
+function renderStars(ri, ci) {
+  const container = document.querySelector(`.stars[data-ri="${ri}"][data-ci="${ci}"]`);
+  if (!container) return;
+  container.querySelectorAll('.star').forEach(s => {
+    s.classList.toggle('on', parseInt(s.dataset.v) <= scores[ri][ci]);
+  });
+}
+
+function updateTotals() {
+  const totals = CANDIDATS.map((_, ci) => scores.reduce((sum, row) => sum + row[ci], 0));
+  const max = CRITERES.length * 5;
+  totals.forEach((tot, ci) => {
+    const el = document.getElementById('tot-' + ci);
+    if (!el) return;
+    el.textContent = tot;
+    el.className = 'total-badge ';
+    if (tot === 0) el.className += 'total-zero';
+    else if (tot >= max * 0.75) el.className += 'total-high';
+    else if (tot >= max * 0.5) el.className += 'total-mid';
+    else el.className += 'total-low';
+  });
+  // Ranks
+  const ranked = totals
+    .map((t, i) => ({i, t}))
+    .filter(x => x.t > 0)
+    .sort((a, b) => b.t - a.t);
+  CANDIDATS.forEach((_, ci) => {
+    const el = document.getElementById('rank-' + ci);
+    if (!el) return;
+    const pos = ranked.findIndex(x => x.i === ci);
+    if (pos === -1) { el.textContent = '—'; el.className = 'rank-badge rank-n'; return; }
+    const rank = pos + 1;
+    el.textContent = rank === 1 ? '🥇 1er' : rank === 2 ? '🥈 2e' : rank === 3 ? '🥉 3e' : rank + 'e';
+    el.className = 'rank-badge ' + (rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-n');
+  });
+}
+
+function updateCandName(input) {
+  saveState();
+}
+
+// ── NOTES ────────────────────────────────────────────────────────────
+function buildNotes() {
+  const grid = document.getElementById('notes-grid');
+  CANDIDATS.forEach((c, ci) => {
+    const card = document.createElement('div');
+    card.className = 'note-card';
+    const displayName = c.editable ? `Candidat ${ci + 1}` : c.name;
+    const displayZone = c.editable ? '' : ` — ${c.zone}`;
+    card.innerHTML = `
+      <div class="note-card-name" id="note-name-${ci}">${displayName}</div>
+      <div class="note-card-tag" id="note-zone-${ci}">${displayZone}</div>
+      <textarea class="note-textarea" id="note-${ci}" placeholder="Points forts, réserves, observations…" oninput="saveState()"></textarea>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── DECISIONS ────────────────────────────────────────────────────────
+function buildDecisions() {
+  const grid = document.getElementById('decision-grid');
+  CANDIDATS.forEach((c, ci) => {
+    const card = document.createElement('div');
+    card.className = 'decision-card';
+    const displayName = c.editable ? `Candidat ${ci + 1}` : c.name;
+    card.innerHTML = `
+      <div class="decision-card-name" id="dec-name-${ci}">${displayName}</div>
+      <div class="decision-opts">
+        <label class="decision-opt"><input type="radio" name="dec-${ci}" value="go" onclick="saveState()"><span class="dec-go">✅ Entretien RH</span></label>
+        <label class="decision-opt"><input type="radio" name="dec-${ci}" value="wait" onclick="saveState()"><span class="dec-wait">⏸ En attente / à recontacter</span></label>
+        <label class="decision-opt"><input type="radio" name="dec-${ci}" value="no" onclick="saveState()"><span class="dec-no">❌ Non retenu</span></label>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── PERSISTENCE ───────────────────────────────────────────────────────
+function saveState() {
+  const state = { scores, notes: [], decisions: [], candNames: [], candZones: [] };
+  CANDIDATS.forEach((_, ci) => {
+    state.notes.push(document.getElementById('note-' + ci)?.value || '');
+    const sel = document.querySelector(`input[name="dec-${ci}"]:checked`);
+    state.decisions.push(sel ? sel.value : '');
+    if (CANDIDATS[ci].editable) {
+      const ni = document.querySelector(`.th-cand-name-input[data-ci="${ci}"]`);
+      const zi = document.querySelector(`.th-cand-zone-input[data-ci="${ci}"]`);
+      state.candNames.push(ni ? ni.value : '');
+      state.candZones.push(zi ? zi.value : '');
+    } else {
+      state.candNames.push(CANDIDATS[ci].name);
+      state.candZones.push(CANDIDATS[ci].zone);
+    }
+  });
+  try { sessionStorage.setItem('safe_grille_state', JSON.stringify(state)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = sessionStorage.getItem('safe_grille_state');
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    if (state.scores) state.scores.forEach((row, ri) => row.forEach((v, ci) => {
+      scores[ri][ci] = v;
+      renderStars(ri, ci);
+    }));
+    if (state.notes) state.notes.forEach((n, ci) => {
+      const el = document.getElementById('note-' + ci);
+      if (el) el.value = n;
+    });
+    if (state.decisions) state.decisions.forEach((d, ci) => {
+      if (d) { const el = document.querySelector(`input[name="dec-${ci}"][value="${d}"]`); if (el) el.checked = true; }
+    });
+    if (state.candNames) CANDIDATS.forEach((c, ci) => {
+      if (c.editable) {
+        const ni = document.querySelector(`.th-cand-name-input[data-ci="${ci}"]`);
+        const zi = document.querySelector(`.th-cand-zone-input[data-ci="${ci}"]`);
+        if (ni && state.candNames[ci]) ni.value = state.candNames[ci];
+        if (zi && state.candZones[ci]) zi.value = state.candZones[ci];
+        // Update note/decision card names
+        const noteName = document.getElementById('note-name-' + ci);
+        if (noteName && state.candNames[ci]) noteName.textContent = state.candNames[ci];
+        const decName = document.getElementById('dec-name-' + ci);
+        if (decName && state.candNames[ci]) decName.textContent = state.candNames[ci];
+      }
+    });
+    updateTotals();
+  } catch(e) {}
+}
+
+function resetAll() {
+  if (!confirm('Réinitialiser toutes les évaluations ?')) return;
+  sessionStorage.removeItem('safe_grille_state');
+  scores.forEach(row => row.fill(0));
+  document.querySelectorAll('.stars .star').forEach(s => s.classList.remove('on'));
+  CANDIDATS.forEach((_, ci) => {
+    const noteEl = document.getElementById('note-' + ci);
+    if (noteEl) noteEl.value = '';
+    const decEl = document.querySelector(`input[name="dec-${ci}"]:checked`);
+    if (decEl) decEl.checked = false;
+  });
+  updateTotals();
+}
+</script>
+</body>
+</html>
