@@ -66,6 +66,7 @@ function openContractModal(id = null) {
   $('#ct-id').value = ct?.id || '';
   $('#ct-contact').value = ct?.contact_id || '';
   $('#ct-type').value = ct?.type || '';
+  updateContractTypeIcon({ value: ct?.type || '' });
   $('#ct-montant').value = ct?.montant ?? '';
   $('#ct-recurrence').value = ct?.recurrence || 'Ponctuel';
   const mepField = $('#ct-frais-mise-en-place');

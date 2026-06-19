@@ -1,0 +1,116 @@
+// ==========================================================================
+// S@FE CRM — Adresse et RGPD du module Contacts
+// Autocomplétion via API Adresse data.gouv.fr + vérification RGPD
+// ==========================================================================
+
+let _adresseDebounceTimer = null;
+
+function autoCompleteAdresse(input) {
+  clearTimeout(_adresseDebounceTimer);
+  const q = input.value.trim();
+  if (q.length < 4) { _hideAdresseSuggestions(); return; }
+  _adresseDebounceTimer = setTimeout(async () => {
+    try {
+      const cp = $('#c-code-postal')?.value.trim() || '';
+      const url = 'https://api-adresse.data.gouv.fr/search/?q='
+        + encodeURIComponent(q)
+        + '&limit=6&type=housenumber'
+        + (cp ? '&postcode=' + encodeURIComponent(cp) : '');
+      const resp = await fetch(url);
+      const data = await resp.json();
+      _showAdresseSuggestions(data.features || [], input);
+    } catch(e) { _hideAdresseSuggestions(); }
+  }, 300);
+}
+
+function _showAdresseSuggestions(features, input) {
+  _hideAdresseSuggestions();
+  if (!features.length) return;
+
+  const box = document.createElement('div');
+  box.id = 'adresse-suggestions';
+  box.style.cssText = [
+    'position:absolute',
+    'top:100%',
+    'left:0',
+    'right:0',
+    'z-index:9999',
+    'background:var(--bg-2,#1e1e2e)',
+    'border:1px solid var(--border,#333)',
+    'border-radius:8px',
+    'margin-top:2px',
+    'max-height:220px',
+    'overflow-y:auto',
+    'box-shadow:0 4px 16px rgba(0,0,0,.4)',
+  ].join(';');
+
+  features.forEach(f => {
+    const p = f.properties;
+    const item = document.createElement('div');
+    item.textContent = p.label;
+    item.style.cssText = 'padding:9px 12px;cursor:pointer;font-size:.85rem;border-bottom:1px solid var(--border,#333)';
+    item.addEventListener('mouseenter', () => item.style.background = 'var(--bg-3,#2a2a3e)');
+    item.addEventListener('mouseleave', () => item.style.background = '');
+    item.addEventListener('mousedown', e => {
+      e.preventDefault();
+      input.value = p.name || '';
+      const cp    = p.postcode || '';
+      const ville = p.city     || '';
+      const cpEl  = $('#c-code-postal');
+      const villeEl = $('#c-ville');
+      const cpvEl   = $('#c-code-postal-ville');
+      if (cpEl  && cp)    cpEl.value = cp;
+      if (villeEl && ville) {
+        villeEl.innerHTML = `<option value="${escapeHtml(ville)}">${escapeHtml(ville)}</option>`;
+        villeEl.value = ville;
+      }
+      if (cpvEl && cp && ville) cpvEl.value = cp + ' ' + ville;
+      _hideAdresseSuggestions();
+    });
+    box.appendChild(item);
+  });
+
+  const parent = input.parentElement;
+  if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative';
+  parent.appendChild(box);
+  input.addEventListener('blur', _hideAdresseSuggestions, { once: true });
+}
+
+function _hideAdresseSuggestions() {
+  document.getElementById('adresse-suggestions')?.remove();
+}
+
+// Initialise les listeners adresse (appelé depuis bindEvents dans app.js)
+function initContactAddressListeners() {
+  $('#c-code-postal')?.addEventListener('input', async function() {
+    const cp = this.value.trim();
+    const sel = $('#c-ville');
+    if (cp.length !== 5 || !/^\d{5}$/.test(cp)) {
+      sel.innerHTML = '<option value="">Saisissez un code postal (5 chiffres)</option>';
+      return;
+    }
+    sel.innerHTML = '<option value="">Recherche…</option>';
+    try {
+      const resp = await fetch('https://geo.api.gouv.fr/communes?codePostal=' + cp + '&fields=nom&format=json');
+      const communes = await resp.json();
+      if (!communes.length) { sel.innerHTML = '<option value="">Aucune commune trouvée</option>'; return; }
+      sel.innerHTML = communes.map(c => `<option value="${c.nom}">${c.nom}</option>`).join('');
+      $('#c-code-postal-ville').value = cp + ' ' + sel.value;
+    } catch(e) {
+      sel.innerHTML = '<option value="">Erreur de recherche</option>';
+    }
+  });
+  $('#c-ville')?.addEventListener('change', function() {
+    const cp = $('#c-code-postal').value.trim();
+    $('#c-code-postal-ville').value = cp + ' ' + this.value;
+  });
+}
+
+async function checkRgpdExpiry() {
+  try {
+    await sb.rpc('check_rgpd_expiry');
+    await loadContacts();
+  } catch(e) {
+    console.warn('check_rgpd_expiry:', e.message);
+  }
+}

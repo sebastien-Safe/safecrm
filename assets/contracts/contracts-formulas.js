@@ -104,3 +104,17 @@ function onContractTypeChange() {
   populateFormuleSelect($('#ct-type').value.trim(), null);
   onFormuleChange(true);
 }
+
+function updateContractTypeIcon(input) {
+  const icon = document.getElementById('ct-type-icon');
+  if (icon) icon.textContent = getContractIcon(input.value.trim());
+}
+
+function toggleRemise() {
+  const checked = $('#ct-remise-check').checked;
+  const remiseInput = $('#ct-remise');
+  if (!remiseInput) return;
+  remiseInput.style.display = checked ? '' : 'none';
+  if (!checked) remiseInput.value = '';
+  updateNetDisplay();
+}

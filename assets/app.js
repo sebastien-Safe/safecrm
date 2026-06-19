@@ -84,20 +84,14 @@ function gaugeSvg(pct) {
   </svg>`;
 }
 
-const CONTACT_STATUT_BADGE = { 'Prospect': 'badge-blue', 'Client': 'badge-green', 'Inactif': 'badge-gray' };
+// → déplacé dans contacts/contacts.js : CONTACT_STATUT_BADGE, ACTIVITE_BADGE, CONTACT_FIELD_IDS, CONTACT_CONSENT_IDS, contactName
 // → déplacé dans contracts/contracts.js : CONTRACT_STATUT_BADGE
 const PRIORITY_BADGE = { 'Basse': 'badge-gray', 'Normale': 'badge-blue', 'Haute': 'badge-red' };
-const ACTIVITE_BADGE = { 'Digitalisation': 'badge-blue', 'RGPD': 'badge-gold', 'Assurance': 'badge-green', 'Autre': 'badge-gray' };
 const TASK_TYPE_BADGE = { 'Premier contact': 'badge-blue', 'RDV visio': 'badge-gold', 'RDV terrain': 'badge-green', 'Autre': 'badge-gray' };
 
 // → déplacé dans contracts/contracts.js : CONTRACT_ICONS, getContractIcon, FORMULE_PRESETS, FORMULE_CUSTOM, COMMISSION_FALLBACK
 
-function contactName(id) {
-  const c = state.contacts.find(c => c.id === id);
-  if (!c) return '—';
-  return c.entreprise ? `${c.nom} (${c.entreprise})` : c.nom;
-}
-
+// → déplacé dans contacts/contacts.js : contactName
 // → déplacé dans contracts/contracts.js : contractLabel
 
 // ---------------------------------------------------------
@@ -268,12 +262,7 @@ async function loadAll() {
   loadChurnRisk();           // Risque résiliation
 }
 
-async function loadContacts() {
-  const { data, error } = await sb.from('contacts').select('*').order('created_at', { ascending: false });
-  if (error) return alert('Erreur chargement contacts : ' + error.message);
-  state.contacts = data || [];
-}
-
+// → déplacé dans contacts/contacts.service.js : loadContacts
 // → déplacé dans contracts/contracts.service.js : loadContracts
 
 async function loadTasks() {
@@ -489,189 +478,8 @@ function renderDashboard() {
 // ---------------------------------------------------------
 // CONTACTS
 // ---------------------------------------------------------
-function getFilteredContacts() {
-  const search = $('#contacts-search').value.trim().toLowerCase();
-  const activite = $('#contacts-filter-activite').value;
-  return state.contacts.filter(c => {
-    if (activite && !(c.activites || []).includes(activite)) return false;
-    if (search) {
-      const hay = [c.nom, c.entreprise, c.email, c.telephone].join(' ').toLowerCase();
-      if (!hay.includes(search)) return false;
-    }
-    return true;
-  });
-}
-
-function renderContacts() {
-  const list = getFilteredContacts();
-  const tbody = $('#contacts-tbody');
-  if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty">Aucun contact ne correspond aux filtres.</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = list.map(c => {
-    const editable = canEditContact(c);
-    const label = c.rgpd_ko ? 'Voir' : (editable ? 'Modifier' : 'Voir');
-    const lockBadge = (!editable && !c.rgpd_ko) ? ' <span class="badge badge-gray">🔒</span>' : '';
-    return `<tr class="${c.rgpd_ko ? 'row-rgpd-ko' : ''}" style="cursor:pointer" onclick="openContactModal('${c.id}')">
-      <td>${escapeHtml(c.nom)}${lockBadge}</td>
-      <td>${escapeHtml(c.entreprise || '—')}</td>
-      <td><div class="tag-row">${(c.activites || []).map(a => `<span class="badge ${ACTIVITE_BADGE[a] || 'badge-gray'}">${escapeHtml(a)}</span>`).join('') || '—'}</div></td>
-      <td class="nowrap">${escapeHtml(c.telephone || '—')}</td>
-      <td>${c.email ? `<a href="mailto:${escapeHtml(c.email)}" rel="noopener noreferrer" style="color:var(--accent)">${escapeHtml(c.email)}</a>` : '—'}</td>
-      <td class="nowrap">${escapeHtml(creatorName(c.created_by))}</td>
-    </tr>`;
-  }).join('');
-}
-
-const CONTACT_FIELD_IDS = ['c-nom', 'c-entreprise', 'c-email', 'c-telephone', 'c-adresse', 'c-code-postal-ville', 'c-forme-juridique', 'c-siret', 'c-notes']; // c-source toujours readonly
-const CONTACT_CONSENT_IDS = ['c-consent-telephone', 'c-consent-email', 'c-consent-courrier'];
-
-function setContactFieldsLocked(locked) {
-  // Un super-administrateur n'est jamais verrouillé.
-  const reallyLocked = locked && !isAdmin();
-  CONTACT_FIELD_IDS.forEach(id => { $('#' + id).disabled = reallyLocked; });
-  $all('.c-activite').forEach(cb => { cb.disabled = reallyLocked; });
-  CONTACT_CONSENT_IDS.forEach(id => { $('#' + id).disabled = reallyLocked; });
-  $('#contact-save-btn').style.display = reallyLocked ? 'none' : '';
-  $('#c-rgpd-locked-msg').style.display = reallyLocked ? 'block' : 'none';
-}
-
-// Détermine si l'utilisateur courant peut modifier ce contact
-function canEditContact(contact) {
-  if (!contact) return true; // nouveau contact (création)
-  if (isAdmin()) return true;
-  return contact.created_by === state.user?.id;
-}
-
-function openContactModal(id = null) {
-  const c = id ? state.contacts.find(x => x.id === id) : null;
-  $('#contact-modal-title').textContent = c ? 'Modifier le contact' : 'Nouveau contact';
-  $('#c-id').value = c?.id || '';
-  $('#c-nom').value = c?.nom || '';
-  $('#c-entreprise').value = c?.entreprise || '';
-  $('#c-email').value = c?.email || '';
-  if ($('#c-prenom')) $('#c-prenom').value = c?.prenom || '';
-  if ($('#c-linkedin')) $('#c-linkedin').value = c?.linkedin || '';
-  $('#c-telephone').value = c?.telephone || '';
-  $('#c-adresse').value = c?.adresse || '';
-  // Split code_postal_ville en deux champs
-  const cpv = c?.code_postal_ville || '';
-  const cpMatch = cpv.match(/^(\d{5})\s*(.*)$/);
-  $('#c-code-postal').value = cpMatch ? cpMatch[1] : '';
-  const villeSelect = $('#c-ville');
-  if (cpMatch && cpMatch[2]) {
-    villeSelect.innerHTML = `<option value="${escapeHtml(cpMatch[2])}">${escapeHtml(cpMatch[2])}</option>`;
-    villeSelect.value = cpMatch[2];
-  } else {
-    villeSelect.innerHTML = '<option value="">Saisissez un code postal</option>';
-  }
-  $('#c-forme-juridique').value = c?.forme_juridique || '';
-  $('#c-siret').value = c?.siret || '';
-  $('#c-source').value = c?.source || state.profile?.prenom || '';
-  $('#c-source').readOnly = true; // toujours automatique
-  $('#c-notes').value = c?.notes || '';
-  // rgpd_ko géré automatiquement (plus de case à cocher manuelle)
-  $('#c-consent-telephone').checked = !!c?.consent_telephone;
-  $('#c-consent-email').checked = !!c?.consent_email;
-  $('#c-consent-courrier').checked = !!c?.consent_courrier;
-  $all('.c-activite').forEach(cb => cb.checked = (c?.activites || []).includes(cb.value));
-
-  // Verrouillage : RGPD KO OU pas le propriétaire
-  const editable = canEditContact(c);
-  setContactFieldsLocked(!!c?.rgpd_ko || !editable);
-
-  // Bandeau "fiche d'un collègue"
-  if (c && !editable && !c.rgpd_ko) {
-    const owner = state.profilesById?.[c.created_by];
-    const ownerEl = $('#c-owner-name');
-    if (ownerEl) ownerEl.textContent = owner?.prenom || owner?.email || '—';
-    const readonlyEl = $('#c-readonly-msg');
-    if (readonlyEl) readonlyEl.style.display = 'block';
-    $('#contact-save-btn').style.display = 'none';
-    $('#contact-delete-btn').style.display = 'none';
-  } else {
-    const readonlyEl = $('#c-readonly-msg');
-    if (readonlyEl) readonlyEl.style.display = 'none';
-    $('#contact-save-btn').style.display = '';
-    $('#contact-delete-btn').style.display = (c && editable) ? 'inline-flex' : 'none';
-  }
-
-  // Bouton transfert : propriétaire ou admin uniquement, et fiche existante non RGPD KO
-  const canTransfer = c && editable && !c.rgpd_ko;
-  const transferBtn = $('#contact-transfer-btn');
-  if (transferBtn) transferBtn.style.display = canTransfer ? 'inline-flex' : 'none';
-
-  // Afficher le suivi client si fiche existante
-  if (id) {
-    renderInteractions(id);
-  } else {
-    const section = document.getElementById('contact-suivi-section');
-    if (section) section.style.display = 'none';
-  }
-
-  $('#contact-modal').classList.add('show');
-}
-
-function closeContactModal() {
-  $('#contact-modal').classList.remove('show');
-}
-
-async function saveContact() {
-  const id = $('#c-id').value;
-  const existing = id ? state.contacts.find(x => x.id === id) : null;
-  const nom      = $('#c-nom').value.trim();
-  const linkedin = ($('#c-linkedin')?.value || '').trim() || null;
-  const prenom   = ($('#c-prenom')?.value || '').trim() || null;
-  if (!nom) { alert('Le nom est obligatoire.'); return; }
-  const rgpdKoChecked = false; // géré automatiquement par check_rgpd_expiry()
-  const payload = {
-    nom,
-    prenom: prenom || null,
-    linkedin: linkedin || null,
-    entreprise: $('#c-entreprise').value.trim() || null,
-    email: $('#c-email').value.trim() || null,
-    telephone: $('#c-telephone').value.trim() || null,
-    adresse: $('#c-adresse').value.trim() || null,
-    code_postal_ville: $('#c-code-postal-ville').value.trim() || null,
-    forme_juridique: $('#c-forme-juridique').value.trim() || null,
-    siret: $('#c-siret').value.trim() || null,
-    statut: existing?.statut || 'Client',
-    source: $('#c-source').value.trim() || state.profile?.prenom || null,
-    notes: $('#c-notes').value.trim() || null,
-    activites: $all('.c-activite').filter(cb => cb.checked).map(cb => cb.value),
-    rgpd_ko: rgpdKoChecked,
-    consent_telephone: $('#c-consent-telephone').checked,
-    consent_email: $('#c-consent-email').checked,
-    consent_courrier: $('#c-consent-courrier').checked,
-  };
-  // Basculement RGPD KO géré automatiquement par check_rgpd_expiry()
-  if (false) {
-  }
-  // Tout nouveau contact est automatiquement "Client"
-  if (!existing) {
-    payload.devenu_client_at = new Date().toISOString();
-  }
-  let error;
-  if (id) {
-    ({ error } = await sb.from('contacts').update(payload).eq('id', id));
-  } else {
-    ({ error } = await sb.from('contacts').insert({ ...payload, created_by: state.user.id }));
-  }
-  if (error) return alert('Erreur : ' + error.message);
-  closeContactModal();
-  await loadAll();
-}
-
-async function deleteContact() {
-  const id = $('#c-id').value;
-  if (!id) return;
-  if (!confirm('Supprimer ce contact ? Les contrats et tâches associés seront aussi détachés ou supprimés.')) return;
-  const { error } = await sb.from('contacts').delete().eq('id', id);
-  if (error) return alert('Erreur : ' + error.message);
-  closeContactModal();
-  await loadAll();
-}
+// → déplacé dans contacts/contacts-ui.js : getFilteredContacts, renderContacts, setContactFieldsLocked, canEditContact, openContactModal, closeContactModal
+// → déplacé dans contacts/contacts.service.js : saveContact, deleteContact
 
 // → déplacé dans contracts/contracts-ui.js : getFilteredContracts, renderContracts, populateContactSelects, populateContractSelects, openContractModal, closeContractModal
 // → déplacé dans contracts/contracts-formulas.js : populateFormuleSelect, onFormuleChange, updateNetDisplay, autoCalcEcheance, onContractTypeChange
@@ -2149,56 +1957,7 @@ function setupInactivityTimeout() {
 // TRANSFERT DE CLIENT (propriétaire ou admin)
 // =========================================================
 
-function openTransferModal() {
-  const id = $('#c-id').value;
-  if (!id) return;
-  const c = state.contacts.find(x => x.id === id);
-  if (!c) return;
-  if (!canEditContact(c)) {
-    alert("Vous ne pouvez transférer que les clients dont vous êtes propriétaire.");
-    return;
-  }
-  // Construction de la liste des destinataires (exclut le propriétaire actuel)
-  const candidates = Object.values(state.profilesById || {})
-    .filter(u => u.id !== c.created_by)
-    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''));
-  if (!candidates.length) {
-    alert("Aucun autre utilisateur disponible pour le transfert.");
-    return;
-  }
-  const sel = $('#transfer-target');
-  sel.innerHTML = candidates.map(u =>
-    `<option value="${u.id}">${escapeHtml(u.prenom || u.email || u.id.slice(0, 8))}${u.is_admin ? ' (admin)' : ''}</option>`
-  ).join('');
-  $('#transfer-error').style.display = 'none';
-  state._transferContactId = id;
-  $('#transfer-modal').classList.add('show');
-}
-
-async function confirmTransferContact() {
-  const contactId = state._transferContactId;
-  const targetUserId = $('#transfer-target').value;
-  if (!contactId || !targetUserId) return;
-  const c = state.contacts.find(x => x.id === contactId);
-  const target = state.profilesById?.[targetUserId];
-  if (!confirm(
-    `Transférer définitivement le client « ${c?.nom || ''} » à ${target?.prenom || target?.email || 'cet utilisateur'} ?\n\n` +
-    `Tous les contrats et tâches liés à ce client seront également réassignés.`
-  )) return;
-  const { error } = await sb.rpc('transfer_contact', {
-    p_contact_id: contactId,
-    p_target_user_id: targetUserId,
-  });
-  if (error) {
-    $('#transfer-error').textContent = "Erreur : " + (error.message || JSON.stringify(error));
-    $('#transfer-error').style.display = 'block';
-    return;
-  }
-  $('#transfer-modal').classList.remove('show');
-  closeContactModal();
-  // Recharge complète pour refléter les nouvelles propriétés
-  await loadAll();
-}
+// → déplacé dans contacts/contacts-transfer.js : openTransferModal, confirmTransferContact
 
 // --- Envoi du bon de commande au client (lien de paiement Stripe) ---
 // → déplacé dans contracts/contracts-pdf.js : sendOrderLink, generateContractPDF
@@ -2507,32 +2266,8 @@ function bindEvents() {
     $('#' + id).addEventListener('input', renderContracts);
   });
   $('#tasks-filter-assigne').addEventListener('input', renderTasks);
-// Auto-complétion ville par code postal (API Géo gouv.fr)
-  $('#c-code-postal')?.addEventListener('input', async function() {
-    const cp = this.value.trim();
-    const sel = $('#c-ville');
-    if (cp.length !== 5 || !/^\d{5}$/.test(cp)) {
-      sel.innerHTML = '<option value="">Saisissez un code postal (5 chiffres)</option>';
-      return;
-    }
-    sel.innerHTML = '<option value="">Recherche…</option>';
-    try {
-      const resp = await fetch('https://geo.api.gouv.fr/communes?codePostal=' + cp + '&fields=nom&format=json');
-      const communes = await resp.json();
-      if (!communes.length) {
-        sel.innerHTML = '<option value="">Aucune commune trouvée</option>';
-        return;
-      }
-      sel.innerHTML = communes.map(function(c) { return '<option value="' + c.nom + '">' + c.nom + '</option>'; }).join('');
-      $('#c-code-postal-ville').value = cp + ' ' + sel.value;
-    } catch (e) {
-      sel.innerHTML = '<option value="">Erreur de recherche</option>';
-    }
-  });
-  $('#c-ville')?.addEventListener('change', function() {
-    var cp = $('#c-code-postal').value.trim();
-    $('#c-code-postal-ville').value = cp + ' ' + this.value;
-  });
+// → déplacé dans contacts/contacts-address.js : initContactAddressListeners
+  initContactAddressListeners();
   // Nouveaux éléments
   $('#btn-new-contact').addEventListener('click', () => openContactModal());
   $('#btn-new-contract').addEventListener('click', () => openContractModal());
@@ -2714,103 +2449,8 @@ function bindEvents() {
 // SUIVI CLIENT — Interactions & RGPD automatique
 // ==========================================================================
 
-async function checkRgpdExpiry() {
-  try {
-    await sb.rpc('check_rgpd_expiry');
-    await loadContacts();
-  } catch(e) {
-    console.warn('check_rgpd_expiry:', e.message);
-  }
-}
-
-function renderInteractions(contactId) {
-  const section = document.getElementById('contact-suivi-section');
-  if (!section) return;
-  section.style.display = '';
-  const items = (state.interactions || []).filter(i => i.contact_id === contactId);
-  const list  = document.getElementById('interactions-list');
-  if (!items.length) {
-    list.innerHTML = '<p class="mut" style="font-size:.85rem">Aucun échange enregistré.</p>';
-    return;
-  }
-  const typeClass = { 'Téléphone':'tel','Email':'email','Visite':'visite','LinkedIn':'linkedin','Facebook':'facebook','Autre':'autre' };
-  const typeIcon  = {
-    'Téléphone': '📞',
-    'Email':     '✉️',
-    'Visite':    '🤝',
-    'LinkedIn':  '<img src="https://www.google.com/s2/favicons?sz=16&domain=linkedin.com" alt="LinkedIn">',
-    'Facebook':  '<img src="https://www.google.com/s2/favicons?sz=16&domain=facebook.com" alt="Facebook">',
-    'Autre':     '💬'
-  };
-  list.innerHTML = items.map(i => {
-    const cls  = typeClass[i.type] || 'autre';
-    const icon = typeIcon[i.type]  || '💬';
-    const suite = i.suite_a_donner
-      ? `<div class="interaction-suite">➡️ ${escapeHtml(i.suite_a_donner)}</div>`
-      : '';
-    return `<div class="interaction-item" onclick="openInteractionModal('${i.contact_id}','${i.id}')">
-        <div class="interaction-header">
-          <span class="interaction-type ${cls}">${icon} ${escapeHtml(i.type)}</span>
-          <span class="interaction-objet">${escapeHtml(i.objet)}</span>
-          <span class="interaction-date">${formatDate(i.date)}</span>
-        </div>${suite}</div>`;
-  }).join('');
-}
-
-function openInteractionModal(contactId, interactionId) {
-  const inter = interactionId ? (state.interactions || []).find(i => i.id === interactionId) : null;
-  document.getElementById('interaction-modal-title').textContent = inter ? "Modifier l'échange" : 'Nouvel échange';
-  document.getElementById('int-id').value          = inter ? inter.id : '';
-  document.getElementById('int-contact-id').value  = contactId;
-  document.getElementById('int-type').value        = inter ? inter.type : 'Téléphone';
-  document.getElementById('int-date').value        = inter ? inter.date : new Date().toISOString().slice(0,10);
-  document.getElementById('int-objet').value       = inter ? inter.objet : '';
-  document.getElementById('int-contenu').value     = inter ? (inter.contenu || '') : '';
-  document.getElementById('int-suite').value       = inter ? (inter.suite_a_donner || '') : '';
-  document.getElementById('int-delete-btn').style.display = inter ? 'inline-flex' : 'none';
-  document.getElementById('interaction-modal').classList.add('show');
-}
-
-function closeInteractionModal() {
-  document.getElementById('interaction-modal').classList.remove('show');
-}
-
-async function saveInteraction() {
-  const id        = document.getElementById('int-id').value;
-  const contactId = document.getElementById('int-contact-id').value;
-  const type      = document.getElementById('int-type').value;
-  const date      = document.getElementById('int-date').value;
-  const objet     = document.getElementById('int-objet').value.trim();
-  if (!objet) { alert("L'objet est obligatoire."); return; }
-  const payload = {
-    contact_id: contactId, created_by: state.user.id,
-    type, date, objet,
-    contenu:        document.getElementById('int-contenu').value.trim() || null,
-    suite_a_donner: document.getElementById('int-suite').value.trim()   || null,
-  };
-  let error;
-  if (id) {
-    ({ error } = await sb.from('interactions').update(payload).eq('id', id));
-  } else {
-    ({ error } = await sb.from('interactions').insert(payload));
-  }
-  if (error) { alert('Erreur : ' + error.message); return; }
-  await loadInteractions();
-  await loadContacts();
-  renderInteractions(contactId);
-  closeInteractionModal();
-}
-
-async function deleteInteraction() {
-  const id        = document.getElementById('int-id').value;
-  const contactId = document.getElementById('int-contact-id').value;
-  if (!id || !confirm('Supprimer cet échange ?')) return;
-  const { error } = await sb.from('interactions').delete().eq('id', id);
-  if (error) { alert('Erreur : ' + error.message); return; }
-  await loadInteractions();
-  renderInteractions(contactId);
-  closeInteractionModal();
-}
+// → déplacé dans contacts/contacts-address.js : checkRgpdExpiry
+// → déplacé dans contacts/contacts-interactions.js : renderInteractions, openInteractionModal, closeInteractionModal, saveInteraction, deleteInteraction
 
 
 // ==========================================================================
@@ -3800,15 +3440,7 @@ function checkUpsellFirstLogin() {
 }
 
 
-function openAddInteraction(contactId) {
-  // Ouvrir directement la modale d'ajout d'échange depuis l'upsell
-  const modal = document.getElementById('add-interaction-modal') || document.getElementById('interaction-modal');
-  if (modal) {
-    if (document.getElementById('interaction-contact-id'))
-      document.getElementById('interaction-contact-id').value = contactId;
-    modal.classList.add('show');
-  }
-}
+// → déplacé dans contacts/contacts-interactions.js : openAddInteraction
 
 // ==========================================================================
 // BLOC 5 — GESTION ÉQUIPE DCI

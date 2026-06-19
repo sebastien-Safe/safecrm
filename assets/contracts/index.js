@@ -15,6 +15,8 @@ window.onFormuleChange            = onFormuleChange;
 window.updateNetDisplay           = updateNetDisplay;
 window.autoCalcEcheance           = autoCalcEcheance;
 window.onContractTypeChange       = onContractTypeChange;
+window.updateContractTypeIcon     = updateContractTypeIcon;
+window.toggleRemise               = toggleRemise;
 
 // Service Supabase (contracts.service.js)
 window.loadContracts              = loadContracts;
