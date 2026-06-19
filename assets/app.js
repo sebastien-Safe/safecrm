@@ -337,7 +337,7 @@ async function loadAll() {
 // → déplacé dans contracts/contracts.service.js : loadContracts
 
 async function loadTasks() {
-  const { data, error } = await sb.from('tasks').select('*').order('echeance', { ascending: true, nullsFirst: false });
+  const { data, error } = await sb.from('tasks').select('*').eq('created_by', state.user.id).order('echeance', { ascending: true, nullsFirst: false });
   if (error) return alert('Erreur chargement tâches : ' + error.message);
   state.tasks = data || [];
 }
@@ -689,7 +689,7 @@ async function saveTask() {
   if (id) {
     ({ error } = await sb.from('tasks').update(payload).eq('id', id));
   } else {
-    ({ error } = await sb.from('tasks').insert(payload));
+    ({ error } = await sb.from('tasks').insert({ ...payload, created_by: state.user.id }));
   }
   if (error) return alert('Erreur : ' + error.message);
   closeTaskModal();
