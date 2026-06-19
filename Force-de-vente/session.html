@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S@FE — Réunion DCI 22 juin 2026</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.png" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#04091a;font-family:'IBM Plex Sans',sans-serif;overflow:hidden;color:#fff;user-select:none}
+
+/* ── LAYOUT ── */
+#app{display:flex;height:100vh}
+#slides-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:#04091a;position:relative;overflow:hidden}
+#admin-panel{width:370px;background:#0a1628;border-left:2px solid rgba(184,149,42,.3);display:none;flex-direction:column;overflow:hidden;flex-shrink:0}
+#app.admin-open #admin-panel{display:flex}
+
+/* ── SLIDE CONTAINER (1920×1080 scaled) ── */
+#slides-container{width:1920px;height:1080px;position:absolute;transform-origin:top left;overflow:hidden}
+
+/* ── SLIDES ── */
+.slide{position:absolute;inset:0;display:none;flex-direction:column}
+.slide.active{display:flex}
+
+/* ── SLIDE HEADER (reusable) ── */
+.sh{background:#0d1b36;padding:16px 40px;display:flex;align-items:center;gap:18px;border-bottom:3px solid #b8952a;flex-shrink:0}
+.sh-logo{display:flex;align-items:center;gap:10px}
+.sh-logo svg{width:34px;height:38px}
+.sh-brand{font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#fff;line-height:1}
+.sh-brand span{color:#b8952a}
+.sh-brand-sub{font-size:8px;letter-spacing:.22em;color:#6a7a99;text-transform:uppercase;margin-top:2px}
+.sh-div{width:1px;height:32px;background:rgba(255,255,255,.12);margin:0 6px}
+.sh-title{font-family:'Sora',sans-serif;font-size:30px;font-weight:800;color:#fff}
+.sh-sub{font-family:'IBM Plex Sans',sans-serif;font-style:italic;font-size:15px;color:#b8952a;margin-top:2px}
+.sh-meta{margin-left:auto;font-size:13px;color:#5a6a88;font-family:'Sora',sans-serif}
+
+/* ── SLIDE BODY ── */
+.sb{flex:1;overflow:hidden;padding:40px 50px}
+.sb.p0{padding:0}
+
+/* ── BACKGROUNDS ── */
+.bg-navy{background:#0a1628}
+.bg-dark{background:#070f1d}
+.bg-light{background:#e8eef7}
+.bg-light .sh{background:#0d1b36}
+
+/* ── TYPOGRAPHY ── */
+.t-gold{color:#b8952a}
+.t-gold2{color:#f0c040}
+.t-white{color:#fff}
+.t-mut{color:#94a3b8}
+.t-bold{font-weight:700}
+.t-sora{font-family:'Sora',sans-serif}
+.italic{font-style:italic}
+
+/* ========================================
+   SLIDE 1 — COUVERTURE
+   ======================================== */
+.s1{background:#070f1d;flex-direction:row}
+.s1-left{width:45%;background:#0a1628;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;border-right:4px solid #b8952a}
+.s1-left svg{width:180px;height:200px;margin-bottom:32px}
+.s1-brand{font-family:'Sora',sans-serif;font-size:72px;font-weight:800;color:#fff;line-height:1}
+.s1-brand span{color:#b8952a}
+.s1-brand-sub{font-family:'Sora',sans-serif;font-size:22px;font-weight:600;letter-spacing:.3em;color:#6a7a99;text-transform:uppercase;margin-top:8px}
+.s1-url{font-size:16px;color:#5a6a88;margin-top:40px}
+.s1-right{flex:1;display:flex;flex-direction:column;justify-content:center;padding:80px 70px;gap:32px}
+.s1-title{font-family:'Sora',sans-serif;font-size:52px;font-weight:800;color:#fff;line-height:1.1}
+.s1-sub{font-family:'Sora',sans-serif;font-size:26px;font-style:italic;color:#b8952a;margin-top:-8px}
+.s1-infos{display:flex;flex-direction:column;gap:18px;margin-top:16px}
+.s1-info{display:flex;align-items:center;gap:18px;font-size:22px;color:#c8d0e4}
+.s1-info-icon{font-size:28px}
+.s1-conf-btn{display:inline-flex;align-items:center;gap:16px;padding:18px 28px;border-radius:14px;border:1px solid rgba(184,149,42,.4);background:rgba(184,149,42,.07);color:#b8952a;font-family:'Sora',sans-serif;font-size:18px;font-weight:600;text-decoration:none;transition:all .25s;width:fit-content;margin-top:8px}
+.s1-conf-btn:hover{background:rgba(184,149,42,.18);border-color:#b8952a;color:#f0c040;transform:translateY(-2px);box-shadow:0 8px 24px rgba(184,149,42,.15)}
+.s1-conf-btn-icon{font-size:26px;flex-shrink:0}
+.s1-conf-btn-sub{font-size:14px;font-weight:400;color:#5a6a88;margin-top:2px}
+
+/* ========================================
+   SLIDE 2 — ORDRE DU JOUR
+   ======================================== */
+.agenda-rows{display:flex;flex-direction:column;gap:14px}
+.agenda-row{display:flex;align-items:center;gap:24px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:22px 30px}
+.agenda-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0}
+.agenda-dot.blue{background:#3b82f6}
+.agenda-dot.gold{background:#b8952a}
+.agenda-dot.gray{background:#475569}
+.agenda-time{font-family:'Sora',sans-serif;font-size:30px;font-weight:700;color:#b8952a;width:100px;flex-shrink:0}
+.agenda-dur{font-size:22px;color:#5a6a88;width:90px;flex-shrink:0}
+.agenda-label{font-size:28px;color:#c8d0e4;font-weight:500}
+
+/* ========================================
+   SLIDE 3 — QUI SOMMES-NOUS
+   ======================================== */
+.s3-body{display:grid;grid-template-columns:1fr 1fr;height:100%;gap:0}
+.s3-left{background:#e8eef7;padding:50px;display:flex;flex-direction:column;gap:28px}
+.s3-mission-title{font-family:'Sora',sans-serif;font-size:32px;font-weight:700;color:#0a1628;border-bottom:2px solid #b8952a;padding-bottom:10px}
+.s3-mission-text{font-size:24px;color:#2d3a50;line-height:1.7}
+.s3-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:auto}
+.s3-stat{background:#0a1628;border-radius:14px;padding:24px 16px;text-align:center;border:1px solid rgba(184,149,42,.3)}
+.s3-stat-num{font-family:'Sora',sans-serif;font-size:40px;font-weight:800;color:#b8952a}
+.s3-stat-label{font-size:17px;color:#94a3b8;margin-top:6px;line-height:1.3}
+.s3-right{background:#0d1b36;padding:50px;border-left:3px solid #b8952a}
+.s3-zones-title{font-family:'Sora',sans-serif;font-size:24px;font-weight:700;color:#b8952a;margin-bottom:24px}
+.s3-zone{display:flex;align-items:flex-start;gap:16px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.s3-zone:last-child{border-bottom:none}
+.s3-zone-icon{font-size:30px}
+.s3-zone-name{font-family:'Sora',sans-serif;font-size:23px;font-weight:700;color:#fff}
+.s3-zone-sub{font-size:18px;color:#5a6a88;margin-top:3px}
+
+/* ========================================
+   SLIDE 4 — 3 PILIERS
+   ======================================== */
+.pillars{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;height:100%;padding:40px 50px}
+.pillar{border-radius:18px;padding:40px 36px;display:flex;flex-direction:column;gap:20px}
+.pillar-blue{background:#1e3a8a;border:1px solid rgba(59,130,246,.4)}
+.pillar-green{background:#14532d;border:1px solid rgba(34,197,94,.4)}
+.pillar-brown{background:#431407;border:1px solid rgba(234,88,12,.4)}
+.pillar-icon{font-size:56px}
+.pillar-title{font-family:'Sora',sans-serif;font-size:30px;font-weight:700;color:#fff}
+.pillar-subtitle{font-size:20px;font-style:italic;color:rgba(255,255,255,.6)}
+.pillar-list{display:flex;flex-direction:column;gap:12px;margin-top:auto}
+.pillar-item{display:flex;align-items:flex-start;gap:10px;font-size:22px;color:rgba(255,255,255,.85)}
+.pillar-item::before{content:'•';color:#b8952a;flex-shrink:0;margin-top:1px}
+
+/* ========================================
+   SLIDE 5 — MARCHÉ CIBLE
+   ======================================== */
+.market-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:20px;height:calc(100% - 100px);padding:30px 50px}
+.market-card{background:#fff;border-radius:14px;padding:28px;display:flex;align-items:flex-start;gap:18px;border:1px solid #d1dae8}
+.market-card-icon{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.mc-navy{background:#1e3a8a}
+.mc-green{background:#166534}
+.mc-purple{background:#6b21a8}
+.mc-brown{background:#7c2d12}
+.market-card-name{font-family:'Sora',sans-serif;font-size:26px;font-weight:700;color:#0a1628}
+.market-card-sub{font-size:19px;font-style:italic;color:#b8952a;margin-top:2px}
+.market-card-desc{font-size:21px;color:#4a5568;margin-top:8px}
+.market-tip{margin:0 50px;background:#0a1628;border-radius:12px;padding:18px 24px;font-size:22px;font-style:italic;color:#c8d0e4;border-left:4px solid #f0c040}
+.market-tip span{color:#f0c040}
+
+/* ========================================
+   SLIDE 6 — RÉMUNÉRATION
+   ======================================== */
+.remun-warn{margin:20px 50px 0;background:#451a03;border:1px solid #c2410c;border-radius:10px;padding:14px 20px;font-size:19px;color:#fed7aa;display:flex;gap:12px;align-items:flex-start;flex-shrink:0}
+.remun-warn strong{color:#fb923c}
+.remun-table-wrap{flex:1;overflow:auto;padding:16px 50px 30px;margin-top:12px}
+.remun-table{width:100%;border-collapse:collapse;font-size:19px}
+.remun-table th{background:#0d1b36;color:#94a3b8;font-size:15px;letter-spacing:.08em;text-transform:uppercase;padding:12px 14px;text-align:left;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.1)}
+.remun-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05);color:#c8d0e4;vertical-align:middle}
+.remun-table td:first-child{color:#fff;font-weight:600}
+.remun-section td{background:rgba(184,149,42,.12);color:#b8952a!important;font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:9px 14px;font-weight:700!important;border-top:1px solid rgba(184,149,42,.25)}
+.t-comm{color:#f0c040;font-weight:700}
+.t-rec{color:#4ade80;font-weight:700}
+.t-dash{color:#334155}
+
+/* ========================================
+   SLIDE 7bis — ASSURANCE & HORIZONS
+   ======================================== */
+.s-horizon{background:#04091a;display:grid;grid-template-columns:1fr 1fr;height:100%}
+.horizon-left{background:linear-gradient(135deg,#0d1b36 0%,#1a0f2e 100%);padding:50px;display:flex;flex-direction:column;gap:28px;border-right:3px solid rgba(184,149,42,.4)}
+.orias-badge{background:rgba(184,149,42,.1);border:2px solid #b8952a;border-radius:16px;padding:28px 32px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.orias-icon{font-size:44px}
+.orias-label{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#b8952a}
+.orias-title{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:#fff}
+.orias-date{font-size:17px;color:#94a3b8;margin-top:4px}
+.horizon-timeline{display:flex;flex-direction:column;gap:16px;margin-top:8px}
+.ht-item{display:flex;gap:16px;align-items:flex-start}
+.ht-dot{width:12px;height:12px;border-radius:50%;background:#b8952a;flex-shrink:0;margin-top:6px}
+.ht-content{flex:1}
+.ht-date{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:#b8952a}
+.ht-text{font-size:18px;color:#c8d0e4;margin-top:2px;line-height:1.4}
+.horizon-right{padding:50px;display:flex;flex-direction:column;gap:24px}
+.horizon-spec-title{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:4px}
+.horizon-specs{display:flex;flex-direction:column;gap:14px}
+.hspec{display:flex;gap:16px;align-items:flex-start;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:18px 22px}
+.hspec-icon{font-size:28px;flex-shrink:0}
+.hspec-name{font-family:'Sora',sans-serif;font-size:19px;font-weight:700;color:#fff}
+.hspec-desc{font-size:16px;color:#94a3b8;margin-top:3px}
+.horizon-candy{background:linear-gradient(90deg,rgba(184,149,42,.08),rgba(124,58,237,.08));border:1px dashed rgba(184,149,42,.4);border-radius:12px;padding:20px 24px;margin-top:auto}
+.candy-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#7c3aed;margin-bottom:6px}
+.candy-text{font-size:17px;font-style:italic;color:#c8d0e4;line-height:1.5}
+
+/* ========================================
+   SLIDE 7 — TRAJECTOIRE
+   ======================================== */
+.phases{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;height:100%;padding:30px 50px}
+.phase{border-radius:18px;padding:40px 32px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.phase-blue{background:#1e3a8a;border:1px solid rgba(59,130,246,.4)}
+.phase-green{background:#14532d;border:1px solid rgba(34,197,94,.4)}
+.phase-gold{background:#431a00;border:1px solid rgba(184,149,42,.5)}
+.phase-icon{font-size:52px}
+.phase-num{font-family:'Sora',sans-serif;font-size:14px;font-style:italic;color:rgba(255,255,255,.5)}
+.phase-title{font-family:'Sora',sans-serif;font-size:30px;font-weight:800;color:#fff}
+.phase-period{font-size:20px;font-style:italic;color:rgba(255,255,255,.5)}
+.phase-target{display:flex;align-items:center;gap:8px;font-size:22px;color:rgba(255,255,255,.85);margin-top:8px}
+.phase-income{background:rgba(255,255,255,.12);border-radius:10px;padding:14px 24px;font-family:'Sora',sans-serif;font-size:30px;font-weight:700;color:#f0c040;text-align:center;width:100%}
+.phase-tip{font-size:19px;font-style:italic;color:rgba(255,255,255,.5);text-align:center}
+.phases-footer{text-align:center;margin:0 50px 24px;background:rgba(184,149,42,.1);border:1px solid rgba(184,149,42,.3);border-radius:10px;padding:14px;font-size:22px;font-style:italic;color:#c8d0e4;flex-shrink:0}
+.phases-footer span{color:#b8952a}
+
+/* ========================================
+   SLIDE 8 — MISSIONS
+   ======================================== */
+.missions-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:20px;padding:30px 50px;height:100%}
+.mission-card{background:#fff;border-radius:16px;padding:30px;display:flex;align-items:flex-start;gap:18px}
+.mission-num{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#fff;flex-shrink:0}
+.mn1{background:#2563eb}
+.mn2{background:#b8952a}
+.mn3{background:#16a34a}
+.mn4{background:#7c3aed}
+.mission-title{font-family:'Sora',sans-serif;font-size:25px;font-weight:700;color:#0a1628}
+.mission-desc{font-size:21px;color:#4a5568;margin-top:6px;line-height:1.5}
+
+/* ========================================
+   SLIDE 9 — CE QUE NOUS ATTENDONS
+   ======================================== */
+.attentes-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;height:100%;padding:30px 50px}
+.attente-panel{border-radius:16px;padding:36px;display:flex;flex-direction:column;gap:16px}
+.ap-required{background:rgba(37,99,235,.1);border:2px solid rgba(59,130,246,.5)}
+.ap-bonus{background:rgba(184,149,42,.08);border:2px solid rgba(184,149,42,.4)}
+.ap-header{display:flex;align-items:center;gap:12px;font-family:'Sora',sans-serif;font-size:26px;font-weight:700}
+.ap-header.blue{color:#60a5fa}
+.ap-header.gold{color:#b8952a}
+.ap-list{display:flex;flex-direction:column;gap:14px}
+.ap-item{display:flex;align-items:flex-start;gap:10px;font-size:22px;color:#c8d0e4;line-height:1.4}
+.ap-item::before{content:'▸';color:#b8952a;flex-shrink:0;margin-top:1px}
+
+/* ========================================
+   SLIDE 10 — PROCHAINES ÉTAPES
+   ======================================== */
+.steps-timeline{display:flex;align-items:flex-start;justify-content:center;gap:0;padding:30px 60px 0}
+.step-item{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
+.step-item::after{content:'';position:absolute;top:36px;left:50%;width:100%;height:2px;background:#b8d0f0;z-index:0}
+.step-item:last-child::after{display:none}
+.step-date{font-family:'Sora',sans-serif;font-size:20px;font-weight:700;color:#2563eb;margin-bottom:12px}
+.step-date.g2{color:#1a3a6b}
+.step-date.g3{color:#16a34a}
+.step-date.g4{color:#b8952a}
+.step-circle{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:#fff;position:relative;z-index:1}
+.sc1{background:#2563eb}
+.sc2{background:#1a3a6b}
+.sc3{background:#16a34a}
+.sc4{background:#b8952a}
+.step-card{background:#fff;border-radius:14px;padding:20px;margin-top:20px;width:90%;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.step-card-date{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;margin-bottom:8px}
+.step-card-date.c1{color:#2563eb}
+.step-card-date.c2{color:#1a3a6b}
+.step-card-date.c3{color:#16a34a}
+.step-card-date.c4{color:#b8952a}
+.step-card-title{font-family:'Sora',sans-serif;font-size:24px;font-weight:700;color:#0a1628;margin-bottom:6px}
+.step-card-desc{font-size:20px;color:#64748b;line-height:1.4}
+
+/* ========================================
+   SLIDE 11 — MERCI
+   ======================================== */
+.s11-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:60px}
+.s11-title{font-family:'Sora',sans-serif;font-size:64px;font-weight:800;color:#fff}
+.s11-sub{font-family:'Sora',sans-serif;font-size:32px;font-style:italic;color:#b8952a}
+.s11-contact{background:rgba(255,255,255,.06);border:1px solid rgba(184,149,42,.3);border-radius:14px;padding:24px 48px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.s11-contact-row{display:flex;gap:48px;font-size:22px;color:#c8d0e4}
+.s11-contact-row span{color:#fff}
+
+/* ── CONTROLS ── */
+#controls{position:absolute;bottom:0;left:0;right:0;height:52px;background:rgba(4,9,26,.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;gap:20px;border-top:1px solid rgba(255,255,255,.07)}
+.ctrl-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#94a3b8;padding:8px 20px;border-radius:8px;font-family:'Sora',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.ctrl-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+.ctrl-btn:disabled{opacity:.3;cursor:not-allowed}
+#slide-counter{font-family:'Sora',sans-serif;font-size:14px;color:#5a6a88;min-width:60px;text-align:center}
+
+/* ── ADMIN TOGGLE (outside slide area) ── */
+#admin-toggle{position:fixed;bottom:20px;right:20px;width:44px;height:44px;border-radius:50%;background:rgba(184,149,42,.15);border:1px solid rgba(184,149,42,.3);color:#b8952a;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:100;transition:all .2s}
+#admin-toggle:hover{background:rgba(184,149,42,.3)}
+#app.admin-open #admin-toggle{background:#b8952a;color:#fff}
+
+/* ── PIN OVERLAY ADMIN ── */
+#admin-pin-overlay{position:fixed;inset:0;z-index:200;background:rgba(4,9,26,.92);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center}
+#admin-pin-overlay.show{display:flex}
+#admin-pin-box{background:#0a1628;border:2px solid rgba(184,149,42,.4);border-radius:18px;padding:40px 48px;text-align:center;width:320px}
+.apin-title{font-family:'Sora',sans-serif;font-size:15px;color:#94a3b8;margin-bottom:20px}
+.apin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:20px}
+.apin-dot{width:14px;height:14px;border-radius:50%;background:#1e3a5f;border:2px solid #2a4a7f;transition:all .15s}
+.apin-dot.filled{background:#b8952a;border-color:#b8952a}
+.apin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.apin-key{background:#0d1b36;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px;font-family:'Sora',sans-serif;font-size:20px;font-weight:700;color:#fff;cursor:pointer;transition:all .15s}
+.apin-key:hover{background:#162a4a;border-color:rgba(184,149,42,.5)}
+.apin-key:active{transform:scale(.93)}
+.apin-key.del{font-size:14px;color:#94a3b8}
+#apin-error{color:#ef4444;font-size:13px;margin-top:14px;min-height:18px;font-style:italic}
+
+/* ── ADMIN PANEL ── */
+#admin-panel{font-family:'IBM Plex Sans',sans-serif}
+#ap-header{background:#0d1b36;padding:14px 18px;border-bottom:2px solid rgba(184,149,42,.4);flex-shrink:0}
+#ap-seq{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:#b8952a;text-transform:uppercase;letter-spacing:.05em}
+#ap-chrono{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:#fff;margin-top:4px}
+#ap-seq-dur{font-size:12px;color:#5a6a88;margin-top:2px}
+#ap-body{flex:1;overflow-y:auto;padding:16px}
+#ap-body::-webkit-scrollbar{width:4px}
+#ap-body::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:2px}
+.ap-section{margin-bottom:20px}
+.ap-section-title{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#5a6a88;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.ap-section-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07)}
+.ap-script{font-style:italic;font-size:14px;color:#c8d0e4;line-height:1.7;background:rgba(255,255,255,.03);border-left:3px solid #b8952a;padding:12px 14px;border-radius:0 8px 8px 0}
+.ap-alert{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 12px;font-size:13px;color:#fca5a5;line-height:1.5;margin-bottom:12px}
+.ap-points{display:flex;flex-direction:column;gap:7px}
+.ap-point{font-size:13px;color:#94a3b8;display:flex;gap:8px;line-height:1.4}
+.ap-point::before{content:'▸';color:#b8952a;flex-shrink:0}
+.ap-questions{display:flex;flex-direction:column;gap:7px}
+.ap-question{font-size:13px;color:#60a5fa;display:flex;gap:8px;line-height:1.4;font-style:italic}
+.ap-question::before{content:'?';color:#3b82f6;flex-shrink:0;font-weight:700}
+#ap-footer{padding:14px;border-top:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+#ap-nav{display:flex;gap:8px}
+.ap-nav-btn{flex:1;padding:9px;border-radius:8px;font-family:'Sora',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#c8d0e4;transition:all .2s}
+.ap-nav-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+#ap-grille-link{display:block;text-align:center;background:rgba(184,149,42,.12);border:1px solid rgba(184,149,42,.35);border-radius:8px;padding:9px;color:#b8952a;font-family:'Sora',sans-serif;font-size:13px;font-weight:600;text-decoration:none;transition:all .2s}
+#ap-grille-link:hover{background:rgba(184,149,42,.22)}
+#ap-timer-ctrl{display:flex;gap:8px}
+.timer-btn{flex:1;padding:7px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+#btn-timer-start{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+#btn-timer-reset{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════════════════════ SLIDES ══════════════════════════ -->
+  <div id="slides-wrap">
+    <div id="slides-container">
+
+      <!-- SLIDE 1 — COUVERTURE -->
+      <div class="slide s1 bg-dark active">
+        <div class="s1-left">
+          <svg viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/>
+            <text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text>
+          </svg>
+          <div class="s1-brand">S<span>@</span>FE</div>
+          <div class="s1-brand-sub">Digitalisation</div>
+          <div class="s1-url">safe-digitalisation.fr</div>
+        </div>
+        <div style="width:6px;background:#b8952a;flex-shrink:0"></div>
+        <div class="s1-right">
+          <div class="s1-title">Réunion de présentation</div>
+          <div class="s1-sub">Candidats Directeur Commercial Indépendant</div>
+          <div class="s1-infos">
+            <div class="s1-info"><span class="s1-info-icon">📅</span> 22 Juin 2026</div>
+            <div class="s1-info"><span class="s1-info-icon">⏱</span> Session de 1h30</div>
+            <div class="s1-info"><span class="s1-info-icon">🎯</span> Poste : DCI B2B — RGPD &amp; Digital</div>
+          </div>
+          <a class="s1-conf-btn" href="../clause-public.html" target="_blank" rel="noopener">
+            <span class="s1-conf-btn-icon">📄</span>
+            <div>
+              <div>Clause de confidentialité</div>
+              <div class="s1-conf-btn-sub">Conditions applicables aux candidats · S@FE Digitalisation</div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- SLIDE 2 — ORDRE DU JOUR -->
+      <div class="slide s2 bg-navy">
+        <div class="sh">
+          <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
+          <div class="sh-div"></div>
+          <div><div class="sh-title">Ordre du jour</div></div>
+          <div class="sh-meta">1h30 &bull; 6 séquences &bull; 6 candidats</div>
+        </div>
+        <div class="sb">
+          <div class="agenda-rows">
+            <div class="agenda-row"><span class="agenda-dot blue"></span><span class="agenda-time">00:00</span><span class="agenda-dur">10 min</span><span class="agenda-label">Accueil &amp; tour de table</span></div>
+            <div class="agenda-row"><span class="agenda-dot blue"></span><span class="agenda-time">00:10</span><span class="agenda-dur">25 min</span><span class="agenda-label">Qui sommes-nous ? Vision &amp; mission S@FE</span></div>
+            <div class="agenda-row"><span class="agenda-dot blue"></span><span class="agenda-time">00:35</span><span class="agenda-dur">15 min</span><span class="agenda-label">Barème &amp; rémunération</span></div>
+            <div class="agenda-row"><span class="agenda-dot gold"></span><span class="agenda-time">00:50</span><span class="agenda-dur">25 min</span><span class="agenda-label">CRM S@FE — démo live</span></div>
+            <div class="agenda-row"><span class="agenda-dot gold"></span><span class="agenda-time">01:15</span><span class="agenda-dur">10 min</span><span class="agenda-label">Missions &amp; attentes DCI</span></div>
+            <div class="agenda-row"><span class="agenda-dot gray"></span><span class="agenda-time">01:25</span><span class="agenda-dur">5 min</span><span class="agenda-label">Questions &amp; prochaines étapes</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3 — QUI SOMMES-NOUS -->
+      <div class="slide s3">
+        <div class="sh">
+          <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
+          <div class="sh-div"></div>
+          <div><div class="sh-title">Qui sommes-nous ?</div></div>
+        </div>
+        <div class="s3-body">
+          <div class="s3-left">
+            <div class="s3-mission-title">Notre mission</div>
+            <div class="s3-mission-text">S@FE Digitalisation est une société de conseil et de services numériques dédiée à la <strong>performance et à la protection des TPE/PME françaises</strong>.<br><br>Nous intervenons à l'intersection du droit, du digital et de la cybersécurité pour transformer une contrainte réglementaire en véritable avantage concurrentiel pour nos clients.</div>
+            <div class="s3-stats">
+              <div class="s3-stat"><div class="s3-stat-num">3,8 M</div><div class="s3-stat-label">TPE/PME concernées RGPD</div></div>
+              <div class="s3-stat"><div class="s3-stat-num">ORIAS</div><div class="s3-stat-label">Courtier assurance depuis le 18/06/2026</div></div>
+              <div class="s3-stat"><div class="s3-stat-num">4</div><div class="s3-stat-label">Piliers d'expertise</div></div>
+            </div>
+          </div>
+          <div class="s3-right">
+            <div class="s3-zones-title">Zones d'intervention</div>
+            <div class="s3-zone"><span class="s3-zone-icon">🗼</span><div><div class="s3-zone-name">Île-de-France</div><div class="s3-zone-sub">Zone 01 — National</div></div></div>
+            <div class="s3-zone"><span class="s3-zone-icon">🏔</span><div><div class="s3-zone-name">Auvergne-Rhône-Alpes</div><div class="s3-zone-sub">Zone 02 — AURA</div></div></div>
+            <div class="s3-zone"><span class="s3-zone-icon">🌅</span><div><div class="s3-zone-name">Sud &amp; Perpignan</div><div class="s3-zone-sub">Zone 03 — Nouvelle-Aquitaine</div></div></div>
+            <div class="s3-zone"><span class="s3-zone-icon">☀️</span><div><div class="s3-zone-name">Marseille — PACA</div><div class="s3-zone-sub">Zone 04 — PACA &amp; environs</div></div></div>
+            <div class="s3-zone"><span class="s3-zone-icon">💻</span><div><div class="s3-zone-name">Télétravail partout</div><div class="s3-zone-sub">Flexibilité totale</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4 — 3 PILIERS -->
+      <div class="slide s4 bg-navy">
+        <div class="sh">
+          <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
+          <div class="sh-div"></div>
+          <div><div class="sh-title">Nos 3 piliers d'expertise</div><div class="sh-sub">Ce que vous vendrez au quotidien</div></div>
+        </div>
+        <div class="pillars">
+          <div class="pillar pillar-blue">
+            <div class="pillar-icon">🛡</div>
+            <div><div class="pillar-title">RGPD &amp; DPO Externalisé</div><div class="pillar-subtitle">Conformité réglementaire</div></div>
+            <div class="pillar-list">
+              <div class="pillar-item">Audit de conformité RGPD</div>
+              <div class="pillar-item">DPO externalisé en abonnement</div>
+              <div class="pillar-item">Formation &amp; sensibilisation équipes</div>
+              <div class="pillar-item">Obligation légale = besoin immédiat</div>
+            </div>
+          </div>
+          <div class="pillar pillar-green">
+            <div class="pillar-icon">🔍</div>
+            <div><div class="pillar-title">Référencement Local SEO</div><div class="pillar-subtitle">Visibilité Google</div></div>
+            <div class="pillar-list">
+              <div class="pillar-item">Optimisation Google Business Profile</div>
+              <div class="pillar-item">SEO local multi-établissements</div>
+              <div class="pillar-item">Visibilité dans les recherches locales</div>
+              <div class="pillar-item">ROI mesurable et rapide</div>
+            </div>
+          </div>
+          <div class="pillar pillar-brown">
+            <div class="pillar-icon">🔐</div>
+            <div><div class="pillar-title">Cybersécurité PME</div><div class="pillar-subtitle">Protection &amp; résilience</div></div>
+            <div class="pillar-list">
+              <div class="pillar-item">Audit de vulnérabilités</div>
+              <div class="pillar-item">Sensibilisation des équipes</div>
+              <div class="pillar-item">Solutions adaptées TPE/PME</div>
+              <div class="pillar-item">Marché en forte croissance</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5 — MARCHÉ CIBLE -->
+      <div class="slide s5 bg-light">
+        <div class="sh">
+          <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
+          <div class="sh-div"></div>
+          <div><div class="sh-title" style="color:#fff">Notre marché cible</div></div>
+        </div>
+        <div class="market-grid">
+          <div class="market-card"><div class="market-card-icon mc-navy">🏢</div><div><div class="market-card-name">TPE &amp; PME</div><div class="market-card-sub">Cœur de cible</div><div class="market-card-desc">1 à 250 salariés, tous secteurs</div></div></div>
+          <div class="market-card"><div class="market-card-icon mc-green">⚕️</div><div><div class="market-card-name">Secteur Santé</div><div class="market-card-sub">Obligation RGPD renforcée</div><div class="market-card-desc">Médecins, cliniques, EHPAD, labos</div></div></div>
+          <div class="market-card"><div class="market-card-icon mc-purple">⚖️</div><div><div class="market-card-name">Professions libérales</div><div class="market-card-sub">Prescripteurs ET prospects</div><div class="market-card-desc">Avocats, notaires, experts-comptables</div></div></div>
+          <div class="market-card"><div class="market-card-icon mc-brown">🔨</div><div><div class="market-card-name">Artisans &amp; Commerçants</div><div class="market-card-sub">Marché de masse</div><div class="market-card-desc">Toute activité traitant des données clients</div></div></div>
+        </div>
+        <div class="market-tip">💡 <span>Toute entreprise traitant des données personnelles est un prospect qualifié</span> — le RGPD est une obligation légale non négociable.</div>
+      </div>
+
+      <!-- SLIDE 6 — RÉMUNÉRATION -->
+      <div class="slide s6 bg-navy">
+        <div class="sh">
+          <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
+          <div class="sh-div"></div>
+          <div><div class="sh-title">Votre rémunération</div><div class="sh-sub">Barème officiel SAFEDIRCOM-2026-V1 · En vigueur au 12 juin 2026</div></div>
+        </div>
+        <div class="remun-warn">⚠️ <div><strong>Modèle 100 % indépendant</strong> — Aucun fixe, aucun frais remboursé, aucune mutuelle. Rémunération uniquement sur ventes réellement encaissées par S@FE, versée sous 15 jours après clôture du mois.</div></div>
+        <div class="remun-table-wrap">
+          <table class="remun-table">
+            <thead><tr><th>Offre / Formule</th><th>Tarif client HT</th><th>Commission Signature</th><th>Bonus Fidélité M+4</th><th>Récurrent mensuel</th></tr></thead>
+            <tbody>
+              <tr class="remun-section"><td colspan="5">🔍 SEO LOCAL — Google Business Profile</td></tr>
+              <tr><td>Essentiel</td><td>190€ MeP + 79€/mois</td><td class="t-comm">75 €</td><td class="t-comm">75 €</td><td class="t-rec">15% (11,85€/mo)</td></tr>
+              <tr><td>Boost</td><td>290€ MeP + 149€/mois</td><td class="t-comm">100 €</td><td class="t-comm">100 €</td><td class="t-rec">15% (22,35€/mo)</td></tr>
+              <tr><td>Prestige</td><td>249€/mois (MeP offerte)</td><td class="t-dash">—</td><td class="t-dash">—</td><td class="t-rec">15% (37,35€/mo)</td></tr>
+              <tr class="remun-section"><td colspan="5">🛒 CLICK &amp; COLLECT</td></tr>
+              <tr><td>Essentiel</td><td>150€ MeP + 39€/mois</td><td class="t-comm">50 €</td><td class="t-comm">50 €</td><td class="t-rec">15% (5,85€/mo)</td></tr>
+              <tr><td>Pro</td><td>250€ MeP + 79€/mois</td><td class="t-comm">100 €</td><td class="t-comm">100 €</td><td class="t-rec">15% (11,85€/mo)</td></tr>
+              <tr><td>Premium</td><td>129€/mois (MeP offerte)</td><td class="t-dash">—</td><td class="t-dash">—</td><td class="t-rec">15% (19,35€/mo)</td></tr>
+              <tr class="remun-section"><td colspan="5">🛡 RGPD &amp; DPO EXTERNALISÉ</td></tr>
+              <tr><td>Audit RGPD TPE</td><td>1 490 € HT (one-shot)</td><td class="t-comm">298 € (20%)</td><td class="t-dash">—</td><td class="t-dash">—</td></tr>
+              <tr><td>Audit RGPD+ PME</td><td>2 990 € HT (one-shot)</td><td class="t-comm">598 € (20%)</td><td class="t-dash">—</td><td class="t-dash">—</td></tr>
+              <tr><td>Abonnement DPO</td><td>189€/mois — 12 mois</td><td class="t-comm">50 € fixe</td><td class="t-dash">—</td><td class="t-rec">10% (18,90€/mo)</td></tr>
+              <tr class="remun-section"><td colspan="5">🔐 CYBERSÉCURITÉ</td></tr>
+              <tr><td>Audit de vulnérabilité</td><td>490 € HT (one-shot)</td><td class="t-comm">98 € fixe</td><td class="t-dash">—</td><td class="t-dash">—</td></tr>
+              <tr><td>Pack Sécurité Essentiel</td><td>990 € HT (one-shot)</td><td class="t-comm">198 € fixe</td><td class="t-dash">—</td><td class="t-dash">—</td></tr>
+              <tr><td>Pack Résilience Pro</td><td>1 990 € HT (one-shot)</td><td class="t-comm">398 € fixe</td><td class="t-dash">—</td><td class="t-dash">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SLIDE 7 — TRAJECTOIRE -->
+      <div class="slide s7 bg-navy" style="flex-direction:column">
+        <div class="sh">
+          <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
+          <div class="sh-div"></div>
+          <div><div class="sh-title">Votre trajectoire de revenus</div><div class="sh-sub">Objectifs de progression — Barème SAFEDIRCOM-2026-V1</div></div>
+        </div>
+        <div class="phases">
+          <div class="phase phase-blue">
+            <div class="phase-icon">🚀</div>
+            <div class="phase-num">Phase 01</div>
+            <div class="phase-title">Démarrage</div>
+            <div class="phase-period">0 → 6 mois</div>
+            <div class="phase-target">🎯 0 → 15 abonnements actifs</div>
+            <div class="phase-income">15 000 – 25 000 €/an</div>
+            <div class="phase-tip">💡 2 à 3 nouveaux abonnements/mois</div>
+          </div>
+          <div class="phase phase-green">
+            <div class="phase-icon">📈</div>
+            <div class="phase-num">Phase 02</div>
+            <div class="phase-title">Développement</div>
+            <div class="phase-period">Année 2</div>
+            <div class="phase-target">🎯 30 → 50 abonnements actifs</div>
+            <div class="phase-income">35 000 – 50 000 €/an</div>
+            <div class="phase-tip">💡 Récurrent en construction</div>
+          </div>
+          <div class="phase phase-gold">
+            <div class="phase-icon">🏆</div>
+            <div class="phase-num">Phase 03</div>
+            <div class="phase-title">Maturité</div>
+            <div class="phase-period">Année 3+</div>
+            <div class="phase-target">🎯 60 → 100 abonnements actifs</div>
+            <div class="phase-income">55 000 – 80 000 €/an</div>
+            <div class="phase-tip">💡 Rente récurrente dominante</div>
+          </div>
+        </div>
+        <div class="phases-footer">🔁 La puissance du récurrent : chaque abonnement signé continue à vous rémunérer chaque mois — <span>votre effort d'aujourd'hui génère une rente demain.</span></div>
+      </div>
+
+      <!-- SLIDE 8 — ASSURANCE & HORIZONS 2026 -->
+      <div class="slide bg-dark">
+        <div class="sh">
+          <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
+          <div class="sh-div"></div>
+          <div><div class="sh-title">Assurance &amp; Horizons 2026</div><div class="sh-sub">Une nouvelle dimension s'ouvre pour vous</div></div>
+        </div>
+        <div class="s-horizon">
+          <div class="horizon-left">
+            <div class="orias-badge">
+              <div class="orias-icon">🏦</div>
+              <div class="orias-label">Enregistrement officiel</div>
+              <div class="orias-title">S@FE — Courtier en assurance</div>
+              <div class="orias-date">📅 Depuis le 18 juin 2026 · Registre ORIAS</div>
+            </div>
+            <div class="horizon-timeline">
+              <div class="ht-item">
+                <div class="ht-dot"></div>
+                <div class="ht-content">
+                  <div class="ht-date">Aujourd'hui</div>
+                  <div class="ht-text">Prospection RGPD, SEO, Click &amp; Collect, Cyber — portefeuille actuel</div>
+                </div>
+              </div>
+              <div class="ht-item">
+                <div class="ht-dot"></div>
+                <div class="ht-content">
+                  <div class="ht-date">Décembre 2026</div>
+                  <div class="ht-text">Formation IAS3 réservée aux <strong style="color:#b8952a">meilleurs DCI</strong> — mandataire d'intermédiaire en assurance</div>
+                </div>
+              </div>
+              <div class="ht-item">
+                <div class="ht-dot" style="background:#7c3aed"></div>
+                <div class="ht-content">
+                  <div class="ht-date" style="color:#a78bfa">2027 — Confidentiel</div>
+                  <div class="ht-text" style="color:#94a3b8">Une initiative stratégique en cours de finalisation offrira aux DCI les plus performants un avantage concurrentiel inédit.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="horizon-right">
+            <div class="horizon-spec-title">🎯 Spécialisations assurance ciblées</div>
+            <div class="horizon-specs">
+              <div class="hspec">
+                <div class="hspec-icon">🛡</div>
+                <div>
+                  <div class="hspec-name">Cyber-assurance</div>
+                  <div class="hspec-desc">Extension naturelle de nos audits cyber existants — même client, même besoin, nouveau produit</div>
+                </div>
+              </div>
+              <div class="hspec">
+                <div class="hspec-icon">⚕️</div>
+                <div>
+                  <div class="hspec-name">RC Pro Santé</div>
+                  <div class="hspec-desc">Médecins, cliniques, EHPAD — secteur santé déjà dans notre cœur de cible RGPD</div>
+                </div>
+              </div>
+              <div class="hspec">
+                <div class="hspec-icon">💻</div>
+                <div>
+                  <div class="hspec-name">Intégration CRM S@FE</div>
+                  <div class="hspec-desc">Produits assurance directement accessibles dans votre tableau de bord d'ici fin 2026</div>
+                </div>
+              </div>
+            </div>
+            <div class="horizon-candy">
+              <div class="candy-label">🔒 Pour les profils retenus</div>
+              <div class="candy-text">« Un projet numérique en cours de développement changera profondément la façon de travailler dans notre secteur. Les DCI qui performeront seront les premiers à y avoir accès. »</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 9 — MISSIONS -->
+      <div class="slide s8 bg-light">
+        <div class="sh">
+          <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
+          <div class="sh-div"></div>
+          <div><div class="sh-title" style="color:#fff">Vos missions au quotidien</div></div>
+        </div>
+        <div class="missions-grid">
+          <div class="mission-card"><div class="mission-num mn1">01</div><div><div class="mission-title">Chasse &amp; Prospection active</div><div class="mission-desc">Identifier et approcher les décideurs de votre zone. Cold call, LinkedIn, réseaux locaux, terrain.</div></div></div>
+          <div class="mission-card"><div class="mission-num mn2">02</div><div><div class="mission-title">Vente Conseil B2B</div><div class="mission-desc">Qualifier les besoins, présenter nos offres packagées et négocier les avant-contrats en direct.</div></div></div>
+          <div class="mission-card"><div class="mission-num mn3">03</div><div><div class="mission-title">Réseautage &amp; Prescripteurs</div><div class="mission-desc">Animer un écosystème local : experts-comptables, avocats, courtiers, associations professionnelles.</div></div></div>
+          <div class="mission-card"><div class="mission-num mn4">04</div><div><div class="mission-title">Pilotage CRM &amp; Reporting</div><div class="mission-desc">Saisir chaque contact, chaque contrat dans le CRM S@FE. Reporting automatique — votre admin voit tout en temps réel.</div></div></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 9 — CE QUE NOUS ATTENDONS -->
+      <div class="slide s9 bg-navy">
+        <div class="sh">
+          <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
+          <div class="sh-div"></div>
+          <div><div class="sh-title">Ce que nous attendons de vous</div></div>
+        </div>
+        <div class="attentes-grid">
+          <div class="attente-panel ap-required">
+            <div class="ap-header blue">✅ Indispensables</div>
+            <div class="ap-list">
+              <div class="ap-item">Profil « chasseur » — goût du terrain</div>
+              <div class="ap-item">Expérience vente B2B (TPE/PME ou services)</div>
+              <div class="ap-item">Rigueur CRM — saisie systématique dans S@FE CRM</div>
+              <div class="ap-item">Statut indépendant ou prêt à le devenir (30 jours)</div>
+              <div class="ap-item">RC Pro obligatoire avant le 1er RDV client</div>
+              <div class="ap-item">Excellent relationnel &amp; présentation</div>
+            </div>
+          </div>
+          <div class="attente-panel ap-bonus">
+            <div class="ap-header gold">⭐ Atouts supplémentaires</div>
+            <div class="ap-list">
+              <div class="ap-item">Affinité avec le digital ou la conformité</div>
+              <div class="ap-item">Réseau prescripteurs actif (experts-comptables…)</div>
+              <div class="ap-item">Connaissance secteur santé ou immobilier</div>
+              <div class="ap-item">Enregistrement ORIAS / IAS existant</div>
+              <div class="ap-item">Appétence assurance — objectif IAS3 décembre 2026</div>
+              <div class="ap-item">Multilinguisme (FR / EN / AR apprécié)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 10 — PROCHAINES ÉTAPES -->
+      <div class="slide s10 bg-light">
+        <div class="sh">
+          <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
+          <div class="sh-div"></div>
+          <div><div class="sh-title" style="color:#fff">Prochaines étapes</div></div>
+        </div>
+        <div class="steps-timeline">
+          <div class="step-item"><div class="step-date">22 juin</div><div class="step-circle sc1">1</div><div class="step-card"><div class="step-card-date c1">22 juin</div><div class="step-card-title">Réunion collective</div><div class="step-card-desc">Présentation S@FE, barème officiel, démo CRM, Q&amp;A</div></div></div>
+          <div class="step-item"><div class="step-date g2">J+7</div><div class="step-circle sc2">2</div><div class="step-card"><div class="step-card-date c2">J+7</div><div class="step-card-title">Entretien RH</div><div class="step-card-desc">Motivation, projet, transition indépendant, réalité financière</div></div></div>
+          <div class="step-item"><div class="step-date g3">J+14</div><div class="step-circle sc3">3</div><div class="step-card"><div class="step-card-date c3">J+14</div><div class="step-card-title">Entretien Technique</div><div class="step-card-desc">Mise en situation, pitch commercial, connaissance marché</div></div></div>
+          <div class="step-item"><div class="step-date g4">J+21</div><div class="step-circle sc4">4</div><div class="step-card"><div class="step-card-date c4">J+21</div><div class="step-card-title">Décision &amp; Onboarding</div><div class="step-card-desc">Contrat DCI, accès CRM activé, formation et outils fournis</div></div></div>
+        </div>
+      </div>
+
+      <!-- SLIDE 11 — MERCI -->
+      <div class="slide s11 bg-dark">
+        <div class="sh">
+          <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
+        </div>
+        <div class="s11-body">
+          <svg width="120" height="140" viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg>
+          <div class="s11-title">Merci pour votre présence !</div>
+          <div class="s11-sub">Des questions ?</div>
+          <div class="s11-contact">
+            <div class="s11-contact-row"><span>📧</span> contact@safe-digitalisation.fr &nbsp;·&nbsp; <span>📞</span> 01 84 16 26 89</div>
+            <div class="s11-contact-row"><span>🌐</span> safe-digitalisation.fr &nbsp;·&nbsp; <span>💻</span> crm.safe-digitalisation.fr</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /slides-container -->
+
+    <!-- Controls -->
+    <div id="controls">
+      <button class="ctrl-btn" id="btn-prev">← Précédent</button>
+      <span id="slide-counter">1 / 11</span>
+      <button class="ctrl-btn" id="btn-next">Suivant →</button>
+    </div>
+
+  </div><!-- /slides-wrap -->
+
+  <!-- ══════════════════════════ ADMIN PANEL ══════════════════════════ -->
+  <div id="admin-panel">
+    <div id="ap-header">
+      <div id="ap-seq">Accueil &amp; tour de table</div>
+      <div id="ap-chrono">00:00</div>
+      <div id="ap-seq-dur">Séquence · 10 min</div>
+    </div>
+    <div id="ap-body">
+      <!-- Filled by JS -->
+    </div>
+    <div id="ap-footer">
+      <div id="ap-timer-ctrl">
+        <button class="timer-btn" id="btn-timer-start">▶ Démarrer chrono</button>
+        <button class="timer-btn" id="btn-timer-reset">↺ Reset</button>
+      </div>
+      <div id="ap-nav">
+        <button class="ap-nav-btn" id="ap-prev">← Préc.</button>
+        <button class="ap-nav-btn" id="ap-next">Suiv. →</button>
+      </div>
+      <a href="grille.html" target="_blank" id="ap-grille-link">📋 Ouvrir la grille d'évaluation</a>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- Admin toggle (outside the slide) -->
+<button id="admin-toggle" title="Panneau admin (A)">⚙</button>
+
+<!-- PIN overlay admin -->
+<div id="admin-pin-overlay">
+  <div id="admin-pin-box">
+    <div class="apin-title">🔐 Accès panneau admin</div>
+    <div class="apin-dots">
+      <div class="apin-dot" id="ap0"></div>
+      <div class="apin-dot" id="ap1"></div>
+      <div class="apin-dot" id="ap2"></div>
+      <div class="apin-dot" id="ap3"></div>
+    </div>
+    <div class="apin-keypad">
+      <button class="apin-key" onclick="apinKey('1')">1</button>
+      <button class="apin-key" onclick="apinKey('2')">2</button>
+      <button class="apin-key" onclick="apinKey('3')">3</button>
+      <button class="apin-key" onclick="apinKey('4')">4</button>
+      <button class="apin-key" onclick="apinKey('5')">5</button>
+      <button class="apin-key" onclick="apinKey('6')">6</button>
+      <button class="apin-key" onclick="apinKey('7')">7</button>
+      <button class="apin-key" onclick="apinKey('8')">8</button>
+      <button class="apin-key" onclick="apinKey('9')">9</button>
+      <button class="apin-key del" onclick="apinCancel()">Annuler</button>
+      <button class="apin-key" onclick="apinKey('0')">0</button>
+      <button class="apin-key del" onclick="apinDel()">⌫</button>
+    </div>
+    <div id="apin-error"></div>
+  </div>
+</div>
+
+<script>
+// ── SLIDE DATA ──────────────────────────────────────────────────────
+const SLIDES = [
+  {
+    seq: `ACCUEIL & TOUR DE TABLE`,
+    time: `00:00`, dur: `10 min`,
+    alert: null,
+    script: `« Bonjour à tous et bienvenue ! Je suis ravi de vous retrouver pour cette session de présentation de S@FE Digitalisation. Nous sommes 6 aujourd'hui. Avant de démarrer, je vous propose un rapide tour de table : prénom, ville, et en une phrase — ce qui vous a donné envie de candidater. »`,
+    points: [`Niveau d'énergie, préparation et qualité d'élocution`, `Motivation annoncée : cohérente avec un modèle 100 % indépendant ?`, `Thomas G. : seul candidat ORIAS — valoriser positivement lors de son tour`, `2 min max par candidat — couper bienveillamment si nécessaire`, `Prendre note des zones géographiques pour personnaliser les exemples ensuite`],
+    questions: []
+  },
+  {
+    seq: `VISION & MISSION S@FE`,
+    time: `00:10`, dur: `25 min`,
+    alert: null,
+    script: `« Voici comment nous allons organiser nos 1h30 ensemble. 6 séquences — on commence par se présenter, on plonge dans notre vision et nos offres, puis on rentre dans le concret : rémunération, missions et CRM. On finira sur vos questions et les prochaines étapes. »`,
+    points: [`Afficher cette slide brièvement — 2 min max, juste pour poser le cadre`],
+    questions: []
+  },
+  {
+    seq: `VISION & MISSION S@FE`,
+    time: `00:10`, dur: `25 min`,
+    alert: null,
+    script: `« S@FE Digitalisation est une société de conseil en services numériques dédiée à la performance et à la protection des TPE/PME françaises. On intervient à l'intersection du droit, du digital et de la cybersécurité. Notre mission : transformer une contrainte réglementaire en véritable avantage concurrentiel pour nos clients. »`,
+    points: [`S@FE en croissance — SIRET 104 699 558`, `3,8 millions de TPE/PME concernées RGPD — marché immense`, `4 zones géographiques — évite toute concurrence interne entre DCI`, `Délai de validation devis : 48h — argument fort face aux clients`, `Adapter l'exemple à chaque zone : IDF = cabinets médicaux / Pays Basque = restaurateurs / PACA = cliniques`],
+    questions: []
+  },
+  {
+    seq: `VISION & MISSION S@FE`,
+    time: `00:10`, dur: `25 min`,
+    alert: null,
+    script: `RGPD : « Depuis 2018, toute entreprise collectant des données clients est soumise au RGPD. Une infraction peut coûter jusqu'à 4 % du CA annuel. C'est une obligation légale non négociable — le besoin existe déjà. »\n\nSEO : « 97 % des clients cherchent un commerce local en ligne avant de se déplacer. Si votre boulangerie n'est pas en première page Google Maps, vous perdez des clients chaque jour. Nous réglons ça. »\n\nCyber : « 1 PME sur 2 attaquée dépose le bilan dans les 18 mois. Nos audits détectent les failles avant que les hackers ne les exploitent. »`,
+    points: [],
+    questions: []
+  },
+  {
+    seq: `VISION & MISSION S@FE`,
+    time: `00:10`, dur: `25 min`,
+    alert: null,
+    script: `« 4 segments : TPE/PME, Secteur Santé, Professions libérales, Artisans & Commerçants. Message clé à ancrer : toute entreprise traitant des données personnelles est un prospect qualifié. »`,
+    points: [`Ne pas s'attarder trop longtemps ici — les candidats veulent surtout comprendre la rémunération et le CRM`],
+    questions: [`Avez-vous des prospects potentiels en tête dans votre réseau actuel ?`, `Avez-vous déjà eu à expliquer le RGPD à un non-initié ? Comment vous l'abordez ?`]
+  },
+  {
+    seq: `BARÈME OFFICIEL & TRAJECTOIRE`,
+    time: `00:35`, dur: `15 min`,
+    alert: `🔴 ANNONCER CLAIREMENT AVANT TOUT : modèle 100 % indépendant — aucun salaire fixe, aucun remboursement de frais, aucune mutuelle. Rémunération uniquement sur ventes réellement encaissées, versée sous 15 jours après clôture du mois.`,
+    script: `« Regardons maintenant comment vous serez rémunérés. Le barème SAFEDIRCOM-2026-V1 est entré en vigueur le 12 juin 2026. Pour le SEO Local et le Click & Collect : commission à la signature, bonus fidélité à M+4 si le client est actif, et 15 % récurrents. Pour le RGPD one-shot et la Cybersécurité : commission fixe à la signature. »`,
+    points: [`Bonus Fidélité M+4 : versé UNIQUEMENT si client actif et à jour à l'issue du 3e mois`, `Clause anti-churn : non dû si résiliation dans les 90 premiers jours`, `Afficher cette slide suffisamment longtemps — c'est la slide qui crée l'engagement ou les doutes`, `Laisser le silence s'installer après l'annonce du modèle 100 % variable`],
+    questions: []
+  },
+  {
+    seq: `BARÈME OFFICIEL & TRAJECTOIRE`,
+    time: `00:35`, dur: `15 min`,
+    alert: null,
+    script: `« Voici comment votre portefeuille grandit dans le temps. En Phase 1, sur vos 6 premiers mois : 0 à 15 abonnements actifs — entre 15 000 et 25 000 €/an. En Phase 2, année 2 : 30 à 50 abonnements — 35 000 à 50 000 €/an. En Phase 3, à maturité : 60 à 100 abonnements — 55 000 à 80 000 €/an. La vraie puissance : le récurrent. »`,
+    points: [`Observer les réactions face à l'absence de fixe — un candidat qui hésite devra être recadré en entretien RH`],
+    questions: [`Comment avez-vous prévu de gérer financièrement les premiers mois sans revenus fixes ?`, `Avez-vous déjà travaillé en 100 % variable ? Quelle a été votre expérience ?`, `Que représente pour vous la notion de rente récurrente dans votre projet de vie ?`]
+  },
+  {
+    seq: `ASSURANCE & HORIZONS 2026`,
+    time: `00:50`, dur: `5 min`,
+    alert: `🔴 Ne jamais citer le nom du projet confidentiel. Évoquer uniquement comme "initiative stratégique" ou "projet numérique propriétaire". Réserver les détails aux entretiens individuels des profils retenus.`,
+    script: `« Depuis le 18 juin 2026, S@FE est officiellement enregistré à l'ORIAS en tant que courtier en assurance. Cela ouvre une nouvelle dimension pour vous. D'ici décembre 2026, nous formerons les meilleurs d'entre vous au statut IAS3 — mandataire d'intermédiaire en assurance. Deux spécialisations prioritaires : la cyber-assurance, extension naturelle de nos audits que vous vendez déjà, et la RC Pro santé, pour les médecins et cliniques que vous prospectez. Ces produits seront intégrés directement dans le CRM. Et je terminerai simplement en disant ceci : les DCI qui performeront auront accès à quelque chose que nous ne pouvons pas encore détailler ici — une initiative qui changera profondément notre façon de travailler. »`,
+    points: [`ORIAS = enregistrement effectif depuis le 18/06/2026 — argument de crédibilité fort`, `IAS3 = formation réservée aux DCI ayant atteint les objectifs Phase 1`, `Cyber-assurance : prolongement direct des audits cybersécurité existants`, `RC Pro santé : secteur santé déjà dans notre cœur de cible RGPD`, `Projet confidentiel 2027 : ne jamais répondre à une question — dire "informations en entretien individuel"`],
+    questions: [`Avez-vous déjà travaillé ou vendu de l'assurance ? Comment vous positionnez-vous sur ce marché ?`]
+  },
+  {
+    seq: `MISSIONS DCI AU QUOTIDIEN`,
+    time: `00:55`, dur: `15 min`,
+    alert: `🔴 La saisie CRM n'est pas optionnelle. Pas de saisie = pas de commission validée. C'est le seul moyen pour S@FE de valider les versements dans les délais.`,
+    script: `« Votre rôle de DCI repose sur 4 missions. La première : chasse & prospection — cold call, LinkedIn, terrain. La deuxième : vente conseil B2B — qualifier, présenter, négocier. La troisième : réseautage & prescripteurs — experts-comptables, avocats, courtiers. La quatrième — non optionnelle — le pilotage CRM. »`,
+    points: [],
+    questions: [`Sur laquelle de ces 4 missions vous sentez-vous le plus à l'aise ?`, `Avez-vous déjà utilisé un CRM au quotidien ? Lequel ?`]
+  },
+  {
+    seq: `CE QUE NOUS ATTENDONS`,
+    time: `01:05`, dur: `10 min`,
+    alert: null,
+    script: `« Du côté des indispensables : profil chasseur, expérience B2B, rigueur CRM, statut indépendant ou démarche dans les 30 jours, RC Pro, excellent relationnel. Du côté des atouts : affinité digital/conformité, réseau prescripteurs, connaissance santé, enregistrement ORIAS — là je pense à Thomas — et le multilinguisme. »`,
+    points: [`C'est le bon moment pour détecter les malentendus — mieux vaut les révéler ici qu'en entretien individuel`, `Valoriser Thomas G. explicitement sur son statut ORIAS devant le groupe`],
+    questions: [`Sur les critères indispensables, où vous situez-vous aujourd'hui ?`, `L'absence de fixe — c'est une liberté ou une inquiétude pour vous ?`]
+  },
+  {
+    seq: `PROCHAINES ÉTAPES`,
+    time: `01:15`, dur: `10 min`,
+    alert: null,
+    script: `« Voici le calendrier de la suite. Aujourd'hui, 22 juin : réunion collective. Dans 7 jours : entretien RH — motivation, projet, transition indépendant. À J+14 : entretien technique — mise en situation et pitch. À J+21 : décision finale et onboarding — contrat DCI, accès CRM, formation et outils. »`,
+    points: [`Ne pas révéler les scores ou comparaisons entre candidats à ce stade`, `Préciser à Thomas G. que sa certification ORIAS lui permettra de démarrer immédiatement sur PACA dès l'onboarding`],
+    questions: []
+  },
+  {
+    seq: `QUESTIONS & CLÔTURE`,
+    time: `01:25`, dur: `5 min`,
+    alert: null,
+    script: `« Merci à vous six pour votre présence et l'intérêt que vous portez à S@FE Digitalisation. Vous recevrez un email dans les 24 heures avec les créneaux disponibles pour vos entretiens individuels. N'hésitez pas à nous écrire si vous avez des questions d'ici là. À très vite ! »`,
+    points: [`Laisser chaque candidat poser 1 à 2 questions`, `Envoyer l'email de suivi dans les 24h avec créneaux d'entretiens`],
+    questions: [`Comment sont calculées les commissions ? → Slide 6`, `Peut-on cumuler S@FE avec une autre activité ? → Oui, sans conflit d'intérêts`, `Quand peut-on commencer à vendre ? → Dès signature DCI et accès CRM (J+21)`, `L'ORIAS est-il obligatoire ? → Obligatoire produits assurance — Thomas G. déjà inscrit`]
+  }
+];
+
+// ── STATE ───────────────────────────────────────────────────────────
+let current = 0;
+const total = SLIDES.length;
+let timerSecs = 0;
+let timerRunning = false;
+let timerInterval = null;
+
+// ── RESIZE ──────────────────────────────────────────────────────────
+function fitSlide() {
+  const wrap = document.getElementById('slides-wrap');
+  const cont = document.getElementById('slides-container');
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  const scale = Math.min(w / 1920, h / 1080);
+  const left = (w - 1920 * scale) / 2;
+  const top  = (h - 1080 * scale) / 2;
+  cont.style.transform = `scale(${scale})`;
+  cont.style.left = left + 'px';
+  cont.style.top  = top  + 'px';
+}
+window.addEventListener('resize', fitSlide);
+fitSlide();
+
+// ── NAVIGATION ──────────────────────────────────────────────────────
+function goTo(n) {
+  const slides = document.querySelectorAll('.slide');
+  slides[current].classList.remove('active');
+  current = Math.max(0, Math.min(n, total - 1));
+  slides[current].classList.add('active');
+  document.getElementById('slide-counter').textContent = (current + 1) + ' / ' + total;
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === total - 1;
+  renderAdmin();
+}
+
+document.getElementById('btn-prev').addEventListener('click', () => goTo(current - 1));
+document.getElementById('btn-next').addEventListener('click', () => goTo(current + 1));
+document.getElementById('ap-prev').addEventListener('click', () => goTo(current - 1));
+document.getElementById('ap-next').addEventListener('click', () => goTo(current + 1));
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(current - 1);
+  else if (e.key === 'a' || e.key === 'A') toggleAdmin();
+  else if (e.key === 'f' || e.key === 'F') document.documentElement.requestFullscreen?.();
+});
+
+goTo(0);
+
+// ── ADMIN PIN ────────────────────────────────────────────────────────
+const ADMIN_PIN = '2206';
+const ADMIN_SESSION_KEY = 'safe_admin_fdv';
+let apinValue = '';
+
+function requireAdminPin(onSuccess) {
+  if (sessionStorage.getItem(ADMIN_SESSION_KEY) === 'ok') { onSuccess(); return; }
+  apinValue = '';
+  apinUpdateDots();
+  document.getElementById('apin-error').textContent = '';
+  document.getElementById('admin-pin-overlay').classList.add('show');
+  window._apinCallback = onSuccess;
+}
+function apinKey(k) {
+  if (apinValue.length >= 4) return;
+  apinValue += k;
+  apinUpdateDots();
+  if (apinValue.length === 4) apinCheck();
+}
+function apinDel() {
+  apinValue = apinValue.slice(0, -1);
+  apinUpdateDots();
+  document.getElementById('apin-error').textContent = '';
+}
+function apinCancel() {
+  apinValue = '';
+  apinUpdateDots();
+  document.getElementById('admin-pin-overlay').classList.remove('show');
+}
+function apinUpdateDots() {
+  for (let i = 0; i < 4; i++)
+    document.getElementById('ap' + i).classList.toggle('filled', i < apinValue.length);
+}
+function apinCheck() {
+  if (apinValue === ADMIN_PIN) {
+    sessionStorage.setItem(ADMIN_SESSION_KEY, 'ok');
+    document.getElementById('admin-pin-overlay').classList.remove('show');
+    if (typeof window._apinCallback === 'function') window._apinCallback();
+  } else {
+    document.getElementById('apin-error').textContent = 'Code incorrect.';
+    apinValue = '';
+    apinUpdateDots();
+    setTimeout(() => { document.getElementById('apin-error').textContent = ''; }, 1500);
+  }
+}
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('admin-pin-overlay').classList.contains('show')) return;
+  if (e.key >= '0' && e.key <= '9') apinKey(e.key);
+  else if (e.key === 'Backspace') apinDel();
+  else if (e.key === 'Escape') apinCancel();
+});
+
+// ── ADMIN PANEL ─────────────────────────────────────────────────────
+function toggleAdmin() {
+  if (document.getElementById('app').classList.contains('admin-open')) {
+    document.getElementById('app').classList.remove('admin-open');
+    fitSlide();
+  } else {
+    requireAdminPin(() => {
+      document.getElementById('app').classList.add('admin-open');
+      fitSlide();
+    });
+  }
+}
+document.getElementById('admin-toggle').addEventListener('click', toggleAdmin);
+
+function renderAdmin() {
+  const d = SLIDES[current];
+  document.getElementById('ap-seq').textContent = d.seq;
+  document.getElementById('ap-seq-dur').textContent = 'Séquence ' + d.time + ' · ' + d.dur;
+
+  let html = '';
+  if (d.alert) html += `<div class="ap-alert">${d.alert}</div>`;
+  if (d.script) {
+    html += `<div class="ap-section"><div class="ap-section-title">Script</div><div class="ap-script">${d.script.replace(/\n/g,'<br>')}</div></div>`;
+  }
+  if (d.points.length) {
+    html += `<div class="ap-section"><div class="ap-section-title">Points clés</div><div class="ap-points">${d.points.map(p=>`<div class="ap-point">${p}</div>`).join('')}</div></div>`;
+  }
+  if (d.questions.length) {
+    html += `<div class="ap-section"><div class="ap-section-title">Questions à poser</div><div class="ap-questions">${d.questions.map(q=>`<div class="ap-question">${q}</div>`).join('')}</div></div>`;
+  }
+  document.getElementById('ap-body').innerHTML = html;
+}
+
+// ── CHRONO ──────────────────────────────────────────────────────────
+function fmtTime(s) {
+  const h = Math.floor(s/3600).toString().padStart(2,'0');
+  const m = Math.floor((s%3600)/60).toString().padStart(2,'0');
+  const ss = (s%60).toString().padStart(2,'0');
+  return h + ':' + m + ':' + ss;
+}
+function tickTimer() {
+  timerSecs++;
+  document.getElementById('ap-chrono').textContent = fmtTime(timerSecs);
+}
+document.getElementById('btn-timer-start').addEventListener('click', () => {
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    document.getElementById('btn-timer-start').textContent = '▶ Reprendre';
+  } else {
+    timerInterval = setInterval(tickTimer, 1000);
+    timerRunning = true;
+    document.getElementById('btn-timer-start').textContent = '⏸ Pause';
+  }
+});
+document.getElementById('btn-timer-reset').addEventListener('click', () => {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSecs = 0;
+  document.getElementById('ap-chrono').textContent = '00:00:00';
+  document.getElementById('btn-timer-start').textContent = '▶ Démarrer chrono';
+});
+</script>
+</body>
+</html>
