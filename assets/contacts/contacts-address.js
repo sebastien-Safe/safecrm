@@ -92,12 +92,26 @@ function initContactAddressListeners() {
     sel.innerHTML = '<option value="">Recherche…</option>';
     try {
       const resp = await fetch('https://geo.api.gouv.fr/communes?codePostal=' + cp + '&fields=nom&format=json');
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
       const communes = await resp.json();
-      if (!communes.length) { sel.innerHTML = '<option value="">Aucune commune trouvée</option>'; return; }
+      if (!Array.isArray(communes) || !communes.length) {
+        sel.innerHTML = '<option value="">Aucune commune trouvée</option>';
+        return;
+      }
       sel.innerHTML = communes.map(c => `<option value="${c.nom}">${c.nom}</option>`).join('');
       $('#c-code-postal-ville').value = cp + ' ' + sel.value;
     } catch(e) {
-      sel.innerHTML = '<option value="">Erreur de recherche</option>';
+      console.error('API communes erreur :', e);
+      // Fallback : saisie manuelle
+      sel.innerHTML = '<option value="">—</option>';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = 'Saisir la ville manuellement';
+      input.style.cssText = 'margin-top:6px;width:100%;padding:7px 10px;border-radius:7px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff;font-size:.88rem';
+      input.addEventListener('input', () => {
+        $('#c-code-postal-ville').value = cp + ' ' + input.value.trim();
+      });
+      sel.parentElement.appendChild(input);
     }
   });
   $('#c-ville')?.addEventListener('change', function() {
