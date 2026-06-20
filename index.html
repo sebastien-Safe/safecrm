@@ -468,6 +468,7 @@
         <button class="navlink" data-admin-tab="per-user">Par utilisateur</button>
         <button class="navlink" data-admin-tab="users">Gestion des utilisateurs</button>
         <button class="navlink" data-admin-tab="registre">📒 Registre RGPD</button>
+        <button class="navlink" data-admin-tab="securite" id="admin-tab-securite">🔒 Sécurité</button>
       </div>
 
       <div class="admin-panel" id="admin-panel-overview">
@@ -573,6 +574,32 @@
         </div>
 
       </div>
+
+      <div class="admin-panel" id="admin-panel-securite" style="display:none">
+        <div class="panel-block">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+            <div>
+              <h3 style="margin:0">🔒 Sécurité — Journal de connexion</h3>
+              <p class="mut" style="margin-top:4px">50 dernières tentatives · Alertes verrouillage en rouge.</p>
+            </div>
+            <button class="btn btn-out btn-sm" onclick="renderSecurityPanel()">↺ Actualiser</button>
+          </div>
+          <div id="security-alerts-wrap" style="margin-bottom:18px"></div>
+          <div class="scrollx">
+            <table class="tbl" id="security-audit-table">
+              <thead><tr>
+                <th>Date / heure</th>
+                <th>E-mail</th>
+                <th>Résultat</th>
+                <th>Verrou</th>
+                <th>IP</th>
+              </tr></thead>
+              <tbody id="security-audit-body"><tr><td colspan="5" class="empty">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </section>
 
   </main>

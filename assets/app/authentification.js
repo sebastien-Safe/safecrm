@@ -117,19 +117,77 @@ async function showApp() {
   await loadAll();
 }
 
+// ---------------------------------------------------------
+// PROTECTION ANTI-INTRUSION — verrouillage progressif
+// ---------------------------------------------------------
+const _LOCK_MAX      = 5;
+const _LOCK_DURATION = 15 * 60 * 1000; // 15 min
+
+function _lockKey(email) { return 'safe_lk_' + btoa(email.toLowerCase()); }
+function _getLock(email) {
+  try { return JSON.parse(localStorage.getItem(_lockKey(email))) || {}; } catch { return {}; }
+}
+function _setLock(email, data) { localStorage.setItem(_lockKey(email), JSON.stringify(data)); }
+function _clearLock(email) { localStorage.removeItem(_lockKey(email)); }
+
+function _isLocked(email) {
+  const s = _getLock(email);
+  if (!s.until) return false;
+  if (Date.now() < s.until) return s;
+  _clearLock(email);
+  return false;
+}
+
+function _recordFail(email) {
+  const s = _getLock(email);
+  const n = (s.count || 0) + 1;
+  const data = n >= _LOCK_MAX
+    ? { count: n, until: Date.now() + _LOCK_DURATION }
+    : { count: n };
+  _setLock(email, data);
+  _logLoginAttempt(email, false, n >= _LOCK_MAX);
+  return data;
+}
+
+async function _logLoginAttempt(email, success, locked) {
+  try {
+    await sb.rpc('log_login_attempt', { p_email: email, p_success: success, p_locked: !!locked });
+  } catch { /* non bloquant */ }
+}
+
 async function login() {
-  const email = $('#login-email').value.trim();
+  const email    = $('#login-email').value.trim();
   const password = $('#login-password').value;
   $('#login-error').textContent = '';
+
   if (!email || !password) {
     $('#login-error').textContent = 'Merci de renseigner e-mail et mot de passe.';
     return;
   }
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) {
-    $('#login-error').textContent = "Connexion impossible : " + error.message;
+
+  // Vérifier si le compte est verrouillé
+  const lock = _isLocked(email);
+  if (lock) {
+    const mins = Math.ceil((lock.until - Date.now()) / 60000);
+    $('#login-error').textContent =
+      `Compte verrouillé suite à ${_LOCK_MAX} tentatives échouées — réessayez dans ${mins} min.`;
     return;
   }
+
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) {
+    const data     = _recordFail(email);
+    const restant  = _LOCK_MAX - data.count;
+    $('#login-error').textContent = data.until
+      ? `Trop de tentatives — compte verrouillé 15 minutes.`
+      : `Connexion impossible. ${restant} tentative${restant > 1 ? 's' : ''} restante${restant > 1 ? 's' : ''} avant verrouillage.`;
+    return;
+  }
+
+  // Succès — effacer le compteur et journaliser
+  _clearLock(email);
+  _logLoginAttempt(email, true, false);
+
   // Si l'utilisateur a un facteur TOTP enrôlé, on lui demande le code à 6 chiffres
   const ok = await challengeTOTPIfNeeded();
   if (!ok) {

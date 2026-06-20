@@ -899,14 +899,72 @@ function currentJoursTravailles() {
 function switchAdminTab(tab) {
   state.adminView = tab;
   $all('[data-admin-tab]').forEach(b => b.classList.toggle('active', b.dataset.adminTab === tab));
-  ['overview', 'per-user', 'users', 'registre'].forEach(t => {
+  ['overview', 'per-user', 'users', 'registre', 'securite'].forEach(t => {
     const el = $('#admin-panel-' + t);
     if (el) el.style.display = (t === tab) ? '' : 'none';
   });
-  if (tab === 'users') loadAdminUsers().then(renderAdminUsers);
+  if (tab === 'users')    loadAdminUsers().then(renderAdminUsers);
   if (tab === 'overview') renderAdminOverview();
   if (tab === 'per-user') renderAdminPerUser();
   if (tab === 'registre') renderRegistreRGPD();
+  if (tab === 'securite') renderSecurityPanel();
+}
+
+// ── Panel Sécurité ────────────────────────────────────────
+async function renderSecurityPanel() {
+  const tbody      = $('#security-audit-body');
+  const alertsWrap = $('#security-alerts-wrap');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="5" class="empty">Chargement…</td></tr>';
+  if (alertsWrap) alertsWrap.innerHTML = '';
+
+  try {
+    // Alertes non résolues
+    const { data: alerts } = await sb.rpc('get_login_alerts');
+    const unresolved = (alerts || []).filter(a => !a.resolved);
+    if (alertsWrap && unresolved.length) {
+      alertsWrap.innerHTML = unresolved.map(a => `
+        <div style="background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.25);border-radius:10px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div>
+            <div style="font-weight:700;font-size:.85rem;color:#dc2626">🚨 Intrusion détectée — ${escapeHtml(a.email)}</div>
+            <div style="font-size:.78rem;color:var(--fg-2,#6b7280);margin-top:3px">${escapeHtml(a.details || '')} · ${new Date(a.created_at).toLocaleString('fr-FR')}</div>
+          </div>
+          <button class="btn btn-out btn-sm" onclick="resolveSecurityAlert('${a.id}')">Résolu ✓</button>
+        </div>`).join('');
+    }
+
+    // Journal
+    const { data: rows, error } = await sb.rpc('get_login_audit', { p_limit: 50 });
+    if (error) throw error;
+    if (!rows || !rows.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucune tentative enregistrée.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(r => {
+      const dt      = new Date(r.created_at).toLocaleString('fr-FR');
+      const okBadge = r.success
+        ? '<span style="color:#16a34a;font-weight:600">✓ Succès</span>'
+        : '<span style="color:#dc2626;font-weight:600">✗ Échec</span>';
+      const lockBadge = r.locked
+        ? '<span style="background:#dc2626;color:#fff;font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:4px">VERROU</span>'
+        : '—';
+      const rowStyle = r.locked ? 'background:rgba(220,38,38,.04)' : '';
+      return `<tr style="${rowStyle}">
+        <td class="nowrap" style="font-size:.8rem">${dt}</td>
+        <td>${escapeHtml(r.email)}</td>
+        <td>${okBadge}</td>
+        <td>${lockBadge}</td>
+        <td style="font-size:.78rem;color:var(--fg-2,#6b7280)">${escapeHtml(r.ip_hint || '—')}</td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty">Erreur : ${escapeHtml(e.message)}</td></tr>`;
+  }
+}
+
+async function resolveSecurityAlert(id) {
+  await sb.rpc('resolve_login_alert', { p_id: id });
+  renderSecurityPanel();
 }
 
 // Liste des contacts RGPD KO pour modération admin
