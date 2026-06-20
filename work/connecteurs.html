@@ -66,7 +66,14 @@ h1,h2,h3{font-family:var(--ff-disp);color:#fff;letter-spacing:-.02em}
 .st-non_configure{background:rgba(148,163,184,.1);color:var(--mut)}
 .st-configure{background:rgba(245,158,11,.12);color:var(--warn)}
 .st-actif{background:rgba(34,197,94,.12);color:var(--ok)}
+.st-simule{background:rgba(139,92,246,.15);color:#a78bfa;border:1px solid rgba(139,92,246,.3)}
 .st-desactive{background:rgba(255,77,94,.1);color:var(--alert)}
+/* simulation banner */
+#sim-banner{display:none;position:sticky;top:0;z-index:99;text-align:center;font-family:var(--ff-mono);
+  font-size:.74rem;font-weight:700;padding:6px 16px;
+  background:rgba(139,92,246,.15);border-bottom:1px solid rgba(139,92,246,.3);color:#a78bfa;
+  letter-spacing:.04em;}
+.conn-card.simule{border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.04)}
 .conn-modules{font-family:var(--ff-mono);font-size:.62rem;color:var(--mut)}
 .conn-actions{position:absolute;top:12px;right:12px;display:flex;gap:4px;opacity:0;transition:.15s}
 .conn-card:hover .conn-actions{opacity:1}
@@ -166,6 +173,7 @@ h1,h2,h3{font-family:var(--ff-disp);color:#fff;letter-spacing:-.02em}
 </style>
 </head>
 <body>
+<div id="sim-banner">⚡ MODE SIMULATION ACTIF — Aucun appel réel ne sera effectué</div>
 <div id="toast"></div>
 
 <!-- MODAL -->
@@ -339,7 +347,7 @@ let currentKey = null;
 
 const ST_LABELS = {
   non_configure:'⚫ Non configuré', configure:'🟡 Configuré',
-  actif:'🟢 Actif', desactive:'🔴 Désactivé'
+  actif:'🟢 Actif', simule:'⚡ Simulation', desactive:'🔴 Désactivé'
 };
 const CAT_LABELS = {
   ia:'IA', paiement:'Paiement', seo:'SEO', social:'Social',
@@ -362,8 +370,11 @@ async function reload() {
 
 function updateStats() {
   const actifs = allRows.filter(r => r.statut === 'actif').length;
+  const sims   = allRows.filter(r => r.statut === 'simule').length;
   document.getElementById('topbar-stats').textContent =
-    `${actifs} actif${actifs>1?'s':''} / ${allRows.length} connecteurs`;
+    `${actifs} actif${actifs>1?'s':''} · ${sims} simulation${sims>1?'s':''} / ${allRows.length}`;
+  const banner = document.getElementById('sim-banner');
+  if (banner) banner.style.display = sims > 0 ? 'block' : 'none';
 }
 
 /* ---- GRID ---- */
@@ -450,9 +461,15 @@ async function openModal(key, tab = 'fiche') {
   const actDiv = document.getElementById('m-activer-actions');
   if (st === 'actif') {
     actDiv.innerHTML = `<button class="btn btn-danger" onclick="desactiver()">Désactiver</button>`;
+  } else if (st === 'simule') {
+    actDiv.innerHTML = `
+      <button class="btn btn-danger btn-sm" onclick="desactiver()">Arrêter simulation</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Fermer</button>`;
   } else {
     actDiv.innerHTML = `
       <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-ghost btn-sm" onclick="simuler()" title="Tester les fonctionnalités sans clé API réelle"
+        style="border-color:rgba(139,92,246,.4);color:#a78bfa">⚡ Mode Démo</button>
       <button class="btn btn-gold" onclick="activer()">🔌 Activer</button>`;
   }
 
@@ -588,6 +605,24 @@ async function activer() {
   });
   if (window.invalidateConnectorCache) invalidateConnectorCache(currentKey);
   toast('Connecteur activé ✅');
+  closeModal(); await reload();
+}
+
+/* ---- SIMULATION ---- */
+async function simuler() {
+  const r = allRows.find(x => x.service_key === currentKey);
+  if (!r) return;
+  const { data: { user } } = await supa.auth.getUser();
+  const { error } = await supa.from('safe_connectors').update({
+    statut: 'simule', updated_at: new Date().toISOString(),
+  }).eq('service_key', currentKey);
+  if (error) { toast('Erreur : ' + error.message, true); return; }
+  await supa.from('safe_connectors_log').insert({
+    connector_key: currentKey, action:'simulated', done_by: user?.id,
+    notes: 'Mode simulation activé — aucun appel réel',
+  });
+  if (window.invalidateConnectorCache) invalidateConnectorCache(currentKey);
+  toast(`⚡ Mode Démo activé pour ${r.label}`);
   closeModal(); await reload();
 }
 

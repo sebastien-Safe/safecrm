@@ -16,8 +16,9 @@ async function loadAssistant() {
   const { data: anthropic } = await db.from('safe_connectors')
     .select('statut,label').eq('service_key', 'anthropic').maybeSingle();
 
-  const anyActive = [mistral, anthropic].some(c => c?.statut === 'actif');
-  const activeConn = [mistral, anthropic].find(c => c?.statut === 'actif');
+  const anyActive = [mistral, anthropic].some(c => c?.statut === 'actif' || c?.statut === 'simule');
+  const activeConn = [mistral, anthropic].find(c => c?.statut === 'actif' || c?.statut === 'simule');
+  const isDemo    = anyActive && activeConn?.statut === 'simule';
 
   el.innerHTML = `
     <div class="card assistant-card" style="text-align:center;padding:36px 24px">
@@ -78,9 +79,16 @@ async function loadAssistant() {
       <div class="card-header">
         <span class="card-title">— Interface de conversation</span>
         ${anyActive
-          ? `<span class="badge badge-ok">${activeConn.label}</span>`
+          ? (isDemo
+              ? '<span class="badge" style="background:rgba(139,92,246,.15);color:#a78bfa;border:1px solid rgba(139,92,246,.3)">⚡ Simulation</span>'
+              : `<span class="badge badge-ok">${activeConn.label}</span>`)
           : '<span class="badge badge-gray">Désactivé</span>'}
       </div>
+      ${isDemo ? `<div style="font-size:.74rem;color:#a78bfa;font-family:var(--ff-mono);
+        padding:5px 10px;margin-bottom:8px;background:rgba(139,92,246,.08);
+        border:1px solid rgba(139,92,246,.2);border-radius:6px">
+        ⚡ Mode simulation — Réponses exemples, aucun appel IA réel.
+      </div>` : ''}
       <div style="display:flex;gap:10px;padding:10px 0">
         <input class="form-input" id="assistant-input"
           placeholder="${anyActive ? 'Posez une question RGPD…' : 'Configurez un connecteur IA pour activer'}"
@@ -92,20 +100,44 @@ async function loadAssistant() {
       <div id="assistant-output" style="background:rgba(255,255,255,.02);border:1px solid var(--line);
         border-radius:var(--r-sm);padding:14px;min-height:80px;
         font-size:.82rem;color:var(--mut);font-style:italic">
-        ${anyActive ? 'Prêt — posez votre question.' : 'En attente de configuration…'}
+        ${anyActive
+          ? (isDemo ? '⚡ Mode Démo — Posez une question pour voir une réponse simulée.' : 'Prêt — posez votre question.')
+          : 'En attente de configuration…'}
       </div>
     </div>`;
 }
 
+const DEMO_RESPONSES = [
+  {
+    match: ['consentement','consent'],
+    reply: `**Consentements RGPD — Points clés**\n\nLe consentement doit être libre, spécifique, éclairé et univoque (Art.7 RGPD). Il doit être aussi facile à retirer qu'à donner.\n\n• Enregistrez la date, la source et la portée de chaque consentement\n• Prévoyez un mécanisme de retrait simple (lien de désabonnement, formulaire)\n• Renouvelez les consentements anciens (> 3 ans) pour les listes email\n\n_[Réponse simulée — connectez un service IA pour des réponses personnalisées]_`
+  },
+  {
+    match: ['droit','effacement','oubli','rectification','portabilité'],
+    reply: `**Exercice des droits (Art.15–22 RGPD)**\n\nDélai légal de réponse : 1 mois, prorogeable à 3 mois pour les demandes complexes.\n\n• **Droit d'accès (Art.15)** : fournir une copie des données traitées\n• **Rectification (Art.16)** : corriger les données inexactes sans délai\n• **Effacement (Art.17)** : supprimer si plus de finalité ou retrait du consentement\n• **Portabilité (Art.20)** : exporter en CSV/JSON si traitement automatisé\n\n_[Réponse simulée]_`
+  },
+  {
+    match: ['violation','incident','fuite','breach','cnil'],
+    reply: `**Violations de données — Procédure**\n\nNotification CNIL obligatoire sous **72h** si la violation présente un risque pour les droits et libertés (Art.33).\n\n1. Qualifier la violation (confidentialité, intégrité, disponibilité)\n2. Évaluer le risque pour les personnes concernées\n3. Notifier la CNIL via notifications.cnil.fr si risque élevé\n4. Notifier les personnes si risque très élevé (Art.34)\n\n_[Réponse simulée]_`
+  },
+  {
+    match: ['registre','traitement','article 30','art.30'],
+    reply: `**Registre des activités de traitement (Art.30)**\n\nObligatoire pour les structures de + de 250 salariés et recommandé pour toutes. À documenter pour chaque traitement :\n\n• Finalité du traitement\n• Catégories de personnes et de données\n• Destinataires (internes + sous-traitants)\n• Durées de conservation\n• Mesures de sécurité techniques et organisationnelles\n\n_[Réponse simulée]_`
+  },
+  {
+    match: [],
+    reply: `**Assistant RGPD — Mode Simulation**\n\nJe suis en mode démo. Dans cette interface, je peux vous aider sur :\n\n• Consentements et droits des personnes\n• Registre des traitements (Art.30)\n• Violations de données et notification CNIL\n• Documentation et procédures RGPD\n• Évaluation des risques et conformité\n\nActivez un connecteur IA (Mistral ou Claude) dans les paramètres pour des réponses personnalisées basées sur vos données clients.\n\n_[Réponse simulée]_`
+  },
+];
+
 async function sendAssistantMessage() {
-  const input = document.getElementById('assistant-input');
+  const input  = document.getElementById('assistant-input');
   const output = document.getElementById('assistant-output');
   const question = input?.value?.trim();
   if (!question) return;
 
-  // Vérification du garde-fou avant tout appel
-  const ok = await requireConnector('mistral', 'Envoi d\'une question à l\'assistant RGPD')
-    || await requireConnector('anthropic', 'Envoi d\'une question à l\'assistant RGPD');
+  const ok = await requireConnector('mistral', 'Assistant RGPD')
+    || await requireConnector('anthropic', 'Assistant RGPD');
 
   if (!ok) {
     if (output) output.innerHTML =
@@ -114,8 +146,31 @@ async function sendAssistantMessage() {
     return;
   }
 
-  // Ici : appel IA à implémenter lors de l'activation du connecteur
-  if (output) output.innerHTML =
-    '<span style="color:var(--warn)">Connecteur actif mais appel non implémenté.' +
-    ' Activez le service depuis le centre de connecteurs.</span>';
+  // Mode simulation : réponse mockée
+  const simMistral   = await isSimulated('mistral');
+  const simAnthropic = await isSimulated('anthropic');
+  if (simMistral || simAnthropic) {
+    output.innerHTML = '<span style="color:var(--mut)">⚡ Simulation en cours…</span>';
+    await new Promise(r => setTimeout(r, 900));
+
+    const qLow = question.toLowerCase();
+    const entry = DEMO_RESPONSES.find(d => d.match.some(kw => qLow.includes(kw)));
+    const reply = (entry || DEMO_RESPONSES[DEMO_RESPONSES.length - 1]).reply;
+
+    output.innerHTML = `
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <span style="font-size:.72rem;color:var(--mut);font-family:var(--ff-mono)">Vous :</span>
+        <span style="font-size:.82rem;color:var(--mut-2)">${escHtml(question)}</span>
+      </div>
+      <div style="border-top:1px solid var(--line);padding-top:10px">
+        <span style="font-size:.68rem;color:#a78bfa;font-family:var(--ff-mono)">⚡ Simulation :</span>
+        <div style="font-size:.83rem;color:var(--mut-2);line-height:1.65;margin-top:6px;white-space:pre-line">${escHtml(reply).replace(/\*\*(.*?)\*\*/g,'<strong style="color:#fff">$1</strong>')}</div>
+      </div>`;
+    input.value = '';
+    return;
+  }
+
+  // Mode production (connecteur réel) — appel à implémenter
+  output.innerHTML =
+    '<span style="color:var(--warn)">Connecteur actif — appel API à implémenter lors de l\'activation.</span>';
 }

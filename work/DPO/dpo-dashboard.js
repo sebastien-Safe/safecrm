@@ -3,7 +3,7 @@
    ============================================================ */
 
 async function loadDashboard() {
-  const el = document.getElementById('dash-content');
+  const el = document.getElementById('dashboard-content');
   if (!el) return;
   el.innerHTML = '<div class="loader"><div class="spinner"></div>Chargement…</div>';
 

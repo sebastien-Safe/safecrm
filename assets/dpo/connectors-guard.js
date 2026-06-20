@@ -1,11 +1,7 @@
 /* ============================================================
-   S@FE Work — Garde-fou connecteurs
-   Aucun appel externe ne peut se faire sans autorisation admin.
-   Charger ce script AVANT tout module qui appelle un service.
-
-   Usage :
-     const ok = await requireConnector('mistral');
-     if (!ok) return; // bloqué, message affiché à l'utilisateur
+   S@FE Work — Garde-fou connecteurs v2
+   - Aucun appel externe sans autorisation admin explicite.
+   - Statuts valides : "actif" (production) | "simule" (demo, aucun appel réel)
    ============================================================ */
 
 (function (global) {
@@ -18,69 +14,61 @@
     return _supa;
   }
 
-  // Cache en mémoire pour la session (évite N requêtes)
-  const _cache = {};
+  // Cache session (évite N requêtes)
+  const _cache = {};   // key → 'actif' | 'simule' | false
 
   /**
-   * Vérifie si un connecteur est actif.
-   * Retourne true si actif, false sinon (et affiche un message).
-   * @param {string} key       - service_key (ex: 'mistral', 'stripe')
-   * @param {string} [context] - Description de ce qu'on essaie de faire (pour le message)
+   * Vérifie si un connecteur est utilisable (actif ou simulé).
+   * @returns {boolean} true si ok, false si bloqué
    */
   async function requireConnector(key, context = '') {
-    if (_cache[key] === true) return true;
+    if (_cache[key] === 'actif' || _cache[key] === 'simule') return true;
 
     const db = getSupa();
-    if (!db) {
-      _showBlock(key, context, 'Erreur : client Supabase non initialisé.');
-      return false;
+    if (!db) { _showBlock(key, context, 'Client Supabase non initialisé.'); return false; }
+
+    const { data, error } = await db.from('safe_connectors')
+      .select('statut, label').eq('service_key', key).maybeSingle();
+
+    if (error || !data) { _showBlock(key, context, `Connecteur "${key}" introuvable.`); return false; }
+
+    if (data.statut === 'actif' || data.statut === 'simule') {
+      _cache[key] = data.statut;
+      return true;
     }
 
-    const { data, error } = await db
-      .from('safe_connectors')
-      .select('statut, label')
-      .eq('service_key', key)
-      .maybeSingle();
-
-    if (error || !data) {
-      _showBlock(key, context, `Connecteur "${key}" introuvable dans le catalogue.`);
-      return false;
-    }
-
-    if (data.statut !== 'actif') {
-      _showBlock(key, context, null, data.label, data.statut);
-      return false;
-    }
-
-    _cache[key] = true;
-    return true;
+    _showBlock(key, context, null, data.label, data.statut);
+    return false;
   }
 
   /**
-   * Invalide le cache (utile après activation/désactivation).
-   * @param {string} [key] - si omis, vide tout le cache
+   * Retourne true si le connecteur est en mode simulation (pas de vrai appel).
    */
+  async function isSimulated(key) {
+    if (_cache[key]) return _cache[key] === 'simule';
+    const db = getSupa();
+    if (!db) return false;
+    const { data } = await db.from('safe_connectors').select('statut').eq('service_key', key).maybeSingle();
+    if (data) _cache[key] = data.statut === 'actif' || data.statut === 'simule' ? data.statut : false;
+    return data?.statut === 'simule';
+  }
+
   function invalidateConnectorCache(key) {
     if (key) delete _cache[key];
     else Object.keys(_cache).forEach(k => delete _cache[k]);
   }
 
-  /**
-   * Récupère tous les connecteurs actifs (pour affichage dashboard).
-   */
   async function getActiveConnectors() {
     const db = getSupa();
     if (!db) return [];
-    const { data } = await db
-      .from('safe_connectors')
+    const { data } = await db.from('safe_connectors')
       .select('service_key, label, cat, ico, statut')
-      .eq('statut', 'actif');
+      .in('statut', ['actif', 'simule']);
     return data || [];
   }
 
-  /* ---- Affichage bloc bloquant ---- */
+  /* ---- Bloc bloquant ---- */
   function _showBlock(key, context, errorMsg, label, statut) {
-    // Si un conteneur de blocage existe dans la page, on l'utilise
     const container = document.getElementById('connector-block-' + key)
       || document.getElementById('connector-block');
 
@@ -111,14 +99,13 @@
     if (container) {
       container.innerHTML = html;
     } else {
-      // Toast de secours si pas de conteneur
       console.warn(`[S@FE Connecteurs] "${key}" non actif. ${context}`);
     }
   }
 
-  // Exposition globale
-  global.requireConnector        = requireConnector;
+  global.requireConnector         = requireConnector;
+  global.isSimulated              = isSimulated;
   global.invalidateConnectorCache = invalidateConnectorCache;
-  global.getActiveConnectors     = getActiveConnectors;
+  global.getActiveConnectors      = getActiveConnectors;
 
 })(window);
