@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>S@FE Work — SEO Clients</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="seo-clients.css">
+</head>
+<body>
+<div class="seo-layout">
+
+  <!-- TOPBAR -->
+  <header class="seo-topbar">
+    <a href="/work/" class="seo-back-btn">← S@FE Work</a>
+    <span style="color:var(--line)">|</span>
+    <span class="seo-topbar-brand">🔍 SEO Clients</span>
+    <span class="seo-topbar-sub" id="topbar-contact-name"></span>
+    <div class="seo-topbar-right">
+      <button class="btn btn-ghost btn-sm" onclick="clearContact()">← Tous les clients</button>
+    </div>
+  </header>
+
+  <div class="seo-body">
+
+    <!-- SIDEBAR CONTACTS -->
+    <aside class="seo-sidebar">
+      <div class="sidebar-search-wrap">
+        <input class="sidebar-search" placeholder="🔍 Rechercher…" oninput="filterSidebar(this.value)">
+      </div>
+      <div class="sidebar-contact-list" id="sidebar-contacts"></div>
+    </aside>
+
+    <!-- SUBNAV CLIENT (masqué par défaut) -->
+    <nav class="seo-subnav" id="seo-subnav" style="display:none">
+      <div class="subnav-client">
+        <div class="subnav-client-name" id="subnav-client-name">—</div>
+        <div class="subnav-domain" id="subnav-domain">—</div>
+        <div class="subnav-score" id="sidebar-score">—</div>
+      </div>
+      <ul class="subnav-menu">
+        <li class="subnav-item active" data-view="mots-cles"
+            onclick="switchSubView('mots-cles',this)">
+          🔑 Mots-clés
+        </li>
+        <li class="subnav-item" data-view="audit"
+            onclick="switchSubView('audit',this)">
+          ✅ Audit SEO
+        </li>
+        <li class="subnav-item" data-view="rapport"
+            onclick="switchSubView('rapport',this)">
+          📊 Rapport mensuel
+        </li>
+      </ul>
+    </nav>
+
+    <!-- ZONE PRINCIPALE -->
+    <main class="seo-main">
+
+      <!-- DASHBOARD -->
+      <section class="seo-view active" id="view-dashboard">
+        <div class="view-header">
+          <h2 class="view-title">🔍 SEO Clients</h2>
+          <p class="view-subtitle">Sélectionnez un client pour accéder à son suivi SEO</p>
+        </div>
+        <div id="dashboard-content"></div>
+      </section>
+
+      <!-- MOTS-CLÉS -->
+      <section class="seo-view" id="view-mots-cles">
+        <div class="view-header">
+          <h2 class="view-title">🔑 Suivi des mots-clés</h2>
+          <p class="view-subtitle">Positions, évolutions et volumes de recherche</p>
+        </div>
+        <div id="mots-cles-content"></div>
+      </section>
+
+      <!-- AUDIT SEO -->
+      <section class="seo-view" id="view-audit">
+        <div class="view-header">
+          <h2 class="view-title">✅ Audit SEO</h2>
+          <p class="view-subtitle">Checklist 25 points — Technique, On-Page, Contenu, Local, Backlinks</p>
+        </div>
+        <div id="audit-content"></div>
+      </section>
+
+      <!-- RAPPORT MENSUEL -->
+      <section class="seo-view" id="view-rapport">
+        <div class="view-header">
+          <h2 class="view-title">📊 Rapport mensuel</h2>
+          <p class="view-subtitle">Synthèse SEO exportable en PDF</p>
+        </div>
+        <div id="rapport-content"></div>
+      </section>
+
+    </main>
+  </div><!-- /seo-body -->
+</div><!-- /seo-layout -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="seo-modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="seo-modal-title">—</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="seo-modal-body"></div>
+    <div class="modal-foot" id="seo-modal-foot"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="seo-toast"></div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="../../assets/dpo/connectors-guard.js"></script>
+<script src="seo-core.js"></script>
+<script src="seo-dashboard.js"></script>
+<script src="seo-mots-cles.js"></script>
+<script src="seo-audit.js"></script>
+<script src="seo-rapport.js"></script>
+<script>
+  function switchSubView(view, el) {
+    document.querySelectorAll('.subnav-item').forEach(i => i.classList.remove('active'));
+    if (el) el.classList.add('active');
+    showView(view);
+    if (view === 'mots-cles') loadMotsCles();
+    else if (view === 'audit') loadSeoAudit();
+    else if (view === 'rapport') loadRapport();
+  }
+
+  function filterSidebar(q) {
+    const lq = q.toLowerCase();
+    document.querySelectorAll('.sidebar-contact-item').forEach(el => {
+      el.style.display = el.dataset.search?.includes(lq) ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>
