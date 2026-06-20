@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S@FE Work — Module DPO Clients</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/assets/app/style.css">
+  <link rel="stylesheet" href="dpo-clients.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<!-- Toast -->
+<div id="dpo-toast"></div>
+
+<!-- Modal -->
+<div id="dpo-modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="dpo-modal-title">Titre</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="dpo-modal-body"></div>
+    <div class="modal-foot" id="dpo-modal-foot"></div>
+  </div>
+</div>
+
+<div class="dpo-layout">
+
+  <!-- TOPBAR -->
+  <header class="dpo-topbar">
+    <div class="dpo-topbar-left">
+      <a href="/work/" class="dpo-back-btn" title="Retour S@FE Work">← Work</a>
+      <span class="dpo-topbar-brand">⚖️ DPO Clients</span>
+      <span class="dpo-topbar-subtitle">Centre de conformité RGPD</span>
+    </div>
+    <div class="dpo-topbar-right">
+      <button class="btn btn-ghost btn-sm" onclick="showView('dashboard')">📊 Dashboard</button>
+      <span id="topbar-contact-name" style="font-size:.8rem;color:var(--mut);font-family:var(--ff-mono)"></span>
+    </div>
+  </header>
+
+  <div class="dpo-body">
+
+    <!-- SIDEBAR CLIENTS -->
+    <aside class="dpo-sidebar">
+      <div class="sidebar-search-wrap">
+        <input class="sidebar-search" id="sidebar-search" placeholder="🔍 Chercher un client…" oninput="filterContacts(this.value)">
+      </div>
+      <div class="sidebar-contact-list" id="sidebar-contacts"></div>
+    </aside>
+
+    <!-- SIDEBAR NAVIGATION (affiché quand client sélectionné) -->
+    <nav class="dpo-subnav" id="dpo-subnav" style="display:none">
+      <div class="subnav-client">
+        <div class="subnav-client-name" id="subnav-client-name">—</div>
+        <div class="subnav-score" id="sidebar-score">—%</div>
+        <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px" onclick="clearContact()">✕ Changer de client</button>
+      </div>
+      <ul class="subnav-menu">
+        <li class="subnav-item active" data-view="traitements" onclick="switchSubView('traitements',this)">📋 Registre traitements</li>
+        <li class="subnav-item" data-view="consentements" onclick="switchSubView('consentements',this)">✅ Consentements</li>
+        <li class="subnav-item" data-view="demandes" onclick="switchSubView('demandes',this)">📩 Demandes RGPD</li>
+        <li class="subnav-item" data-view="documents" onclick="switchSubView('documents',this)">📄 Documents</li>
+        <li class="subnav-item" data-view="violations" onclick="switchSubView('violations',this)">🚨 Violations</li>
+        <li class="subnav-item" data-view="audit" onclick="switchSubView('audit',this)">🎯 Audit & Score</li>
+        <li class="subnav-item" data-view="assistant" onclick="switchSubView('assistant',this)">🤖 Assistant RGPD</li>
+      </ul>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="dpo-main">
+
+      <!-- VUE : DASHBOARD (page d'accueil) -->
+      <section id="view-dashboard" class="dpo-view active">
+        <div class="view-header">
+          <h1 class="view-title">Tableau de bord</h1>
+        </div>
+        <div id="dashboard-content"></div>
+      </section>
+
+      <!-- VUE : LISTE CLIENTS -->
+      <section id="view-clients" class="dpo-view">
+        <div class="view-header">
+          <h1 class="view-title">Clients suivis</h1>
+        </div>
+        <div id="clients-content"></div>
+      </section>
+
+      <!-- VUE : REGISTRE TRAITEMENTS -->
+      <section id="view-traitements" class="dpo-view">
+        <div class="view-header">
+          <h1 class="view-title">📋 Registre des traitements</h1>
+          <p class="view-subtitle" id="traitements-subtitle">Art.30 RGPD</p>
+        </div>
+        <div id="traitements-content"></div>
+      </section>
+
+      <!-- VUE : CONSENTEMENTS -->
+      <section id="view-consentements" class="dpo-view">
+        <div class="view-header">
+          <h1 class="view-title">✅ Consentements</h1>
+          <p class="view-subtitle">Traçabilité des consentements obtenus et retirés</p>
+        </div>
+        <div id="consentements-content"></div>
+      </section>
+
+      <!-- VUE : DEMANDES RGPD -->
+      <section id="view-demandes" class="dpo-view">
+        <div class="view-header">
+          <h1 class="view-title">📩 Demandes RGPD</h1>
+          <p class="view-subtitle">Exercice des droits (Art.15–22 RGPD) — délai légal 1 mois</p>
+        </div>
+        <div id="demandes-content"></div>
+      </section>
+
+      <!-- VUE : DOCUMENTS -->
+      <section id="view-documents" class="dpo-view">
+        <div class="view-header">
+          <h1 class="view-title">📄 Bibliothèque documentaire</h1>
+          <p class="view-subtitle">Documents RGPD générés et archivés</p>
+        </div>
+        <div id="documents-content"></div>
+      </section>
+
+      <!-- VUE : VIOLATIONS -->
+      <section id="view-violations" class="dpo-view">
+        <div class="view-header">
+          <h1 class="view-title">🚨 Violations de données</h1>
+          <p class="view-subtitle">Registre des incidents — notification CNIL sous 72h (Art.33)</p>
+        </div>
+        <div id="violations-content"></div>
+      </section>
+
+      <!-- VUE : AUDIT -->
+      <section id="view-audit" class="dpo-view">
+        <div class="view-header">
+          <h1 class="view-title">🎯 Audit & Score RGPD</h1>
+          <p class="view-subtitle">Analyse automatique de conformité</p>
+        </div>
+        <div id="audit-content"></div>
+      </section>
+
+      <!-- VUE : ASSISTANT -->
+      <section id="view-assistant" class="dpo-view">
+        <div class="view-header">
+          <h1 class="view-title">🤖 Assistant RGPD</h1>
+          <p class="view-subtitle">Interface préparée — service non connecté</p>
+        </div>
+        <div id="assistant-content"></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- Scripts modules -->
+<script src="/assets/config.js"></script>
+<script src="dpo-clients-core.js"></script>
+<script src="dpo-dashboard.js"></script>
+<script src="dpo-traitements.js"></script>
+<script src="dpo-consentements.js"></script>
+<script src="dpo-demandes.js"></script>
+<script src="dpo-documents.js"></script>
+<script src="dpo-violations.js"></script>
+<script src="dpo-audit.js"></script>
+<script src="dpo-assistant.js"></script>
+
+<script>
+/* Navigation entre sous-vues client */
+function switchSubView(viewId, el) {
+  document.querySelectorAll('.subnav-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
+  showView(viewId);
+  const loaders = {
+    traitements:  loadTraitements,
+    consentements:loadConsentements,
+    demandes:     loadDemandes,
+    documents:    loadDocuments,
+    violations:   loadViolations,
+    audit:        loadAudit,
+    assistant:    loadAssistant,
+  };
+  if (loaders[viewId]) loaders[viewId]();
+}
+
+/* Filtrer la liste latérale de contacts */
+function filterContacts(q) {
+  const items = document.querySelectorAll('.sidebar-contact-item');
+  const lq = q.toLowerCase();
+  items.forEach(el => {
+    el.style.display = el.dataset.search.includes(lq) ? '' : 'none';
+  });
+}
+</script>
+
+</body>
+</html>

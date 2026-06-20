@@ -5,7 +5,8 @@
       "Bash(supabase functions *)",
       "Bash(gh auth *)",
       "mcp__claude_ai_Supabase__list_projects",
-      "Bash(brew list *)"
+      "Bash(brew list *)",
+      "mcp__claude_ai_Supabase__apply_migration"
     ]
   }
 }
