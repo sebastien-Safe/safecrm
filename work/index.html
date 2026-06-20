@@ -307,6 +307,9 @@ select option{background:var(--navy-mid)}
   <button class="sidebar-item" onclick="window.location.href='/work/SEO/module-seo-clients.html'">
     <span class="ico">🔍</span> SEO Clients
   </button>
+  <button class="sidebar-item" onclick="showView('automate')" id="nav-onboarding">
+    <span class="ico">🚀</span> Onboarding
+  </button>
 </div>
       <hr class="sidebar-divider">
       <div class="sidebar-section">
@@ -683,6 +686,13 @@ async function loadContacts(){
   } catch(e){ console.error(e); }
 }
 
+function launchOnboardingBtn(contactId){
+  const cts = allContracts.filter(ct => ct.contact_id === contactId && !['Résilié','Refusé','Terminé'].includes(ct.statut));
+  if(!cts.length) return '';
+  const ct = cts[0];
+  return `<button class="btn btn-sm" style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);color:var(--gold)" onclick="window.location.href='/work/mission-onboarding.html?contact=${contactId}&contract=${ct.id}&wf=generic_onboard'">🚀 Onboarding</button>`;
+}
+
 function renderClientsTable(){
   const tbody = document.getElementById('clients-tbody');
   if(!allContacts.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--mut)">Aucun contact</td></tr>'; return; }
@@ -698,7 +708,10 @@ function renderClientsTable(){
       <td>${contracts.length ? '<span class="pill pill-blue">'+contracts.length+' contrat'+(contracts.length>1?'s':'')+'</span>' : '<span class="pill pill-mut">Aucun</span>'}</td>
       <td style="font-size:.8rem">${types}</td>
       <td style="font-family:var(--ff-mono);font-size:.82rem">${ca>0?ca.toLocaleString('fr-FR')+'&nbsp;€':'—'}</td>
-      <td><button class="btn btn-out btn-sm" onclick="showView('automate');selectContact('${c.id}')">⚡ Automatiser</button></td>
+      <td style="white-space:nowrap;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-out btn-sm" onclick="showView('automate');selectContact('${c.id}')">⚡ Automatiser</button>
+        ${launchOnboardingBtn(c.id)}
+      </td>
     </tr>`;
   }).join('');
 }
@@ -882,7 +895,7 @@ const MISSION_PAGES = {
   'generic_onboard': 'mission-onboarding.html',
   'rgpd_audit':      'mission-rgpd.html',
   'rgpd_dpo':        'mission-rgpd.html',
-  'cyber_audit':     'mission-onboarding.html',  // à remplacer par mission-cyber.html
+  'cyber_audit':     'mission-cyber.html',
 };
 
 function openWorkflow(wfId, contactId, contractId){

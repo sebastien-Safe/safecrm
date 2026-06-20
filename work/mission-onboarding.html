@@ -176,7 +176,7 @@ a{color:inherit;text-decoration:none}
 
     <!-- ÉTAPE 1 — VÉRIFICATION DONNÉES -->
     <div class="step-card active" id="step-1" style="--step-color:var(--accent)">
-      <div class="step-num"><span class="status-ico">🔍</span> ÉTAPE 1 / 5</div>
+      <div class="step-num"><span class="status-ico">🔍</span> ÉTAPE 1 / 4</div>
       <div class="step-title">Vérification des données client</div>
       <div class="step-desc">Contrôle automatique des informations du contact et du contrat avant génération des documents.</div>
       <div class="preview-panel show" id="preview-data">
@@ -297,7 +297,10 @@ function render(){
   document.getElementById('client-avatar').textContent = initiales;
   document.getElementById('client-nom').textContent = contact.nom||'—';
   document.getElementById('client-entreprise').textContent = contact.entreprise||'—';
-  document.getElementById('contract-label').textContent = `${contract.type||'—'}${contract.formule?' / '+contract.formule:''}`;
+  const wfParam = new URLSearchParams(location.search).get('wf');
+  const wfTitles = { dig_onboarding:'Digitalisation', generic_onboard:'Nouveau client' };
+  const wfLabel  = wfTitles[wfParam] || contract.type || '—';
+  document.getElementById('contract-label').textContent = `${wfLabel}${contract.formule?' / '+contract.formule:''}`;
 
   // Meta
   const meta = document.getElementById('client-meta');
@@ -363,123 +366,7 @@ function validateStep(n){
 
 /* ÉTAPE 1 — déjà auto-validable via bouton */
 
-/* ÉTAPE 2 — CONTRAT PDF */
-function generateContratPDF(){
-  const btn = document.getElementById('btn-contrat');
-  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Génération…';
-  loadJsPDF(()=>{
-    try {
-      buildContratPDF();
-      document.getElementById('result-2').textContent = '✓ Contrat PDF généré et téléchargé';
-      validateStep(2);
-      summaryActions.push('📄 Contrat PDF généré');
-      showToast('Contrat PDF téléchargé','ok');
-    } catch(e){ showToast('Erreur PDF : '+e.message,'err'); }
-    btn.disabled=false; btn.innerHTML='📄 Régénérer le contrat';
-  });
-}
-
-function buildContratPDF(){
-  const {jsPDF} = window.jspdf;
-  const doc = new jsPDF();
-  const navy=[10,22,40],gold=[245,158,11],mut=[100,116,139],dark=[30,50,80];
-  const today = new Date().toLocaleDateString('fr-FR');
-  const montant = contract.montant ? parseFloat(contract.montant).toLocaleString('fr-FR') : '—';
-  const setup   = contract.frais_mise_en_place ? parseFloat(contract.frais_mise_en_place).toLocaleString('fr-FR')+' €' : 'Offerts';
-
-  // Header
-  doc.setFillColor(...navy); doc.rect(0,0,210,44,'F');
-  doc.setTextColor(...gold); doc.setFont('helvetica','bold'); doc.setFontSize(22);
-  doc.text('S@FE Digitalisation',14,20);
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(200,210,230);
-  doc.text('SIRET 104 699 558 · 66 av. des Champs-Élysées, 75008 Paris',14,29);
-  doc.text('contact@safe-digitalisation.fr · www.safe-digitalisation.fr',14,36);
-
-  // Titre
-  doc.setTextColor(...navy); doc.setFont('helvetica','bold'); doc.setFontSize(17);
-  doc.text('CONTRAT DE PRESTATION DE SERVICES',14,56);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...mut);
-  doc.text(`Réf : SAFE-${Date.now().toString().slice(-6)} · Émis le ${today}`,14,64);
-  doc.setDrawColor(...gold); doc.setLineWidth(1); doc.line(14,68,196,68);
-
-  // Parties
-  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...navy); doc.text('LE PRESTATAIRE',14,80);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(50,65,90);
-  doc.text('S@FE Digitalisation — SASU',14,88);
-  doc.text('SIRET 104 699 558',14,95);
-  doc.text('66 avenue des Champs-Élysées, 75008 Paris',14,102);
-
-  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...navy); doc.text('LE CLIENT',110,80);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(50,65,90);
-  doc.text(contact.nom+(contact.entreprise?' — '+contact.entreprise:''),110,88);
-  if(contact.siret) doc.text('SIRET : '+contact.siret,110,95);
-  if(contact.adresse) doc.text(contact.adresse,110,102);
-  if(contact.code_postal_ville) doc.text(contact.code_postal_ville,110,109);
-
-  // Ligne
-  doc.setDrawColor(...dark); doc.setLineWidth(.3); doc.line(14,116,196,116);
-
-  // Objet
-  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...navy); doc.text('OBJET DU CONTRAT',14,126);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(50,65,90);
-  doc.text(`Type de service : ${contract.type||'—'}`,14,134);
-  doc.text(`Formule : ${contract.formule||'—'}`,14,141);
-
-  // Tableau financier
-  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...navy); doc.text('CONDITIONS FINANCIÈRES',14,155);
-  const tableData = [
-    ['Montant mensuel HT', montant+' €'],
-    ['Récurrence', contract.recurrence||'—'],
-    ['Frais de mise en place', setup],
-    ['Engagement minimum', contract.engagement_mois ? contract.engagement_mois+' mois' : 'Sans engagement'],
-    ['TVA', '20 % (si applicable)'],
-    ['Date de démarrage', contract.date_debut ? new Date(contract.date_debut).toLocaleDateString('fr-FR') : today],
-  ];
-  let y = 163;
-  doc.setFillColor(20,34,64);
-  doc.rect(14,y-5,182,8,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('Désignation',16,y); doc.text('Valeur',150,y);
-  y+=6;
-  tableData.forEach(([l,v],i)=>{
-    doc.setFillColor(i%2===0?248:255,i%2===0?249:255,i%2===0?252:255);
-    doc.rect(14,y-4,182,8,'F');
-    doc.setTextColor(40,55,80); doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-    doc.text(l,16,y+1); doc.text(v,150,y+1);
-    y+=8;
-  });
-
-  // Conditions
-  y += 8;
-  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...navy); doc.text('CONDITIONS GÉNÉRALES',14,y);
-  y += 8;
-  const cg = 'Le présent contrat est soumis au droit français. Les factures sont payables à 30 jours. En cas de résiliation avant la fin de la période d\'engagement, les mensualités restantes restent dues. S@FE Digitalisation se réserve le droit de sous-traiter certaines prestations à des partenaires certifiés.';
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(80,95,110);
-  doc.text(doc.splitTextToSize(cg,182),14,y);
-  y+=22;
-
-  // Signatures
-  doc.setDrawColor(...dark); doc.setLineWidth(.3); doc.line(14,y,196,y);
-  y+=10;
-  doc.setFontSize(9); doc.setTextColor(...navy); doc.setFont('helvetica','bold');
-  doc.text('Signature Prestataire',14,y); doc.text('Signature Client',130,y);
-  y+=4;
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...mut);
-  doc.text('S@FE Digitalisation',14,y+4);
-  doc.text(contact.nom,130,y+4);
-  doc.text('Lu et approuvé, bon pour accord',130,y+10);
-  doc.line(14,y+22,80,y+22); doc.line(130,y+22,196,y+22);
-
-  // Footer
-  doc.setFillColor(...navy); doc.rect(0,275,210,22,'F');
-  doc.setTextColor(180,195,215); doc.setFontSize(7); doc.setFont('helvetica','normal');
-  doc.text('S@FE Digitalisation — Document contractuel confidentiel — '+today,14,285);
-  doc.text('www.safe-digitalisation.fr',162,285);
-
-  doc.save(`SAFE_Contrat_${(contact.entreprise||contact.nom).replace(/\s+/g,'_')}_${Date.now().toString().slice(-6)}.pdf`);
-}
-
-/* ÉTAPE 3 — EMAIL */
+/* ÉTAPE 2 — EMAIL */
 function buildEmailPreview(){
   const prenom = (contact.nom||'').split(' ')[0];
   const formule = contract.formule||contract.type||'votre service S@FE';
@@ -518,7 +405,7 @@ function toggleEmailPreview(){
 
 function copyEmail(){
   navigator.clipboard.writeText(window._emailText||'').then(()=>{
-    document.getElementById('result-3').textContent = '✓ Email copié dans le presse-papier';
+    document.getElementById('result-2').textContent = '✓ Email copié dans le presse-papier';
     validateStep(2);
     summaryActions.push('📧 Email de bienvenue copié');
     showToast('Email copié !','ok');
@@ -565,7 +452,7 @@ function validateChecklist(){
     showToast(`${total-checked} point(s) non cochés — vérifie avant de valider`,'info');
     return;
   }
-  document.getElementById('result-4').textContent = '✓ Checklist complète — '+total+' points validés';
+  document.getElementById('result-3').textContent = '✓ Checklist complète — '+total+' points validés';
   validateStep(3);
   summaryActions.push('✅ Checklist démarrage complétée ('+total+' points)');
 }
@@ -577,7 +464,7 @@ function generateRapportPDF(){
   loadJsPDF(()=>{
     try{
       buildRapportPDF();
-      document.getElementById('result-5').textContent = '✓ Rapport d\'onboarding généré';
+      document.getElementById('result-4').textContent = '✓ Rapport d\'onboarding généré';
       validateStep(4);
       summaryActions.push('📊 Rapport d\'onboarding PDF généré');
       showToast('Rapport téléchargé','ok');
