@@ -68,6 +68,8 @@
           onclick="switchSubView('incidents',this)">🚨 Incidents</li>
         <li class="subnav-item" data-view="plan"
           onclick="switchSubView('plan',this)">📋 Plan d'action</li>
+        <li class="subnav-item" data-view="assistant"
+          onclick="switchSubView('assistant',this)">🤖 Assistant IA</li>
       </ul>
     </nav>
 
@@ -110,6 +112,15 @@
         <div id="plan-content"></div>
       </section>
 
+      <!-- Assistant IA -->
+      <section id="view-assistant" class="cyber-view">
+        <div class="view-header">
+          <h1 class="view-title">🤖 Assistant Cybersécurité IA</h1>
+          <p class="view-subtitle">Analyse d'incidents, recommandations ANSSI, plans d'action</p>
+        </div>
+        <div id="assistant-content"></div>
+      </section>
+
     </main>
   </div>
 </div>
@@ -121,6 +132,7 @@
 <script src="cyber-audit.js"></script>
 <script src="cyber-incidents.js"></script>
 <script src="cyber-plan.js"></script>
+<script src="cyber-assistant.js"></script>
 
 <script>
 function switchSubView(viewId, el) {
@@ -131,6 +143,7 @@ function switchSubView(viewId, el) {
     audit:     loadAudit,
     incidents: loadIncidents,
     plan:      loadPlan,
+    assistant: loadCyberAssistant,
   };
   if (loaders[viewId]) loaders[viewId]();
 }

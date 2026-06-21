@@ -135,10 +135,9 @@ async function sendAssistantMessage() {
   const question = input?.value?.trim();
   if (!question) return;
 
-  const ok = await requireConnector('mistral', 'Assistant RGPD')
-    || await requireConnector('anthropic', 'Assistant RGPD');
+  const activeKey = await getActiveIAConnector();
 
-  if (!ok) {
+  if (!activeKey) {
     if (output) output.innerHTML =
       '<span style="color:var(--alert)">Aucun connecteur IA actif. ' +
       '<a href="/work/connecteurs.html" style="color:var(--gold)">Configurer →</a></span>';
@@ -146,9 +145,7 @@ async function sendAssistantMessage() {
   }
 
   // Mode simulation : réponse mockée
-  const simMistral   = await isSimulated('mistral');
-  const simAnthropic = await isSimulated('anthropic');
-  if (simMistral || simAnthropic) {
+  if (await isSimulated(activeKey)) {
     output.innerHTML = '<span style="color:var(--mut)">⚡ Simulation en cours…</span>';
     await new Promise(r => setTimeout(r, 900));
 
@@ -169,7 +166,30 @@ async function sendAssistantMessage() {
     return;
   }
 
-  // Mode production (connecteur réel) — appel à implémenter
-  output.innerHTML =
-    '<span style="color:var(--warn)">Connecteur actif — appel API à implémenter lors de l\'activation.</span>';
+  // Mode production — appel réel via Edge Function call-ia
+  output.innerHTML = '<span style="color:var(--mut)">⏳ Analyse en cours…</span>';
+  try {
+    const reply = await callIA({
+      serviceKey: activeKey,
+      system: "Tu es un expert DPO (Data Protection Officer) spécialisé en droit RGPD européen. " +
+              "Tu aides des professionnels à assurer la conformité de leurs clients TPE/PME. " +
+              "Réponds en français, de manière précise, structurée et actionnable. " +
+              "Cite les articles RGPD concernés quand c'est pertinent.",
+      messages: [{ role: 'user', content: question }],
+    });
+    output.innerHTML = `
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <span style="font-size:.72rem;color:var(--mut);font-family:var(--ff-mono)">Vous :</span>
+        <span style="font-size:.82rem;color:var(--mut-2)">${escHtml(question)}</span>
+      </div>
+      <div style="border-top:1px solid var(--line);padding-top:10px">
+        <span style="font-size:.68rem;color:var(--ok);font-family:var(--ff-mono)">🤖 ${activeKey.charAt(0).toUpperCase()+activeKey.slice(1)} :</span>
+        <div style="font-size:.83rem;color:var(--mut-2);line-height:1.65;margin-top:6px;white-space:pre-line">${escHtml(reply).replace(/\*\*(.*?)\*\*/g,'<strong style="color:#fff">$1</strong>')}</div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText(${JSON.stringify(reply)}).then(()=>toast('Copié ✓'))">📋 Copier</button>
+      </div>`;
+  } catch (err) {
+    output.innerHTML = `<span style="color:var(--alert)">Erreur : ${escHtml(String(err.message || err))}</span>`;
+  }
 }

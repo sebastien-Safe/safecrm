@@ -106,8 +106,17 @@ function openPostModal(id = null) {
   openModal(p ? 'Modifier le post' : 'Nouveau post', `
     <div class="field"><label>Réseau</label>
       <select id="pm-reseau">${reseauOpts}</select></div>
-    <div class="field"><label>Texte du post</label>
-      <textarea id="pm-texte" rows="5" placeholder="Contenu du post…" style="resize:vertical">${escHtml(p?.texte||'')}</textarea></div>
+    <div class="field">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label style="margin:0">Texte du post</label>
+        <button type="button" class="btn btn-ghost btn-sm" id="pm-ia-btn"
+          onclick="suggestPostWithIA()" style="font-size:.75rem;padding:4px 10px">
+          ✨ Générer avec IA
+        </button>
+      </div>
+      <div id="pm-ia-status" style="font-size:.74rem;color:var(--mut);font-family:var(--ff-mono);margin-bottom:6px;display:none"></div>
+      <textarea id="pm-texte" rows="5" placeholder="Contenu du post…" style="resize:vertical">${escHtml(p?.texte||'')}</textarea>
+    </div>
     <div class="field"><label>Hashtags</label>
       <input id="pm-hashtags" type="text" placeholder="#marketing #social" value="${escHtml(p?.hashtags||'')}"></div>
     <div class="field"><label>Image (URL)</label>
@@ -163,6 +172,67 @@ async function savePost(id) {
   toast(id ? 'Post mis à jour ✓' : 'Post créé ✓');
   closeModal();
   await loadPosts();
+}
+
+async function suggestPostWithIA() {
+  const btn    = document.getElementById('pm-ia-btn');
+  const status = document.getElementById('pm-ia-status');
+  const texte  = document.getElementById('pm-texte');
+  const reseau = document.getElementById('pm-reseau')?.value || 'facebook';
+  if (!btn || !texte) return;
+
+  const activeKey = await getActiveIAConnector();
+  if (!activeKey) {
+    if (status) { status.style.display = ''; status.textContent = '⚠️ Aucun connecteur IA actif — configurez-en un dans les Connecteurs.'; }
+    return;
+  }
+
+  const reseauLabel = { facebook:'Facebook', instagram:'Instagram', linkedin:'LinkedIn', google:'Google Business' }[reseau] || reseau;
+  const clientNom   = currentContact?.entreprise || currentContact?.nom || 'ce client';
+  const secteur     = currentContact?.activites || 'TPE/PME locale';
+  const hashtags    = document.getElementById('pm-hashtags')?.value || '';
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Génération…';
+  if (status) { status.style.display = ''; status.textContent = `🤖 ${activeKey} — génération en cours…`; }
+
+  // Mode simulation
+  if (await isSimulated(activeKey)) {
+    await new Promise(r => setTimeout(r, 900));
+    const demos = {
+      facebook:  `📣 Bonne nouvelle pour nos clients ! Chez ${clientNom}, nous mettons tout en œuvre pour vous offrir le meilleur service au quotidien. 💪\n\nVous avez des questions ? Contactez-nous dès aujourd'hui !\n\n${hashtags || '#local #TPE #qualité'}`,
+      instagram: `✨ Une nouvelle journée, de nouvelles opportunités ! ${clientNom} est là pour vous accompagner dans vos projets. 🌟\n\n${hashtags || '#business #local #entrepreneurs'}`,
+      linkedin:  `Dans un contexte économique exigeant, ${clientNom} continue d'innover pour mieux servir ses clients. Notre équipe reste mobilisée et engagée.\n\n💼 Besoin de nos services ? N'hésitez pas à nous contacter.\n\n${hashtags || '#business #croissance #innovation'}`,
+      google:    `📍 ${clientNom} est ouvert et prêt à vous accueillir ! Retrouvez-nous pour découvrir nos services et profiter de nos offres du moment. 🙌`,
+    };
+    texte.value = demos[reseau] || demos.facebook;
+    if (status) { status.textContent = '⚡ Post généré (simulation).'; }
+    btn.disabled = false; btn.textContent = '✨ Générer avec IA';
+    return;
+  }
+
+  try {
+    const reply = await callIA({
+      serviceKey: activeKey,
+      system: "Tu es un community manager expert pour TPE/PME françaises. " +
+              "Tu génères des posts courts, engageants et authentiques, adaptés au réseau social cible. " +
+              "Inclus des emojis appropriés et des hashtags pertinents si demandé. " +
+              "Réponds UNIQUEMENT avec le texte du post, sans explication ni guillemets.",
+      messages: [{
+        role: 'user',
+        content: `Génère un post ${reseauLabel} pour "${clientNom}" (secteur : ${secteur}).` +
+                 (hashtags ? ` Inclus ces hashtags : ${hashtags}.` : ' Propose 3-5 hashtags pertinents.') +
+                 ` Le post doit être naturel, professionnel et engager la communauté locale. Maximum 280 mots.`,
+      }],
+    });
+    texte.value = reply.trim();
+    if (status) { status.textContent = `✅ Post généré par ${activeKey}.`; }
+  } catch (err) {
+    if (status) { status.textContent = `❌ Erreur : ${err.message}`; }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ Générer avec IA';
+  }
 }
 
 async function deletePost(id) {
