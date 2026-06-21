@@ -374,6 +374,25 @@ async function signer() {
       clause_signee_at: new Date().toISOString()
     }).eq('id', currentUser.id);
 
+    // Email Brevo (fire-and-forget)
+    try {
+      const pdfBase64 = btoa(String.fromCharCode(...new Uint8Array(await pdfBlob.arrayBuffer())));
+      const { data: { session } } = await sb.auth.getSession();
+      const { data: profile } = await sb.from('profiles').select('prenom, nom').eq('id', currentUser.id).maybeSingle();
+      await fetch(`${SUPABASE_URL}/functions/v1/send-clause-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${session?.access_token}` },
+        body: JSON.stringify({
+          type: 'collaborateur',
+          prenom: profile?.prenom || '',
+          nom: profile?.nom || '',
+          email: currentUser.email,
+          date_signature: new Date().toISOString(),
+          pdf_base64: pdfBase64,
+        }),
+      });
+    } catch (e) { console.warn('Email clause non envoyé :', e); }
+
     // Afficher le bloc succès
     document.getElementById('sig-section').style.display = 'none';
     const banner = document.getElementById('signed-banner');

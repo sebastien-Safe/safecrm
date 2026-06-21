@@ -216,7 +216,7 @@ serve(async (req) => {
     const dateVirement = new Date().toLocaleDateString("fr-FR");
 
     await sendBrevo(
-      6, // templateId à confirmer après création dans Brevo
+      0, // ⚠️ templateId à renseigner — ID 6 est pris (Clause publique) — utiliser l'ID suivant disponible dans Brevo
       { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}`.trim() },
       {
         FIRST_NAME:          commercial.prenom,

@@ -407,6 +407,23 @@ async function signer() {
     });
     if (dbError) throw new Error('Base de données : ' + dbError.message);
 
+    // Email Brevo (fire-and-forget)
+    try {
+      const pdfBase64 = btoa(String.fromCharCode(...new Uint8Array(await pdfBlob.arrayBuffer())));
+      await fetch(`${SUPABASE_URL}/functions/v1/send-clause-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({
+          type: 'public',
+          prenom,
+          nom,
+          email,
+          date_signature: new Date().toISOString(),
+          pdf_base64: pdfBase64,
+        }),
+      });
+    } catch (e) { console.warn('Email clause non envoyé :', e); }
+
     document.getElementById('sig-section').style.display = 'none';
     const banner = document.getElementById('signed-banner');
     banner.style.display = 'flex';
