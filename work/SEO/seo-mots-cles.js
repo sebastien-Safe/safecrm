@@ -8,25 +8,27 @@ async function loadMotsCles() {
   if (!el) return;
   el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
 
-  const [{ data: mcs }, { data: profile }] = await Promise.all([
-    supa.from('seo_client_mots_cles').select('*').eq('contact_id', currentContact.id).order('position_actuelle', { ascending: true, nullsFirst: false }),
-    supa.from('seo_client_profiles').select('domaine').eq('contact_id', currentContact.id).maybeSingle(),
-  ]);
+  let q = supa.from('seo_client_mots_cles').select('*').eq('contact_id', currentContact.id);
+  if (currentDomaine) {
+    q = q.or(`domaine_id.eq.${currentDomaine.id},domaine_id.is.null`);
+  }
+  const { data: mcs } = await q.order('position_actuelle', { ascending: true, nullsFirst: false });
 
   const list = mcs || [];
   const top3  = list.filter(m => m.position_actuelle && m.position_actuelle <= 3).length;
   const top10 = list.filter(m => m.position_actuelle && m.position_actuelle <= 10).length;
   const gains = list.filter(m => m.position_actuelle && m.position_precedente && m.position_precedente > m.position_actuelle).length;
 
+  const domLabel = currentDomaine
+    ? `<span style="color:var(--seo);font-family:var(--ff-mono);font-size:.9rem;font-weight:700">${escHtml(currentDomaine.domaine)}</span>`
+    : '<span style="color:var(--mut);font-size:.82rem">Aucun domaine sélectionné</span>';
+
   el.innerHTML = `
-    <!-- Domaine + stats rapides -->
     <div class="card" style="margin-bottom:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
         <div>
-          <div style="font-size:.72rem;color:var(--mut);font-family:var(--ff-mono);margin-bottom:3px">Domaine suivi</div>
-          <div style="font-size:.95rem;color:var(--seo);font-weight:700;font-family:var(--ff-mono)" id="domaine-display">
-            ${escHtml(profile?.domaine || 'Non renseigné')}
-          </div>
+          <div style="font-size:.7rem;color:var(--mut);font-family:var(--ff-mono);margin-bottom:3px">Domaine suivi</div>
+          ${domLabel}
         </div>
         <div style="display:flex;gap:16px;text-align:center">
           <div><div style="font-family:var(--ff-disp);font-size:1.4rem;font-weight:800;color:#fbbf24">${top3}</div><div style="font-size:.72rem;color:var(--mut)">Top 3</div></div>
@@ -34,15 +36,11 @@ async function loadMotsCles() {
           <div><div style="font-family:var(--ff-disp);font-size:1.4rem;font-weight:800;color:var(--seo)">${list.length}</div><div style="font-size:.72rem;color:var(--mut)">Suivis</div></div>
           <div><div style="font-family:var(--ff-disp);font-size:1.4rem;font-weight:800;color:var(--ok)">↑${gains}</div><div style="font-size:.72rem;color:var(--mut)">Gains</div></div>
         </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="editDomaine('${escHtml(profile?.domaine || '')}')">✏️ Domaine</button>
-          <button class="btn btn-pri btn-sm" onclick="openMCModal()">+ Mot-clé</button>
-        </div>
+        <button class="btn btn-pri btn-sm" onclick="openMCModal()">+ Mot-clé</button>
       </div>
     </div>
 
     ${list.length ? `
-      <!-- Connecteur GSC -->
       <div style="background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);
         border-radius:var(--r-sm);padding:9px 14px;margin-bottom:14px;font-size:.77rem;color:var(--mut-2);
         display:flex;align-items:center;justify-content:space-between;font-family:var(--ff-mono)">
@@ -80,7 +78,9 @@ async function loadMotsCles() {
       </div>` : `
       <div class="card">
         <div class="card-header"><span class="card-title">— Mots-clés</span><button class="btn btn-pri btn-sm" onclick="openMCModal()">+ Ajouter</button></div>
-        <div class="empty-state"><div class="ico">🔍</div><p>Aucun mot-clé suivi. Commencez par ajouter les mots-clés cibles.</p></div>
+        <div class="empty-state"><div class="ico">🔍</div>
+          <p>${currentDomaine ? 'Aucun mot-clé pour ce domaine.' : 'Ajoutez d\'abord un domaine via les pills ci-dessus.'}</p>
+        </div>
       </div>`}`;
 }
 
@@ -115,7 +115,17 @@ function filterMC(type, btn) {
 }
 
 function openMCModal(id = null) {
+  // Sélecteur de domaine dans le formulaire
+  const domSel = _allDomaines.length > 1 ? `
+    <div class="form-group">
+      <label class="form-label">Domaine</label>
+      <select class="form-select" id="mc-dom">
+        ${_allDomaines.map(d => `<option value="${d.id}"${currentDomaine?.id===d.id?' selected':''}>${escHtml(d.label||d.domaine)}</option>`).join('')}
+      </select>
+    </div>` : '';
+
   const form = `
+    ${domSel}
     <div class="form-group">
       <label class="form-label">Mot-clé *</label>
       <input class="form-input" id="mc-kw" placeholder="Ex : agence seo bordeaux">
@@ -168,6 +178,8 @@ function openMCModal(id = null) {
       document.getElementById('mc-prev').value  = m.position_precedente || '';
       document.getElementById('mc-url').value   = m.url_cible           || '';
       document.getElementById('mc-notes').value = m.notes               || '';
+      const domSel = document.getElementById('mc-dom');
+      if (domSel && m.domaine_id) domSel.value = m.domaine_id;
     });
   }
 }
@@ -176,8 +188,11 @@ async function saveMC(id) {
   const kw = document.getElementById('mc-kw').value.trim();
   if (!kw) { toast('Mot-clé requis', 'err'); return; }
   const { data: { user } } = await supa.auth.getUser();
+  const domSel = document.getElementById('mc-dom');
+  const domaineId = domSel ? domSel.value : (currentDomaine?.id || null);
   const payload = {
     contact_id:          currentContact.id,
+    domaine_id:          domaineId || null,
     mot_cle:             kw,
     type_mc:             document.getElementById('mc-type').value,
     volume_recherche:    parseInt(document.getElementById('mc-vol').value)  || null,
@@ -203,26 +218,4 @@ async function deleteMC(id) {
   const { error } = await supa.from('seo_client_mots_cles').delete().eq('id', id);
   if (error) { toast('Erreur', 'err'); return; }
   closeModal(); toast('Mot-clé supprimé'); loadMotsCles();
-}
-
-function editDomaine(current) {
-  openModal('Domaine du site', `
-    <div class="form-group">
-      <label class="form-label">URL du domaine</label>
-      <input class="form-input" id="dom-url" value="${escHtml(current)}" placeholder="https://www.exemple.fr">
-    </div>`, `
-    <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
-    <button class="btn btn-pri" onclick="saveDomaine()">Enregistrer</button>`);
-}
-
-async function saveDomaine() {
-  const domaine = document.getElementById('dom-url').value.trim();
-  const { data: { user } } = await supa.auth.getUser();
-  await supa.from('seo_client_profiles').upsert({
-    contact_id: currentContact.id, domaine: domaine || null,
-    updated_at: new Date().toISOString(), created_by: user?.id,
-  }, { onConflict: 'contact_id' });
-  const el = document.getElementById('subnav-domain');
-  if (el) el.textContent = domaine || 'Non renseigné';
-  closeModal(); toast('Domaine enregistré', 'ok'); loadMotsCles();
 }

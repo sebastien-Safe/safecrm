@@ -58,7 +58,20 @@ h1,h2,h3,h4{font-family:var(--ff-disp);color:#fff;line-height:1.15;letter-spacin
 .sidebar-item.active{background:rgba(59,130,246,.15);color:#fff;font-weight:600}
 .sidebar-item .ico{width:20px;text-align:center;font-size:1rem;flex-shrink:0}
 .sidebar-item .badge{margin-left:auto;background:var(--accent-2);color:#fff;font-size:.65rem;font-weight:700;border-radius:10px;padding:1px 7px}
-.sidebar-divider{border:none;border-top:1px solid var(--line);margin:10px 16px}
+.sidebar-divider{border:none;border-top:1px solid var(--line);margin:8px 16px}
+
+/* ---- SIDEBAR COLLAPSIBLE ---- */
+.sidebar-collapsible-head{display:flex;align-items:center;justify-content:space-between;
+  padding:6px 8px;cursor:pointer;border-radius:8px;transition:.12s;user-select:none;margin-bottom:2px}
+.sidebar-collapsible-head:hover{background:rgba(255,255,255,.04)}
+.sidebar-section-label{font-family:var(--ff-mono);font-size:.62rem;letter-spacing:.18em;color:var(--mut);text-transform:uppercase}
+.sidebar-section-arrow{font-size:.6rem;color:var(--mut);transition:transform .2s;line-height:1}
+.sidebar-collapsible-body{overflow:hidden;max-height:0;transition:max-height .28s ease}
+.sidebar-collapsible-body.open{max-height:500px}
+.sidebar-sub{padding-left:22px!important;font-size:.84rem}
+.sidebar-disabled{opacity:.38;cursor:not-allowed!important}
+.sidebar-disabled:hover{background:none!important;color:var(--mut-2)!important}
+a.sidebar-item{text-decoration:none}
 
 /* ---- CARDS & PANELS ---- */
 .card{background:rgba(20,34,64,.7);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px}
@@ -258,77 +271,95 @@ select option{background:var(--navy-mid)}
 <div id="work-mob-overlay" onclick="closeWorkSidebar()"></div>
   <div class="shell">
     <!-- Sidebar -->
-    <nav class="sidebar">
+    <nav class="sidebar" id="work-sidebar">
+
+      <!-- Navigation principale -->
       <div class="sidebar-section">
-        <div class="sidebar-label">Navigation</div>
         <button class="sidebar-item active" onclick="showView('dashboard')" id="nav-dashboard">
           <span class="ico">📊</span> Dashboard
         </button>
-        <button class="sidebar-item" onclick="showView('clients')" id="nav-clients">
-          <span class="ico">👥</span> Clients & Contrats
-        </button>
-        <a class="sidebar-item" href="/work/module-seo.html" style="text-decoration:none;display:flex;align-items:center;gap:8px">
-          <span class="ico">🚀</span> Module SEO
-        </a>
         <button class="sidebar-item" onclick="showView('automate')" id="nav-automate">
-          <span class="ico">⚡</span> Automatisations
+          <span class="ico">⏯</span> Onboarding
+        </button>
+        <button class="sidebar-item" onclick="showView('tasks');loadTasks()" id="nav-tasks">
+          <span class="ico">✅</span> Tâches
         </button>
       </div>
 
       <hr class="sidebar-divider">
+
+      <!-- MODULES (repliable, ouvert par défaut) -->
       <div class="sidebar-section">
-        <div class="sidebar-label">Outils</div>
-        <button class="sidebar-item" onclick="showView('journal')" id="nav-journal">
-          <span class="ico">📋</span> Journal <span class="badge" id="journal-count">0</span>
-        </button>
-        <button class="sidebar-item" onclick="showView('tasks')" id="nav-tasks">
-          <span class="ico">✅</span> Tâches créées
+        <div class="sidebar-collapsible-head open" onclick="toggleSection('modules')">
+          <span class="sidebar-section-label">Modules</span>
+          <span class="sidebar-section-arrow" id="arrow-modules">▴</span>
+        </div>
+        <div class="sidebar-collapsible-body open" id="section-modules">
+          <a class="sidebar-item sidebar-sub" href="/work/SEO/module-seo-clients.html">
+            <span class="ico">🚀</span> SEO
+          </a>
+          <a class="sidebar-item sidebar-sub" href="/work/Cyber/module-cyber-clients.html">
+            <span class="ico">💻</span> Cybersec
+          </a>
+          <a class="sidebar-item sidebar-sub" href="/work/DPO/module-dpo-clients.html">
+            <span class="ico">⚖️</span> DPO
+          </a>
+          <a class="sidebar-item sidebar-sub" href="/work/Social/module-social-clients.html">
+            <span class="ico">📱</span> Social
+          </a>
+          <a class="sidebar-item sidebar-sub" href="/work/ClickCollect/module-clickcollect-clients.html">
+            <span class="ico">🛒</span> Click &amp; Collect
+          </a>
+        </div>
+      </div>
+
+      <hr class="sidebar-divider">
+
+      <!-- ASSURANCES (placeholder) -->
+      <div class="sidebar-section">
+        <button class="sidebar-item sidebar-disabled" disabled>
+          <span class="ico">🛡</span> Assurances
+          <span style="font-size:.6rem;color:var(--mut);margin-left:auto;font-family:var(--ff-mono)">bientôt</span>
         </button>
       </div>
+
       <hr class="sidebar-divider">
-<div class="sidebar-section">
-  <div class="sidebar-label">Modules</div>
-  <button class="sidebar-item" onclick="window.location.href='/work/Cyber/index.html'">
-    <span class="ico">🛡</span> Module Cyber
-  </button>
-  <button class="sidebar-item" onclick="window.location.href='/work/Cyber/module-cyber-clients.html'">
-    <span class="ico">🛡</span> Cybersec Clients
-  </button>
-  <button class="sidebar-item" onclick="window.location.href='/work/DPO/index.html'">
-    <span class="ico">📋</span> Module DPO
-  </button>
-  <button class="sidebar-item" onclick="window.location.href='/work/DPO/module-dpo-clients.html'">
-    <span class="ico">⚖️</span> DPO Clients RGPD
-  </button>
-  <button class="sidebar-item" onclick="window.location.href='/work/connecteurs.html'">
-    <span class="ico">🔌</span> Connecteurs
-  </button>
-  <button class="sidebar-item" onclick="window.location.href='/work/SEO/module-seo-clients.html'">
-    <span class="ico">🔍</span> SEO Clients
-  </button>
-  <button class="sidebar-item" onclick="window.location.href='/work/Social/module-social-clients.html'">
-    <span class="ico">📱</span> Social Clients
-  </button>
-  <button class="sidebar-item" onclick="window.location.href='/work/ClickCollect/module-clickcollect-clients.html'">
-    <span class="ico">🛒</span> Click &amp; Collect
-  </button>
-  <button class="sidebar-item" onclick="showView('automate')" id="nav-onboarding">
-    <span class="ico">🚀</span> Onboarding
-  </button>
-</div>
-      <hr class="sidebar-divider">
+
+      <!-- RÉGLAGES (repliable, fermé par défaut) -->
       <div class="sidebar-section">
-        <div class="sidebar-label">Super Admin</div>
-        <button class="sidebar-item" onclick="showView('unites')" id="nav-unites">
-          <span class="ico">🏢</span> Unités commerciales
-        </button>
+        <div class="sidebar-collapsible-head" onclick="toggleSection('reglages')">
+          <span class="sidebar-section-label">⚙️ Réglages</span>
+          <span class="sidebar-section-arrow" id="arrow-reglages">▾</span>
+        </div>
+        <div class="sidebar-collapsible-body" id="section-reglages">
+          <button class="sidebar-item sidebar-sub" onclick="showView('journal');loadJournal()" id="nav-journal">
+            <span class="ico">📋</span> Journal <span class="badge" id="journal-count">0</span>
+          </button>
+          <button class="sidebar-item sidebar-sub" onclick="showView('automate')">
+            <span class="ico">⚡️</span> Automatismes
+          </button>
+          <a class="sidebar-item sidebar-sub" href="/work/connecteurs.html">
+            <span class="ico">🔌</span> Connecteurs
+          </a>
+          <a class="sidebar-item sidebar-sub" href="vscode://">
+            <span class="ico">🤖</span> IA
+          </a>
+          <a class="sidebar-item sidebar-sub" href="https://github.com/sebastien-Safe/" target="_blank" rel="noopener">
+            <span class="ico">🐈</span> Github
+          </a>
+          <a class="sidebar-item sidebar-sub" href="https://supabase.com/dashboard/" target="_blank" rel="noopener">
+            <span class="ico">📺</span> Supabase
+          </a>
+        </div>
       </div>
+
       <hr class="sidebar-divider">
       <div class="sidebar-section">
-        <button class="sidebar-item" onclick="window.location.href='https://crm.safe-digitalisation.fr/'">
+        <a class="sidebar-item" href="https://crm.safe-digitalisation.fr/">
           <span class="ico">◀</span> Retour CRM
-        </button>
+        </a>
       </div>
+
     </nav>
 
     <!-- Main -->
@@ -357,7 +388,7 @@ select option{background:var(--navy-mid)}
               <div style="font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Activité récente</div>
               <h3 style="font-size:1rem;color:#fff;margin:0">📄 Nouveaux contrats</h3>
             </div>
-            <button class="btn btn-out btn-sm" onclick="showView('clients')" style="border-color:var(--gold);color:var(--gold);font-size:.78rem">Voir tous →</button>
+            <a class="btn btn-out btn-sm" href="https://crm.safe-digitalisation.fr/" style="border-color:var(--gold);color:var(--gold);font-size:.78rem">Ouvrir CRM →</a>
           </div>
           <div id="dash-nouveaux-contrats">
             <div style="text-align:center;padding:20px;color:var(--mut);font-size:.85rem">Chargement…</div>
@@ -1357,17 +1388,25 @@ async function loadTasks(){
 /* ============================================================
    NAVIGATION
    ============================================================ */
-const VIEWS = ['dashboard','clients','automate','journal','tasks'];
+const VIEWS = ['dashboard','automate','journal','tasks'];
 function showView(name){
   VIEWS.forEach(v=>{
-    document.getElementById('view-'+v).style.display = v===name?'block':'none';
+    const el = document.getElementById('view-'+v);
+    if(el) el.style.display = v===name?'block':'none';
     const nav = document.getElementById('nav-'+v);
     if(nav) nav.classList.toggle('active', v===name);
   });
-  if(name==='clients') loadClients();
   if(name==='journal') loadJournal();
   if(name==='tasks')   loadTasks();
   if(name==='automate'){ loadContacts(); }
+}
+
+function toggleSection(id){
+  const body  = document.getElementById('section-'+id);
+  const arrow = document.getElementById('arrow-'+id);
+  if(!body) return;
+  const open = body.classList.toggle('open');
+  if(arrow) arrow.textContent = open ? '▴' : '▾';
 }
 
 function closeWorkflow(){ document.getElementById('wf-overlay').classList.remove('open'); }

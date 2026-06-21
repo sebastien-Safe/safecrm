@@ -176,6 +176,17 @@ h1,h2,h3,h4{font-family:var(--ff-disp);color:#fff;letter-spacing:-.02em}
 .modal-body{padding:16px 22px}
 .modal-foot{display:flex;gap:8px;justify-content:flex-end;padding:14px 22px;border-top:1px solid var(--line)}
 
+/* DOMAIN PILLS */
+.subnav-domaines{display:flex;flex-direction:column;gap:5px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.domain-pill{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;
+  border:1px solid var(--line);background:transparent;color:var(--mut);font-size:.78rem;
+  cursor:pointer;transition:.15s;text-align:left;font-family:var(--ff-mono);width:100%}
+.domain-pill:hover{color:#fff;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04)}
+.domain-pill.active{color:var(--seo);border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.06)}
+.domain-pill.domain-add{color:var(--mut);font-size:.74rem;border-style:dashed;font-family:var(--ff-disp)}
+.domain-pill.domain-add:hover{color:var(--seo);border-color:var(--seo)}
+.domain-pill-score{margin-left:auto;font-weight:700;font-size:.7rem}
+
 /* MISC */
 .loader{display:flex;align-items:center;gap:10px;padding:40px 0;color:var(--mut);font-size:.85rem}
 .spinner{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--seo);border-radius:50%;animation:spin .7s linear infinite}

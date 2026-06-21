@@ -10,11 +10,15 @@ async function loadSeoAudit() {
   if (!el) return;
   el.innerHTML = '<div class="loader"><div class="spinner"></div>Analyse en cours…</div>';
 
-  const { data: rows } = await supa.from('seo_client_audits').select('*').eq('contact_id', currentContact.id);
+  let q = supa.from('seo_client_audits').select('*').eq('contact_id', currentContact.id);
+  if (currentDomaine) {
+    q = q.or(`domaine_id.eq.${currentDomaine.id},domaine_id.is.null`);
+  }
+  const { data: rows } = await q;
   _seoAuditData = {};
   (rows || []).forEach(r => { _seoAuditData[r.item_key] = r; });
 
-  const { score, catScores } = await computeScoreSEO(currentContact.id);
+  const { score, catScores } = await computeScoreSEO(currentContact.id, currentDomaine?.id);
 
   const scoreEl = document.getElementById('sidebar-score');
   if (scoreEl) { scoreEl.textContent = score + '%'; scoreEl.style.color = scoreColor(score); }
@@ -22,14 +26,18 @@ async function loadSeoAudit() {
   const totalItems = Object.values(SEO_CATS).flatMap(c => c.items).length;
   const verified   = Object.values(_seoAuditData).filter(r => r.statut !== 'non_verifie').length;
 
+  const domLabel = currentDomaine
+    ? `<span style="font-size:.78rem;color:var(--seo);font-family:var(--ff-mono)">${escHtml(currentDomaine.domaine)}</span>`
+    : '';
+
   el.innerHTML = `
-    <!-- Score -->
     <div class="card" style="margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
         <div style="text-align:center;min-width:80px">
           <div style="font-family:var(--ff-disp);font-size:2.8rem;font-weight:800;
             color:${scoreColor(score)};line-height:1">${score}%</div>
           <div style="margin-top:6px">${scoreBadge(score)}</div>
+          ${domLabel ? `<div style="margin-top:6px">${domLabel}</div>` : ''}
         </div>
         <div style="flex:1;min-width:200px">
           <div style="font-size:.75rem;color:var(--mut);margin-bottom:8px;font-family:var(--ff-mono)">
@@ -56,7 +64,6 @@ async function loadSeoAudit() {
       </div>
     </div>
 
-    <!-- Checklist -->
     ${Object.entries(SEO_CATS).map(([catKey, cat]) => renderSeoCatBlock(catKey, cat, catScores[catKey]||0)).join('')}`;
 }
 
@@ -117,19 +124,41 @@ async function saveAllSeoAudit() {
   if (!currentContact) return;
   const { data: { user } } = await supa.auth.getUser();
   const now = new Date().toISOString();
-  const upserts = [];
+  const domaineId = currentDomaine?.id || null;
+
+  const updates = [], inserts = [];
   for (const [catKey, cat] of Object.entries(SEO_CATS)) {
     for (const item of cat.items) {
       const cached = _seoAuditData[item.key] || {};
-      upserts.push({
-        contact_id: currentContact.id, categorie: catKey, item_key: item.key,
-        statut: cached.statut || 'non_verifie', notes: cached.notes || null,
-        updated_at: now, created_by: user?.id,
-      });
+      const payload = {
+        contact_id: currentContact.id,
+        domaine_id: domaineId,
+        categorie:  catKey,
+        item_key:   item.key,
+        statut:     cached.statut || 'non_verifie',
+        notes:      cached.notes  || null,
+        updated_at: now,
+      };
+      if (cached.id) {
+        updates.push({ id: cached.id, ...payload });
+      } else {
+        inserts.push({ ...payload, created_by: user?.id });
+      }
     }
   }
-  const { error } = await supa.from('seo_client_audits').upsert(upserts, { onConflict: 'contact_id,item_key' });
-  if (error) { toast('Erreur : ' + error.message, 'err'); return; }
+
+  const errors = [];
+  for (const row of updates) {
+    const { id, ...data } = row;
+    const { error } = await supa.from('seo_client_audits').update(data).eq('id', id);
+    if (error) errors.push(error.message);
+  }
+  if (inserts.length) {
+    const { error } = await supa.from('seo_client_audits').insert(inserts);
+    if (error) errors.push(error.message);
+  }
+
+  if (errors.length) { toast('Erreur : ' + errors[0], 'err'); return; }
   toast('Audit SEO sauvegardé ✅');
   loadSeoAudit();
 }
@@ -137,14 +166,15 @@ async function saveAllSeoAudit() {
 async function exportSeoAuditPDF() {
   const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
   if (!jsPDF) { toast('jsPDF non disponible', 'err'); return; }
-  const { score, catScores } = await computeScoreSEO(currentContact.id);
+  const { score, catScores } = await computeScoreSEO(currentContact.id, currentDomaine?.id);
   const nom = currentContact.nom || currentContact.entreprise || 'Client';
+  const domTxt = currentDomaine?.domaine || '';
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   let y = 16;
   doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(10,22,40);
   doc.text(`Audit SEO — ${nom}`, 14, y); y += 7;
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(80,80,80);
-  doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')} · Score SEO global : ${score}%`, 14, y); y += 9;
+  doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')} · Score SEO global : ${score}%${domTxt?' · '+domTxt:''}`, 14, y); y += 9;
 
   for (const [catKey, cat] of Object.entries(SEO_CATS)) {
     if (y > 255) { doc.addPage(); y = 14; }
@@ -168,9 +198,8 @@ async function exportSeoAuditPDF() {
     y += 4;
   }
 
-  // Recommandations
   const nonConformes = [];
-  for (const [catKey, cat] of Object.entries(SEO_CATS)) {
+  for (const [, cat] of Object.entries(SEO_CATS)) {
     for (const item of cat.items) {
       const st = (_seoAuditData[item.key] || {}).statut;
       if (st === 'non_conforme' || st === 'partiel') nonConformes.push(item.label);
@@ -188,5 +217,5 @@ async function exportSeoAuditPDF() {
     });
   }
 
-  doc.save(`audit-seo-${nom.replace(/[^a-z0-9]/gi,'_')}.pdf`);
+  doc.save(`audit-seo-${nom.replace(/[^a-z0-9]/gi,'_')}${domTxt?'-'+domTxt.replace(/[^a-z0-9]/gi,'_'):''}.pdf`);
 }

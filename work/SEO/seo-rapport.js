@@ -8,19 +8,20 @@ async function loadRapport() {
   if (!el) return;
   el.innerHTML = '<div class="loader"><div class="spinner"></div>Préparation du rapport…</div>';
 
-  const [
-    { data: profile },
-    { data: mcs },
-    { data: audits },
-  ] = await Promise.all([
-    supa.from('seo_client_profiles').select('*').eq('contact_id', currentContact.id).maybeSingle(),
-    supa.from('seo_client_mots_cles').select('*').eq('contact_id', currentContact.id).order('position_actuelle', { ascending: true, nullsFirst: false }),
-    supa.from('seo_client_audits').select('*').eq('contact_id', currentContact.id),
+  let qMC  = supa.from('seo_client_mots_cles').select('*').eq('contact_id', currentContact.id);
+  let qAud = supa.from('seo_client_audits').select('*').eq('contact_id', currentContact.id);
+  if (currentDomaine) {
+    qMC  = qMC.or(`domaine_id.eq.${currentDomaine.id},domaine_id.is.null`);
+    qAud = qAud.or(`domaine_id.eq.${currentDomaine.id},domaine_id.is.null`);
+  }
+  const [{ data: mcs }, { data: audits }] = await Promise.all([
+    qMC.order('position_actuelle', { ascending: true, nullsFirst: false }),
+    qAud,
   ]);
 
   const nom     = currentContact.nom || currentContact.entreprise || 'Client';
-  const domaine = profile?.domaine || '—';
-  const score   = profile?.score_global ?? 0;
+  const domaine = currentDomaine?.domaine || '—';
+  const score   = currentDomaine?.score_global ?? 0;
 
   const list    = mcs    || [];
   const auditRows = audits || [];
@@ -139,15 +140,20 @@ async function genererRapportPDF() {
   const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
   if (!jsPDF) { toast('jsPDF non disponible', 'err'); return; }
 
-  const [{ data: profile }, { data: mcs }, { data: audits }] = await Promise.all([
-    supa.from('seo_client_profiles').select('*').eq('contact_id', currentContact.id).maybeSingle(),
-    supa.from('seo_client_mots_cles').select('*').eq('contact_id', currentContact.id).order('position_actuelle', { ascending: true, nullsFirst: false }),
-    supa.from('seo_client_audits').select('*').eq('contact_id', currentContact.id),
+  let qMC2  = supa.from('seo_client_mots_cles').select('*').eq('contact_id', currentContact.id);
+  let qAud2 = supa.from('seo_client_audits').select('*').eq('contact_id', currentContact.id);
+  if (currentDomaine) {
+    qMC2  = qMC2.or(`domaine_id.eq.${currentDomaine.id},domaine_id.is.null`);
+    qAud2 = qAud2.or(`domaine_id.eq.${currentDomaine.id},domaine_id.is.null`);
+  }
+  const [{ data: mcs }, { data: audits }] = await Promise.all([
+    qMC2.order('position_actuelle', { ascending: true, nullsFirst: false }),
+    qAud2,
   ]);
 
   const nom     = currentContact.nom || currentContact.entreprise || 'Client';
-  const domaine = profile?.domaine || '—';
-  const score   = profile?.score_global ?? 0;
+  const domaine = currentDomaine?.domaine || '—';
+  const score   = currentDomaine?.score_global ?? 0;
   const mois    = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
   const list    = mcs || [];
 

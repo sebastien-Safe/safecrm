@@ -7,6 +7,8 @@ const SUPA_KEY = window.SUPABASE_ANON_KEY || 'sb_publishable_8uD3m60n9GfMt2h_Gkm
 const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let currentContact = null;
+let currentDomaine = null;
+let _allDomaines   = [];
 let allContacts    = [];
 
 /* ============================================================
@@ -76,6 +78,8 @@ function showView(id) {
 
 function selectContact(contact) {
   currentContact = contact;
+  currentDomaine = null;
+  _allDomaines   = [];
   document.querySelectorAll('.sidebar-contact-item').forEach(el => {
     el.classList.toggle('active', el.dataset.id === contact.id);
   });
@@ -85,21 +89,135 @@ function selectContact(contact) {
   if (nameEl) nameEl.textContent = contact.nom || contact.prenom || '—';
   const topEl = document.getElementById('topbar-contact-name');
   if (topEl) topEl.textContent = contact.nom || '';
-  // Charger le domaine depuis le profil
-  supa.from('seo_client_profiles').select('domaine,score_global').eq('contact_id', contact.id).maybeSingle().then(({ data: p }) => {
-    const domEl = document.getElementById('subnav-domain');
-    if (domEl) domEl.textContent = p?.domaine || 'Domaine non renseigné';
-    const scoreEl = document.getElementById('sidebar-score');
-    if (scoreEl) { scoreEl.textContent = (p?.score_global ?? '—') + '%'; scoreEl.style.color = scoreColor(p?.score_global ?? 0); }
-  });
-  switchSubView('mots-cles', document.querySelector('.subnav-item[data-view="mots-cles"]'));
+  loadDomaines(contact);
 }
 
 function clearContact() {
   currentContact = null;
+  currentDomaine = null;
+  _allDomaines   = [];
   document.querySelectorAll('.sidebar-contact-item').forEach(el => el.classList.remove('active'));
   document.getElementById('seo-subnav').style.display = 'none';
   showView('dashboard'); loadDashboard();
+}
+
+/* ============================================================
+   GESTION DES DOMAINES
+   ============================================================ */
+async function loadDomaines(contact) {
+  const { data } = await supa.from('seo_domaines')
+    .select('*').eq('contact_id', contact.id)
+    .order('is_principal', { ascending: false }).order('domaine');
+  _allDomaines = data || [];
+
+  // Migration automatique depuis l'ancien champ domaine unique
+  if (!_allDomaines.length) {
+    const { data: prof } = await supa.from('seo_client_profiles')
+      .select('domaine').eq('contact_id', contact.id).maybeSingle();
+    if (prof?.domaine) {
+      const { data: { user } } = await supa.auth.getUser();
+      const { data: newD } = await supa.from('seo_domaines').insert({
+        contact_id: contact.id, domaine: prof.domaine,
+        is_principal: true, created_by: user?.id,
+      }).select().single();
+      if (newD) _allDomaines = [newD];
+    }
+  }
+
+  _renderDomainePills();
+  selectDomaine(_allDomaines[0] || null);
+}
+
+function _renderDomainePills() {
+  const el = document.getElementById('subnav-domaines');
+  if (!el) return;
+  if (!_allDomaines.length) {
+    el.innerHTML = `<button class="domain-pill domain-add" onclick="openDomainesModal()">+ Ajouter un domaine</button>`;
+    return;
+  }
+  el.innerHTML = _allDomaines.map(d => `
+    <button class="domain-pill${currentDomaine?.id === d.id ? ' active' : ''}"
+      onclick="selectDomaine(_allDomaines.find(x=>x.id==='${d.id}'))">
+      ${d.is_principal ? '🌐' : '🔗'} ${escHtml(d.label || _shortDomain(d.domaine))}
+      ${d.score_global ? `<span class="domain-pill-score" style="color:${scoreColor(d.score_global)}">${d.score_global}%</span>` : ''}
+    </button>`).join('')
+  + `<button class="domain-pill domain-add" onclick="openDomainesModal()">+ Domaine</button>`;
+}
+
+function _shortDomain(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; }
+}
+
+function selectDomaine(d) {
+  currentDomaine = d;
+  _renderDomainePills();
+  const scoreEl = document.getElementById('sidebar-score');
+  if (scoreEl) {
+    const s = d?.score_global ?? null;
+    scoreEl.textContent = s !== null ? s + '%' : '—';
+    scoreEl.style.color = scoreColor(s ?? 0);
+  }
+  // Recharger la vue active
+  const activeView = document.querySelector('.subnav-item.active')?.dataset.view;
+  if (activeView === 'mots-cles') loadMotsCles();
+  else if (activeView === 'audit') loadSeoAudit();
+  else if (activeView === 'rapport') loadRapport();
+  else switchSubView('mots-cles', document.querySelector('.subnav-item[data-view="mots-cles"]'));
+}
+
+function openDomainesModal() {
+  openModal('Domaines suivis', `
+    <div id="dom-list" style="margin-bottom:14px">
+      ${_allDomaines.length ? _allDomaines.map(d => `
+        <div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.84rem;color:#fff;font-family:var(--ff-mono)">${escHtml(d.domaine)}</div>
+            ${d.label ? `<div style="font-size:.72rem;color:var(--mut)">${escHtml(d.label)}</div>` : ''}
+          </div>
+          ${d.is_principal ? '<span class="badge badge-ok" style="font-size:.6rem">Principal</span>' : ''}
+          ${d.score_global ? `<span style="font-family:var(--ff-mono);font-size:.72rem;font-weight:700;color:${scoreColor(d.score_global)}">${d.score_global}%</span>` : ''}
+          <button class="btn btn-ghost btn-sm" style="padding:3px 8px" onclick="deleteDomaine('${d.id}')">🗑</button>
+        </div>`).join('')
+      : '<p style="font-size:.8rem;color:var(--mut);margin-bottom:8px">Aucun domaine configuré.</p>'}
+    </div>
+    <div style="font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.15em;color:var(--mut);text-transform:uppercase;margin-bottom:10px">Ajouter un domaine</div>
+    <div class="form-group">
+      <label class="form-label">URL du domaine *</label>
+      <input class="form-input" id="new-dom-url" placeholder="https://www.exemple.fr">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Label (optionnel)</label>
+      <input class="form-input" id="new-dom-label" placeholder="Site principal, Blog, Landing…">
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--mut-2);cursor:pointer;margin-top:4px">
+      <input type="checkbox" id="new-dom-principal"> Marquer comme domaine principal
+    </label>`,
+  `<button class="btn btn-ghost" onclick="closeModal()">Fermer</button>
+   <button class="btn btn-pri" onclick="saveDomaine()">Ajouter</button>`);
+}
+
+async function saveDomaine() {
+  const domaine = document.getElementById('new-dom-url')?.value.trim();
+  if (!domaine) { toast('URL requise', 'err'); return; }
+  const label       = document.getElementById('new-dom-label')?.value.trim() || null;
+  const isPrincipal = document.getElementById('new-dom-principal')?.checked || false;
+  const { data: { user } } = await supa.auth.getUser();
+  const { error } = await supa.from('seo_domaines').insert({
+    contact_id: currentContact.id, domaine, label, is_principal: isPrincipal, created_by: user?.id,
+  });
+  if (error) { toast('Erreur : ' + error.message, 'err'); return; }
+  toast('Domaine ajouté ✓');
+  closeModal();
+  await loadDomaines(currentContact);
+}
+
+async function deleteDomaine(id) {
+  if (!confirm('Supprimer ce domaine ? Les mots-clés et audits associés seront désassociés.')) return;
+  const { error } = await supa.from('seo_domaines').delete().eq('id', id);
+  if (error) { toast('Erreur', 'err'); return; }
+  toast('Domaine supprimé');
+  closeModal();
+  await loadDomaines(currentContact);
 }
 
 /* ============================================================
@@ -155,10 +273,14 @@ function positionEvolution(actuelle, precedente) {
 }
 
 /* ============================================================
-   CALCUL DU SCORE SEO
+   CALCUL DU SCORE SEO (par domaine)
    ============================================================ */
-async function computeScoreSEO(contactId) {
-  const { data: rows } = await supa.from('seo_client_audits').select('item_key,statut').eq('contact_id', contactId);
+async function computeScoreSEO(contactId, domaineId) {
+  let q = supa.from('seo_client_audits').select('item_key,statut').eq('contact_id', contactId);
+  if (domaineId) {
+    q = q.or(`domaine_id.eq.${domaineId},domaine_id.is.null`);
+  }
+  const { data: rows } = await q;
   const byKey = {};
   (rows || []).forEach(r => { byKey[r.item_key] = r.statut; });
 
@@ -181,11 +303,18 @@ async function computeScoreSEO(contactId) {
   }
   const score = Math.round(weighted);
 
-  const { data: { user } } = await supa.auth.getUser();
-  await supa.from('seo_client_profiles').upsert({
-    contact_id: contactId, score_global: score,
-    updated_at: new Date().toISOString(), created_by: user?.id,
-  }, { onConflict: 'contact_id' });
+  // Sauvegarder le score dans seo_domaines ou seo_client_profiles (compat)
+  if (domaineId) {
+    await supa.from('seo_domaines').update({ score_global: score, updated_at: new Date().toISOString() }).eq('id', domaineId);
+    const d = _allDomaines.find(x => x.id === domaineId);
+    if (d) d.score_global = score;
+  } else {
+    const { data: { user } } = await supa.auth.getUser();
+    await supa.from('seo_client_profiles').upsert({
+      contact_id: contactId, score_global: score,
+      updated_at: new Date().toISOString(), created_by: user?.id,
+    }, { onConflict: 'contact_id' });
+  }
 
   return { score, catScores };
 }
