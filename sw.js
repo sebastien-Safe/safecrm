@@ -1,7 +1,7 @@
 // S@FE CRM — Service Worker PWA
 // Version cache — incrémenter pour forcer la mise à jour
-const CACHE_VERSION = 'safe-crm-v2';
-const CACHE_STATIC  = 'safe-crm-static-v2';
+const CACHE_VERSION = 'safe-crm-v3';
+const CACHE_STATIC  = 'safe-crm-static-v3';
 
 // Assets à mettre en cache (shell applicatif)
 const STATIC_ASSETS = [
@@ -69,7 +69,24 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Assets statiques CRM → Cache First avec fallback réseau
+  // Pages HTML → Network First (toujours la version serveur, cache en fallback offline)
+  const isHtml = event.request.mode === 'navigate'
+    || url.pathname.endsWith('.html')
+    || url.pathname === '/';
+  if (url.hostname === self.location.hostname && isHtml) {
+    event.respondWith(
+      fetch(event.request).then(resp => {
+        if (resp && resp.status === 200 && resp.type !== 'opaque') {
+          const clone = resp.clone();
+          caches.open(CACHE_STATIC).then(c => c.put(event.request, clone));
+        }
+        return resp;
+      }).catch(() => caches.match(event.request).then(c => c || caches.match('/index.html')))
+    );
+    return;
+  }
+
+  // Assets statiques (CSS, JS, fonts, images) → Cache First avec fallback réseau
   if (url.hostname === self.location.hostname) {
     event.respondWith(
       caches.match(event.request).then(cached => {
@@ -80,11 +97,6 @@ self.addEventListener('fetch', event => {
             caches.open(CACHE_STATIC).then(c => c.put(event.request, clone));
           }
           return resp;
-        }).catch(() => {
-          // Fallback hors-ligne : renvoyer index.html pour la navigation
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
         });
       })
     );
