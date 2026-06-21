@@ -341,6 +341,9 @@ select option{background:var(--navy-mid)}
           <div class="stat-card"><div class="val" id="st-tasks">—</div><div class="lbl">Tâches à faire</div></div>
         </div>
 
+        <!-- Carte opérationnalité modules -->
+        <div id="dash-modules-card" style="margin-top:20px"></div>
+
         <!-- Bloc Nouveaux contrats — bordure dorée -->
         <div style="margin-top:20px;background:rgba(20,34,64,.7);border:1.5px solid var(--gold);border-radius:var(--r);padding:20px 22px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
@@ -620,11 +623,148 @@ async function initApp(token, user){
   renderQuickAutomations();
   showView('dashboard');
   loadNouveauxContrats();
+  loadModulesStatus();
 }
 
 /* ============================================================
    STATS DASHBOARD
    ============================================================ */
+
+/* ============================================================
+   OPÉRATIONNALITÉ DES MODULES
+   ============================================================ */
+const _MODULES_DEF = [
+  {
+    key:'dpo', name:'DPO Clients RGPD', icon:'⚖️', color:'#f59e0b', pct:85,
+    done:['Registre traitements','Consentements','Demandes RGPD','Documents','Violations','Audit & Score'],
+    todo:['Assistant IA temps réel'],
+    href:'/work/DPO/module-dpo-clients.html',
+  },
+  {
+    key:'cyber', name:'Cybersécurité', icon:'🛡', color:'#06b6d4', pct:80,
+    done:['Audit 23 pts ANSSI/CIS','Incidents','Plan d\'action'],
+    todo:['Rapport PDF auto','Alertes auto'],
+    href:'/work/Cyber/module-cyber-clients.html',
+  },
+  {
+    key:'seo', name:'SEO Clients', icon:'🔍', color:'#10b981', pct:85,
+    done:['Suivi mots-clés','Audit 25 points','Rapport PDF mensuel'],
+    todo:['Import GSC/Seranking','Alertes positions'],
+    href:'/work/SEO/module-seo-clients.html',
+  },
+  {
+    key:'connecteurs', name:'Connecteurs', icon:'🔌', color:'#3b82f6', pct:92,
+    done:['Gestion centralisée','Activation sécurisée','Logs historique','Mode simulation'],
+    todo:['Webhooks entrants'],
+    href:'/work/connecteurs.html',
+  },
+  {
+    key:'social', name:'Social', icon:'📱', color:'#8b5cf6', pct:0,
+    done:[],
+    todo:['Publication multi-réseaux','Calendrier éditorial','Analytics'],
+    href:null,
+  },
+  {
+    key:'clickcollect', name:'Click & Collect', icon:'🛒', color:'#ec4899', pct:0,
+    done:[],
+    todo:['Catalogue produits','Gestion commandes','Paiement'],
+    href:null,
+  },
+];
+
+async function loadModulesStatus() {
+  const el = document.getElementById('dash-modules-card');
+  if (!el) return;
+
+  // Affichage immédiat (statique)
+  el.innerHTML = _buildModulesCard(_MODULES_DEF, null);
+
+  // Enrichissement dynamique depuis Supabase
+  try {
+    const [dpo, cyber, seo, conn] = await Promise.all([
+      sbGet('dpo_client_profiles',   'select=contact_id&limit=1').catch(()=>[]),
+      sbGet('cyber_client_profiles', 'select=contact_id&limit=1').catch(()=>[]),
+      sbGet('seo_client_profiles',   'select=contact_id&limit=1').catch(()=>[]),
+      sbGet('safe_connectors',       'select=service_key,statut&statut=in.(actif,simule)').catch(()=>[]),
+    ]);
+    const dyn = {
+      dpo:         dpo.length   > 0 ? 'used'  : 'ready',
+      cyber:       cyber.length > 0 ? 'used'  : 'ready',
+      seo:         seo.length   > 0 ? 'used'  : 'ready',
+      connecteurs: conn.length  > 0 ? conn.length + ' actif' + (conn.length > 1 ? 's' : '') : 'aucun actif',
+      social:      'todo',
+      clickcollect:'todo',
+    };
+    el.innerHTML = _buildModulesCard(_MODULES_DEF, dyn);
+  } catch(e){ console.warn('[ModulesStatus]', e); }
+}
+
+function _buildModulesCard(mods, dyn) {
+  const active = mods.filter(m => m.pct > 0);
+  const avg    = active.length ? Math.round(active.reduce((s,m)=>s+m.pct,0)/active.length) : 0;
+  return `
+    <div class="card" style="padding:18px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:6px">
+        <div>
+          <span class="eyebrow">État système</span>
+          <h3 style="font-size:.98rem;color:#fff;margin:0">Opérationnalité des modules</h3>
+        </div>
+        <div style="font-family:var(--ff-mono);font-size:.72rem;color:var(--mut)">
+          <span style="color:var(--ok);font-weight:700">${active.length}/${mods.length}</span> modules actifs ·
+          <span style="color:var(--ok);font-weight:700">moy. ${avg}%</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:9px">
+        ${mods.map(m => _buildModuleItem(m, dyn ? dyn[m.key] : null)).join('')}
+      </div>
+    </div>`;
+}
+
+function _buildModuleItem(m, dynStatus) {
+  const rgb = _hexRgb(m.color);
+  const pctCol = m.pct >= 80 ? 'var(--ok)' : m.pct >= 50 ? 'var(--warn)' : m.pct > 0 ? 'var(--alert)' : 'var(--mut)';
+
+  const badge = dynStatus === null
+    ? `<span style="font-size:.59rem;color:var(--mut);font-family:var(--ff-mono)">…</span>`
+    : dynStatus === 'todo'
+    ? `<span style="font-size:.59rem;background:rgba(148,163,184,.1);color:var(--mut);border:1px solid rgba(148,163,184,.15);padding:1px 7px;border-radius:10px;font-family:var(--ff-mono)">À construire</span>`
+    : dynStatus === 'used'
+    ? `<span style="font-size:.59rem;background:rgba(34,197,94,.1);color:var(--ok);border:1px solid rgba(34,197,94,.2);padding:1px 7px;border-radius:10px;font-family:var(--ff-mono)">● Utilisé</span>`
+    : dynStatus === 'ready'
+    ? `<span style="font-size:.59rem;background:rgba(245,158,11,.1);color:var(--warn);border:1px solid rgba(245,158,11,.2);padding:1px 7px;border-radius:10px;font-family:var(--ff-mono)">○ Prêt</span>`
+    : `<span style="font-size:.59rem;background:rgba(59,130,246,.1);color:var(--accent);border:1px solid rgba(59,130,246,.2);padding:1px 7px;border-radius:10px;font-family:var(--ff-mono)">${dynStatus}</span>`;
+
+  const hover = m.href
+    ? `onmouseover="this.style.background='rgba(${rgb},.07)';this.style.borderColor='${m.color}'"
+       onmouseout="this.style.background='rgba(10,17,36,.45)';this.style.borderColor='rgba(${rgb},.18)'"
+       onclick="window.location.href='${m.href}'" style="cursor:pointer"`
+    : `style=""`;
+
+  return `
+    <div style="background:rgba(10,17,36,.45);border:1px solid rgba(${rgb},.18);border-radius:10px;
+      padding:11px 13px;transition:.15s" ${hover}>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:.95rem;line-height:1">${m.icon}</span>
+          <span style="font-size:.82rem;font-weight:600;color:#fff">${m.name}</span>
+        </div>
+        ${badge}
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+        <div style="flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden">
+          <div style="height:100%;width:${m.pct}%;background:linear-gradient(90deg,${m.color},${m.color}99);border-radius:2px"></div>
+        </div>
+        <span style="font-family:var(--ff-mono);font-size:.68rem;font-weight:700;color:${pctCol};min-width:26px;text-align:right">${m.pct}%</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px">
+        ${m.done.map(f=>`<span style="font-size:.58rem;background:rgba(${rgb},.1);color:${m.color};padding:1px 6px;border-radius:5px;line-height:1.7">${f}</span>`).join('')}${m.todo.map(f=>`<span style="font-size:.58rem;background:rgba(148,163,184,.06);color:var(--mut);padding:1px 6px;border-radius:5px;line-height:1.7;text-decoration:line-through">${f}</span>`).join('')}
+      </div>
+    </div>`;
+}
+
+function _hexRgb(hex) {
+  return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)).join(',');
+}
 
 // Nouveaux contrats dashboard
 async function loadNouveauxContrats() {
