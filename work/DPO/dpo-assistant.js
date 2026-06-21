@@ -4,20 +4,23 @@
    Utilise connectors-guard.js pour vérifier avant tout appel.
    ============================================================ */
 
+// Contexte de la dernière réponse (pour l'envoi email)
+let _dpoLastQuestion = '';
+let _dpoLastReply    = '';
+
 async function loadAssistant() {
   const el = document.getElementById('assistant-content');
   if (!el) return;
   el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
 
-  // Vérifier le statut réel depuis la base
   const db = window.supa || supa;
-  const { data: grokConn }     = await db.from('safe_connectors').select('statut,label').eq('service_key', 'grok').maybeSingle();
-  const { data: mistral }      = await db.from('safe_connectors').select('statut,label').eq('service_key', 'mistral').maybeSingle();
-  const { data: anthropic }    = await db.from('safe_connectors').select('statut,label').eq('service_key', 'anthropic').maybeSingle();
+  const { data: grokConn }  = await db.from('safe_connectors').select('statut,label').eq('service_key', 'grok').maybeSingle();
+  const { data: mistral }   = await db.from('safe_connectors').select('statut,label').eq('service_key', 'mistral').maybeSingle();
+  const { data: anthropic } = await db.from('safe_connectors').select('statut,label').eq('service_key', 'anthropic').maybeSingle();
 
   const anyActive  = [grokConn, mistral, anthropic].some(c => c?.statut === 'actif' || c?.statut === 'simule');
   const activeConn = [grokConn, mistral, anthropic].find(c => c?.statut === 'actif' || c?.statut === 'simule');
-  const isDemo    = anyActive && activeConn?.statut === 'simule';
+  const isDemo     = anyActive && activeConn?.statut === 'simule';
 
   el.innerHTML = `
     <div class="card assistant-card" style="text-align:center;padding:36px 24px">
@@ -26,7 +29,6 @@ async function loadAssistant() {
         Assistant RGPD — S@FE Work
       </div>
 
-      <!-- Statut réel -->
       <div style="font-family:var(--ff-mono);font-size:.78rem;
         border:1px solid var(--line);border-radius:var(--r-sm);display:inline-block;
         padding:4px 14px;margin:8px 0 20px">
@@ -36,14 +38,13 @@ async function loadAssistant() {
         </span>
       </div>
 
-      <!-- Fonctionnalités -->
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
         gap:10px;text-align:left;max-width:600px;margin:0 auto 24px">
         ${[
           ['📋','Aide à la rédaction','Politiques, mentions légales, registre'],
           ['🔍','Analyse de risques','Évaluation des traitements et lacunes'],
           ['📩','Réponses aux droits','Modèles de réponses aux demandes'],
-          ['⚠️','Alertes de conformité','Détection proactive des non-conformités'],
+          ['✉️','Envoi rapport client','Rapport IA envoyé par email au client'],
         ].map(([ico,titre,desc])=>`
           <div style="background:rgba(255,255,255,.03);border:1px solid var(--line);
             border-radius:var(--r-sm);padding:14px 16px;
@@ -55,7 +56,6 @@ async function loadAssistant() {
       </div>
 
       ${anyActive ? '' : `
-        <!-- Bloc sécurité si non configuré -->
         <div style="background:rgba(255,180,0,.06);border:1px solid rgba(255,180,0,.2);
           border-radius:var(--r-sm);padding:14px 18px;max-width:500px;margin:0 auto 20px;text-align:left">
           <div style="font-size:.78rem;font-weight:700;color:var(--gold);margin-bottom:6px;
@@ -91,7 +91,8 @@ async function loadAssistant() {
       <div style="display:flex;gap:10px;padding:10px 0">
         <input class="form-input" id="assistant-input"
           placeholder="${anyActive ? 'Posez une question RGPD…' : 'Configurez un connecteur IA pour activer'}"
-          ${anyActive ? '' : 'disabled'} style="flex:1">
+          ${anyActive ? '' : 'disabled'} style="flex:1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAssistantMessage()}">
         <button class="btn btn-pri" id="assistant-send"
           onclick="sendAssistantMessage()"
           ${anyActive ? '' : 'disabled'}>Envoyer</button>
@@ -106,6 +107,46 @@ async function loadAssistant() {
     </div>`;
 }
 
+// ── Rendu partagé des réponses ─────────────────────────────────────────
+function _renderDpoReply(question, reply, provider, isSimulation = false) {
+  _dpoLastQuestion = question;
+  _dpoLastReply    = reply;
+
+  const output = document.getElementById('assistant-output');
+  if (!output) return;
+  output.style.fontStyle = 'normal';
+
+  const color = isSimulation ? '#a78bfa' : 'var(--ok)';
+  const label = isSimulation ? '⚡ Simulation' : `🤖 ${escHtml(provider)}`;
+  const hasClient = currentContact?.email;
+
+  output.innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <span style="font-size:.72rem;color:var(--mut);font-family:var(--ff-mono)">Vous :</span>
+      <span style="font-size:.82rem;color:var(--mut-2)">${escHtml(question)}</span>
+    </div>
+    <div style="border-top:1px solid var(--line);padding-top:10px">
+      <span style="font-size:.68rem;color:${color};font-family:var(--ff-mono)">${label} :</span>
+      <div style="font-size:.83rem;color:var(--mut-2);line-height:1.65;margin-top:6px;white-space:pre-line">
+        ${escHtml(reply).replace(/\*\*(.*?)\*\*/g,'<strong style="color:#fff">$1</strong>')}
+      </div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm"
+        onclick="navigator.clipboard.writeText(_dpoLastReply).then(()=>toast('Copié ✓'))">
+        📋 Copier
+      </button>
+      ${hasClient
+        ? `<button class="btn btn-ghost btn-sm" onclick="sendRapportDPO()">
+            ✉️ Envoyer au client
+           </button>`
+        : `<span style="font-size:.74rem;color:var(--mut);align-self:center">
+             (sélectionnez un client pour envoyer le rapport)
+           </span>`}
+    </div>`;
+}
+
+// ── Réponses démo ─────────────────────────────────────────────────────
 const DEMO_RESPONSES = [
   {
     match: ['consentement','consent'],
@@ -129,67 +170,116 @@ const DEMO_RESPONSES = [
   },
 ];
 
+// ── Envoi de message ────────────────────────────────────────────────────
 async function sendAssistantMessage() {
-  const input  = document.getElementById('assistant-input');
-  const output = document.getElementById('assistant-output');
+  const input    = document.getElementById('assistant-input');
+  const output   = document.getElementById('assistant-output');
   const question = input?.value?.trim();
-  if (!question) return;
+  if (!question || !output) return;
 
   const activeKey = await getActiveIAConnector();
 
   if (!activeKey) {
-    if (output) output.innerHTML =
+    output.innerHTML =
       '<span style="color:var(--alert)">Aucun connecteur IA actif. ' +
       '<a href="/work/connecteurs.html" style="color:var(--gold)">Configurer →</a></span>';
     return;
   }
 
-  // Mode simulation : réponse mockée
+  // Mode simulation
   if (await isSimulated(activeKey)) {
     output.innerHTML = '<span style="color:var(--mut)">⚡ Simulation en cours…</span>';
     await new Promise(r => setTimeout(r, 900));
-
-    const qLow = question.toLowerCase();
+    const qLow  = question.toLowerCase();
     const entry = DEMO_RESPONSES.find(d => d.match.some(kw => qLow.includes(kw)));
     const reply = (entry || DEMO_RESPONSES[DEMO_RESPONSES.length - 1]).reply;
-
-    output.innerHTML = `
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <span style="font-size:.72rem;color:var(--mut);font-family:var(--ff-mono)">Vous :</span>
-        <span style="font-size:.82rem;color:var(--mut-2)">${escHtml(question)}</span>
-      </div>
-      <div style="border-top:1px solid var(--line);padding-top:10px">
-        <span style="font-size:.68rem;color:#a78bfa;font-family:var(--ff-mono)">⚡ Simulation :</span>
-        <div style="font-size:.83rem;color:var(--mut-2);line-height:1.65;margin-top:6px;white-space:pre-line">${escHtml(reply).replace(/\*\*(.*?)\*\*/g,'<strong style="color:#fff">$1</strong>')}</div>
-      </div>`;
+    _renderDpoReply(question, reply, activeKey, true);
     input.value = '';
     return;
   }
 
-  // Mode production — appel réel via Edge Function call-ia
+  // Mode production
   output.innerHTML = '<span style="color:var(--mut)">⏳ Analyse en cours…</span>';
+  const sendBtn = document.getElementById('assistant-send');
+  if (sendBtn) sendBtn.disabled = true;
+
   try {
+    const clientCtx = currentContact
+      ? `Contexte client : "${currentContact.entreprise || currentContact.nom}", secteur : "${currentContact.activites || 'non précisé'}". `
+      : '';
+
     const reply = await callIA({
       serviceKey: activeKey,
       system: "Tu es un expert DPO (Data Protection Officer) spécialisé en droit RGPD européen. " +
               "Tu aides des professionnels à assurer la conformité de leurs clients TPE/PME. " +
               "Réponds en français, de manière précise, structurée et actionnable. " +
               "Cite les articles RGPD concernés quand c'est pertinent.",
-      messages: [{ role: 'user', content: question }],
+      messages: [{ role: 'user', content: clientCtx + question }],
     });
-    output.innerHTML = `
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <span style="font-size:.72rem;color:var(--mut);font-family:var(--ff-mono)">Vous :</span>
-        <span style="font-size:.82rem;color:var(--mut-2)">${escHtml(question)}</span>
-      </div>
-      <div style="border-top:1px solid var(--line);padding-top:10px">
-        <span style="font-size:.68rem;color:var(--ok);font-family:var(--ff-mono)">🤖 ${activeKey.charAt(0).toUpperCase()+activeKey.slice(1)} :</span>
-        <div style="font-size:.83rem;color:var(--mut-2);line-height:1.65;margin-top:6px;white-space:pre-line">${escHtml(reply).replace(/\*\*(.*?)\*\*/g,'<strong style="color:#fff">$1</strong>')}</div>
-      </div>
-      <div style="margin-top:10px;display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText(${JSON.stringify(reply)}).then(()=>toast('Copié ✓'))">📋 Copier</button>
-      </div>`;
+    _renderDpoReply(question, reply, activeKey, false);
+    input.value = '';
   } catch (err) {
     output.innerHTML = `<span style="color:var(--alert)">Erreur : ${escHtml(String(err.message || err))}</span>`;
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
+  }
+}
+
+// ── Envoi du rapport par email ──────────────────────────────────────────
+function sendRapportDPO() {
+  if (!currentContact) { toast('Aucun client sélectionné'); return; }
+  if (!currentContact.email) { toast('Ce client n\'a pas d\'email renseigné'); return; }
+
+  const clientNom = currentContact.entreprise
+    || `${currentContact.prenom || ''} ${currentContact.nom || ''}`.trim()
+    || 'Client';
+  const objet = `Rapport RGPD — ${_dpoLastQuestion.substring(0, 70)}${_dpoLastQuestion.length > 70 ? '…' : ''}`;
+
+  openModal('Envoyer le rapport au client', `
+    <div class="field">
+      <label>Destinataire</label>
+      <div style="padding:9px 12px;background:rgba(255,255,255,.04);border:1px solid var(--line);
+        border-radius:var(--r-sm);font-size:.85rem;color:var(--mut-2)">
+        ${escHtml(clientNom)} — <span style="color:var(--mut)">${escHtml(currentContact.email)}</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Objet</label>
+      <input id="rap-objet" type="text" value="${escHtml(objet)}" placeholder="Rapport RGPD — …">
+    </div>
+    <div class="field">
+      <label>Contenu <span style="font-size:.74rem;color:var(--mut);font-weight:400">(modifiable avant envoi)</span></label>
+      <textarea id="rap-contenu" rows="10" style="resize:vertical;font-size:.8rem;line-height:1.55;font-family:var(--ff-mono)">${escHtml(_dpoLastReply)}</textarea>
+    </div>`,
+  `<button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+   <button class="btn btn-pri" id="rap-send-btn" onclick="_envoyerRapportDPO()">✉️ Envoyer</button>`);
+}
+
+async function _envoyerRapportDPO() {
+  const objet   = document.getElementById('rap-objet')?.value?.trim();
+  const contenu = document.getElementById('rap-contenu')?.value?.trim();
+  if (!objet || !contenu) { toast('Complétez l\'objet et le contenu'); return; }
+
+  const btn = document.getElementById('rap-send-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Envoi…'; }
+
+  try {
+    const { error } = await (window.supa || supa).functions.invoke('send-crm-email', {
+      body: {
+        type:       'rapport_dpo',
+        contact_id: currentContact.id,
+        objet,
+        contenu,
+      },
+    });
+
+    if (error) throw new Error(error.message || 'Erreur réseau');
+
+    closeModal();
+    const dest = currentContact.entreprise || currentContact.nom || currentContact.email;
+    toast(`Rapport envoyé à ${dest} ✓`);
+  } catch (err) {
+    toast('Erreur envoi : ' + (err.message || err));
+    if (btn) { btn.disabled = false; btn.textContent = '✉️ Envoyer'; }
   }
 }

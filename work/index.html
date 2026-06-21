@@ -778,9 +778,9 @@ async function initApp(token, user){
    ============================================================ */
 const _MODULES_DEF = [
   {
-    key:'dpo', name:'DPO Clients RGPD', icon:'⚖️', color:'#f59e0b', pct:95,
-    done:['Registre traitements','Consentements','Demandes RGPD','Documents','Violations','Audit & Score','Assistant IA (Grok / Claude / Mistral)'],
-    todo:['Envoi rapport depuis assistant'],
+    key:'dpo', name:'DPO Clients RGPD', icon:'⚖️', color:'#f59e0b', pct:100,
+    done:['Registre traitements','Consentements','Demandes RGPD','Documents','Violations','Audit & Score','Assistant IA (Grok / Claude / Mistral)','Envoi rapport par email au client'],
+    todo:[],
     href:'/work/DPO/module-dpo-clients.html',
   },
   {
@@ -790,8 +790,8 @@ const _MODULES_DEF = [
     href:'/work/Cyber/module-cyber-clients.html',
   },
   {
-    key:'seo', name:'SEO Clients', icon:'🔍', color:'#10b981', pct:92,
-    done:['Suivi mots-clés','Audit 25 points','Rapport PDF mensuel','Assistant IA (Grok / Claude / Mistral)'],
+    key:'seo', name:'SEO Clients', icon:'🔍', color:'#10b981', pct:95,
+    done:['Suivi mots-clés','Audit 25 points','Rapport PDF mensuel','Assistant IA (Grok / Claude / Mistral)','Envoi rapport par email au client'],
     todo:['Import GSC/Seranking','Alertes positions'],
     href:'/work/SEO/module-seo-clients.html',
   },

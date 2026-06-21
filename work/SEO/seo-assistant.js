@@ -4,6 +4,10 @@
    isSimulated)
    ============================================================ */
 
+// Contexte de la dernière réponse (pour l'envoi email)
+let _seoLastQuestion = '';
+let _seoLastReply    = '';
+
 const SEO_SYSTEM =
   "Tu es un expert en référencement local (SEO local) pour TPE/PME françaises. " +
   "Tu maîtrises Google Business Profile, la recherche de mots-clés locaux, l'optimisation on-page, " +
@@ -177,19 +181,96 @@ async function sendSeoMessage() {
 }
 
 function _renderSeoReply(question, reply, provider) {
+  _seoLastQuestion = question;
+  _seoLastReply    = reply;
+
   const output = document.getElementById('seo-ia-output');
   if (!output) return;
   output.style.fontStyle = 'normal';
+
+  const isSimu    = provider === '⚡ Simulation';
+  const color     = isSimu ? '#a78bfa' : 'var(--ok)';
+  const hasClient = currentContact?.email;
+
   output.innerHTML = `
     <div style="display:flex;gap:8px;margin-bottom:10px">
       <span style="font-size:.72rem;color:var(--mut);font-family:var(--ff-mono)">Vous :</span>
       <span style="font-size:.82rem;color:var(--mut-2)">${escHtml(question)}</span>
     </div>
     <div style="border-top:1px solid var(--line);padding-top:10px">
-      <span style="font-size:.68rem;color:var(--ok);font-family:var(--ff-mono)">🤖 ${escHtml(provider)} :</span>
+      <span style="font-size:.68rem;color:${color};font-family:var(--ff-mono)">🤖 ${escHtml(provider)} :</span>
       <div style="font-size:.83rem;color:var(--mut-2);line-height:1.65;margin-top:6px;white-space:pre-line">${escHtml(reply).replace(/\*\*(.*?)\*\*/g,'<strong style="color:#fff">$1</strong>')}</div>
     </div>
-    <div style="margin-top:10px;display:flex;gap:8px">
-      <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText(${JSON.stringify(reply)}).then(()=>showToast('Copié ✓'))">📋 Copier</button>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm"
+        onclick="navigator.clipboard.writeText(_seoLastReply).then(()=>toast('Copié ✓'))">
+        📋 Copier
+      </button>
+      ${hasClient
+        ? `<button class="btn btn-ghost btn-sm" onclick="sendRapportSeo()">
+            ✉️ Envoyer au client
+           </button>`
+        : `<span style="font-size:.74rem;color:var(--mut);align-self:center">
+             (sélectionnez un client pour envoyer le rapport)
+           </span>`}
     </div>`;
+}
+
+// ── Envoi du rapport SEO par email ────────────────────────────────────
+function sendRapportSeo() {
+  if (!currentContact) { toast('Aucun client sélectionné', 'warn'); return; }
+  if (!currentContact.email) { toast('Ce client n\'a pas d\'email renseigné', 'warn'); return; }
+
+  const clientNom = currentContact.entreprise
+    || `${currentContact.prenom || ''} ${currentContact.nom || ''}`.trim()
+    || 'Client';
+  const objet = `Rapport SEO — ${_seoLastQuestion.substring(0, 70)}${_seoLastQuestion.length > 70 ? '…' : ''}`;
+
+  openModal('Envoyer le rapport SEO au client', `
+    <div class="field">
+      <label>Destinataire</label>
+      <div style="padding:9px 12px;background:rgba(255,255,255,.04);border:1px solid var(--line);
+        border-radius:var(--r-sm);font-size:.85rem;color:var(--mut-2)">
+        ${escHtml(clientNom)} — <span style="color:var(--mut)">${escHtml(currentContact.email)}</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Objet</label>
+      <input id="seo-rap-objet" type="text" value="${escHtml(objet)}" placeholder="Rapport SEO — …">
+    </div>
+    <div class="field">
+      <label>Contenu <span style="font-size:.74rem;color:var(--mut);font-weight:400">(modifiable avant envoi)</span></label>
+      <textarea id="seo-rap-contenu" rows="10" style="resize:vertical;font-size:.8rem;line-height:1.55;font-family:var(--ff-mono)">${escHtml(_seoLastReply)}</textarea>
+    </div>`,
+  `<button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+   <button class="btn btn-pri" id="seo-rap-send-btn" onclick="_envoyerRapportSeo()">✉️ Envoyer</button>`);
+}
+
+async function _envoyerRapportSeo() {
+  const objet   = document.getElementById('seo-rap-objet')?.value?.trim();
+  const contenu = document.getElementById('seo-rap-contenu')?.value?.trim();
+  if (!objet || !contenu) { toast('Complétez l\'objet et le contenu', 'warn'); return; }
+
+  const btn = document.getElementById('seo-rap-send-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Envoi…'; }
+
+  try {
+    const { error } = await (window.supa || supa).functions.invoke('send-crm-email', {
+      body: {
+        type:       'rapport_seo',
+        contact_id: currentContact.id,
+        objet,
+        contenu,
+      },
+    });
+
+    if (error) throw new Error(error.message || 'Erreur réseau');
+
+    closeModal();
+    const dest = currentContact.entreprise || currentContact.nom || currentContact.email;
+    toast(`Rapport SEO envoyé à ${dest} ✓`);
+  } catch (err) {
+    toast('Erreur envoi : ' + (err.message || err), 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '✉️ Envoyer'; }
+  }
 }
