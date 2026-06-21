@@ -306,6 +306,9 @@ select option{background:var(--navy-mid)}
   <button class="sidebar-item" onclick="window.location.href='/work/SEO/module-seo-clients.html'">
     <span class="ico">🔍</span> SEO Clients
   </button>
+  <button class="sidebar-item" onclick="window.location.href='/work/Social/module-social-clients.html'">
+    <span class="ico">📱</span> Social Clients
+  </button>
   <button class="sidebar-item" onclick="showView('automate')" id="nav-onboarding">
     <span class="ico">🚀</span> Onboarding
   </button>
@@ -659,10 +662,10 @@ const _MODULES_DEF = [
     href:'/work/connecteurs.html',
   },
   {
-    key:'social', name:'Social', icon:'📱', color:'#8b5cf6', pct:0,
-    done:[],
-    todo:['Publication multi-réseaux','Calendrier éditorial','Analytics'],
-    href:null,
+    key:'social', name:'Social', icon:'📱', color:'#8b5cf6', pct:80,
+    done:['Posts multi-réseaux','Calendrier éditorial','Rapport PDF mensuel','Dashboard stats'],
+    todo:['Import auto réseaux','Planification Buffer/Meta'],
+    href:'/work/Social/module-social-clients.html',
   },
   {
     key:'clickcollect', name:'Click & Collect', icon:'🛒', color:'#ec4899', pct:0,

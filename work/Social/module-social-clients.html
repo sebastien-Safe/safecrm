@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S@FE Work — Social Clients</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="social-clients.css">
+  <!-- Logos réseaux sociaux — Font Awesome 6 Brands -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+  <!-- Supabase + jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<div id="social-toast"></div>
+
+<!-- Modal -->
+<div id="social-modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="social-modal-title">—</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="social-modal-body"></div>
+    <div class="modal-foot" id="social-modal-foot"></div>
+  </div>
+</div>
+
+<div class="social-layout">
+
+  <!-- TOPBAR -->
+  <header class="social-topbar">
+    <a href="/work/" class="social-back-btn">← Work</a>
+    <span class="social-topbar-brand">S<b>@</b>FE <span style="font-weight:400;color:rgba(255,255,255,.3)">·</span> 📱 Social</span>
+    <span class="social-topbar-sub" id="topbar-contact-name"></span>
+    <div class="social-topbar-right">
+      <button class="btn btn-ghost btn-sm" onclick="clearContact()">📊 Dashboard</button>
+    </div>
+  </header>
+
+  <div class="social-body">
+
+    <!-- SIDEBAR — liste des contacts -->
+    <aside class="social-sidebar">
+      <div class="sidebar-search-wrap">
+        <input class="sidebar-search" placeholder="🔍 Chercher un client…"
+          oninput="filterSidebar(this.value)">
+      </div>
+      <div class="sidebar-contact-list" id="sidebar-contacts">
+        <div class="loader"><div class="spinner"></div></div>
+      </div>
+    </aside>
+
+    <!-- SUBNAV — affiché après sélection client -->
+    <nav class="social-subnav" id="social-subnav" style="display:none">
+      <div class="subnav-client">
+        <div class="subnav-client-name" id="subnav-client-name">—</div>
+        <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px;font-size:.72rem"
+          onclick="clearContact()">✕ Changer</button>
+      </div>
+      <ul class="subnav-menu">
+        <li class="subnav-item active" data-view="posts"      onclick="switchSubView('posts',this)">📝 Posts</li>
+        <li class="subnav-item"        data-view="calendrier" onclick="switchSubView('calendrier',this)">📅 Calendrier</li>
+        <li class="subnav-item"        data-view="rapport"    onclick="switchSubView('rapport',this)">📊 Rapport PDF</li>
+      </ul>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="social-main">
+
+      <!-- Vue Dashboard global -->
+      <section id="view-dashboard" class="seo-view active">
+        <div class="view-header">
+          <span class="eyebrow">Vue globale</span>
+          <h1 class="view-title">📱 Social Clients</h1>
+          <p class="view-subtitle">Gérez le contenu social de vos clients — Posts, calendrier éditorial, rapports</p>
+        </div>
+        <div id="dashboard-content"></div>
+      </section>
+
+      <!-- Vue Posts (par client) -->
+      <section id="view-posts" class="seo-view">
+        <div class="view-header">
+          <span class="eyebrow">Gestion du contenu</span>
+          <h1 class="view-title">📝 Posts</h1>
+          <p class="view-subtitle" id="posts-subtitle">Publications et brouillons</p>
+        </div>
+        <div id="posts-content"></div>
+      </section>
+
+      <!-- Vue Calendrier -->
+      <section id="view-calendrier" class="seo-view">
+        <div class="view-header">
+          <span class="eyebrow">Planification</span>
+          <h1 class="view-title">📅 Calendrier éditorial</h1>
+        </div>
+        <div id="calendrier-content"></div>
+      </section>
+
+      <!-- Vue Rapport -->
+      <section id="view-rapport" class="seo-view">
+        <div class="view-header">
+          <span class="eyebrow">Bilan mensuel</span>
+          <h1 class="view-title">📊 Rapport Social</h1>
+        </div>
+        <div id="rapport-content"></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="/assets/dpo/connectors-guard.js"></script>
+<script src="social-core.js"></script>
+<script src="social-dashboard.js"></script>
+<script src="social-posts.js"></script>
+<script src="social-calendrier.js"></script>
+<script src="social-rapport.js"></script>
+<script>
+function switchSubView(viewId, el) {
+  document.querySelectorAll('.subnav-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
+  showView(viewId);
+  const loaders = { posts: loadPosts, calendrier: loadCalendrier, rapport: loadRapport };
+  if (loaders[viewId]) loaders[viewId]();
+}
+
+function filterSidebar(q) {
+  const lq = q.toLowerCase();
+  document.querySelectorAll('.sidebar-contact-item').forEach(el => {
+    el.style.display = (el.dataset.search || '').includes(lq) ? '' : 'none';
+  });
+}
+</script>
+
+</body>
+</html>
