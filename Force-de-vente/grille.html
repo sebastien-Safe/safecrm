@@ -214,12 +214,12 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
 const PIN = '2206';
 
 const CANDIDATS = [
-  { name: 'Meena L.',   zone: 'IDF',        editable: false },
-  { name: 'Bastien I.', zone: 'AURA',       editable: false },
-  { name: 'Alexis T.',  zone: 'PACA',       editable: false },
-  { name: 'Thomas G.',  zone: 'Pays Basque',editable: false },
-  { name: '',           zone: '',           editable: true  },
-  { name: '',           zone: '',           editable: true  },
+  { name: '', zone: '' },
+  { name: '', zone: '' },
+  { name: '', zone: '' },
+  { name: '', zone: '' },
+  { name: '', zone: '' },
+  { name: '', zone: '' },
 ];
 
 const CRITERES = [
@@ -294,12 +294,8 @@ function buildTable() {
   CANDIDATS.forEach((c, ci) => {
     const th = document.createElement('th');
     th.className = 'th-cand';
-    if (c.editable) {
-      th.innerHTML = `<input class="th-cand-name-input" placeholder="Candidat ${ci+1}" data-ci="${ci}" data-field="name" oninput="updateCandName(this)">
-        <input class="th-cand-zone-input" placeholder="Zone" data-ci="${ci}" data-field="zone" oninput="updateCandName(this)">`;
-    } else {
-      th.innerHTML = `<span class="th-cand-name">${c.name}</span><span class="th-cand-zone">${c.zone}</span>`;
-    }
+    th.innerHTML = `<input class="th-cand-name-input" placeholder="Prénom Nom" data-ci="${ci}" data-field="name" oninput="updateCandName(this)">
+      <input class="th-cand-zone-input" placeholder="Secteur géo." data-ci="${ci}" data-field="zone" oninput="updateCandZone(this)">`;
     thead.appendChild(th);
   });
 
@@ -384,6 +380,20 @@ function updateTotals() {
 }
 
 function updateCandName(input) {
+  const ci   = parseInt(input.dataset.ci);
+  const name = input.value.trim() || `Candidat ${ci + 1}`;
+  const noteNameEl = document.getElementById('note-name-' + ci);
+  const decNameEl  = document.getElementById('dec-name-'  + ci);
+  if (noteNameEl) noteNameEl.textContent = name;
+  if (decNameEl)  decNameEl.textContent  = name;
+  saveState();
+}
+
+function updateCandZone(input) {
+  const ci   = parseInt(input.dataset.ci);
+  const zone = input.value.trim();
+  const noteZoneEl = document.getElementById('note-zone-' + ci);
+  if (noteZoneEl) noteZoneEl.textContent = zone ? `— ${zone}` : '';
   saveState();
 }
 
@@ -428,15 +438,10 @@ function saveState() {
     state.notes.push(document.getElementById('note-' + ci)?.value || '');
     const sel = document.querySelector(`input[name="dec-${ci}"]:checked`);
     state.decisions.push(sel ? sel.value : '');
-    if (CANDIDATS[ci].editable) {
-      const ni = document.querySelector(`.th-cand-name-input[data-ci="${ci}"]`);
-      const zi = document.querySelector(`.th-cand-zone-input[data-ci="${ci}"]`);
-      state.candNames.push(ni ? ni.value : '');
-      state.candZones.push(zi ? zi.value : '');
-    } else {
-      state.candNames.push(CANDIDATS[ci].name);
-      state.candZones.push(CANDIDATS[ci].zone);
-    }
+    const ni = document.querySelector(`.th-cand-name-input[data-ci="${ci}"]`);
+    const zi = document.querySelector(`.th-cand-zone-input[data-ci="${ci}"]`);
+    state.candNames.push(ni ? ni.value : '');
+    state.candZones.push(zi ? zi.value : '');
   });
   try { sessionStorage.setItem('safe_grille_state', JSON.stringify(state)); } catch(e) {}
 }
@@ -457,18 +462,20 @@ function loadState() {
     if (state.decisions) state.decisions.forEach((d, ci) => {
       if (d) { const el = document.querySelector(`input[name="dec-${ci}"][value="${d}"]`); if (el) el.checked = true; }
     });
-    if (state.candNames) CANDIDATS.forEach((c, ci) => {
-      if (c.editable) {
-        const ni = document.querySelector(`.th-cand-name-input[data-ci="${ci}"]`);
-        const zi = document.querySelector(`.th-cand-zone-input[data-ci="${ci}"]`);
-        if (ni && state.candNames[ci]) ni.value = state.candNames[ci];
-        if (zi && state.candZones[ci]) zi.value = state.candZones[ci];
-        // Update note/decision card names
-        const noteName = document.getElementById('note-name-' + ci);
-        if (noteName && state.candNames[ci]) noteName.textContent = state.candNames[ci];
-        const decName = document.getElementById('dec-name-' + ci);
-        if (decName && state.candNames[ci]) decName.textContent = state.candNames[ci];
-      }
+    CANDIDATS.forEach((_, ci) => {
+      const ni   = document.querySelector(`.th-cand-name-input[data-ci="${ci}"]`);
+      const zi   = document.querySelector(`.th-cand-zone-input[data-ci="${ci}"]`);
+      const name = state.candNames?.[ci] || '';
+      const zone = state.candZones?.[ci] || '';
+      if (ni) ni.value = name;
+      if (zi) zi.value = zone;
+      const label = name || `Candidat ${ci + 1}`;
+      const noteNameEl = document.getElementById('note-name-' + ci);
+      const noteZoneEl = document.getElementById('note-zone-' + ci);
+      const decNameEl  = document.getElementById('dec-name-'  + ci);
+      if (noteNameEl) noteNameEl.textContent = label;
+      if (noteZoneEl) noteZoneEl.textContent = zone ? `— ${zone}` : '';
+      if (decNameEl)  decNameEl.textContent  = label;
     });
     updateTotals();
   } catch(e) {}
@@ -480,6 +487,17 @@ function resetAll() {
   scores.forEach(row => row.fill(0));
   document.querySelectorAll('.stars .star').forEach(s => s.classList.remove('on'));
   CANDIDATS.forEach((_, ci) => {
+    const ni = document.querySelector(`.th-cand-name-input[data-ci="${ci}"]`);
+    const zi = document.querySelector(`.th-cand-zone-input[data-ci="${ci}"]`);
+    if (ni) ni.value = '';
+    if (zi) zi.value = '';
+    const label = `Candidat ${ci + 1}`;
+    const noteNameEl = document.getElementById('note-name-' + ci);
+    const noteZoneEl = document.getElementById('note-zone-' + ci);
+    const decNameEl  = document.getElementById('dec-name-'  + ci);
+    if (noteNameEl) noteNameEl.textContent = label;
+    if (noteZoneEl) noteZoneEl.textContent = '';
+    if (decNameEl)  decNameEl.textContent  = label;
     const noteEl = document.getElementById('note-' + ci);
     if (noteEl) noteEl.value = '';
     const decEl = document.querySelector(`input[name="dec-${ci}"]:checked`);
