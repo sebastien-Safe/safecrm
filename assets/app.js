@@ -1435,7 +1435,7 @@ async function _genererBordereauCockpit(userId, periodeKey) {
   state._resultatsUserId = userId;
   const u = state.profilesById[userId];
   if (!u) return;
-  await generateBordereauCommission();
+  const pdfResult = generateBordereauCommission();
   // Mettre à jour le statut dans la DB
   const now = new Date().toISOString();
   const nomAdmin = [state.profile?.prenom, state.profile?.nom].filter(Boolean).join(' ');
@@ -1449,6 +1449,15 @@ async function _genererBordereauCockpit(userId, periodeKey) {
     statut_history: history,
     sent_at: now, sent_by: state.user.id,
   }, { onConflict: 'user_id,periode' });
+  // Envoyer email Brevo au commercial
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    await fetch(`${SUPABASE_URL}/functions/v1/send-crm-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ type: 'bordereau', user_id: userId, periode: periodeKey, montant_ttc: pdfResult?.totalTTC || 0, nb_contrats: pdfResult?.nbContrats || 0, pdf_base64: pdfResult?.pdfBase64 || null }),
+    });
+  } catch (e) { console.warn('Email bordereau non envoyé :', e); }
   // Rafraîchir
   const c = document.getElementById('resultats-main-container');
   if (c) await renderResultatsCockpit(c);
@@ -1465,6 +1474,17 @@ async function _updateCommissionStatut(bordereauId, newStatut) {
     .update({ statut: newStatut, statut_history: history })
     .eq('id', bordereauId);
   if (error) { alert('Erreur : ' + error.message); return; }
+  // Email Brevo au commercial quand la commission est payée
+  if (newStatut === 'Facture payée') {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      await fetch(`${SUPABASE_URL}/functions/v1/send-crm-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ type: 'commission_payee', bordereau_id: bordereauId }),
+      });
+    } catch (e) { console.warn('Email commission payée non envoyé :', e); }
+  }
   const c = document.getElementById('resultats-main-container');
   if (c) await renderResultatsCockpit(c);
 }
@@ -1726,6 +1746,7 @@ function generateBordereauCommission() {
     criticite: 'Attention',
     details: { commercial: u.prenom || null, periode: moisLabel },
   });
+  return { pdfBase64: doc.output('datauristring').split(',')[1], totalTTC, nbContrats: newC.length + recC.length };
 }
 
 async function loadAdminUsers() {

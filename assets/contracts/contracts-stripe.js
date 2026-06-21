@@ -196,6 +196,7 @@ async function confirmResilierAbonnement() {
         ? `✅ Résiliation enregistrée. L'abonnement se terminera le ${formatDate(result.period_end)}.`
         : '✅ Résiliation enregistrée. Le client ne sera plus débité à la prochaine échéance.';
       alert(msg);
+      _sendResiliationEmail(contractId, result.period_end || null);
     } else {
       // Pas d'abonnement Stripe → résiliation directe dans Supabase
       const { error } = await sb.from('contracts').update({
@@ -215,6 +216,7 @@ async function confirmResilierAbonnement() {
         });
       }
       alert('✅ Contrat résilié.');
+      _sendResiliationEmail(contractId, new Date().toISOString());
     }
 
     closeResilierModal();
@@ -227,6 +229,17 @@ async function confirmResilierAbonnement() {
     btn.disabled = false;
     btn.textContent = 'Confirmer la résiliation';
   }
+}
+
+async function _sendResiliationEmail(contractId, dateFin) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    await fetch(`${SUPABASE_URL}/functions/v1/send-crm-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ type: 'resiliation', contract_id: contractId, date_fin: dateFin }),
+    });
+  } catch (e) { console.warn('Email résiliation non envoyé :', e); }
 }
 
 // ==========================================================================

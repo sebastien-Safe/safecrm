@@ -207,49 +207,36 @@ async function envoyerFacture(sb: ReturnType<typeof createClient>, opts: {
   const BREVO = Deno.env.get("BREBO");
   if (!BREVO) return;
 
-  const clientNom   = contact.entreprise || `${contact.prenom || ""} ${contact.nom || ""}`.trim();
-  const firstName   = contact.prenom || contact.nom || "Client";
+  const clientNom    = contact.entreprise || `${contact.prenom || ""} ${contact.nom || ""}`.trim();
+  const firstName    = contact.prenom || contact.nom || "Client";
   const serviceLabel = [contrat?.type, contrat?.formule].filter(Boolean).join(" — ") || "Votre service S@FE";
-  const pdfBase64   = btoa(String.fromCharCode(...pdfBytes));
+  const pdfBase64    = btoa(String.fromCharCode(...pdfBytes));
 
   await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: { "api-key": BREVO, "Content-Type": "application/json" },
     body: JSON.stringify({
-      sender:  { name: "S@FE", email: "noreply@safe-digitalisation.fr" },
-      to:      [{ email: contact.email, name: clientNom }],
-      replyTo: { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}` },
-      subject: `[S@FE] Facture ${numero} — ${serviceLabel}`,
-      htmlContent: `
-<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff">
-  <div style="background:#0e1130;padding:28px 32px;border-radius:8px 8px 0 0">
-    <span style="color:#fff;font-size:24px;font-weight:900;letter-spacing:1px">S@FE</span>
-    <span style="color:#DAA51F;font-size:11px;margin-left:12px">Digitalisation • Référencement • Cybersécurité • RGPD</span>
-  </div>
-  <div style="padding:32px;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 8px 8px">
-    <p style="color:#0e1130;font-size:16px;margin-top:0">Bonjour ${firstName},</p>
-    <p style="color:#333;line-height:1.7">
-      Nous vous confirmons la réception de votre paiement de <strong>${eur(ttc)}</strong>
-      pour <strong>${serviceLabel}</strong>.<br>
-      Votre facture <strong>${numero}</strong> est jointe à cet email.
-    </p>
-    <div style="background:#f0f7ff;border-left:4px solid #1e88e5;padding:14px 18px;margin:24px 0;border-radius:0 6px 6px 0">
-      <span style="color:#1e88e5;font-size:13px">ℹ️ Paiement de ${eur(ttc)} confirmé le ${dateStr} via Stripe.</span>
-    </div>
-    <p style="color:#333;margin-top:32px">Cordialement,</p>
-    <p style="margin:4px 0">
-      <strong style="color:#07111e;font-size:12px">${commercial.prenom} ${commercial.nom}</strong><br>
-      <span style="color:#1e88e5;font-weight:600;font-size:12px">${commercial.titre} • S@FE</span>
-    </p>
-    <hr style="border:none;border-top:1px solid #e8e8e8;margin:28px 0">
-    <div style="text-align:center;font-size:11px;color:#999;line-height:1.8">
-      <p style="margin:0">☎️ 01 84 16 26 89 &nbsp;•&nbsp; contact@safe-digitalisation.fr &nbsp;•&nbsp; www.safe-digitalisation.fr</p>
-      <p style="margin:0">66 avenue des Champs-Élysées, 75008 Paris</p>
-      <p style="margin:4px 0 0">S@FE — SAS &nbsp;•&nbsp; SIRET 104 699 558 00011 &nbsp;•&nbsp; TVA FR76 104 699 558 &nbsp;•&nbsp; ORIAS N° 26008536</p>
-      <p style="margin:8px 0 0;color:#ccc;font-size:10px">© 2026 S@FE. Tous droits réservés.</p>
-    </div>
-  </div>
-</div>`,
+      sender:     { name: "S@FE", email: "noreply@safe-digitalisation.fr" },
+      to:         [{ email: contact.email, name: clientNom }],
+      replyTo:    { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}` },
+      templateId: 1,
+      params: {
+        document_type:       "Facture",
+        reference:           numero,
+        firstname:           firstName,
+        FIRST_NAME:          firstName,
+        SUBJECT_DYNAMIC:     `Votre facture S@FE — ${serviceLabel}`,
+        MONTANT:             eur(ttc),
+        SERVICE:             serviceLabel,
+        NUMERO:              numero,
+        SHOW_HIGHLIGHT:      false,
+        HIGHLIGHT_TEXT:      "",
+        SHOW_HIGHLIGHT_BLUE: true,
+        HIGHLIGHT_BLUE_TEXT: `Paiement de ${eur(ttc)} confirmé le ${dateStr} via Stripe.`,
+        COMMERCIAL_PRENOM:   commercial.prenom,
+        COMMERCIAL_NOM:      commercial.nom,
+        COMMERCIAL_TITRE:    commercial.titre,
+      },
       attachment: [{ name: `${numero}.pdf`, content: pdfBase64 }],
     }),
   });
