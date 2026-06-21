@@ -115,6 +115,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .pill-ok{background:rgba(34,197,94,.15);color:#86efac}
 .pill-mut{background:rgba(148,163,184,.1);color:var(--mut)}
 .pill-alert{background:rgba(255,77,94,.15);color:#fca5a5}
+.task-view-btn{background:none;border:none;color:var(--mut);font-size:.82rem;padding:5px 10px;border-radius:7px;cursor:pointer;transition:.12s;font-family:var(--ff-mono)}
+.task-view-btn:hover{color:#fff}
+.task-view-btn.active{background:rgba(255,255,255,.1);color:#fff}
+.tasks-filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.tasks-filter-bar select{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:5px 10px;color:var(--mut-2);font-size:.78rem;outline:none;font-family:var(--ff-mono);cursor:pointer}
+.tasks-filter-bar select:focus{border-color:var(--gold)}
 
 /* ---- WORKFLOW PANEL ---- */
 .wf-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center}
@@ -461,14 +467,54 @@ select option{background:var(--navy-mid)}
       <!-- === VUE TÂCHES === -->
       <div id="view-tasks" style="display:none">
         <div class="section-head">
-          <div><span class="eyebrow">Supabase · tasks</span><h2>Tâches créées via Work</h2></div>
-          <button class="btn btn-out btn-sm" onclick="loadTasks()">↺ Actualiser</button>
+          <div><span class="eyebrow">Supabase · tasks</span><h2>✅ Tâches</h2></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="display:flex;gap:2px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:9px;padding:3px">
+              <button class="task-view-btn active" data-view="list"     onclick="switchTaskView('list')"     title="Liste">☰</button>
+              <button class="task-view-btn"         data-view="kanban"  onclick="switchTaskView('kanban')"  title="Kanban">▦</button>
+              <button class="task-view-btn"         data-view="timeline" onclick="switchTaskView('timeline')" title="Timeline">━</button>
+            </div>
+            <button class="btn btn-out btn-sm" onclick="loadTasks()" title="Actualiser">↺</button>
+            <button class="btn btn-gold btn-sm" onclick="openTaskModal()">+ Tâche</button>
+          </div>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Tâche</th><th>Contact</th><th>Priorité</th><th>Échéance</th><th>Statut</th></tr></thead>
-            <tbody id="tasks-tbody"><tr><td colspan="5" style="text-align:center;padding:32px;color:var(--mut)">Chargement…</td></tr></tbody>
-          </table>
+        <div class="tasks-filter-bar">
+          <select id="tasks-filter-statut" onchange="renderTasksView()">
+            <option value="">Tous statuts</option>
+            <option value="À faire">À faire</option>
+            <option value="En cours">En cours</option>
+            <option value="Terminé">Terminé</option>
+          </select>
+          <select id="tasks-filter-prio" onchange="renderTasksView()">
+            <option value="">Toutes priorités</option>
+            <option value="Haute">🔴 Haute</option>
+            <option value="Normale">🟡 Normale</option>
+            <option value="Basse">🔵 Basse</option>
+          </select>
+        </div>
+        <!-- Vue liste -->
+        <div id="tasks-list-view">
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th style="cursor:pointer" onclick="sortTasks('titre')">Tâche <span id="sort-titre"></span></th>
+                <th>Contact</th>
+                <th style="cursor:pointer" onclick="sortTasks('priorite')">Priorité <span id="sort-priorite"></span></th>
+                <th style="cursor:pointer" onclick="sortTasks('echeance')">Échéance <span id="sort-echeance">↑</span></th>
+                <th style="cursor:pointer" onclick="sortTasks('statut')">Statut <span id="sort-statut"></span></th>
+                <th style="width:32px"></th>
+              </tr></thead>
+              <tbody id="tasks-tbody"><tr><td colspan="6" style="text-align:center;padding:32px;color:var(--mut)">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Vue kanban -->
+        <div id="tasks-kanban-view" style="display:none">
+          <div class="kanban-board" id="kanban-board"></div>
+        </div>
+        <!-- Vue timeline -->
+        <div id="tasks-timeline-view" style="display:none">
+          <div id="timeline-container"></div>
         </div>
       </div>
 
@@ -555,6 +601,58 @@ select option{background:var(--navy-mid)}
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<!-- Modal tâche -->
+<div class="modal-overlay" id="task-modal" onclick="if(event.target===this)closeTaskModal()" style="z-index:400">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="task-modal-title">Nouvelle tâche</span>
+      <button class="modal-close" onclick="closeTaskModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="task-modal-id">
+      <div class="form-group">
+        <label class="form-label">Titre *</label>
+        <input class="form-input" id="task-titre" placeholder="Intitulé de la tâche…" onkeydown="if(event.key==='Enter')saveTask()">
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Priorité</label>
+          <select class="form-select" id="task-priorite">
+            <option value="Normale">🟡 Normale</option>
+            <option value="Haute">🔴 Haute</option>
+            <option value="Basse">🔵 Basse</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Statut</label>
+          <select class="form-select" id="task-statut">
+            <option value="À faire">📋 À faire</option>
+            <option value="En cours">⚡ En cours</option>
+            <option value="Terminé">✅ Terminé</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Échéance</label>
+          <input type="date" class="form-input" id="task-echeance">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact</label>
+          <select class="form-select" id="task-contact">
+            <option value="">— Aucun —</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-danger btn-sm" id="task-delete-btn" onclick="deleteTask()" style="margin-right:auto;display:none">🗑 Supprimer</button>
+      <button class="btn btn-ghost" onclick="closeTaskModal()">Annuler</button>
+      <button class="btn btn-gold" onclick="saveTask()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    CONFIG SUPABASE
@@ -582,6 +680,13 @@ async function sbPatch(table, id, body){
   if(!r.ok) throw new Error(await r.text());
   return r.json();
 }
+async function sbDelete(table, id){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {method:'DELETE', headers:H});
+  if(!r.ok) throw new Error(await r.text());
+}
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
 
 /* AUTH */
 async function doLogin(){
@@ -1376,24 +1481,288 @@ function renderDashJournal(){
 /* ============================================================
    TÂCHES
    ============================================================ */
+/* ============================================================
+   TÂCHES — liste, kanban, timeline
+   ============================================================ */
+let tasksData    = [];
+let _taskSortCol = 'echeance';
+let _taskSortDir = 1;
+let _taskViewMode= 'list';
+let _dragTaskId  = null;
+
 async function loadTasks(){
   try {
-    const tasks = await sbGet('tasks','select=id,titre,statut,priorite,echeance,contact_id&order=created_at.desc&limit=50');
-    const tbody = document.getElementById('tasks-tbody');
-    if(!tasks.length){ tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--mut)">Aucune tâche</td></tr>'; return; }
-    tbody.innerHTML = tasks.map(t=>{
-      const contact = allContacts.find(c=>c.id===t.contact_id);
-      const prio = {'Haute':'pill-alert','Normale':'pill-blue','Basse':'pill-mut'};
-      const stat = {'À faire':'pill-gold','En cours':'pill-blue','Terminé':'pill-ok'};
-      return `<tr>
-        <td style="color:#fff;max-width:260px">${t.titre}</td>
-        <td style="font-size:.82rem">${contact?contact.nom:'—'}</td>
-        <td><span class="pill ${prio[t.priorite]||'pill-mut'}">${t.priorite||'—'}</span></td>
-        <td style="font-family:var(--ff-mono);font-size:.8rem">${t.echeance||'—'}</td>
-        <td><span class="pill ${stat[t.statut]||'pill-mut'}">${t.statut||'—'}</span></td>
-      </tr>`;
-    }).join('');
-  } catch(e){ console.error(e); }
+    const data = await sbGet('tasks','select=id,titre,statut,priorite,echeance,contact_id,created_at&order=echeance.asc.nullslast&limit=300');
+    tasksData = Array.isArray(data) ? data : [];
+  } catch(e){ console.error(e); tasksData=[]; }
+  renderTasksView();
+}
+
+function switchTaskView(mode){
+  _taskViewMode = mode;
+  document.querySelectorAll('.task-view-btn').forEach(b => b.classList.toggle('active', b.dataset.view===mode));
+  document.getElementById('tasks-list-view').style.display     = mode==='list'?'':'none';
+  document.getElementById('tasks-kanban-view').style.display   = mode==='kanban'?'':'none';
+  document.getElementById('tasks-timeline-view').style.display = mode==='timeline'?'':'none';
+  renderTasksView();
+}
+
+function renderTasksView(){
+  if(_taskViewMode==='list')     renderTasksList();
+  else if(_taskViewMode==='kanban') renderTasksKanban();
+  else renderTasksTimeline();
+}
+
+function _getFilteredTasks(){
+  const statut = document.getElementById('tasks-filter-statut')?.value || '';
+  const prio   = document.getElementById('tasks-filter-prio')?.value   || '';
+  let arr = tasksData.slice();
+  if(statut) arr = arr.filter(t => t.statut===statut);
+  if(prio)   arr = arr.filter(t => t.priorite===prio);
+  arr.sort((a,b) => {
+    const va = a[_taskSortCol] ?? '';
+    const vb = b[_taskSortCol] ?? '';
+    if(va==='' && vb!=='') return 1;
+    if(vb==='' && va!=='') return -1;
+    return va < vb ? -_taskSortDir : va > vb ? _taskSortDir : 0;
+  });
+  return arr;
+}
+
+function sortTasks(col){
+  if(_taskSortCol===col) _taskSortDir*=-1; else { _taskSortCol=col; _taskSortDir=1; }
+  ['titre','priorite','echeance','statut'].forEach(c=>{
+    const el=document.getElementById('sort-'+c);
+    if(el) el.textContent = c===col ? (_taskSortDir===1?'↑':'↓') : '';
+  });
+  renderTasksList();
+}
+
+/* ── LISTE ── */
+function renderTasksList(){
+  const tasks = _getFilteredTasks();
+  const tbody = document.getElementById('tasks-tbody');
+  if(!tasks.length){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--mut)">Aucune tâche</td></tr>';
+    return;
+  }
+  const PRIO = {Haute:'pill-alert',Normale:'pill-gold',Basse:'pill-mut'};
+  const STAT = {'À faire':'pill-gold','En cours':'pill-blue','Terminé':'pill-ok'};
+  const today = todayISO();
+  tbody.innerHTML = tasks.map(t => {
+    const contact = allContacts.find(c=>c.id===t.contact_id);
+    const late = t.echeance && t.echeance<today && t.statut!=='Terminé';
+    return `<tr style="cursor:pointer" onclick="openTaskModal('${t.id}')">
+      <td style="color:#fff;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(t.titre)}</td>
+      <td style="font-size:.82rem">${contact?escHtml(contact.nom):'—'}</td>
+      <td><span class="pill ${PRIO[t.priorite]||'pill-mut'}">${t.priorite||'—'}</span></td>
+      <td style="font-family:var(--ff-mono);font-size:.8rem;color:${late?'var(--alert)':''}">${t.echeance||'—'}${late?' ⚠':''}</td>
+      <td><span class="pill ${STAT[t.statut]||'pill-mut'}">${t.statut||'—'}</span></td>
+      <td><button class="btn btn-ghost btn-sm" style="padding:3px 8px" onclick="event.stopPropagation();openTaskModal('${t.id}')">✏️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── KANBAN ── */
+const _KCOLS = [
+  {key:'À faire',  icon:'📋', color:'var(--mut-2)'},
+  {key:'En cours', icon:'⚡', color:'var(--warn)'},
+  {key:'Terminé',  icon:'✅', color:'var(--ok)'},
+];
+
+function renderTasksKanban(){
+  const tasks = _getFilteredTasks();
+  document.getElementById('kanban-board').innerHTML = _KCOLS.map(col=>{
+    const colTasks = tasks.filter(t=>t.statut===col.key);
+    const colId    = 'kcol-'+col.key.replace(/\s/g,'_');
+    return `
+      <div class="kanban-col" id="${colId}"
+           ondragover="event.preventDefault();this.classList.add('drop-target')"
+           ondragleave="this.classList.remove('drop-target')"
+           ondrop="_onTaskDrop(event,'${col.key}')">
+        <div class="kanban-col-head">
+          <span class="kanban-col-label" style="color:${col.color}">${col.icon} ${col.key}</span>
+          <span class="kanban-col-count">${colTasks.length}</span>
+        </div>
+        <div class="kanban-cards">
+          ${colTasks.map(t=>_kanbanCard(t)).join('')}
+        </div>
+        <button class="kanban-add-card" onclick="openTaskModal(null,'${col.key}')">+ Ajouter</button>
+      </div>`;
+  }).join('');
+}
+
+function _kanbanCard(t){
+  const contact = allContacts.find(c=>c.id===t.contact_id);
+  const today   = todayISO();
+  const late    = t.echeance && t.echeance<today && t.statut!=='Terminé';
+  const prioColor= {Haute:'var(--alert)',Normale:'var(--mut)',Basse:'var(--mut)'}[t.priorite]||'var(--mut)';
+  return `
+    <div class="kanban-card" draggable="true"
+         ondragstart="_dragTaskId='${t.id}';this.classList.add('dragging')"
+         ondragend="this.classList.remove('dragging')"
+         onclick="openTaskModal('${t.id}')">
+      <div class="kanban-card-title">${escHtml(t.titre)}</div>
+      <div class="kanban-card-meta">
+        ${contact?`<span>👤 ${escHtml(contact.nom)}</span>`:''}
+        ${t.echeance?`<span style="color:${late?'var(--alert)':'var(--mut)'}">📅 ${t.echeance}</span>`:''}
+        <span style="color:${prioColor}">${t.priorite||''}</span>
+      </div>
+    </div>`;
+}
+
+async function _onTaskDrop(event, newStatut){
+  event.preventDefault();
+  event.currentTarget.classList.remove('drop-target');
+  if(!_dragTaskId) return;
+  const task = tasksData.find(t=>t.id===_dragTaskId);
+  _dragTaskId = null;
+  if(!task || task.statut===newStatut) return;
+  try {
+    await sbPatch('tasks', task.id, {statut:newStatut});
+    task.statut = newStatut;
+    renderTasksKanban();
+    showToast(`→ ${newStatut}`, 'ok');
+  } catch(e){ showToast('Erreur : '+e.message,'err'); }
+}
+
+/* ── TIMELINE ── */
+function renderTasksTimeline(){
+  const tasks   = _getFilteredTasks();
+  const today   = new Date(); today.setHours(0,0,0,0);
+  const start   = new Date(today); start.setDate(today.getDate() - today.getDay() + 1); // lundi courant
+  const WEEKS   = 12;
+  const totalMs = WEEKS * 7 * 864e5;
+  const end     = new Date(start.getTime() + totalMs);
+  const todayPct= Math.min(100, Math.max(0,(today-start)/totalMs*100)).toFixed(1);
+
+  const withDate = tasks.filter(t=>t.echeance);
+  const noDate   = tasks.filter(t=>!t.echeance);
+
+  // Labels des semaines (toutes les 2 semaines)
+  const weekLabels = [];
+  for(let i=0;i<WEEKS;i+=2){
+    const d = new Date(start.getTime()+i*7*864e5);
+    weekLabels.push(`<div class="timeline-month" style="flex:2">${d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</div>`);
+  }
+
+  const todayLine = `<div class="timeline-today" style="left:${todayPct}%"></div>`;
+
+  const rowHtml = (t) => {
+    const contact = allContacts.find(c=>c.id===t.contact_id);
+    const STAT = {'À faire':'','En cours':'bar-warn','Terminé':'bar-ok'};
+    let barHtml = '';
+    if(t.echeance){
+      const d = new Date(t.echeance+'T00:00:00');
+      const pct = ((d-start)/totalMs*100).toFixed(1);
+      const today_ = todayISO();
+      const late   = t.echeance<today_ && t.statut!=='Terminé';
+      if(parseFloat(pct)>=0 && parseFloat(pct)<=98){
+        barHtml = `<div class="timeline-bar ${late?'bar-alert':STAT[t.statut]||''}"
+          style="left:${pct}%;width:clamp(60px,12%,120px)"
+          title="${escHtml(t.titre)}">
+          ${t.echeance}
+        </div>`;
+      }
+    }
+    return `
+      <div class="timeline-row" style="cursor:pointer" onclick="openTaskModal('${t.id}')">
+        <div class="timeline-row-label">
+          <strong>${escHtml(t.titre)}</strong>
+          ${contact?`<span>${escHtml(contact.nom)}</span>`:''}
+        </div>
+        <div class="timeline-area">
+          ${todayLine}
+          ${barHtml}
+        </div>
+      </div>`;
+  };
+
+  document.getElementById('timeline-container').innerHTML = `
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="timeline-header">
+        <div class="timeline-header-labels" style="padding:8px 14px;font-family:var(--ff-mono);font-size:.6rem;color:var(--mut);text-transform:uppercase">Tâche</div>
+        <div class="timeline-header-months">${weekLabels.join('')}</div>
+      </div>
+      ${withDate.length===0 && noDate.length===0
+        ? '<div class="empty-state"><div class="ico">📅</div><p>Aucune tâche</p></div>'
+        : withDate.map(rowHtml).join('')}
+      ${noDate.length ? `
+        <div style="padding:8px 14px;font-family:var(--ff-mono);font-size:.62rem;color:var(--mut);letter-spacing:.12em;text-transform:uppercase;border-top:1px solid var(--line);background:rgba(0,0,0,.15)">
+          Sans échéance (${noDate.length})
+        </div>
+        ${noDate.map(t=>{
+          const contact=allContacts.find(c=>c.id===t.contact_id);
+          return `<div class="timeline-row" style="cursor:pointer;opacity:.5" onclick="openTaskModal('${t.id}')">
+            <div class="timeline-row-label"><strong>${escHtml(t.titre)}</strong>${contact?`<span>${escHtml(contact.nom)}</span>`:''}</div>
+            <div class="timeline-area" style="display:flex;align-items:center;padding:0 12px"><span style="font-size:.7rem;color:var(--mut);font-family:var(--ff-mono)">— pas d'échéance</span></div>
+          </div>`;
+        }).join('')}` : ''}
+    </div>`;
+}
+
+/* ── MODAL ── */
+function openTaskModal(id=null, defaultStatut='À faire'){
+  const modal = document.getElementById('task-modal');
+  document.getElementById('task-modal-id').value    = id||'';
+  document.getElementById('task-modal-title').textContent = id ? 'Modifier la tâche' : 'Nouvelle tâche';
+  document.getElementById('task-delete-btn').style.display = id ? '' : 'none';
+
+  const sel = document.getElementById('task-contact');
+  sel.innerHTML = '<option value="">— Aucun —</option>' +
+    allContacts.map(c=>`<option value="${c.id}">${escHtml(c.nom)}${c.entreprise?' — '+escHtml(c.entreprise):''}</option>`).join('');
+
+  if(id){
+    const t = tasksData.find(t=>t.id===id);
+    if(!t) return;
+    document.getElementById('task-titre').value    = t.titre||'';
+    document.getElementById('task-priorite').value = t.priorite||'Normale';
+    document.getElementById('task-statut').value   = t.statut||'À faire';
+    document.getElementById('task-echeance').value = t.echeance||'';
+    document.getElementById('task-contact').value  = t.contact_id||'';
+  } else {
+    document.getElementById('task-titre').value    = '';
+    document.getElementById('task-priorite').value = 'Normale';
+    document.getElementById('task-statut').value   = defaultStatut;
+    document.getElementById('task-echeance').value = '';
+    document.getElementById('task-contact').value  = '';
+  }
+  modal.classList.add('open');
+  setTimeout(()=>document.getElementById('task-titre').focus(),60);
+}
+
+function closeTaskModal(){
+  document.getElementById('task-modal').classList.remove('open');
+}
+
+async function saveTask(){
+  const id    = document.getElementById('task-modal-id').value;
+  const titre = document.getElementById('task-titre').value.trim();
+  if(!titre){ showToast('Titre requis','err'); return; }
+  const payload = {
+    titre,
+    priorite:   document.getElementById('task-priorite').value,
+    statut:     document.getElementById('task-statut').value,
+    echeance:   document.getElementById('task-echeance').value||null,
+    contact_id: document.getElementById('task-contact').value||null,
+  };
+  try {
+    if(id){ await sbPatch('tasks',id,payload); showToast('Tâche mise à jour','ok'); }
+    else   { await sbPost('tasks',{...payload,created_by:currentUser?.id}); showToast('Tâche créée','ok'); }
+    closeTaskModal();
+    await loadTasks();
+  } catch(e){ showToast('Erreur : '+e.message,'err'); }
+}
+
+async function deleteTask(){
+  const id = document.getElementById('task-modal-id').value;
+  if(!id||!confirm('Supprimer cette tâche définitivement ?')) return;
+  try {
+    await sbDelete('tasks',id);
+    showToast('Tâche supprimée');
+    closeTaskModal();
+    await loadTasks();
+  } catch(e){ showToast('Erreur : '+e.message,'err'); }
 }
 
 /* ============================================================
