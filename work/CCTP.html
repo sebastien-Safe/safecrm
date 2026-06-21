@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CCTP — S@FE Work · Refonte Orchestrateur</title>
+<style>
+:root{
+  --bg:#070f1e;--bg2:#0d1b33;--bg3:#142240;
+  --line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.12);
+  --mut:#64748b;--mut2:#94a3b8;--txt:#cbd5e1;--wh:#fff;
+  --gold:#f59e0b;--blue:#3b82f6;--ok:#22c55e;--warn:#f59e0b;--alert:#ef4444;--purple:#8b5cf6;
+  --ff:'IBM Plex Sans',system-ui,sans-serif;--ffm:'IBM Plex Mono',monospace;--ffd:'Sora',system-ui,sans-serif;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--ff);background:var(--bg);color:var(--txt);line-height:1.65;font-size:14px}
+a{color:var(--blue);text-decoration:none}
+h1,h2,h3,h4{font-family:var(--ffd);color:var(--wh);letter-spacing:-.02em}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--bg2);
+  border-right:1px solid var(--line);padding:20px 0;overflow-y:auto;z-index:50}
+.nav-logo{font-family:var(--ffd);font-weight:800;font-size:1rem;color:var(--wh);padding:0 18px 18px;
+  border-bottom:1px solid var(--line);margin-bottom:12px}
+.nav-logo b{color:var(--gold)}.nav-logo small{display:block;font-size:.58rem;color:var(--mut);font-family:var(--ffm);letter-spacing:.2em;margin-top:2px}
+.nav-section{font-family:var(--ffm);font-size:.58rem;letter-spacing:.18em;color:var(--mut);
+  text-transform:uppercase;padding:10px 18px 4px}
+.nav-item{display:block;padding:7px 18px;font-size:.82rem;color:var(--mut2);cursor:pointer;
+  border-left:2px solid transparent;transition:.15s}
+.nav-item:hover{color:var(--wh);background:rgba(255,255,255,.03)}
+.nav-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(245,158,11,.06)}
+.nav-badge{display:inline-block;font-size:.58rem;padding:1px 6px;border-radius:8px;margin-left:6px;
+  background:rgba(239,68,68,.2);color:var(--alert);font-family:var(--ffm);vertical-align:middle}
+.nav-badge.ok{background:rgba(34,197,94,.15);color:var(--ok)}
+.nav-badge.warn{background:rgba(245,158,11,.15);color:var(--warn)}
+
+/* LAYOUT */
+.wrap{margin-left:240px;padding:32px 40px;max-width:1100px}
+.section{margin-bottom:60px;padding-top:20px}
+
+/* COVER */
+.cover{background:linear-gradient(135deg,rgba(59,130,246,.1),rgba(245,158,11,.05));
+  border:1px solid var(--line2);border-radius:16px;padding:36px 40px;margin-bottom:40px;position:relative;overflow:hidden}
+.cover::before{content:'';position:absolute;inset:0;background:radial-gradient(600px at 80% -20%,rgba(245,158,11,.12),transparent);pointer-events:none}
+.cover-eyebrow{font-family:var(--ffm);font-size:.65rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+.cover h1{font-size:2rem;color:var(--wh);margin-bottom:6px}
+.cover-sub{font-size:.9rem;color:var(--mut2);margin-bottom:20px;max-width:600px}
+.meta-row{display:flex;gap:24px;flex-wrap:wrap}
+.meta-item{font-size:.78rem;color:var(--mut)}.meta-item b{color:var(--wh)}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.card+.card{margin-top:12px}
+.card-title{font-family:var(--ffm);font-size:.65rem;letter-spacing:.15em;color:var(--mut);text-transform:uppercase;margin-bottom:12px}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* STAT BOX */
+.stat{background:var(--bg3);border:1px solid var(--line);border-radius:8px;padding:14px 16px;text-align:center}
+.stat-n{font-family:var(--ffd);font-size:1.8rem;font-weight:800;color:var(--wh);line-height:1}
+.stat-l{font-size:.7rem;color:var(--mut);margin-top:4px}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.tbl th{background:rgba(20,34,64,.9);color:var(--mut);font-family:var(--ffm);font-size:.62rem;
+  letter-spacing:.1em;text-transform:uppercase;padding:9px 12px;text-align:left;border-bottom:1px solid var(--line)}
+.tbl td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--txt);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.tbl-wrap{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;overflow-x:auto}
+
+/* BADGES */
+.badge{display:inline-block;font-size:.62rem;font-weight:600;padding:2px 8px;border-radius:12px;font-family:var(--ffm)}
+.b-ok{background:rgba(34,197,94,.12);color:var(--ok)}
+.b-warn{background:rgba(245,158,11,.12);color:var(--warn)}
+.b-alert{background:rgba(239,68,68,.12);color:var(--alert)}
+.b-blue{background:rgba(59,130,246,.12);color:#93c5fd}
+.b-gray{background:rgba(148,163,184,.1);color:var(--mut2)}
+.b-purple{background:rgba(139,92,246,.12);color:#c4b5fd}
+
+/* FLOWCHART CSS */
+.flow{display:flex;flex-direction:column;align-items:flex-start;gap:0;padding:20px}
+.flow-row{display:flex;align-items:center;gap:0}
+.flow-node{background:var(--bg3);border:1px solid var(--line2);border-radius:8px;
+  padding:9px 18px;font-size:.8rem;color:var(--wh);white-space:nowrap;min-width:180px;text-align:center}
+.flow-node.trigger{border-color:var(--blue);background:rgba(59,130,246,.1);color:#93c5fd}
+.flow-node.action{border-color:var(--ok);background:rgba(34,197,94,.08);color:var(--ok)}
+.flow-node.connector{border-color:var(--purple);background:rgba(139,92,246,.1);color:#c4b5fd}
+.flow-node.log{border-color:var(--gold);background:rgba(245,158,11,.08);color:var(--gold)}
+.flow-node.end{border-color:var(--mut);background:rgba(148,163,184,.05);color:var(--mut2)}
+.flow-arrow{display:flex;flex-direction:column;align-items:center;padding:4px 0}
+.flow-arrow::before{content:'';display:block;width:2px;height:20px;background:var(--line2);margin:0 auto}
+.flow-arrow::after{content:'▼';font-size:.6rem;color:var(--mut);margin-top:-2px}
+.flow-label{font-size:.62rem;color:var(--mut);font-family:var(--ffm);margin-left:8px;align-self:center}
+
+/* TREE */
+.tree{font-family:var(--ffm);font-size:.78rem;line-height:2;color:var(--txt);
+  background:var(--bg3);border:1px solid var(--line);border-radius:var(--r);padding:18px 24px}
+.tree .t-dir{color:var(--blue)}
+.tree .t-file{color:var(--mut2)}
+.tree .t-orphan{color:var(--alert)}
+.tree .t-ok{color:var(--ok)}
+.tree .t-warn{color:var(--warn)}
+
+/* CHECKLIST */
+.checklist{list-style:none;display:flex;flex-direction:column;gap:6px}
+.checklist li{display:flex;align-items:flex-start;gap:10px;font-size:.82rem;padding:7px 10px;border-radius:6px}
+.checklist li.ok{background:rgba(34,197,94,.06);color:var(--txt)}
+.checklist li.warn{background:rgba(245,158,11,.06);color:var(--txt)}
+.checklist li.ko{background:rgba(239,68,68,.06);color:var(--txt)}
+.check-ico{flex-shrink:0;font-size:.9rem;width:20px;text-align:center}
+.check-label{flex:1}
+.check-note{font-size:.72rem;color:var(--mut);margin-top:1px}
+
+/* SECTION TITLE */
+.sec-title{font-size:1.2rem;font-weight:700;color:var(--wh);margin-bottom:4px}
+.sec-sub{font-size:.82rem;color:var(--mut2);margin-bottom:20px}
+.eyebrow{font-family:var(--ffm);font-size:.6rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:6px}
+
+/* PROPOSAL CARD */
+.proposal{border-left:3px solid var(--blue);padding:12px 16px;background:rgba(59,130,246,.05);border-radius:0 8px 8px 0;margin-bottom:10px}
+.proposal h4{color:var(--wh);font-size:.88rem;margin-bottom:4px}
+.proposal p{font-size:.78rem;color:var(--mut2);line-height:1.5}
+.proposal.new{border-left-color:var(--ok)}
+.proposal.modify{border-left-color:var(--warn)}
+.proposal.remove{border-left-color:var(--alert)}
+
+/* COLLAPSIBLE */
+.toggle-section{cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px;padding:10px 0}
+.toggle-section::before{content:'▶';font-size:.6rem;color:var(--mut);transition:.15s}
+.toggle-section.open::before{transform:rotate(90deg)}
+.toggle-body{display:none}.toggle-body.open{display:block}
+
+/* CHANGELOG */
+.cl-entry{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--line)}
+.cl-date{font-family:var(--ffm);font-size:.7rem;color:var(--mut);min-width:70px;padding-top:2px}
+.cl-content{flex:1}
+.cl-ver{font-family:var(--ffm);font-size:.65rem;color:var(--blue);margin-bottom:2px}
+.cl-desc{font-size:.8rem;color:var(--txt)}
+
+/* RISK */
+.risk-matrix{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.risk-item{background:var(--bg3);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:.78rem}
+.risk-item h5{color:var(--wh);font-size:.82rem;margin-bottom:4px}
+.risk-item p{color:var(--mut2);line-height:1.4}
+
+/* DATA FLOW */
+.df{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding:4px 0}
+.df-node{background:var(--bg3);border:1px solid var(--line2);border-radius:8px;
+  padding:10px 14px;font-size:.75rem;color:var(--wh);text-align:center;min-width:110px;white-space:nowrap}
+.df-arrow{display:flex;align-items:center;padding:0 4px;color:var(--mut);font-size:.65rem;flex-shrink:0}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .nav{display:none}
+  .wrap{margin-left:0;padding:20px 16px}
+  .g2,.g3,.g4{grid-template-columns:1fr}
+}
+
+/* PRINT */
+@media print{
+  .nav{display:none}
+  .wrap{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="nav">
+  <div class="nav-logo">S<b>@</b>FE Work<small>CCTP v1.0 · 2026-06-21</small></div>
+  <div class="nav-section">Analyse</div>
+  <a class="nav-item active" href="#s0">Présentation</a>
+  <a class="nav-item" href="#s1">Architecture existante</a>
+  <a class="nav-item" href="#s2">Cartographie</a>
+  <a class="nav-item" href="#s3">Inventaire composants</a>
+  <a class="nav-item" href="#s4">Fichiers orphelins <span class="nav-badge">8</span></a>
+  <div class="nav-section">Conception</div>
+  <a class="nav-item" href="#s5">Organigramme actions</a>
+  <a class="nav-item" href="#s6">Flux de données</a>
+  <a class="nav-item" href="#s7">Dépendances</a>
+  <div class="nav-section">Propositions</div>
+  <a class="nav-item" href="#s8">Connecteurs <span class="nav-badge ok">8</span></a>
+  <a class="nav-item" href="#s9">Propositions UX/UI</a>
+  <a class="nav-item" href="#s10">Navigation cible</a>
+  <div class="nav-section">Validation</div>
+  <a class="nav-item" href="#s11">Sécurité <span class="nav-badge warn">⚠</span></a>
+  <a class="nav-item" href="#s12">Checklist finale</a>
+  <a class="nav-item" href="#s13">Risques & impacts</a>
+  <a class="nav-item" href="#s14">Changelog</a>
+</nav>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- COVER -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="cover" id="s0">
+  <div class="cover-eyebrow">Cahier des Charges Technique & Fonctionnel</div>
+  <h1>Refonte S@FE Work<br><span style="color:var(--gold)">Centre d'orchestration</span></h1>
+  <p class="cover-sub">Analyse complète de l'existant et propositions d'évolution du module /work vers un orchestrateur graphique d'automatisations.</p>
+  <div class="meta-row">
+    <div class="meta-item"><b>Version</b> 1.0.0</div>
+    <div class="meta-item"><b>Date</b> 21 juin 2026</div>
+    <div class="meta-item"><b>Auteur</b> Claude Code + Sébastien</div>
+    <div class="meta-item"><b>Statut</b> <span class="badge b-warn">En attente de validation</span></div>
+    <div class="meta-item"><b>Stack</b> Vanilla JS · Supabase · HTML5</div>
+  </div>
+  <div style="margin-top:18px;padding:12px 14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;font-size:.78rem;color:#fca5a5">
+    ⛔ <strong>AUCUN CODE</strong> ne sera produit avant la validation explicite de ce document par l'administrateur.
+  </div>
+</div>
+
+<!-- STATS GLOBALES -->
+<div class="g4" style="margin-bottom:40px">
+  <div class="stat"><div class="stat-n">1 605</div><div class="stat-l">Lignes work/index.html</div></div>
+  <div class="stat"><div class="stat-n" style="color:var(--gold)">50</div><div class="stat-l">Fonctions JS</div></div>
+  <div class="stat"><div class="stat-n" style="color:var(--blue)">6</div><div class="stat-l">Vues actives</div></div>
+  <div class="stat"><div class="stat-n" style="color:var(--alert)">8</div><div class="stat-l">Fichiers orphelins</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 1 — ARCHITECTURE EXISTANTE -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s1">
+  <span class="eyebrow">Phase 1 — Étape 1</span>
+  <h2 class="sec-title">Architecture existante</h2>
+  <p class="sec-sub">Analyse complète de la structure technique du module /work avant toute modification.</p>
+
+  <div class="g2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-title">Stack technique</div>
+      <table class="tbl">
+        <tr><td><strong>Frontend</strong></td><td>Vanilla JS ES6+, HTML5, CSS3</td></tr>
+        <tr><td><strong>Framework</strong></td><td><span class="badge b-alert">Aucun</span> — pas de React, Vue, Angular</td></tr>
+        <tr><td><strong>Build</strong></td><td><span class="badge b-alert">Aucun</span> — fichiers servis directement</td></tr>
+        <tr><td><strong>Base de données</strong></td><td>Supabase (PostgreSQL)</td></tr>
+        <tr><td><strong>Auth</strong></td><td>Supabase Auth + JWT custom refresh</td></tr>
+        <tr><td><strong>API</strong></td><td>Raw fetch → PostgREST (sbGet/sbPost/sbPatch)</td></tr>
+        <tr><td><strong>Temps réel</strong></td><td><span class="badge b-alert">Non implémenté</span> dans /work</td></tr>
+        <tr><td><strong>CDN</strong></td><td>Supabase JS, jsPDF, Font Awesome 6</td></tr>
+        <tr><td><strong>Fonts</strong></td><td>Sora, IBM Plex Sans, IBM Plex Mono</td></tr>
+        <tr><td><strong>Routing</strong></td><td>showView() — manipulation display:none/block</td></tr>
+        <tr><td><strong>Journal</strong></td><td><span class="badge b-alert">localStorage</span> — NON persisté en DB</td></tr>
+        <tr><td><strong>Hébergement</strong></td><td>GitHub Pages (CNAME safe-digitalisation.fr)</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Vues actuelles (/work/index.html)</div>
+      <table class="tbl">
+        <tr><th>Vue</th><th>ID</th><th>Contenu</th></tr>
+        <tr><td>Dashboard</td><td><code>view-dashboard</code></td><td>Stats, modules, contrats récents, auto rapides</td></tr>
+        <tr><td>Clients</td><td><code>view-clients</code></td><td>Table contacts + contrats</td></tr>
+        <tr><td>Automatisations</td><td><code>view-automate</code></td><td>Sélecteur contact/contrat → workflows</td></tr>
+        <tr><td>Journal</td><td><code>view-journal</code></td><td>Historique localStorage (limité à 100)</td></tr>
+        <tr><td>Tâches</td><td><code>view-tasks</code></td><td>Table tasks Supabase</td></tr>
+        <tr><td>Unités</td><td><code>view-unites</code></td><td>Équipes DCI + performances</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Tables Supabase utilisées par /work</div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Table</th><th>Champs clés</th><th>Usage dans /work</th><th>RLS</th></tr></thead>
+        <tbody>
+          <tr><td><code>contacts</code></td><td>id, nom, entreprise, email, statut, activites</td><td>Dashboard, Clients, Automatisations</td><td><span class="badge b-ok">✓</span></td></tr>
+          <tr><td><code>contracts</code></td><td>id, contact_id, type, formule, montant, statut</td><td>Dashboard, Clients, Workflows, PDF</td><td><span class="badge b-ok">✓</span></td></tr>
+          <tr><td><code>tasks</code></td><td>id, titre, statut, priorite, echeance, contact_id</td><td>Vue Tâches, création via workflows</td><td><span class="badge b-ok">✓</span></td></tr>
+          <tr><td><code>profiles</code></td><td>id, prenom, is_admin, role, region, dci_parent_id</td><td>Auth, Unités DCI</td><td><span class="badge b-ok">✓</span></td></tr>
+          <tr><td><code>safe_connectors</code></td><td>service_key, statut, label</td><td>connectors-guard.js, modules card</td><td><span class="badge b-ok">✓</span></td></tr>
+          <tr><td><code>dpo_client_profiles</code></td><td>contact_id</td><td>Jauge modules (ping existence)</td><td><span class="badge b-ok">✓</span></td></tr>
+          <tr><td><code>cyber_client_profiles</code></td><td>contact_id</td><td>Jauge modules (ping existence)</td><td><span class="badge b-ok">✓</span></td></tr>
+          <tr><td><code>seo_client_profiles</code></td><td>contact_id</td><td>Jauge modules (ping existence)</td><td><span class="badge b-ok">✓</span></td></tr>
+          <tr><td><code>work_journal</code></td><td>—</td><td><span class="badge b-alert">N'EXISTE PAS</span> — stockage localStorage uniquement</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;padding:8px 12px;background:rgba(239,68,68,.08);border-radius:6px;font-size:.75rem;color:#fca5a5">
+      ⚠️ <strong>Point critique :</strong> Le journal des actions est stocké en <code>localStorage</code>, limité à 100 entrées, perdu si l'utilisateur vide son cache. Pas de persistance Supabase = pas d'audit traçable ni de multi-utilisateurs.
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">Workflows hardcodés (objet WORKFLOWS)</div>
+    <p style="font-size:.8rem;color:var(--mut2);margin-bottom:10px">Les automatisations sont définies en dur dans le JS — non modifiables par l'utilisateur, non stockées en DB.</p>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Catégorie</th><th>ID</th><th>Label</th><th>Étapes</th><th>Page mission</th></tr></thead>
+        <tbody>
+          <tr><td>SEO</td><td><code>seo_onboarding</code></td><td>Onboarding SEO Local</td><td>3</td><td>mission-seo.html</td></tr>
+          <tr><td>SEO</td><td><code>seo_rapport</code></td><td>Rapport SEO mensuel</td><td>3</td><td>mission-seo.html</td></tr>
+          <tr><td>Digitalisation</td><td><code>dig_onboarding</code></td><td>Onboarding Digitalisation</td><td>3</td><td>mission-onboarding.html</td></tr>
+          <tr><td>RGPD</td><td><code>rgpd_audit</code></td><td>Audit RGPD initial</td><td>3</td><td>mission-rgpd.html</td></tr>
+          <tr><td>RGPD</td><td><code>rgpd_dpo</code></td><td>Mise en place DPO</td><td>3</td><td>mission-rgpd.html</td></tr>
+          <tr><td>Cybersécurité</td><td><code>cyber_audit</code></td><td>Audit Cybersécurité</td><td>3</td><td>mission-cyber.html</td></tr>
+          <tr><td>Onboarding</td><td><code>generic_onboard</code></td><td>Onboarding générique</td><td>3</td><td>mission-onboarding.html</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 2 — CARTOGRAPHIE -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s2">
+  <span class="eyebrow">Phase 2 — Étape 2</span>
+  <h2 class="sec-title">Cartographie du dépôt /work</h2>
+  <p class="sec-sub">Structure complète avec identification des fichiers actifs, orphelins et dupliqués.</p>
+
+  <div class="tree">
+<span style="color:var(--blue)">safecrm/work/</span>
+├── <span class="t-ok">index.html</span>            <span style="color:var(--mut)">→ Hub principal (1 605 lignes)</span>
+├── <span class="t-ok">connecteurs.html</span>      <span style="color:var(--mut)">→ Centre connecteurs (670 lignes)</span>
+├── <span class="t-ok">favicon.svg</span>
+├── <span class="t-orphan">work.html</span>             <span style="color:var(--alert)">⚠ ORPHELIN — ancienne version ?</span>
+├── <span class="t-orphan">module-cyber.html</span>     <span style="color:var(--alert)">⚠ ORPHELIN — remplacé par /Cyber/</span>
+├── <span class="t-orphan">module-seo.html</span>       <span style="color:var(--alert)">⚠ ORPHELIN — remplacé par /SEO/</span>
+├── <span class="t-ok">mission-onboarding.html</span> <span style="color:var(--mut)">→ Page mission active</span>
+├── <span class="t-ok">mission-seo.html</span>      <span style="color:var(--mut)">→ Page mission active</span>
+├── <span class="t-ok">mission-rgpd.html</span>     <span style="color:var(--mut)">→ Page mission active</span>
+├── <span class="t-ok">mission-cyber.html</span>    <span style="color:var(--mut)">→ Page mission active</span>
+│
+├── <span class="t-dir">DPO/</span>
+│   ├── <span class="t-ok">module-dpo-clients.html</span>  <span style="color:var(--mut)">→ Module actif</span>
+│   ├── <span class="t-ok">dpo-clients-core.js, dpo-*.js, dpo-clients.css</span>
+│   ├── <span class="t-ok">index.html</span>
+│   ├── <span class="t-orphan">module-dpo.html</span>     <span style="color:var(--alert)">⚠ ORPHELIN — ancienne version</span>
+│   ├── <span class="t-orphan">module-cyber-v2.html</span> <span style="color:var(--alert)">⚠ MAL PLACÉ — fichier cyber dans DPO/</span>
+│   └── <span class="t-orphan">tst</span>              <span style="color:var(--alert)">⚠ ORPHELIN — fichier test</span>
+│
+├── <span class="t-dir">Cyber/</span>
+│   ├── <span class="t-ok">module-cyber-clients.html</span>
+│   ├── <span class="t-ok">cyber-*.js, cyber-clients.css</span>
+│   ├── <span class="t-ok">index.html</span>
+│   ├── <span class="t-orphan">module-cyber-v2.html</span> <span style="color:var(--alert)">⚠ ORPHELIN — doublon</span>
+│   └── <span class="t-orphan">patch-sidebar-cyber.html</span> <span style="color:var(--alert)">⚠ ORPHELIN — fichier patch</span>
+│
+├── <span class="t-dir">SEO/</span>             <span style="color:var(--mut)">→ 6 fichiers, tous actifs</span>
+├── <span class="t-dir">Social/</span>          <span style="color:var(--mut)">→ 7 fichiers, créé 2026-06-21</span>
+└── <span class="t-dir">ClickCollect/</span>    <span style="color:var(--mut)">→ 7 fichiers, créé 2026-06-21</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 3 — INVENTAIRE COMPOSANTS -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s3">
+  <span class="eyebrow">Phase 2 — Étape 3</span>
+  <h2 class="sec-title">Inventaire des composants CSS/JS</h2>
+  <p class="sec-sub">Cartographie de tous les composants réutilisables détectés dans le projet.</p>
+
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Composant</th><th>Classe CSS</th><th>Fichier source</th><th>Utilisé</th><th>Réutilisable</th><th>Présent dans</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Card</strong></td><td><code>.card</code></td><td>work/index.html + 6 modules</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td>Tous les modules</td></tr>
+        <tr><td><strong>Stat card</strong></td><td><code>.stat-card</code></td><td>work/index.html + modules</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td>Tous les modules</td></tr>
+        <tr><td><strong>Table</strong></td><td><code>.table-wrap, table</code></td><td>work/index.html</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td>index, tasks, clients</td></tr>
+        <tr><td><strong>Pill/Badge</strong></td><td><code>.pill, .badge</code></td><td>work/index.html + modules</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td>Partout</td></tr>
+        <tr><td><strong>Boutons</strong></td><td><code>.btn, .btn-*</code></td><td>Dupliqué ×7</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-warn">⚠ Dupliqué</span></td><td>Tous les modules</td></tr>
+        <tr><td><strong>Toast</strong></td><td><code>.toast</code></td><td>work/index.html + modules</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td>index + 6 modules</td></tr>
+        <tr><td><strong>Modal (workflow)</strong></td><td><code>.wf-overlay, .wf-box</code></td><td>work/index.html</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td>index uniquement</td></tr>
+        <tr><td><strong>Modal (modules)</strong></td><td><code>.modal-overlay</code></td><td>Dupliqué ×5</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-warn">⚠ Dupliqué</span></td><td>DPO, Cyber, SEO, Social, CC</td></tr>
+        <tr><td><strong>Sidebar nav</strong></td><td><code>.sidebar, .sidebar-item</code></td><td>work/index.html</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td>index</td></tr>
+        <tr><td><strong>Subnav module</strong></td><td><code>.subnav-item</code></td><td>Dupliqué ×5</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-warn">⚠ Dupliqué</span></td><td>DPO, Cyber, SEO, Social, CC</td></tr>
+        <tr><td><strong>Stepper WF</strong></td><td><code>.wf-step</code></td><td>work/index.html</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td>index</td></tr>
+        <tr><td><strong>Journal timeline</strong></td><td><code>.journal-item</code></td><td>work/index.html</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td>index</td></tr>
+        <tr><td><strong>Loader spinner</strong></td><td><code>.spinner</code></td><td>Dupliqué ×7</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-warn">⚠ Dupliqué</span></td><td>Tous les modules</td></tr>
+        <tr><td><strong>Empty state</strong></td><td><code>.empty-state</code></td><td>Dupliqué ×5</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-warn">⚠ Dupliqué</span></td><td>Modules</td></tr>
+        <tr><td><strong>Drag & drop</strong></td><td>—</td><td>—</td><td><span class="badge b-alert">✗</span></td><td>À créer</td><td>—</td></tr>
+        <tr><td><strong>Kanban</strong></td><td>—</td><td>—</td><td><span class="badge b-alert">✗</span></td><td>À créer</td><td>—</td></tr>
+        <tr><td><strong>Timeline</strong></td><td>—</td><td>—</td><td><span class="badge b-alert">✗</span></td><td>À créer</td><td>—</td></tr>
+        <tr><td><strong>Flow visuel</strong></td><td>—</td><td>—</td><td><span class="badge b-alert">✗</span></td><td>À créer</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:12px;padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;font-size:.78rem;color:var(--warn)">
+    🔁 <strong>REUSE FIRST :</strong> Les composants <code>.card</code>, <code>.btn</code>, <code>.modal-overlay</code>, <code>.spinner</code> et <code>.toast</code> sont déjà présents dans les 6 modules. Toute refonte doit consolider ces patterns dans un fichier partagé plutôt que créer de nouveaux composants.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 4 — FICHIERS ORPHELINS -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s4">
+  <span class="eyebrow">Phase 3</span>
+  <h2 class="sec-title">Fichiers orphelins détectés</h2>
+  <p class="sec-sub">8 fichiers identifiés comme non utilisés ou dupliqués — à supprimer avant refonte.</p>
+
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Fichier</th><th>Raison</th><th>Risque suppression</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><code>work/work.html</code></td><td>Ancienne version de index.html</td><td><span class="badge b-ok">Faible</span></td><td>Supprimer</td></tr>
+        <tr><td><code>work/module-cyber.html</code></td><td>Remplacé par work/Cyber/</td><td><span class="badge b-ok">Faible</span></td><td>Supprimer</td></tr>
+        <tr><td><code>work/module-seo.html</code></td><td>Remplacé par work/SEO/</td><td><span class="badge b-ok">Faible</span></td><td>Supprimer</td></tr>
+        <tr><td><code>work/DPO/module-dpo.html</code></td><td>Remplacé par module-dpo-clients.html</td><td><span class="badge b-warn">Moyen</span></td><td>Vérifier liens entrants puis supprimer</td></tr>
+        <tr><td><code>work/DPO/module-cyber-v2.html</code></td><td>Fichier cyber mal placé dans DPO/</td><td><span class="badge b-ok">Faible</span></td><td>Supprimer</td></tr>
+        <tr><td><code>work/DPO/tst</code></td><td>Fichier test sans extension</td><td><span class="badge b-ok">Faible</span></td><td>Supprimer</td></tr>
+        <tr><td><code>work/Cyber/module-cyber-v2.html</code></td><td>Doublon de module-cyber-clients.html</td><td><span class="badge b-ok">Faible</span></td><td>Supprimer</td></tr>
+        <tr><td><code>work/Cyber/patch-sidebar-cyber.html</code></td><td>Patch temporaire non nécessaire</td><td><span class="badge b-ok">Faible</span></td><td>Supprimer</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 5 — ORGANIGRAMME DES ACTIONS -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s5">
+  <span class="eyebrow">Phase 4 — Étape 4</span>
+  <h2 class="sec-title">Organigramme des actions</h2>
+  <p class="sec-sub">Flux complet du cycle de vie d'une automatisation dans le système cible.</p>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Flux actuel (tel que construit)</div>
+      <div class="flow">
+        <div class="flow-node trigger">Utilisateur connecté</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node">Sélectionner contact</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node">Sélectionner contrat</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node">Workflows filtrés par type contrat</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node">Cliquer "Lancer workflow"</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node action">Valider étapes manuellement</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node">Créer tâche Supabase ou générer PDF</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node log">Journal localStorage (limité)</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node end">Fin — pas de notification</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Flux cible (orchestrateur)</div>
+      <div class="flow">
+        <div class="flow-node trigger">Déclencheur</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node" style="font-size:.7rem;background:rgba(59,130,246,.06)">Manuel · Planifié · Événement CRM · Webhook</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node">Condition (si/sinon)</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node connector">Connecteur API</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node" style="font-size:.7rem;background:rgba(139,92,246,.06)">Buffer · Brevo · Stripe · Webhook · OpenAI…</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node action">Action exécutée</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node log">Journal Supabase (persistant)</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node">Notification temps réel</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node end">Historique consultable</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 6 — FLUX DE DONNÉES -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s6">
+  <span class="eyebrow">Phase 5 — Étape 5</span>
+  <h2 class="sec-title">Flux de données</h2>
+  <p class="sec-sub">Visualisation complète du chemin des données dans le système.</p>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Flux actuel — Auth</div>
+    <div class="df">
+      <div class="df-node" style="border-color:var(--blue)">Utilisateur</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">Login form</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">fetch POST /auth/v1/token</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node" style="border-color:var(--ok)">JWT + refresh_token</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">localStorage</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">scheduleTokenRefresh() 50min</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Flux actuel — Données CRM</div>
+    <div class="df">
+      <div class="df-node">initApp()</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">sbGet('contacts')</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">sbGet('contracts')</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">Variables globales</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">allContacts[]</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">allContracts[]</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">Rendu HTML</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Flux actuel — Workflow & Journal</div>
+    <div class="df">
+      <div class="df-node">openWorkflow()</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">Page mission</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">validateStep()</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">sbPost('tasks')</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">logAction()</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node" style="border-color:var(--alert)">localStorage ⚠</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Flux cible — Orchestrateur connecteurs</div>
+    <div class="df">
+      <div class="df-node" style="border-color:var(--blue)">Déclencheur</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">Edge Function</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">Connecteur API</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node" style="border-color:var(--ok)">Supabase DB</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">Realtime channel</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node">Interface</div>
+      <div class="df-arrow">→</div>
+      <div class="df-node" style="border-color:var(--gold)">Journal persistant</div>
+    </div>
+    <div style="margin-top:8px;font-size:.72rem;color:var(--mut)">
+      ⚠ Nécessite : table <code>work_automations</code>, table <code>work_journal</code>, Supabase Edge Functions (ou service externe), Supabase Realtime.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 7 — DÉPENDANCES -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s7">
+  <span class="eyebrow">Phase 3 — Étape 4</span>
+  <h2 class="sec-title">Cartographie des dépendances</h2>
+  <p class="sec-sub">Relations entre /work et les autres systèmes. Toute modification doit évaluer l'impact sur ces dépendances.</p>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Dépendances entrantes (qui appelle /work)</div>
+      <table class="tbl">
+        <tr><td>CRM principal</td><td>Lien sidebar → /work/</td></tr>
+        <tr><td>Modules DPO/Cyber/SEO/Social/CC</td><td>Bouton "← Work" → /work/</td></tr>
+        <tr><td>Mission pages</td><td>Retour → /work/ après mission</td></tr>
+        <tr><td>Connecteurs</td><td>Lien sidebar → /work/connecteurs.html</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Dépendances sortantes (/work appelle)</div>
+      <table class="tbl">
+        <tr><td><code>contacts</code></td><td>SELECT, lecture seule</td></tr>
+        <tr><td><code>contracts</code></td><td>SELECT, lecture seule</td></tr>
+        <tr><td><code>tasks</code></td><td>SELECT + INSERT (workflows)</td></tr>
+        <tr><td><code>profiles</code></td><td>SELECT (auth + DCI)</td></tr>
+        <tr><td><code>safe_connectors</code></td><td>SELECT via guard</td></tr>
+        <tr><td><code>dpo/cyber/seo_client_profiles</code></td><td>SELECT (ping modules)</td></tr>
+        <tr><td>mission-*.html</td><td>window.location.href</td></tr>
+        <tr><td>jsPDF CDN</td><td>Génération PDF</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">Composants partagés — Impact si modifiés</div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Fichier partagé</th><th>Utilisé par</th><th>Risque modification</th></tr></thead>
+        <tbody>
+          <tr><td><code>assets/dpo/connectors-guard.js</code></td><td>DPO, SEO, Cyber, Social, CC, Connecteurs</td><td><span class="badge b-alert">Élevé</span> — tester tous les modules</td></tr>
+          <tr><td><code>assets/config.js</code></td><td>Social, CC + autres</td><td><span class="badge b-warn">Moyen</span></td></tr>
+          <tr><td><code>assets/style.css</code></td><td>CRM principal</td><td><span class="badge b-alert">Élevé</span> — ne pas toucher</td></tr>
+          <tr><td><code>work/index.html</code> (CSS inline)</td><td>Uniquement /work dashboard</td><td><span class="badge b-ok">Faible</span> — isolé</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 8 — CONNECTEURS -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s8">
+  <span class="eyebrow">Connecteurs disponibles</span>
+  <h2 class="sec-title">Hub de connecteurs</h2>
+  <p class="sec-sub">État actuel des connecteurs configurables dans <code>safe_connectors</code>. Chaque connecteur doit pouvoir être ajouté sans modifier l'architecture.</p>
+
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Connecteur</th><th>Catégorie</th><th>Statut système</th><th>Auth</th><th>Usage dans /work</th><th>Extensible</th></tr></thead>
+      <tbody>
+        <tr><td>Mistral AI</td><td>IA</td><td><span class="badge b-gray">Configurable</span></td><td>API Key</td><td>DPO Assistant</td><td><span class="badge b-ok">✓</span></td></tr>
+        <tr><td>Claude/Anthropic</td><td>IA</td><td><span class="badge b-gray">Configurable</span></td><td>API Key</td><td>DPO Assistant</td><td><span class="badge b-ok">✓</span></td></tr>
+        <tr><td>Google My Business</td><td>Local SEO</td><td><span class="badge b-gray">Configurable</span></td><td>OAuth2</td><td>SEO</td><td><span class="badge b-ok">✓</span></td></tr>
+        <tr><td>Search Console</td><td>SEO</td><td><span class="badge b-gray">Configurable</span></td><td>OAuth2</td><td>SEO</td><td><span class="badge b-ok">✓</span></td></tr>
+        <tr><td>Buffer</td><td>Social</td><td><span class="badge b-gray">Configurable</span></td><td>API Key</td><td>Social</td><td><span class="badge b-ok">✓</span></td></tr>
+        <tr><td>Meta Pages</td><td>Social</td><td><span class="badge b-gray">Configurable</span></td><td>OAuth2</td><td>Social</td><td><span class="badge b-ok">✓</span></td></tr>
+        <tr><td>LinkedIn Pages</td><td>Social</td><td><span class="badge b-gray">Configurable</span></td><td>OAuth2</td><td>Social</td><td><span class="badge b-ok">✓</span></td></tr>
+        <tr><td><em>Brevo (à ajouter)</em></td><td>Email</td><td><span class="badge b-alert">Non créé</span></td><td>API Key</td><td>Notifications</td><td><span class="badge b-ok">✓</span></td></tr>
+        <tr><td><em>Stripe (à ajouter)</em></td><td>Paiement</td><td><span class="badge b-alert">Non créé</span></td><td>Secret Key</td><td>Click & Collect</td><td><span class="badge b-ok">✓</span></td></tr>
+        <tr><td><em>Webhook générique</em></td><td>Intégration</td><td><span class="badge b-alert">Non créé</span></td><td>URL + Secret</td><td>Orchestrateur</td><td><span class="badge b-ok">✓</span></td></tr>
+        <tr><td><em>OpenAI (à ajouter)</em></td><td>IA</td><td><span class="badge b-alert">Non créé</span></td><td>API Key</td><td>Assistant universel</td><td><span class="badge b-ok">✓</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:.75rem;color:var(--mut);margin-top:8px">Architecture <code>connectors-guard.js</code> extensible sans modification : ajouter une ligne dans <code>safe_connectors</code> suffit.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 9 — PROPOSITIONS UX/UI -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s9">
+  <span class="eyebrow">Phase 7 — ⛔ Avant code — Validation requise</span>
+  <h2 class="sec-title">Propositions UX/UI</h2>
+  <p class="sec-sub">Propositions de refonte de /work/index.html uniquement. Aucun code produit à ce stade.</p>
+
+  <div style="padding:12px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:.8rem;color:#fca5a5;margin-bottom:20px">
+    🛑 <strong>STOP</strong> — Ces propositions attendent votre validation explicite avant tout développement.
+  </div>
+
+  <h3 style="color:var(--wh);font-size:.95rem;margin-bottom:12px">Proposition A — Dashboard modernisé (évolution douce)</h3>
+  <div class="proposal modify">
+    <h4>Conserver la structure existante, améliorer le rendu</h4>
+    <p>Même sidebar, mêmes vues. Moderniser les cartes stats avec micro-animations, ajouter un graphique de tendance, afficher les modules avec leur état temps réel. Faible risque de régression.</p>
+  </div>
+  <div class="proposal new">
+    <h4>Ajouter une vue "Automatisations actives"</h4>
+    <p>Nouvelle vue listant les automatisations configurées (data-driven depuis Supabase), pas hardcodées. Nécessite table <code>work_automations</code>. Remplace l'objet JS <code>WORKFLOWS</code>.</p>
+  </div>
+  <div class="proposal new">
+    <h4>Migrer le journal vers Supabase</h4>
+    <p>Créer table <code>work_journal</code> (id, user_id, wf_id, contact_id, action, status, created_at). Remplacer <code>localStorage</code>. Journal persistant, multi-utilisateurs, exportable.</p>
+  </div>
+
+  <h3 style="color:var(--wh);font-size:.95rem;margin:20px 0 12px">Proposition B — Orchestrateur graphique (refonte ambitieuse)</h3>
+  <div class="proposal new">
+    <h4>🗺 Flow Builder visuel</h4>
+    <p>Canvas de type n8n/Make : nœuds glissables représentant déclencheurs, conditions, actions, connecteurs. Rendu SVG ou Canvas. Composants à créer : DragNode, FlowCanvas, ConnectorPin. Effort : élevé.</p>
+  </div>
+  <div class="proposal new">
+    <h4>📊 Dashboard temps réel</h4>
+    <p>Supabase Realtime sur <code>work_journal</code> et <code>tasks</code>. Badge de notification vivant, flux d'activité en temps réel. Effort : moyen.</p>
+  </div>
+  <div class="proposal new">
+    <h4>🔌 Hub connecteurs intégré</h4>
+    <p>Intégrer <code>connecteurs.html</code> comme vue interne de /work plutôt que page séparée. Vue "Connecteurs" dans la sidebar. Effort : faible.</p>
+  </div>
+  <div class="proposal modify">
+    <h4>📁 Factoriser le CSS partagé</h4>
+    <p>Créer <code>/work/shared.css</code> avec les composants communs (.card, .btn, .modal, .spinner, .toast, .badge). Chaque module l'importe + son CSS accent. Élimine 6× les doublons. Effort : moyen.</p>
+  </div>
+  <div class="proposal remove">
+    <h4>🗑 Supprimer les 8 fichiers orphelins</h4>
+    <p>Nettoyer le dépôt. Vérifier que <code>module-dpo.html</code> n'est pas référencé en externe avant suppression. Effort : très faible.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 10 — NAVIGATION CIBLE -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s10">
+  <span class="eyebrow">Schéma de navigation</span>
+  <h2 class="sec-title">Architecture de navigation cible</h2>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Navigation actuelle</div>
+      <div class="tree" style="font-size:.75rem;line-height:1.9">
+/work/index.html
+├── 📊 Dashboard
+├── 👥 Clients & Contrats
+├── ⚡ Automatisations
+├── 📋 Journal
+├── ✅ Tâches
+└── 🏢 Unités DCI
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Navigation cible proposée</div>
+      <div class="tree" style="font-size:.75rem;line-height:1.9">
+/work/index.html
+├── 📊 Dashboard (enrichi, temps réel)
+├── ⚡ Mes Automatisations
+│   ├── Actives
+│   ├── Bibliothèque
+│   └── Créer
+├── 🔌 Connecteurs (intégré)
+├── 👥 Clients & Contrats
+├── 📋 Historique (Supabase)
+├── ✅ Tâches
+├── 🏢 Unités DCI
+└── ⚙️ Paramètres Work
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 11 — SÉCURITÉ -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s11">
+  <span class="eyebrow">Vérification sécurité</span>
+  <h2 class="sec-title">Audit de sécurité</h2>
+
+  <ul class="checklist">
+    <li class="ok"><span class="check-ico">🟢</span><div><div class="check-label">RLS activé sur toutes les tables métier</div><div class="check-note">contacts, contracts, tasks, profiles, safe_connectors, modules profiles</div></div></li>
+    <li class="ok"><span class="check-ico">🟢</span><div><div class="check-label">Auth Supabase avec JWT + refresh automatique</div><div class="check-note">Token rafraîchi toutes les 50min via scheduleTokenRefresh()</div></div></li>
+    <li class="ok"><span class="check-ico">🟢</span><div><div class="check-label">Clé anon Supabase (non secret)</div><div class="check-note">Clé anon exposée côté client — comportement normal pour Supabase. RLS protège les données.</div></div></li>
+    <li class="ok"><span class="check-ico">🟢</span><div><div class="check-label">Connecteurs : aucune connexion auto sans validation admin</div><div class="check-note">connectors-guard.js vérifie statut = 'actif' | 'simule' avant tout appel</div></div></li>
+    <li class="ok"><span class="check-ico">🟢</span><div><div class="check-label">Mode simulation empêche les vraies API calls</div><div class="check-note">isSimulated() retourne mock sans appel réseau réel</div></div></li>
+    <li class="warn"><span class="check-ico">🟠</span><div><div class="check-label">Journal en localStorage — non auditable</div><div class="check-note">100 entrées max, perdu au vidage cache, pas de multi-utilisateurs. Migration Supabase recommandée.</div></div></li>
+    <li class="warn"><span class="check-ico">🟠</span><div><div class="check-label">Pas de rate limiting frontend</div><div class="check-note">Les appels sbGet/sbPost ne sont pas throttled côté client. Supabase applique ses limites propres.</div></div></li>
+    <li class="warn"><span class="check-ico">🟠</span><div><div class="check-label">Workflows hardcodés — pas de validation des inputs</div><div class="check-note">Si les workflows deviennent data-driven, valider les payloads côté Supabase (contraintes CHECK).</div></div></li>
+    <li class="ok"><span class="check-ico">🟢</span><div><div class="check-label">noindex, nofollow sur /work</div><div class="check-note">Meta robots configuré — accès non indexé par les moteurs.</div></div></li>
+    <li class="ok"><span class="check-ico">🟢</span><div><div class="check-label">Pas d'IDOR détecté</div><div class="check-note">RLS filtre par user auth — les contacts/contracts ne sont pas accessibles sans session.</div></div></li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 12 — CHECKLIST FINALE -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s12">
+  <span class="eyebrow">Checklist fonctionnelle</span>
+  <h2 class="sec-title">Tests à valider</h2>
+  <p class="sec-sub">À exécuter après chaque modification. Cocher = testé et validé.</p>
+
+  <div class="g2">
+    <ul class="checklist">
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Connexion / Déconnexion</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Affichage dashboard — stats correctes</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Vue Clients — table chargée</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Sélection contact → contrat → workflow</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Lancement workflow SEO</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Lancement workflow RGPD</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Lancement workflow Cyber</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Validation étape workflow → tâche créée</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Journal — entrée enregistrée</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Navigation modules (DPO, Cyber, SEO…)</div></div></li>
+    </ul>
+    <ul class="checklist">
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Mobile — burger menu sans flou</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Responsive — fenêtre réduite</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Connecteurs — activation déclenchée manuellement</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Mode simulation — réponses mock correctes</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Modules card — jauges exactes</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Vue Unités DCI — données chargées</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Rafraîchissement token — session >50min</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Aucune régression sur CRM principal</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">Aucune régression sur DPO/Cyber/SEO/Social/CC</div></div></li>
+      <li class="warn"><span class="check-ico">□</span><div><div class="check-label">PDF généré correctement</div></div></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 13 — RISQUES & IMPACTS -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s13">
+  <span class="eyebrow">Risques & impacts</span>
+  <h2 class="sec-title">Matrice des risques</h2>
+
+  <div class="risk-matrix">
+    <div class="risk-item" style="border-color:rgba(34,197,94,.3)">
+      <h5 style="color:var(--ok)">🟢 Faible</h5>
+      <p>Suppression fichiers orphelins · Modernisation CSS dashboard · Migration journal localStorage → Supabase · Factorisation shared.css</p>
+    </div>
+    <div class="risk-item" style="border-color:rgba(245,158,11,.3)">
+      <h5 style="color:var(--warn)">🟠 Moyen</h5>
+      <p>Nouvelle vue "Automatisations" · Intégration connecteurs en vue interne · Ajout Supabase Realtime · Nouvelles tables work_*</p>
+    </div>
+    <div class="risk-item" style="border-color:rgba(239,68,68,.3)">
+      <h5 style="color:var(--alert)">🔴 Élevé</h5>
+      <p>Flow builder visuel (drag & drop) · Refonte de la sidebar · Modification de connectors-guard.js · Changement du système d'auth</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">Contraintes absolues</div>
+    <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;font-size:.8rem">
+      <li>✅ Conserver Supabase et les RLS existantes</li>
+      <li>✅ Aucune régression sur DPO, Cyber, SEO, Social, Click&Collect</li>
+      <li>✅ Aucun connecteur activé sans validation admin explicite</li>
+      <li>✅ Le CRM principal (index.html racine) ne doit pas être touché</li>
+      <li>✅ GitHub Pages — pas de serveur Node, pas de build</li>
+      <li>✅ Tout le code doit fonctionner sans backend custom (Supabase edge functions uniquement si nécessaire)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 14 — CHANGELOG -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="s14">
+  <span class="eyebrow">Journal des modifications</span>
+  <h2 class="sec-title">Changelog</h2>
+
+  <div class="cl-entry">
+    <div class="cl-date">2026-06-21</div>
+    <div class="cl-content">
+      <div class="cl-ver">v1.0.0 — ANALYSE INITIALE</div>
+      <div class="cl-desc">Analyse complète du module /work. Inventaire 50 fonctions, 6 vues, 8 fichiers orphelins, 9 tables Supabase. Détection journal localStorage non persistant. Propositions UX/UI produites. En attente validation.</div>
+    </div>
+  </div>
+
+  <div style="padding:14px 16px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:8px;font-size:.78rem;color:#93c5fd;margin-top:12px">
+    📌 Ce fichier sera mis à jour automatiquement après chaque modification validée. Il constitue la <strong>source de vérité</strong> du module /work.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="text-align:center;padding:40px 0;font-size:.72rem;color:var(--mut);border-top:1px solid var(--line);margin-top:40px">
+  CCTP S@FE Work · v1.0.0 · 21 juin 2026 · <span style="color:var(--gold)">En attente de validation</span>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// Navigation active state
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('.section, .cover');
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const id = e.target.id;
+      navItems.forEach(n => {
+        n.classList.toggle('active', n.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { rootMargin:'-10% 0px -80% 0px' });
+
+sections.forEach(s => obs.observe(s));
+
+// Smooth scroll
+navItems.forEach(item => {
+  item.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(item.getAttribute('href'));
+    if(target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+});
+</script>
+</body>
+</html>
