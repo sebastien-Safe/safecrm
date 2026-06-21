@@ -320,9 +320,9 @@ h1,h2,h3,h4{font-family:var(--ffd);color:var(--wh);letter-spacing:-.02em}
 ├── <span class="t-ok">index.html</span>            <span style="color:var(--mut)">→ Hub principal (1 605 lignes)</span>
 ├── <span class="t-ok">connecteurs.html</span>      <span style="color:var(--mut)">→ Centre connecteurs (670 lignes)</span>
 ├── <span class="t-ok">favicon.svg</span>
-├── <span class="t-orphan">work.html</span>             <span style="color:var(--alert)">⚠ ORPHELIN — ancienne version ?</span>
-├── <span class="t-orphan">module-cyber.html</span>     <span style="color:var(--alert)">⚠ ORPHELIN — remplacé par /Cyber/</span>
-├── <span class="t-orphan">module-seo.html</span>       <span style="color:var(--alert)">⚠ ORPHELIN — remplacé par /SEO/</span>
+├── <span style="color:var(--mut)">work.html</span>             <span style="color:var(--ok)">✓ Supprimé 2026-06-21</span>
+├── <span style="color:var(--mut)">module-cyber.html</span>     <span style="color:var(--ok)">✓ Supprimé 2026-06-21</span>
+├── <span style="color:var(--mut)">module-seo.html</span>       <span style="color:var(--ok)">✓ Supprimé 2026-06-21</span>
 ├── <span class="t-ok">mission-onboarding.html</span> <span style="color:var(--mut)">→ Page mission active</span>
 ├── <span class="t-ok">mission-seo.html</span>      <span style="color:var(--mut)">→ Page mission active</span>
 ├── <span class="t-ok">mission-rgpd.html</span>     <span style="color:var(--mut)">→ Page mission active</span>
@@ -332,16 +332,16 @@ h1,h2,h3,h4{font-family:var(--ffd);color:var(--wh);letter-spacing:-.02em}
 │   ├── <span class="t-ok">module-dpo-clients.html</span>  <span style="color:var(--mut)">→ Module actif</span>
 │   ├── <span class="t-ok">dpo-clients-core.js, dpo-*.js, dpo-clients.css</span>
 │   ├── <span class="t-ok">index.html</span>
-│   ├── <span class="t-orphan">module-dpo.html</span>     <span style="color:var(--alert)">⚠ ORPHELIN — ancienne version</span>
-│   ├── <span class="t-orphan">module-cyber-v2.html</span> <span style="color:var(--alert)">⚠ MAL PLACÉ — fichier cyber dans DPO/</span>
-│   └── <span class="t-orphan">tst</span>              <span style="color:var(--alert)">⚠ ORPHELIN — fichier test</span>
+│   ├── <span class="t-warn">module-dpo.html</span>     <span style="color:var(--warn)">⚠ À vérifier avant suppression</span>
+│   ├── <span style="color:var(--mut)">module-cyber-v2.html</span> <span style="color:var(--ok)">✓ Supprimé 2026-06-21</span>
+│   └── <span style="color:var(--mut)">tst</span>              <span style="color:var(--ok)">✓ Supprimé 2026-06-21</span>
 │
 ├── <span class="t-dir">Cyber/</span>
 │   ├── <span class="t-ok">module-cyber-clients.html</span>
 │   ├── <span class="t-ok">cyber-*.js, cyber-clients.css</span>
 │   ├── <span class="t-ok">index.html</span>
-│   ├── <span class="t-orphan">module-cyber-v2.html</span> <span style="color:var(--alert)">⚠ ORPHELIN — doublon</span>
-│   └── <span class="t-orphan">patch-sidebar-cyber.html</span> <span style="color:var(--alert)">⚠ ORPHELIN — fichier patch</span>
+│   ├── <span style="color:var(--mut)">module-cyber-v2.html</span> <span style="color:var(--ok)">✓ Supprimé 2026-06-21</span>
+│   └── <span style="color:var(--mut)">patch-sidebar-cyber.html</span> <span style="color:var(--ok)">✓ Supprimé 2026-06-21</span>
 │
 ├── <span class="t-dir">SEO/</span>             <span style="color:var(--mut)">→ 6 fichiers, tous actifs</span>
 ├── <span class="t-dir">Social/</span>          <span style="color:var(--mut)">→ 7 fichiers, créé 2026-06-21</span>
@@ -819,6 +819,13 @@ h1,h2,h3,h4{font-family:var(--ffd);color:var(--wh);letter-spacing:-.02em}
   <span class="eyebrow">Journal des modifications</span>
   <h2 class="sec-title">Changelog</h2>
 
+  <div class="cl-entry">
+    <div class="cl-date">2026-06-21</div>
+    <div class="cl-content">
+      <div class="cl-ver">v1.0.1 — NETTOYAGE ORPHELINS</div>
+      <div class="cl-desc">Suppression de 7 fichiers orphelins : work/work.html, module-cyber.html, module-seo.html, DPO/module-cyber-v2.html, DPO/tst, Cyber/module-cyber-v2.html, Cyber/patch-sidebar-cyber.html. Reste : DPO/module-dpo.html (à vérifier).</div>
+    </div>
+  </div>
   <div class="cl-entry">
     <div class="cl-date">2026-06-21</div>
     <div class="cl-content">
