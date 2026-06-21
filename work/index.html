@@ -44,13 +44,11 @@ h1,h2,h3,h4{font-family:var(--ff-disp);color:#fff;line-height:1.15;letter-spacin
 .btn-logout:hover{border-color:var(--alert);color:var(--alert)}
 
 
-  #work-mob-overlay { display: none !important; }
-}
 /* ---- LAYOUT ---- */
-.shell{position:relative;z-index:1;display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 64px)}
-.sidebar{border-right:1px solid var(--line);padding:20px 0;background:rgba(10,17,36,.4)}
-.main{padding:28px 32px;min-width:0}
-.main{min-height:calc(100vh - 64px);display:block;width:100%}
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 64px);align-items:start}
+.sidebar{border-right:1px solid var(--line);padding:20px 0;background:rgba(10,17,36,.4);
+  position:sticky;top:64px;max-height:calc(100vh - 64px);overflow-y:auto}
+.main{padding:28px 32px;min-width:0;min-height:calc(100vh - 64px)}
 
 /* ---- SIDEBAR NAV ---- */
 .sidebar-section{padding:0 16px;margin-bottom:6px}
