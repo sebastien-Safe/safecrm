@@ -495,8 +495,84 @@ html,body{height:100%;background:#04091a;font-family:'IBM Plex Sans',sans-serif;
         </div>
       </div>
 
-      <!-- SLIDE 7 — TRAJECTOIRE -->
-      <div class="slide s7 bg-navy" style="flex-direction:column">
+      <!-- SLIDE 7 — FRISE CHRONOLOGIQUE COMMISSIONS -->
+      <div class="slide s7 bg-navy" style="flex-direction: column; padding: 50px 40px; overflow-y: auto;">
+        <div class="sh" style="margin-bottom: 40px;">
+          <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-us" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
+          <div class="sh-div"></div>
+          <div><div class="sh-title">Fonctionnement des commissions</div><div class="sh-sub">Timeline : du paiement client à votre rémunération</div></div>
+        </div>
+
+        <div style="position: relative; padding: 30px 0 40px 0; margin-bottom: 30px;">
+          <!-- Timeline ligne -->
+          <div style="position: absolute; top: 25px; left: 5%; right: 5%; height: 2px; background: linear-gradient(to right, #22c55e 0%, #3b82f6 25%, #f59e0b 50%, #f59e0b 100%); z-index: 1;"></div>
+          
+          <!-- Events -->
+          <div style="position: relative; display: flex; justify-content: space-between; z-index: 2; padding: 0 20px;">
+            <!-- J+0 -->
+            <div style="text-align: center; flex: 1;">
+              <div style="width: 24px; height: 24px; border-radius: 50%; background: #0a1628; border: 3px solid #22c55e; margin: 0 auto 12px;"></div>
+              <div style="font-size: 0.75rem; font-family: IBM Plex Mono; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">J+0</div>
+              <div style="font-weight: 700; color: #fff; font-size: 0.85rem;">Client paie</div>
+              <div style="color: #22c55e; font-weight: 600; font-size: 0.85rem; margin-top: 4px;">269 € HT</div>
+              <div style="color: #cbd5e1; font-size: 0.75rem; margin-top: 6px;">MeP + M1</div>
+            </div>
+            <!-- J+30 -->
+            <div style="text-align: center; flex: 1;">
+              <div style="width: 24px; height: 24px; border-radius: 50%; background: #0a1628; border: 3px solid #3b82f6; margin: 0 auto 12px;"></div>
+              <div style="font-size: 0.75rem; font-family: IBM Plex Mono; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">J+30</div>
+              <div style="font-weight: 700; color: #fff; font-size: 0.85rem;">Commission MeP</div>
+              <div style="color: #f59e0b; font-weight: 600; font-size: 0.85rem; margin-top: 4px;">75 € versés</div>
+              <div style="color: #cbd5e1; font-size: 0.75rem; margin-top: 6px;">Mise en place</div>
+            </div>
+            <!-- J+60-180 -->
+            <div style="text-align: center; flex: 1;">
+              <div style="width: 24px; height: 24px; border-radius: 50%; background: #0a1628; border: 3px solid #f59e0b; margin: 0 auto 12px;"></div>
+              <div style="font-size: 0.75rem; font-family: IBM Plex Mono; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">J+60 à J+180</div>
+              <div style="font-weight: 700; color: #fff; font-size: 0.85rem;">Récurrent mensuel</div>
+              <div style="color: #f59e0b; font-weight: 600; font-size: 0.85rem; margin-top: 4px;">11,85 € × 6m</div>
+              <div style="color: #cbd5e1; font-size: 0.75rem; margin-top: 6px;">Tous les 30j</div>
+            </div>
+            <!-- J+210 -->
+            <div style="text-align: center; flex: 1;">
+              <div style="width: 24px; height: 24px; border-radius: 50%; background: #0a1628; border: 3px solid #f59e0b; margin: 0 auto 12px;"></div>
+              <div style="font-size: 0.75rem; font-family: IBM Plex Mono; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; font-weight: 600;">J+210</div>
+              <div style="font-weight: 700; color: #fff; font-size: 0.85rem;">Bonus fidélité</div>
+              <div style="color: #f59e0b; font-weight: 600; font-size: 0.85rem; margin-top: 4px;">75 € (si conditions)</div>
+              <div style="color: #cbd5e1; font-size: 0.75rem; margin-top: 6px;">Fin engagement</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conditions Bonus -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
+          <!-- ✓ Bonus versé si -->
+          <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 10px; padding: 16px;">
+            <div style="color: #22c55e; font-weight: 700; font-size: 0.9rem; margin-bottom: 12px;">✓ Bonus versé si :</div>
+            <ul style="list-style: none; margin: 0; padding: 0;">
+              <li style="color: #cbd5e1; font-size: 0.8rem; margin-bottom: 8px; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: #22c55e;">✓</span> Client paie 100 % toutes échéances</li>
+              <li style="color: #cbd5e1; font-size: 0.8rem; margin-bottom: 8px; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: #22c55e;">✓</span> Aucun impayé (même partiel)</li>
+              <li style="color: #cbd5e1; font-size: 0.8rem; margin-bottom: 8px; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: #22c55e;">✓</span> Pas de résiliation anticipée</li>
+              <li style="color: #cbd5e1; font-size: 0.8rem; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: #22c55e;">✓</span> Engagement complet respecté</li>
+            </ul>
+          </div>
+
+          <!-- ⚠️ Bonus annulé si -->
+          <div style="background: rgba(255, 77, 94, 0.1); border: 1px solid rgba(255, 77, 94, 0.3); border-radius: 10px; padding: 16px;">
+            <div style="color: #ff4d5e; font-weight: 700; font-size: 0.9rem; margin-bottom: 12px;">⚠️ Bonus annulé si :</div>
+            <ul style="list-style: none; margin: 0; padding: 0;">
+              <li style="color: #cbd5e1; font-size: 0.8rem; margin-bottom: 8px; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: #ff4d5e;">✗</span> Client présente un impayé</li>
+              <li style="color: #cbd5e1; font-size: 0.8rem; margin-bottom: 8px; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: #ff4d5e;">✗</span> Client résilie avant fin engagement</li>
+              <li style="color: #cbd5e1; font-size: 0.8rem; margin-bottom: 8px; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: #ff4d5e;">✗</span> Non-paiement d'une échéance</li>
+              <li style="color: #cbd5e1; font-size: 0.8rem; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: #ff4d5e;">✗</span> Offre sans bonus (DPO, Cyber)</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SLIDE 8 — TRAJECTOIRE -->
+      <div class="slide s8 bg-navy" style="flex-direction:column">
         <div class="sh">
           <div class="sh-logo"><svg viewBox="0 0 64 72" fill="none"><path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#0d1b36" stroke="#b8952a" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="17" fill="#b8952a">S@FE</text></svg><div><div class="sh-brand">S<span>@</span>FE</div><div class="sh-brand-sub">Digitalisation</div></div></div>
           <div class="sh-div"></div>
@@ -690,7 +766,7 @@ html,body{height:100%;background:#04091a;font-family:'IBM Plex Sans',sans-serif;
     <!-- Controls -->
     <div id="controls">
       <button class="ctrl-btn" id="btn-prev">← Précédent</button>
-      <span id="slide-counter">1 / 11</span>
+      <span id="slide-counter">1 / 12</span>
       <button class="ctrl-btn" id="btn-next">Suivant →</button>
     </div>
 
