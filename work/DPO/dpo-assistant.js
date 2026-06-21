@@ -11,13 +11,12 @@ async function loadAssistant() {
 
   // Vérifier le statut réel depuis la base
   const db = window.supa || supa;
-  const { data: mistral } = await db.from('safe_connectors')
-    .select('statut,label').eq('service_key', 'mistral').maybeSingle();
-  const { data: anthropic } = await db.from('safe_connectors')
-    .select('statut,label').eq('service_key', 'anthropic').maybeSingle();
+  const { data: grokConn }     = await db.from('safe_connectors').select('statut,label').eq('service_key', 'grok').maybeSingle();
+  const { data: mistral }      = await db.from('safe_connectors').select('statut,label').eq('service_key', 'mistral').maybeSingle();
+  const { data: anthropic }    = await db.from('safe_connectors').select('statut,label').eq('service_key', 'anthropic').maybeSingle();
 
-  const anyActive = [mistral, anthropic].some(c => c?.statut === 'actif' || c?.statut === 'simule');
-  const activeConn = [mistral, anthropic].find(c => c?.statut === 'actif' || c?.statut === 'simule');
+  const anyActive  = [grokConn, mistral, anthropic].some(c => c?.statut === 'actif' || c?.statut === 'simule');
+  const activeConn = [grokConn, mistral, anthropic].find(c => c?.statut === 'actif' || c?.statut === 'simule');
   const isDemo    = anyActive && activeConn?.statut === 'simule';
 
   el.innerHTML = `

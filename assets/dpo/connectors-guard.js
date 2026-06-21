@@ -103,9 +103,66 @@
     }
   }
 
+  // ── Ordre de priorité IA ─────────────────────────────────────────────────
+  const IA_PRIORITY = ["grok", "anthropic", "mistral"];
+
+  /**
+   * Retourne la service_key du premier connecteur IA actif (ou simulé).
+   * Ordre : grok > anthropic > mistral
+   * @returns {string|null}
+   */
+  async function getActiveIAConnector() {
+    const db = getSupa();
+    if (!db) return null;
+    const { data } = await db.from("safe_connectors")
+      .select("service_key, statut")
+      .in("service_key", IA_PRIORITY)
+      .in("statut", ["actif", "simule"]);
+    if (!data?.length) return null;
+    for (const key of IA_PRIORITY) {
+      const found = data.find(r => r.service_key === key);
+      if (found) return found.service_key;
+    }
+    return null;
+  }
+
+  /**
+   * Appelle l'Edge Function call-ia avec les messages fournis.
+   * Gère l'auth JWT automatiquement.
+   * @param {{ serviceKey?: string, system?: string, messages: {role:string,content:string}[] }} opts
+   * @returns {Promise<string>} La réponse textuelle du modèle
+   */
+  async function callIA({ serviceKey, system = "", messages = [] } = {}) {
+    const db = getSupa();
+    if (!db) throw new Error("Client Supabase non initialisé");
+
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) throw new Error("Non authentifié");
+
+    const res = await fetch(`${SUPA_URL}/functions/v1/call-ia`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPA_KEY,
+        "Authorization": `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ service_key: serviceKey, system, messages }),
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(txt || `Erreur ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.reply || "";
+  }
+
   global.requireConnector         = requireConnector;
   global.isSimulated              = isSimulated;
   global.invalidateConnectorCache = invalidateConnectorCache;
   global.getActiveConnectors      = getActiveConnectors;
+  global.getActiveIAConnector     = getActiveIAConnector;
+  global.callIA                   = callIA;
 
 })(window);
