@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Documents Force de Vente — S@FE Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="assets/config.js"></script>
+  <style>
+    :root {
+      --navy:#0a1628; --navy-2:#142240; --gold:#f59e0b;
+      --mut:#94a3b8; --fg:#e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--navy); color: var(--fg); font-family: 'IBM Plex Sans', sans-serif; min-height: 100vh; }
+    header { background: var(--navy-2); border-bottom: 1px solid rgba(245,158,11,.3); padding: 14px 28px; display: flex; align-items: center; gap: 16px; }
+    header .brand { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--gold); }
+    header .sub { font-size: .82rem; color: var(--mut); }
+    header a { margin-left: auto; color: var(--mut); font-size: .82rem; text-decoration: none; }
+    header a:hover { color: var(--fg); }
+    main { max-width: 900px; margin: 0 auto; padding: 32px 20px; }
+    h1 { font-family: 'Sora', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
+    .sub-title { color: var(--mut); font-size: .85rem; margin-bottom: 28px; }
+    .doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+    .doc-card { background: var(--navy-2); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .doc-card .info { flex: 1; }
+    .doc-card .name { font-weight: 600; font-size: .92rem; margin-bottom: 3px; }
+    .doc-card .desc { font-size: .78rem; color: var(--mut); }
+    .doc-card .status { font-size: .75rem; margin-top: 5px; }
+    .status-ok { color: #22c55e; }
+    .status-err { color: #ef4444; }
+    .status-pending { color: var(--mut); }
+    .btn { padding: 8px 18px; border: none; border-radius: 8px; font-size: .82rem; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-gold { background: var(--gold); color: #000; }
+    .btn-gold:hover:not(:disabled) { opacity: .85; }
+    .btn-out { background: transparent; border: 1px solid rgba(255,255,255,.2); color: var(--fg); }
+    .btn-out:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+    .btn-all { display: block; width: 100%; padding: 14px; font-size: .95rem; margin-bottom: 20px; }
+    .log { background: #0d1a2d; border: 1px solid rgba(255,255,255,.08); border-radius: 10px; padding: 14px 16px; height: 240px; overflow-y: auto; font-family: monospace; font-size: .78rem; line-height: 1.7; }
+    .log .ok  { color: #22c55e; }
+    .log .err { color: #ef4444; }
+    .log .inf { color: var(--mut); }
+    .log .hd  { color: var(--gold); }
+    #auth-wall { text-align: center; padding: 80px 20px; }
+    #auth-wall p { color: var(--mut); margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="brand">S@FE</span>
+  <span class="sub">Admin — Documents Force de Vente</span>
+  <a href="index.html">← Retour CRM</a>
+</header>
+
+<main id="auth-wall" style="display:none">
+  <div style="font-size:1.5rem">🔒</div>
+  <p>Accès réservé aux administrateurs.</p>
+  <a href="index.html" style="color:var(--gold)">Retour</a>
+</main>
+
+<main id="app" style="display:none">
+  <h1>Documents Force de Vente</h1>
+  <p class="sub-title">Génère les PDFs et les stocke dans <code>contrats-pdf / WORK / Force-de-vente / documents-contractuels</code>. Les documents sont automatiquement joints à l'email lors de la signature d'un mandat DCI.</p>
+
+  <button class="btn btn-gold btn-all" id="btn-all">Générer et uploader tous les documents</button>
+
+  <div class="doc-grid" id="doc-grid"></div>
+
+  <h2 style="font-size:.9rem;color:var(--mut);margin-bottom:10px">Journal</h2>
+  <div class="log" id="log"><span class="inf">Prêt.</span></div>
+</main>
+
+<script>
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const BUCKET = 'contrats-pdf';
+const DOCS_PATH = 'WORK/Force-de-vente/documents-contractuels';
+
+// ── Document registry ─────────────────────────────────────────────────────────
+const DOCS = [
+  { id: 'mandat-vierge',  name: 'Mandat DCI Vierge',             file: 'mandat-dci-vierge.pdf',         desc: 'Exemplaire non signé du contrat de mandat',              gen: genMandatVierge },
+  { id: 'grille',         name: 'Grille de commissionnement',     file: 'grille-commissionnement-2026.pdf', desc: 'SAFE-AC-2026-V1 — toutes les formules et commissions',  gen: genGrille },
+  { id: 'cgv',            name: 'CGV S@FE 2026',                  file: 'cgv-safe-2026.pdf',             desc: 'Conditions Générales de Vente — SAFE-CGV-2026-001',       gen: genCGV },
+  { id: 'charte-rgpd',    name: 'Charte sous-traitance RGPD',     file: 'charte-rgpd-2026.pdf',          desc: 'Obligations DCI en tant que sous-traitant (Art. 28)',     gen: genCharteRGPD },
+  { id: 'fiche-seo',      name: 'Fiche Référencement Local',      file: 'fiche-referencement-local.pdf', desc: 'Présentation offre SEO — 3 formules',                    gen: () => genFiche('seo') },
+  { id: 'fiche-cc',       name: 'Fiche Click & Collect',          file: 'fiche-click-collect.pdf',       desc: 'Présentation offre Click & Collect — 3 formules',        gen: () => genFiche('cc') },
+  { id: 'fiche-cyber',    name: 'Fiche Cybersécurité',            file: 'fiche-cybersecurite.pdf',       desc: 'Présentation offre Cybersécurité — 3 formules',          gen: () => genFiche('cyber') },
+  { id: 'fiche-rgpd',     name: 'Fiche RGPD / DPO Externalisé',  file: 'fiche-rgpd-conformite.pdf',     desc: 'Présentation offre conformité RGPD et DPO',              gen: () => genFiche('rgpd') },
+];
+
+// ── Log ───────────────────────────────────────────────────────────────────────
+function log(msg, cls = 'inf') {
+  const el = document.getElementById('log');
+  el.innerHTML += `<div class="${cls}">${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── Upload ────────────────────────────────────────────────────────────────────
+async function upload(filename, blob) {
+  const path = `${DOCS_PATH}/${filename}`;
+  const { error } = await sb.storage.from(BUCKET).upload(path, blob, { contentType: 'application/pdf', upsert: true });
+  if (error) throw new Error(error.message);
+  return path;
+}
+
+// ── Per-doc action ────────────────────────────────────────────────────────────
+async function runDoc(doc) {
+  const statusEl = document.getElementById('status-' + doc.id);
+  const btnEl    = document.getElementById('btn-'    + doc.id);
+  statusEl.className = 'status status-pending';
+  statusEl.textContent = 'Génération…';
+  if (btnEl) btnEl.disabled = true;
+  log(`<span class="hd">▶ ${doc.name}</span>`);
+  try {
+    const jsdoc = doc.gen();
+    const blob  = jsdoc.output('blob');
+    log(`  PDF généré (${(blob.size / 1024).toFixed(0)} Ko)`);
+    await upload(doc.file, blob);
+    log(`  Uploadé → ${DOCS_PATH}/${doc.file}`, 'ok');
+    statusEl.className = 'status status-ok';
+    statusEl.textContent = '✓ En ligne';
+  } catch (e) {
+    log(`  Erreur : ${e.message}`, 'err');
+    statusEl.className = 'status status-err';
+    statusEl.textContent = '✗ Erreur';
+  } finally {
+    if (btnEl) btnEl.disabled = false;
+  }
+}
+
+// ── Render grid ───────────────────────────────────────────────────────────────
+function renderGrid() {
+  const grid = document.getElementById('doc-grid');
+  grid.innerHTML = DOCS.map(d => `
+    <div class="doc-card">
+      <div class="info">
+        <div class="name">${d.name}</div>
+        <div class="desc">${d.desc}</div>
+        <div class="status status-pending" id="status-${d.id}">En attente</div>
+      </div>
+      <button class="btn btn-out" id="btn-${d.id}" onclick="runDoc(DOCS.find(x=>x.id==='${d.id}'))">Générer</button>
+    </div>`).join('');
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { location.href = 'index.html'; return; }
+  const { data: profile } = await sb.from('profiles').select('is_admin').eq('id', session.user.id).maybeSingle();
+  if (!profile?.is_admin) {
+    document.getElementById('auth-wall').style.display = '';
+    return;
+  }
+  document.getElementById('app').style.display = '';
+  renderGrid();
+  document.getElementById('btn-all').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-all');
+    btn.disabled = true;
+    btn.textContent = 'Génération en cours…';
+    log('══ Début génération de tous les documents ══', 'hd');
+    for (const doc of DOCS) await runDoc(doc);
+    log('══ Terminé ══', 'hd');
+    btn.disabled = false;
+    btn.textContent = 'Générer et uploader tous les documents';
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ── PDF GENERATORS ────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const W = 210, M = 15;
+
+// ── Shared light-mode helpers ─────────────────────────────────────────────────
+
+function newDoc() {
+  const { jsPDF } = window.jspdf;
+  return new jsPDF({ unit: 'mm', format: 'a4' });
+}
+
+function lHead(doc, titre, ref) {
+  doc.setDrawColor(245, 158, 11);
+  doc.setLineWidth(1.4);
+  doc.line(M, 18, W - M, 18);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(10, 22, 40);
+  doc.text('S@FE Digitalisation', M, 13);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(100, 100, 100);
+  doc.text(titre, W - M, 11, { align: 'right' });
+  if (ref) doc.text(ref, W - M, 16.5, { align: 'right' });
+}
+
+function lFoot(doc) {
+  const h = doc.internal.pageSize.getHeight();
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.3);
+  doc.line(M, h - 13, W - M, h - 13);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(150, 150, 150);
+  doc.text('S@FE SASU — SIRET 104 699 558 00011 — 66 av. des Champs-Elysees, 75008 Paris — contact@safe-digitalisation.fr — safe-digitalisation.fr', W / 2, h - 9, { align: 'center' });
+}
+
+function newPage(doc, titre, ref) {
+  lFoot(doc);
+  doc.addPage();
+  lHead(doc, titre, ref);
+  return 27;
+}
+
+function checkY(doc, y, titre, ref, limit = 262) {
+  return y > limit ? newPage(doc, titre, ref) : y;
+}
+
+function sect(doc, text, y) {
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(10, 22, 40);
+  doc.text(text, M, y);
+  return y + 6;
+}
+
+function para(doc, text, y, ref, titre, w = W - 2*M) {
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(40, 40, 40);
+  const lines = doc.splitTextToSize(text, w);
+  lines.forEach(l => {
+    y = checkY(doc, y, titre, ref);
+    doc.text(l, M, y);
+    y += 4.5;
+  });
+  return y + 2;
+}
+
+function tbl(doc, headers, rows, y, widths) {
+  const rh = 6.5;
+  const totalW = widths.reduce((a, b) => a + b, 0);
+  doc.setFillColor(10, 22, 40);
+  doc.rect(M, y, totalW, rh, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.setTextColor(255, 255, 255);
+  let x = M;
+  headers.forEach((h, i) => { doc.text(h, x + 2, y + 4.5); x += widths[i]; });
+  y += rh;
+  rows.forEach((row, ri) => {
+    if (ri % 2 === 0) { doc.setFillColor(247, 249, 252); doc.rect(M, y, totalW, rh, 'F'); }
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(30, 30, 30);
+    x = M;
+    row.forEach((cell, i) => { doc.text(String(cell || '—'), x + 2, y + 4.5); x += widths[i]; });
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.1);
+    doc.line(M, y + rh, M + totalW, y + rh);
+    y += rh;
+  });
+  doc.setDrawColor(10, 22, 40);
+  doc.setLineWidth(0.3);
+  const totalRows = rows.length + 1;
+  doc.rect(M, y - totalRows * rh, totalW, totalRows * rh);
+  return y + 4;
+}
+
+function tag(doc, text, y) {
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(180, 130, 0);
+  doc.setFillColor(255, 248, 220);
+  const tw = doc.getTextWidth(text) + 6;
+  doc.rect(M, y - 4.5, tw, 5.5, 'F');
+  doc.text(text, M + 3, y);
+  return y + 7;
+}
+
+// ── 1. Mandat DCI Vierge ──────────────────────────────────────────────────────
+
+function genMandatVierge() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+  // Cover — dark navy (same style as mandat.html)
+  doc.setFillColor(10, 22, 40); doc.rect(0, 0, W, 297, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(20); doc.setTextColor(245, 158, 11);
+  doc.text('S@FE CRM', M, 24);
+  doc.setFontSize(8.5); doc.setTextColor(148, 163, 184);
+  doc.text('safe-digitalisation.fr — contact@safe-digitalisation.fr', M, 31);
+  doc.setDrawColor(245, 158, 11); doc.setLineWidth(0.5); doc.line(M, 35, W - M, 35);
+
+  // Badge vierge
+  doc.setFillColor(245, 158, 11); doc.rect(W - M - 52, 17, 52, 9, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(10, 22, 40);
+  doc.text('MODELE VIERGE — NON SIGNE', W - M - 50, 23);
+
+  let y = 52;
+  doc.setFontSize(18); doc.setTextColor(255, 255, 255);
+  doc.text('Contrat de Mandat', M, y); y += 9;
+  doc.setFontSize(13); doc.setTextColor(245, 158, 11);
+  doc.text('Agent Commercial Independant (DCI)', M, y); y += 8;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(148, 163, 184);
+  doc.text('Ref. SAFE-MANDAT-DCI-VIERGE — Version SAFE-AC-2026-V1', M, y); y += 18;
+
+  // Parties
+  doc.setDrawColor(245, 158, 11, 0.4); doc.setLineWidth(0.3); doc.line(M, y, W - M, y); y += 7;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(245, 158, 11);
+  doc.text('Le Mandant', M, y);
+  doc.text('Le Mandataire', W / 2 + 2, y); y += 5;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(203, 213, 225);
+  const ml = ['S@FE SASU', '66 av. des Champs-Elysees, 75008 Paris', 'SIRET : 104 699 558 00011', 'Michel Sebastien ALONSO, President'];
+  const dl = ['Prenom : ......................................', 'Nom : .........................................', 'Adresse : ....................................', 'CP / Ville : .................................', 'SIRET : .......................................', 'RSAC : ........................................'];
+  const mx = Math.max(ml.length, dl.length);
+  for (let i = 0; i < mx; i++) {
+    if (ml[i]) doc.text(ml[i], M, y);
+    if (dl[i]) doc.text(dl[i], W / 2 + 2, y);
+    y += 5;
+  }
+  y += 8; doc.line(M, y, W - M, y); y += 8;
+
+  const arts = [
+    ['Art. 1 — Objet', "Mission de promouvoir, prospecter et conclure des contrats de prestation au nom et pour le compte de S@FE SASU, a titre non exclusif, sur l'ensemble du territoire national."],
+    ['Art. 2 — Perimetre', 'Referencement Local, Mise en conformite RGPD, DPO externalise, Cybersecurite, Click & Collect, Options a la carte. Toute nouvelle offre est automatiquement integree sauf notification contraire.'],
+    ['Art. 3 — Commissionnement (grille SAFE-AC-2026-V1)', 'Commissions calculees sur les montants HT reellement encaisses. J+30 : commission mise en place. J+60 a J+180 : commissions recurrentes mensuelles. J+210 : bonus fidelite + derniere commission. Impaye client = 0 EUR de commission ce mois. Aucune retroactivite.'],
+    ['Art. 4 — Bonus fidelite', 'Verse uniquement si : (1) le client a paye 100 % des echeances dans les delais, sans aucun impaye meme regularise, ET (2) le client n\'a pas resilie avant la fin de l\'engagement initial.'],
+    ['Art. 5 — Propriete du portefeuille', 'Tous les clients restes propriete exclusive de S@FE SASU. A la resiliation, le portefeuille revient au mandant sans indemnite. Clause de non-demarchage post-contrat : 3 ans.'],
+    ['Art. 6 — Obligations du mandataire', 'Respect des regles RGPD et de la politique commerciale S@FE. Souscription d\'une RC Pro recommandee dans les 90 jours si absente a la signature. Immatriculation RSAC obligatoire.'],
+    ['Art. 7 — Duree et resiliation', 'Contrat a duree indeterminee. Resiliable par l\'une ou l\'autre des parties avec un preavis de 30 jours par LRAR. Les commissions acquises avant la date de resiliation restent dues.'],
+    ['Art. 8 — Revision de la grille', 'La grille de commissionnement peut etre revisee par le Mandant avec un preavis de 15 jours et validation explicite du Mandataire.'],
+    ['Art. 9 — Confidentialite', 'Le Mandataire s\'engage a maintenir confidentiels les tarifs, methodes, et informations clients de S@FE SASU, pendant la duree du contrat et 5 ans apres sa resiliation.'],
+    ['Art. 10 — RGPD', 'Le Mandataire traite des donnees personnelles pour le compte de S@FE SASU en qualite de sous-traitant (Art. 28 RGPD). Il s\'engage a n\'utiliser ces donnees qu\'aux fins du present mandat et a les supprimer a l\'issue.'],
+    ['Art. 11 — Responsabilite', 'Le Mandataire engage sa responsabilite personnelle en cas de faute, fausse declaration ou manquement au present contrat. S@FE SASU ne saurait etre tenue responsable d\'engagements pris sans mandat.'],
+    ['Art. 12 — Droit applicable', 'Droit francais. Tribunal competent : Tribunal de Commerce de Paris.'],
+  ];
+
+  arts.forEach(([titre, texte]) => {
+    if (y > 248) {
+      doc.addPage(); doc.setFillColor(10, 22, 40); doc.rect(0, 0, W, 297, 'F'); y = 20;
+    }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(245, 158, 11);
+    doc.text(titre, M, y); y += 5;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(203, 213, 225);
+    doc.splitTextToSize(texte, W - 2 * M).forEach(l => {
+      if (y > 272) { doc.addPage(); doc.setFillColor(10, 22, 40); doc.rect(0, 0, W, 297, 'F'); y = 20; }
+      doc.text(l, M, y); y += 4.5;
+    });
+    y += 4;
+  });
+
+  // Signature block
+  if (y > 225) { doc.addPage(); doc.setFillColor(10, 22, 40); doc.rect(0, 0, W, 297, 'F'); y = 20; }
+  y += 5;
+  doc.setDrawColor(245, 158, 11); doc.setLineWidth(0.5); doc.line(M, y, W - M, y); y += 8;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(255, 255, 255);
+  doc.text('Signature electronique', M, y); y += 6;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(148, 163, 184);
+  ['Signataire : ...............................................................................................', 'E-mail : .......................................................................................................', 'Horodatage : ................................................................................................', 'Verification OTP : .........................................................................................'].forEach(l => { doc.text(l, M, y); y += 5; });
+  y += 5;
+  doc.setDrawColor(245, 158, 11, 0.4); doc.setLineWidth(0.3); doc.rect(M, y, 85, 26);
+  doc.setFontSize(7); doc.setTextColor(100, 116, 139); doc.text('Zone de signature — a apposer lors de la signature electronique', M + 3, y + 13);
+  y += 31;
+  doc.setFontSize(6.5); doc.text('Modele vierge genere par S@FE CRM — safe-digitalisation.fr', M, y);
+
+  return doc;
+}
+
+// ── 2. Grille de Commissionnement ────────────────────────────────────────────
+
+function genGrille() {
+  const doc = newDoc();
+  const titre = 'Grille de commissionnement', ref = 'SAFE-AC-2026-V1';
+  lHead(doc, titre, ref);
+  let y = 27;
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(10, 22, 40);
+  doc.text('Grille de Commissionnement DCI', M, y); y += 6;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+  doc.text('Annexe 1 au Contrat de Mandat — Version SAFE-AC-2026-V1 — en vigueur au 21 juin 2026', M, y); y += 4;
+  doc.text('Commissions calculees sur les montants HT reellement encaisses par S@FE SASU. Impaye client = 0 EUR de commission ce mois.', M, y); y += 9;
+
+  // Referenement Local
+  y = sect(doc, 'Referencement Local', y);
+  y = tbl(doc,
+    ['Formule', 'Mensuel HT', 'MeP HT', 'Engagement', 'Comm. signature', 'Bonus fidelite', 'Comm. recurrente'],
+    [
+      ['Essentiel',  '79,00 EUR',   '190,00 EUR', '6 mois',  '75,00 EUR fixe',  '75,00 EUR (mois 7)',  '15 % / mois'],
+      ['Boost',      '149,00 EUR',  '290,00 EUR', '6 mois',  '100,00 EUR fixe', '100,00 EUR (mois 7)', '15 % / mois'],
+      ['Prestige',   '249,00 EUR',  '—',          '3 mois',  '—',               '—',                   '15 % / mois'],
+    ],
+    y, [30, 24, 22, 22, 30, 30, 30]);
+
+  y = sect(doc, 'Click & Collect', y);
+  y = tbl(doc,
+    ['Formule', 'Mensuel HT', 'MeP HT', 'Engagement', 'Comm. signature', 'Bonus fidelite', 'Comm. recurrente'],
+    [
+      ['Essentiel', '39,00 EUR',  '150,00 EUR', '3 mois', '50,00 EUR fixe',  '50,00 EUR (mois 4)',  '15 % / mois'],
+      ['Pro',       '79,00 EUR',  '250,00 EUR', '3 mois', '100,00 EUR fixe', '100,00 EUR (mois 4)', '15 % / mois'],
+      ['Premium',   '129,00 EUR', '—',          '3 mois', '—',               '—',                   '15 % / mois'],
+    ],
+    y, [30, 24, 22, 22, 30, 30, 30]);
+
+  y = sect(doc, 'DPO Externalise', y);
+  y = tbl(doc,
+    ['Formule', 'Mensuel HT', 'Engagement', 'Comm. signature', 'Comm. recurrente'],
+    [['Abonnement DPO', '189,00 EUR', '12 mois', '50,00 EUR fixe', '10 % / mois']],
+    y, [48, 28, 28, 36, 36]);
+
+  y = checkY(doc, y, titre, ref, 230);
+  y = sect(doc, 'Mise en conformite RGPD', y);
+  y = tbl(doc,
+    ['Formule', 'Montant HT', 'Type', 'Commission a la signature'],
+    [
+      ['Diagnostic',        'Offert',               'Ponctuel', '—'],
+      ['Audit RGPD TPE',    '1 490,00 EUR',         'Ponctuel', '298,00 EUR fixe'],
+      ['Audit RGPD+ PME',   '2 990,00 EUR',         'Ponctuel', '598,00 EUR fixe'],
+      ['Audit ETI (devis)', 'a partir de 5 500 EUR','Ponctuel', '20 % du montant HT'],
+    ],
+    y, [45, 38, 24, 70]);
+
+  y = sect(doc, 'Cybersecurite', y);
+  y = tbl(doc,
+    ['Formule', 'Montant HT', 'Type', 'Commission a la signature'],
+    [
+      ['Audit de vulnerabilite',    '490,00 EUR',   'Ponctuel', '98,00 EUR fixe'],
+      ['Pack Securite Essentiel',   '990,00 EUR',   'Ponctuel', '198,00 EUR fixe'],
+      ['Pack Resilience Pro',       '1 990,00 EUR', 'Ponctuel', '398,00 EUR fixe'],
+    ],
+    y, [50, 32, 24, 70]);
+
+  y = sect(doc, 'Options a la carte', y);
+  y = tbl(doc,
+    ['Option', 'Montant HT', 'Type', 'Commission'],
+    [
+      ['Landing page SEO',      '390,00 EUR',    'Ponctuel', '10 % du montant HT'],
+      ['Google Ads setup',      '290,00 EUR',    'Ponctuel', '10 % du montant HT'],
+      ['Formation GBP (2h)',    '220,00 EUR',    'Ponctuel', '10 % du montant HT'],
+      ['Audit concurrentiel',   '290,00 EUR',    'Ponctuel', '10 % du montant HT'],
+      ['Sensibilisation phishing','290,00 EUR',  'Ponctuel', '10 % du montant HT'],
+      ['Veille menaces',        '89,00 EUR/mois','Mensuel',  '10 % / mois'],
+    ],
+    y, [50, 32, 24, 70]);
+
+  y += 3;
+  doc.setFont('helvetica', 'italic'); doc.setFontSize(7.5); doc.setTextColor(100, 100, 100);
+  doc.text('Formules personnalisees / sur devis : 10 % HT pour les prestations ponctuelles, 10 % mensuel pour les abonnements, sauf accord ecrit different.', M, y); y += 5;
+  doc.text('La presente grille peut etre revisee par S@FE SASU avec un preavis de 15 jours et validation explicite du mandataire.', M, y);
+
+  // Echancier
+  y += 10;
+  y = checkY(doc, y, titre, ref, 200);
+  y = sect(doc, 'Echeancier DCI — Formules avec engagement', y);
+  y = tbl(doc,
+    ['Echeance', 'Objet du versement'],
+    [
+      ['J+30',  'Commission sur frais de mise en place'],
+      ['J+60',  'Commission recurrente mois 1'],
+      ['J+90',  'Commission recurrente mois 2'],
+      ['J+120', 'Commission recurrente mois 3'],
+      ['J+150', 'Commission recurrente mois 4'],
+      ['J+180', 'Commission recurrente mois 5'],
+      ['J+210', 'Bonus fidelite + derniere commission recurrente'],
+    ],
+    y, [28, 145]);
+
+  lFoot(doc);
+  return doc;
+}
+
+// ── 3. CGV S@FE 2026 ─────────────────────────────────────────────────────────
+
+function genCGV() {
+  const doc = newDoc();
+  const titre = 'Conditions Generales de Vente', ref = 'SAFE-CGV-2026-001';
+  lHead(doc, titre, ref);
+  let y = 27;
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(10, 22, 40);
+  doc.text('Conditions Generales de Vente', M, y); y += 6;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+  doc.text('Ref. SAFE-CGV-2026-001 — Version en vigueur au 21 juin 2026', M, y); y += 10;
+
+  const sections = [
+    ['Section 1 — Conditions d\'engagement client',
+     'Duree & engagement : Prestations ponctuelles : fin a la livraison du rapport. Abonnements mensuels : resiliables par LRAR avec un preavis de 30 jours. Engagements initiaux par produit : Referencement Local 6 mois ferme, Click & Collect 3 mois ferme, DPO externalise 12 mois ferme, RGPD Audit et Cybersecurite ponctuels.\n\nFrais de mise en service : Pour le Referencement Local et Click & Collect, des frais de mise en service sont factures a la premiere echeance. Ils correspondent a un travail technique immediatement execute et restent dus en cas de resiliation anticipee (non remboursables, non amortissables).\n\nResiliation anticipee : Les frais de mise en place restent dus integralement. Pour les mois restants, le client choisit l\'option la moins elevee : Option A — payer l\'integralite des mois restants jusqu\'a la fin de l\'engagement ; Option B — payer une penalite forfaitaire de 2 mois x montant d\'abonnement.\n\nResiliation apres engagement initial : preavis de 30 jours par LRAR, aucune penalite ni frais supplementaires.\n\nConditions financieres : Prix en euros HT, TVA 20 % en sus. Retards de paiement : penalites egales a 3 fois le taux d\'interet legal et indemnite forfaitaire de recouvrement de 40 EUR (art. L441-6 du Code de Commerce).'],
+    ['Section 2 — Commissions du mandataire (DCI)',
+     'DISPOSITIONS RESERVEES AU MANDATAIRE. Ces conditions s\'appliquent exclusivement a l\'Agent Commercial Independant (DCI / mandataire) et ne concernent jamais le client. Le client ne paie aucune commission pour remunerer l\'agent.\n\nCalcul des commissions : Les commissions DCI sont versees uniquement sur les montants HT reellement encaisses par S@FE. Si le client ne paie pas, la commission DCI est de 0 EUR pour le mois concerne. Aucune retroactivite : les commissions deja versees ne sont jamais remboursees. S@FE absorbe la perte liee aux impayes clients.\n\nBonus fidelite : Verse au DCI uniquement si (1) le client a paye 100 % de chaque echeance dans les delais, sans aucun impaye meme regularise ulterieurement, et (2) le client n\'a pas resilie avant la fin de l\'engagement initial. Si le client resilie avant terme ou presente un impaye, le bonus est annule.\n\nEcheancier DCI : commission sur frais de mise en place a J+30 ; commissions recurrentes a J+60, J+90, J+120, J+150, J+180 ; bonus fidelite + derniere commission a J+210. Les commissions sont versees independamment de la reception de facture du DCI.'],
+    ['Section 3 — Propriete du portefeuille clients',
+     'Tous les clients prospectes, signes ou geres par le DCI demeurent la propriete exclusive de S@FE SASU. Le DCI n\'a aucun droit de propriete, de nantissement ou de controle sur ces clients. A la fin du contrat de mandat, S@FE reprend automatiquement l\'integralite du portefeuille, sans indemnite de transfert (sauf accord ecrit prealable).\n\nClause de non-demarchage post-contrat : Apres la resiliation du contrat de mandat, le DCI s\'interdit de contacter directement ou indirectement les clients S@FE pendant 3 ans, sous peine de poursuites judiciaires et dommages et interets.'],
+    ['Section 4 — Compatibilite Mandat / CGV',
+     'Les presentes CGV coexistent avec le Contrat de Mandat signe par le DCI. Les deux documents s\'appliquent simultanement selon leur domaine : les CGV regissent les obligations et droits du client ; le Contrat de Mandat regit les commissions et obligations du mandataire DCI.\n\nDroit applicable : droit francais. Tribunal competent : Tribunal de Commerce de Paris. La nullite d\'une clause n\'entraine pas la nullite du contrat. Le client reconnait avoir recu un exemplaire des presentes CGV avant la signature du bon de commande.'],
+  ];
+
+  sections.forEach(([st, sc]) => {
+    y = checkY(doc, y, titre, ref, 240);
+    y = sect(doc, st, y);
+    sc.split('\n\n').forEach(p => {
+      y = checkY(doc, y, titre, ref);
+      y = para(doc, p, y, ref, titre);
+      y += 2;
+    });
+    y += 4;
+  });
+
+  lFoot(doc);
+  return doc;
+}
+
+// ── 4. Charte RGPD / Sous-traitance ──────────────────────────────────────────
+
+function genCharteRGPD() {
+  const doc = newDoc();
+  const titre = 'Charte sous-traitance RGPD', ref = 'SAFE-RGPD-DCI-2026';
+  lHead(doc, titre, ref);
+  let y = 27;
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(10, 22, 40);
+  doc.text('Charte de Sous-traitance des Donnees Personnelles', M, y); y += 6;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+  doc.text('Applicable aux Directeurs Commerciaux Independants (DCI) — Art. 28 RGPD — Ref. ' + ref, M, y); y += 10;
+
+  const arts = [
+    ['1. Objet et qualification',
+     'Dans le cadre de son mandat commercial, le DCI est amene a collecter, traiter et transmettre des donnees personnelles de prospects et clients pour le compte de S@FE SASU. Au sens du RGPD (Reglement UE 2016/679), S@FE SASU agit en qualite de Responsable du Traitement et le DCI en qualite de Sous-traitant. La presente charte constitue le document contractuel prevu a l\'article 28 du RGPD.'],
+    ['2. Nature des donnees traitees',
+     'Le DCI est autorise a traiter les categories de donnees strictement necessaires a l\'accomplissement de sa mission : identite et coordonnees des prospects / clients (nom, prenom, entreprise, telephone, email, adresse), informations commerciales (besoins exprimes, historique de contact), et references de contrats conclus. Toute collecte de donnees sensibles (sante, opinions politiques, etc.) est strictement interdite.'],
+    ['3. Finalites autorisees',
+     'Les donnees ne peuvent etre utilisees que pour : (a) prospecter des clients potentiels pour les offres S@FE, (b) conclure des contrats au nom de S@FE, (c) transmettre les informations necessaires a S@FE pour l\'execution des prestations. Toute utilisation a des fins personnelles, pour d\'autres employeurs ou clients, ou apres la fin du mandat, est interdite.'],
+    ['4. Obligations de securite',
+     'Le DCI s\'engage a : utiliser uniquement les outils mis a disposition par S@FE (CRM S@FE) pour traiter les donnees, ne jamais stocker de donnees personnelles sur des supports non securises (cles USB non chiffrees, papier, etc.), ne pas partager ses acces CRM avec des tiers, signaler immediatement a S@FE tout incident de securite ou violation de donnees (contact@safe-digitalisation.fr), et utiliser un mot de passe unique et robuste pour son compte CRM.'],
+    ['5. Transferts et partage',
+     'Le DCI ne peut transmettre les donnees a des tiers qu\'avec autorisation ecrite prealable de S@FE SASU. Il est notamment interdit de : partager la base de contacts avec d\'autres prestataires, utiliser les donnees pour des communications commerciales non autorisees par S@FE, ou conserver une copie des donnees apres la fin du mandat.'],
+    ['6. Droits des personnes',
+     'Toute demande d\'un prospect ou client exercant ses droits RGPD (acces, rectification, effacement, portabilite, opposition) doit etre immediatement transmise par le DCI a S@FE SASU (dpo@safe-digitalisation.fr) sans y repondre directement. S@FE est le seul habilite a traiter ces demandes.'],
+    ['7. Fin du mandat — Suppression des donnees',
+     'A la date de fin du contrat de mandat, le DCI doit : (a) cesser toute utilisation des donnees, (b) supprimer toutes les copies locales (contacts exportes, tableurs, notes), (c) confirmer par ecrit a S@FE la destruction effective des donnees dans un delai de 15 jours. Les acces CRM sont automatiquement desactives par S@FE a la date de resiliation.'],
+    ['8. Responsabilite',
+     'Tout manquement aux obligations de la presente charte engage la responsabilite personnelle du DCI. En cas de violation entrainant une amende de la CNIL ou une condamnation judiciaire liee a une faute du DCI, S@FE SASU se reserve le droit d\'exercer un recours en remboursement integral contre le DCI. Le DCI reconnait avoir ete informe de ses obligations en signant le Contrat de Mandat.'],
+  ];
+
+  arts.forEach(([titre2, texte]) => {
+    y = checkY(doc, y, titre, ref, 235);
+    y = sect(doc, titre2, y);
+    y = para(doc, texte, y, ref, titre);
+    y += 4;
+  });
+
+  lFoot(doc);
+  return doc;
+}
+
+// ── 5–8. Fiches Produit ───────────────────────────────────────────────────────
+
+const FICHES = {
+  seo: {
+    titre:    'Referencement Local Google',
+    ref:      'SAFE-FICHE-SEO-2026',
+    tagline:  'Rendez votre etablissement visible sur Google Maps et dans les recherches locales.',
+    features: [
+      'Optimisation complete de votre fiche Google Business Profile',
+      'Creation et mise a jour des citations locales (Pages Jaunes, Yelp, TripAdvisor...)',
+      'Publication reguliere de posts et photos sur votre fiche Google',
+      'Suivi mensuel du positionnement et rapport de performance',
+      'Reponse aux avis clients avec suivi de la e-reputation',
+      'Audit concurrentiel des concurrents locaux (Boost et Prestige)',
+      'Optimisation SEO on-page de votre site web (Prestige)',
+    ],
+    table: {
+      headers: ['Formule', 'Mensuel HT', 'MeP HT', 'Engagement', 'Mensuel TTC'],
+      rows: [
+        ['Essentiel', '79,00 EUR',  '190,00 EUR', '6 mois', '94,80 EUR'],
+        ['Boost',     '149,00 EUR', '290,00 EUR', '6 mois', '178,80 EUR'],
+        ['Prestige',  '249,00 EUR', '—',          '3 mois', '298,80 EUR'],
+      ],
+      widths: [32, 28, 24, 24, 28],
+    },
+    note: 'TVA 20 % en sus sur les prix HT affiches. Frais de mise en place dus des le premier mois, non remboursables en cas de resiliation anticipee. Engagement minimum : voir colonne.',
+  },
+  cc: {
+    titre:    'Click & Collect',
+    ref:      'SAFE-FICHE-CC-2026',
+    tagline:  'Proposez la commande en ligne avec retrait en magasin ou livraison locale.',
+    features: [
+      'Creation et configuration de votre boutique en ligne Click & Collect',
+      'Integration avec votre caisse ou systeme de gestion existant',
+      'Module de paiement securise en ligne (CB, PayPal)',
+      'Gestion des commandes et notifications clients automatiques',
+      'Page de commande personnalisee aux couleurs de votre enseigne',
+      'Formation de 2h a la prise en main du tableau de bord (Pro et Premium)',
+      'Support technique prioritaire et mises a jour incluses (Premium)',
+    ],
+    table: {
+      headers: ['Formule', 'Mensuel HT', 'MeP HT', 'Engagement', 'Mensuel TTC'],
+      rows: [
+        ['Essentiel', '39,00 EUR',  '150,00 EUR', '3 mois', '46,80 EUR'],
+        ['Pro',       '79,00 EUR',  '250,00 EUR', '3 mois', '94,80 EUR'],
+        ['Premium',   '129,00 EUR', '—',          '3 mois', '154,80 EUR'],
+      ],
+      widths: [32, 28, 24, 24, 28],
+    },
+    note: 'TVA 20 % en sus. Solution hebergee et maintenue par S@FE SASU. Aucun frais de transaction supplementaires au-dela de la mensualite.',
+  },
+  cyber: {
+    titre:    'Cybersecurite & Resilience',
+    ref:      'SAFE-FICHE-CYBER-2026',
+    tagline:  'Protegez votre entreprise contre les cybermenaces et garantissez la continuite de votre activite.',
+    features: [
+      'Audit de vulnerabilite : analyse complete de votre infrastructure',
+      'Rapport detaille avec plan de remédiation prioritise',
+      'Sensibilisation du personnel au phishing et aux bonnes pratiques',
+      'Mise en place d\'une politique de sauvegarde securisee',
+      'Configuration des pare-feux et outils de protection endpoints',
+      'Plan de reprise d\'activite (PRA) personnalise (Pack Pro)',
+      'Simulation d\'attaque et tests de penetration (Pack Pro)',
+    ],
+    table: {
+      headers: ['Formule', 'Montant HT', 'Type', 'Montant TTC'],
+      rows: [
+        ['Audit de vulnerabilite',  '490,00 EUR',   'Ponctuel', '588,00 EUR'],
+        ['Pack Securite Essentiel', '990,00 EUR',   'Ponctuel', '1 188,00 EUR'],
+        ['Pack Resilience Pro',     '1 990,00 EUR', 'Ponctuel', '2 388,00 EUR'],
+      ],
+      widths: [50, 32, 24, 32],
+    },
+    note: 'Prestations ponctuelles. Rapport livre sous 15 jours ouvrables. Option complementaire : Veille menaces 89 EUR HT / mois.',
+  },
+  rgpd: {
+    titre:    'Conformite RGPD & DPO Externalise',
+    ref:      'SAFE-FICHE-RGPD-2026',
+    tagline:  'Mettez votre entreprise en conformite avec le RGPD et confiez votre DPO a nos experts.',
+    features: [
+      'Diagnostic de conformite RGPD offert (1h, sans engagement)',
+      'Cartographie des traitements de donnees personnelles',
+      'Redaction ou mise a jour du Registre des activites de traitement',
+      'Mise en conformite des mentions legales et politiques de confidentialite',
+      'Formation du personnel aux obligations RGPD',
+      'Gestion des demandes de droits des personnes (acces, effacement...)',
+      'DPO Externalise : point de contact CNIL, veille reglementaire continue',
+    ],
+    table: {
+      headers: ['Formule', 'Montant HT', 'Type', 'Montant TTC'],
+      rows: [
+        ['Diagnostic RGPD',     'Offert',          'Ponctuel', 'Offert'],
+        ['Audit RGPD TPE',      '1 490,00 EUR',    'Ponctuel', '1 788,00 EUR'],
+        ['Audit RGPD+ PME',     '2 990,00 EUR',    'Ponctuel', '3 588,00 EUR'],
+        ['Audit ETI',           'Sur devis',       'Ponctuel', 'Sur devis'],
+        ['DPO Externalise',     '189,00 EUR / mois','Mensuel', '226,80 EUR / mois'],
+      ],
+      widths: [45, 32, 22, 38],
+    },
+    note: 'Engagement DPO Externalise : 12 mois. Audit ETI : a partir de 5 500 EUR HT. TVA 20 % en sus.',
+  },
+};
+
+function genFiche(type) {
+  const f = FICHES[type];
+  const doc = newDoc();
+  lHead(doc, f.titre, f.ref);
+  let y = 27;
+
+  // Title block
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(10, 22, 40);
+  doc.text(f.titre, M, y); y += 7;
+  doc.setFont('helvetica', 'italic'); doc.setFontSize(10); doc.setTextColor(80, 80, 80);
+  doc.text(f.tagline, M, y); y += 10;
+
+  doc.setDrawColor(245, 158, 11); doc.setLineWidth(0.5); doc.line(M, y, W - M, y); y += 8;
+
+  // Features
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(10, 22, 40);
+  doc.text('Prestations incluses', M, y); y += 7;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(40, 40, 40);
+  f.features.forEach(feat => {
+    doc.setFillColor(245, 158, 11); doc.circle(M + 1.5, y - 1.5, 1, 'F');
+    doc.text(feat, M + 6, y); y += 6;
+  });
+  y += 6;
+
+  // Pricing table
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(10, 22, 40);
+  doc.text('Formules et tarifs', M, y); y += 7;
+  y = tbl(doc, f.table.headers, f.table.rows, y, f.table.widths);
+
+  y += 3;
+  doc.setFont('helvetica', 'italic'); doc.setFontSize(7.5); doc.setTextColor(100, 100, 100);
+  doc.splitTextToSize(f.note, W - 2*M).forEach(l => { doc.text(l, M, y); y += 4; });
+
+  y += 8;
+  doc.setDrawColor(10, 22, 40); doc.setLineWidth(0.3); doc.rect(M, y, W - 2*M, 22);
+  doc.setFillColor(10, 22, 40); doc.rect(M, y, W - 2*M, 7, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(255, 255, 255);
+  doc.text('Pour souscrire ou obtenir plus d\'informations', M + 3, y + 5); y += 11;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(10, 22, 40);
+  doc.text('contact@safe-digitalisation.fr  |  01 84 16 26 89  |  safe-digitalisation.fr', M + 3, y); y += 6;
+  doc.setFontSize(7.5); doc.setTextColor(100, 100, 100);
+  doc.text('S@FE SASU — 66 av. des Champs-Elysees, 75008 Paris — SIRET 104 699 558 00011', M + 3, y);
+
+  lFoot(doc);
+  return doc;
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

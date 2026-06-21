@@ -64,6 +64,7 @@ serve(async (req) => {
   function eur(n: number) { return n.toFixed(2).replace(".", ",") + " €"; }
 
   async function sendBrevo(
+    templateId: number,
     to:         { email: string; name: string },
     params:     Record<string, unknown>,
     replyTo?:   { email: string; name: string },
@@ -72,7 +73,7 @@ serve(async (req) => {
     const payload: Record<string, unknown> = {
       sender:     { name: "S@FE", email: "noreply@safe-digitalisation.fr" },
       to:         [to],
-      templateId: 1,
+      templateId,
       params,
     };
     if (replyTo)    payload.replyTo    = replyTo;
@@ -119,20 +120,15 @@ serve(async (req) => {
       : "à l'échéance en cours";
 
     await sendBrevo(
+      3,
       { email: contact.email, name: clientNom },
       {
-        FIRST_NAME:          firstName,
-        SUBJECT_DYNAMIC:     `Confirmation de résiliation — ${service}`,
-        MONTANT:             "",
-        SERVICE:             service,
-        NUMERO:              "",
-        SHOW_HIGHLIGHT:      true,
-        HIGHLIGHT_TEXT:      `Votre contrat ${service} prendra fin le ${dateFin}.`,
-        SHOW_HIGHLIGHT_BLUE: false,
-        HIGHLIGHT_BLUE_TEXT: "",
-        COMMERCIAL_PRENOM:   commercial.prenom,
-        COMMERCIAL_NOM:      commercial.nom,
-        COMMERCIAL_TITRE:    commercial.titre,
+        FIRST_NAME:      firstName,
+        SERVICE:         service,
+        HIGHLIGHT_TEXT:  `Votre contrat ${service} prendra fin le ${dateFin}.`,
+        COMMERCIAL_PRENOM: commercial.prenom,
+        COMMERCIAL_NOM:    commercial.nom,
+        COMMERCIAL_TITRE:  commercial.titre,
       },
       { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}` },
     );
@@ -170,17 +166,13 @@ serve(async (req) => {
     } : undefined;
 
     await sendBrevo(
+      4,
       { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}`.trim() },
       {
         FIRST_NAME:          commercial.prenom,
-        SUBJECT_DYNAMIC:     `Votre bordereau de commissions — ${periodeLabel}`,
         MONTANT:             montantStr,
         SERVICE:             `${nb} contrat${nb > 1 ? "s" : ""} — ${periodeLabel}`,
-        NUMERO:              "",
-        SHOW_HIGHLIGHT_BLUE: true,
         HIGHLIGHT_BLUE_TEXT: `Total TTC à percevoir : ${montantStr}. Versement sous 15 jours.`,
-        SHOW_HIGHLIGHT:      false,
-        HIGHLIGHT_TEXT:      "",
         COMMERCIAL_PRENOM:   commercial.prenom,
         COMMERCIAL_NOM:      commercial.nom,
         COMMERCIAL_TITRE:    commercial.titre,
@@ -224,17 +216,13 @@ serve(async (req) => {
     const dateVirement = new Date().toLocaleDateString("fr-FR");
 
     await sendBrevo(
+      6, // templateId à confirmer après création dans Brevo
       { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}`.trim() },
       {
         FIRST_NAME:          commercial.prenom,
-        SUBJECT_DYNAMIC:     `Virement de vos commissions — ${periodeLabel}`,
         MONTANT:             montantStr,
         SERVICE:             periodeLabel,
-        NUMERO:              "",
-        SHOW_HIGHLIGHT_BLUE: true,
         HIGHLIGHT_BLUE_TEXT: `Virement de ${montantStr} effectué le ${dateVirement}.`,
-        SHOW_HIGHLIGHT:      false,
-        HIGHLIGHT_TEXT:      "",
         COMMERCIAL_PRENOM:   commercial.prenom,
         COMMERCIAL_NOM:      commercial.nom,
         COMMERCIAL_TITRE:    commercial.titre,

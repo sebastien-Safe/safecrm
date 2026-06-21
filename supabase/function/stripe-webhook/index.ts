@@ -364,16 +364,52 @@ serve(async (req) => {
       const ct = await contractBySubId(subId);
       if (ct && !["Résilié", "Terminé"].includes(ct.statut)) {
         await sb.from("contracts").update({ statut: "Paiement échoué" }).eq("id", ct.id);
+        const nextAttemptStr = invoice.next_payment_attempt
+          ? new Date(invoice.next_payment_attempt * 1000).toLocaleDateString("fr-FR") : "";
         await sb.from("interactions").insert({
           contact_id: ct.contact_id, created_by: ct.created_by, type: "Autre",
           date: now.slice(0, 10), objet: "Échec de paiement Stripe",
-          contenu: `Stripe a signalé un échec de paiement (tentative n°${invoice.attempt_count}). Prochaine tentative : ${invoice.next_payment_attempt ? new Date(invoice.next_payment_attempt * 1000).toLocaleDateString("fr-FR") : "—"}.`,
+          contenu: `Stripe a signalé un échec de paiement (tentative n°${invoice.attempt_count}). Prochaine tentative : ${nextAttemptStr || "—"}.`,
           suite_a_donner: "Contacter le client pour régulariser le moyen de paiement.",
         });
         await log("paiement_echoue", ct.id, {
           invoice_id: invoice.id, attempt_count: invoice.attempt_count,
           next_payment_attempt: invoice.next_payment_attempt,
         });
+        // Email client : paiement refusé
+        const BREVO = Deno.env.get("BREBO");
+        if (BREVO && ct.contact_id) {
+          const [{ data: contact }, commercial] = await Promise.all([
+            sb.from("contacts").select("nom, prenom, entreprise, email").eq("id", ct.contact_id).maybeSingle(),
+            fetchCommercial(sb, ct.created_by),
+          ]);
+          const { data: contrat } = await sb.from("contracts").select("type, formule").eq("id", ct.id).maybeSingle();
+          if (contact?.email) {
+            const clientNom    = contact.entreprise || `${contact.prenom || ""} ${contact.nom || ""}`.trim();
+            const firstName    = contact.prenom || contact.nom || "Client";
+            const serviceLabel = [contrat?.type, contrat?.formule].filter(Boolean).join(" — ") || "Votre service S@FE";
+            const montantStr   = invoice.amount_due ? eur(invoice.amount_due / 100) : "";
+            await fetch("https://api.brevo.com/v3/smtp/email", {
+              method: "POST",
+              headers: { "api-key": BREVO, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                sender:     { name: "S@FE", email: "noreply@safe-digitalisation.fr" },
+                to:         [{ email: contact.email, name: clientNom }],
+                replyTo:    { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}` },
+                templateId: 1,
+                params: {
+                  FIRST_NAME:    firstName,
+                  MONTANT:       montantStr,
+                  SERVICE:       serviceLabel,
+                  NEXT_ATTEMPT:  nextAttemptStr,
+                  COMMERCIAL_PRENOM: commercial.prenom,
+                  COMMERCIAL_NOM:    commercial.nom,
+                  COMMERCIAL_TITRE:  commercial.titre,
+                },
+              }),
+            });
+          }
+        }
       }
     }
   }

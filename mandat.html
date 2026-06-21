@@ -886,6 +886,17 @@ document.getElementById('btn-confirm-sign').addEventListener('click', async () =
 
     if (mandatErr) throw new Error(mandatErr.message);
 
+    // Envoi Brevo : mandat signé au commercial + BCC admin
+    try {
+      const pdfBase64 = btoa(String.fromCharCode(...new Uint8Array(await pdfBlob.arrayBuffer())));
+      const { data: { session } } = await sb.auth.getSession();
+      await fetch(`${SUPABASE_URL}/functions/v1/send-mandat-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ prenom, nom, numero: mandatNumero, signed_at: now, pdf_base64: pdfBase64 }),
+      });
+    } catch (e) { console.warn('Email mandat non envoyé :', e); }
+
     const dlBtn = document.getElementById('success-dl-pdf');
     dlBtn.href = pdfUrl;
     dlBtn.style.display = 'inline-block';
