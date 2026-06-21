@@ -309,6 +309,9 @@ select option{background:var(--navy-mid)}
   <button class="sidebar-item" onclick="window.location.href='/work/Social/module-social-clients.html'">
     <span class="ico">📱</span> Social Clients
   </button>
+  <button class="sidebar-item" onclick="window.location.href='/work/ClickCollect/module-clickcollect-clients.html'">
+    <span class="ico">🛒</span> Click &amp; Collect
+  </button>
   <button class="sidebar-item" onclick="showView('automate')" id="nav-onboarding">
     <span class="ico">🚀</span> Onboarding
   </button>
@@ -668,10 +671,10 @@ const _MODULES_DEF = [
     href:'/work/Social/module-social-clients.html',
   },
   {
-    key:'clickcollect', name:'Click & Collect', icon:'🛒', color:'#ec4899', pct:0,
-    done:[],
-    todo:['Catalogue produits','Gestion commandes','Paiement'],
-    href:null,
+    key:'clickcollect', name:'Click & Collect', icon:'🛒', color:'#ec4899', pct:80,
+    done:['Catalogue produits','Gestion commandes','Workflow statuts','Rapport PDF mensuel'],
+    todo:['Paiement en ligne','Notifications client'],
+    href:'/work/ClickCollect/module-clickcollect-clients.html',
   },
 ];
 

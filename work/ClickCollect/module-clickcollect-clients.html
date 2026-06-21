@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S@FE Work — Click & Collect Clients</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="clickcollect-clients.css">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+  <!-- Supabase + jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<div id="cc-toast"></div>
+
+<!-- Modal -->
+<div id="cc-modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="cc-modal-title">—</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="cc-modal-body"></div>
+    <div class="modal-foot" id="cc-modal-foot"></div>
+  </div>
+</div>
+
+<div class="cc-layout">
+
+  <!-- TOPBAR -->
+  <header class="cc-topbar">
+    <a href="/work/" class="cc-back-btn">← Work</a>
+    <span class="cc-topbar-brand">S<b>@</b>FE <span style="font-weight:400;color:rgba(255,255,255,.3)">·</span> 🛒 Click & Collect</span>
+    <span class="cc-topbar-sub" id="topbar-contact-name"></span>
+    <div class="cc-topbar-right">
+      <button class="btn btn-ghost btn-sm" onclick="clearContact()">📊 Dashboard</button>
+    </div>
+  </header>
+
+  <div class="cc-body">
+
+    <!-- SIDEBAR -->
+    <aside class="cc-sidebar">
+      <div class="sidebar-search-wrap">
+        <input class="sidebar-search" placeholder="🔍 Chercher un client…"
+          oninput="filterSidebar(this.value)">
+      </div>
+      <div class="sidebar-contact-list" id="sidebar-contacts">
+        <div class="loader"><div class="spinner"></div></div>
+      </div>
+    </aside>
+
+    <!-- SUBNAV -->
+    <nav class="cc-subnav" id="cc-subnav" style="display:none">
+      <div class="subnav-client">
+        <div class="subnav-client-name" id="subnav-client-name">—</div>
+        <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px;font-size:.72rem"
+          onclick="clearContact()">✕ Changer</button>
+      </div>
+      <ul class="subnav-menu">
+        <li class="subnav-item active" data-view="catalogue" onclick="switchSubView('catalogue',this)">🛍 Catalogue</li>
+        <li class="subnav-item"        data-view="commandes" onclick="switchSubView('commandes',this)">📦 Commandes</li>
+        <li class="subnav-item"        data-view="rapport"   onclick="switchSubView('rapport',this)">📊 Rapport PDF</li>
+      </ul>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="cc-main">
+
+      <!-- Vue Dashboard global -->
+      <section id="view-dashboard" class="cc-view active">
+        <div class="view-header">
+          <span class="eyebrow">Vue globale</span>
+          <h1 class="view-title">🛒 Click & Collect Clients</h1>
+          <p class="view-subtitle">Gérez les catalogues produits et commandes de retrait de vos clients</p>
+        </div>
+        <div id="dashboard-content"></div>
+      </section>
+
+      <!-- Vue Catalogue -->
+      <section id="view-catalogue" class="cc-view">
+        <div class="view-header">
+          <span class="eyebrow">Catalogue produits</span>
+          <h1 class="view-title">🛍 Produits</h1>
+          <p class="view-subtitle">Gérez les articles disponibles à la commande</p>
+        </div>
+        <div id="catalogue-content"></div>
+      </section>
+
+      <!-- Vue Commandes -->
+      <section id="view-commandes" class="cc-view">
+        <div class="view-header">
+          <span class="eyebrow">Gestion des commandes</span>
+          <h1 class="view-title">📦 Commandes</h1>
+          <p class="view-subtitle">Suivez les commandes et leur statut de retrait</p>
+        </div>
+        <div id="commandes-content"></div>
+      </section>
+
+      <!-- Vue Rapport -->
+      <section id="view-rapport" class="cc-view">
+        <div class="view-header">
+          <span class="eyebrow">Bilan mensuel</span>
+          <h1 class="view-title">📊 Rapport Click & Collect</h1>
+        </div>
+        <div id="rapport-content"></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="/assets/dpo/connectors-guard.js"></script>
+<script src="cc-core.js"></script>
+<script src="cc-dashboard.js"></script>
+<script src="cc-catalogue.js"></script>
+<script src="cc-commandes.js"></script>
+<script src="cc-rapport.js"></script>
+<script>
+function switchSubView(viewId, el) {
+  document.querySelectorAll('.subnav-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
+  showView(viewId);
+  const loaders = { catalogue: loadCatalogue, commandes: loadCommandes, rapport: loadRapport };
+  if (loaders[viewId]) loaders[viewId]();
+}
+
+function filterSidebar(q) {
+  const lq = q.toLowerCase();
+  document.querySelectorAll('.sidebar-contact-item').forEach(el => {
+    el.style.display = (el.dataset.search || '').includes(lq) ? '' : 'none';
+  });
+}
+</script>
+
+</body>
+</html>
