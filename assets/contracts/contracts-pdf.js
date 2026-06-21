@@ -247,21 +247,30 @@ window.ContractPDF = (function () {
     doc.text('Précédée de la mention « Lu et approuvé »', 110, y);
   }
 
-  // --- Articles des CGV (référence SAFE-CGV-2026-001) ---
+  // --- Articles des CGV (référence SAFE-CGV-2026-001 — version 21 juin 2026) ---
   const CGV_REF = 'SAFE-CGV-2026-001';
   const CGV_ARTICLES = [
-    ['Article 1 — Objet', "Les présentes CGV définissent les droits et obligations des parties dans le cadre de la fourniture par S@FE SASU des services suivants : référencement local Google Business Profile, conformité RGPD et DPO externalisé, cybersécurité, et solution Click & Collect. Chaque prestation fait l'objet d'un bon de commande spécifique qui précise la nature exacte des services, le tarif applicable, la durée d'engagement et les modalités propres à la formule choisie."],
-    ['Article 2 — Entrée en vigueur et durée', "Le contrat prend effet à compter de la date de signature du bon de commande par les deux parties. Prestations ponctuelles : le contrat prend fin à la livraison du livrable final. Abonnements mensuels : durée initiale d'engagement stipulée sur le bon de commande (3 ou 6 mois selon la formule), puis renouvellement tacite mois par mois, résiliation par e-mail avec confirmation de lecture, préavis de 30 jours."],
-    ['Article 3 — Tarifs et conditions financières', "Les tarifs sont exprimés en euros hors taxes (HT). La TVA au taux en vigueur (20 %) est applicable. Frais de mise en place : facturés dès le premier mois et non remboursables. Modalités de paiement : factures payables à réception par virement bancaire. Pour les abonnements, facturation mensuelle à terme échu. Retards de paiement : pénalités au taux BCE + 10 points et indemnité forfaitaire de 40 € (art. L.441-10 C. com.)."],
-    ['Article 4 — Obligations du Prestataire', "Obligation de moyens. Le Prestataire s'engage à exécuter les prestations avec le soin et la diligence d'un professionnel compétent. Confidentialité des informations communiquées par le Client pendant 5 ans après la fin du contrat. Respect du RGPD pour les missions impliquant un accès à des données personnelles."],
-    ['Article 5 — Obligations du Client', "Fournir en temps utile l'ensemble des informations, accès, identifiants et documents nécessaires. Désigner un référent unique, disponible pour répondre aux sollicitations dans un délai de 48h ouvrables. Ne pas diffuser les livrables à des tiers sans accord préalable écrit, sauf usage interne."],
-    ['Article 6 — Responsabilité et limitation', "Responsabilité limitée aux dommages directs résultant d'une faute prouvée. Aucune responsabilité pour les dommages indirects (perte de CA, perte de clientèle, atteinte à l'image). Plafond : sommes HT effectivement encaissées au titre du contrat concerné au cours des 12 derniers mois. Les résultats présentés (positions Google, impressions, clics) sont des estimations indicatives."],
-    ['Article 7 — Propriété intellectuelle', "Les livrables produits sont la propriété du Client après paiement intégral. Les méthodes, processus et outils du Prestataire restent sa propriété exclusive."],
-    ['Article 8 — Protection des données personnelles (RGPD)', "Collecte et traitement des données personnelles du représentant du Client (nom, prénom, e-mail, téléphone) aux fins de gestion du contrat. Base légale : exécution du contrat (art. 6.1.b RGPD). Conservation : durée du contrat + 5 ans. Droit d'accès, de rectification et d'effacement à l'adresse contact@safe-digitalisation.fr. Lorsque le Prestataire agit en qualité de sous-traitant, un DPA (art. 28 RGPD) est conclu en complément."],
-    ['Article 9 — Force majeure', "Pas de responsabilité en cas de force majeure (art. 1218 C. civ.) : catastrophe naturelle, cyberattaque externe de grande ampleur, pannes des plateformes tierces, défaillance des réseaux télécoms. Si la force majeure dure plus de 30 jours consécutifs, chaque partie peut résilier sans indemnité."],
-    ['Article 10 — Résiliation', "Pour les abonnements : résiliation par e-mail avec confirmation de lecture, préavis 30 jours. Frais de mise en place non remboursés. En cas de manquement grave non remédié dans 15 jours suivant mise en demeure, résiliation de plein droit. Résiliation anticipée du Client pendant l'engagement initial : mensualités restantes dues à titre d'indemnité."],
-    ['Article 11 — Droit applicable et règlement des litiges', "Droit français. Recherche d'une solution amiable dans les 30 jours. À défaut, compétence exclusive du Tribunal de Commerce de Paris."],
-    ['Article 12 — Dispositions diverses', "La nullité d'une clause n'entraîne pas la nullité du contrat. Le Client reconnaît avoir reçu un exemplaire des présentes CGV avant la signature du bon de commande."],
+    ['Section 1 — Conditions d\'engagement client',
+     "Durée & engagement : Prestations ponctuelles : fin à la livraison du rapport. Abonnements mensuels : résiliables par LRAR avec un préavis de 30 jours. Engagements initiaux par produit : Référencement Local 6 mois ferme, Click & Collect 3 mois ferme, DPO externalisé 12 mois ferme, RGPD Audit et Cybersécurité ponctuels. " +
+     "Frais de mise en service : Pour le Référencement Local et Click & Collect, des frais de mise en service sont facturés à la première échéance. Ils correspondent à un travail technique immédiatement exécuté et restent dus en cas de résiliation anticipée (non remboursables, non amortissables). " +
+     "Résiliation anticipée : Les frais de mise en place restent dus intégralement. Pour les mois restants, le client choisit l'option la moins élevée : Option A — payer l'intégralité des mois restants jusqu'à la fin de l'engagement ; Option B — payer une pénalité forfaitaire de 2 mois x montant d'abonnement. " +
+     "Résiliation après engagement initial : préavis de 30 jours par LRAR, aucune pénalité ni frais supplémentaires. " +
+     "Conditions financières : Prix en euros HT, TVA 20 % en sus. Retards de paiement : pénalités égales à 3 fois le taux d'intérêt légal et indemnité forfaitaire de recouvrement de 40 € (art. L441-6 du Code de Commerce)."],
+
+    ['Section 2 — Commissions du mandataire (DCI)',
+     "DISPOSITIONS RESERVEES AU MANDATAIRE. Ces conditions s'appliquent exclusivement à l'Agent Commercial Indépendant (DCI / mandataire) et ne concernent jamais le client. Le client ne paie aucune commission pour rémunérer l'agent. " +
+     "Calcul des commissions : Les commissions DCI sont versées uniquement sur les montants HT réellement encaissés par S@FE. Si le client ne paie pas, la commission DCI est de 0 € pour le mois concerné. Aucune rétroactivité : les commissions déjà versées ne sont jamais remboursées. S@FE absorbe la perte liée aux impayés clients. " +
+     "Bonus fidélité : Versé au DCI uniquement si (1) le client a payé 100 % de chaque échéance dans les délais, sans aucun impayé même régularisé ultérieurement, et (2) le client n'a pas résilié avant la fin de l'engagement initial. Si le client résilie avant terme ou présente un impayé, le bonus est annulé. " +
+     "Échéancier DCI : commission sur frais de mise en place à J+30 ; commissions récurrentes à J+60, J+90, J+120, J+150, J+180 ; bonus fidélité + dernière commission à J+210. Les commissions sont versées indépendamment de la réception de facture du DCI."],
+
+    ['Section 3 — Propriété du portefeuille clients',
+     "Tous les clients prospectés, signés ou gérés par le DCI demeurent la propriété exclusive de S@FE SASU. Le DCI n'a aucun droit de propriété, de nantissement ou de contrôle sur ces clients. À la fin du contrat de mandat, S@FE reprend automatiquement l'intégralité du portefeuille, sans indemnité de transfert (sauf accord écrit préalable). " +
+     "Clause de non-démarchage post-contrat : Après la résiliation du contrat de mandat, le DCI s'interdit de contacter directement ou indirectement les clients S@FE pendant 3 ans, sous peine de poursuites judiciaires et dommages et intérêts."],
+
+    ['Section 4 — Compatibilité Mandat / CGV',
+     "Les présentes CGV coexistent avec le Contrat de Mandat signé par le DCI. Les deux documents s'appliquent simultanément selon leur domaine : les CGV régissent les obligations et droits du client ; le Contrat de Mandat régit les commissions et obligations du mandataire DCI. " +
+     "Les articles 8 et 14 du Contrat de Mandat précisent les modalités de commission DCI et la propriété du portefeuille. Ces dispositions n'affectent jamais le client et ne s'ajoutent pas à ses obligations. " +
+     "Droit applicable : droit français. Tribunal compétent : Tribunal de Commerce de Paris. La nullité d'une clause n'entraîne pas la nullité du contrat. Le client reconnaît avoir reçu un exemplaire des présentes CGV avant la signature du bon de commande."],
   ];
 
   // Ajoute les pages CGV à un document existant (utilisé par generate + generateCGV)
@@ -278,7 +287,7 @@ window.ContractPDF = (function () {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(80, 80, 80);
-    doc.text(`Réf. : ${CGV_REF} — Version en vigueur au 10 juin 2026`, 15, y);
+    doc.text(`Réf. : ${CGV_REF} — Version en vigueur au 21 juin 2026`, 15, y);
     y += 8;
 
     CGV_ARTICLES.forEach(([titre, contenu]) => {
