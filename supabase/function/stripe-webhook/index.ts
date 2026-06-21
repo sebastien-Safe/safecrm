@@ -219,7 +219,7 @@ async function envoyerFacture(sb: ReturnType<typeof createClient>, opts: {
       sender:     { name: "S@FE", email: "noreply@safe-digitalisation.fr" },
       to:         [{ email: contact.email, name: clientNom }],
       replyTo:    { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}` },
-      templateId: 1,
+      templateId: 2,
       params: {
         document_type:       "Facture",
         reference:           numero,
