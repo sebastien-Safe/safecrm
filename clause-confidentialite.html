@@ -7,6 +7,7 @@
 <title>Clause de confidentialité — S@FE CRM</title>
 <link rel="icon" href="/favicon.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="/assets/config.js"></script>
 <style>
 :root{--navy:#0a1628;--navy-2:#142240;--gold:#f59e0b;--blue:#3b82f6;--blue-2:#2563eb;--green:#22c55e;--mut:#94a3b8;--mut-2:#cbd5e1;--line:rgba(255,255,255,.08);--alert:#ff4d5e;--r:12px;--ff:'Sora',sans-serif;--fb:'IBM Plex Sans',sans-serif;--fm:'IBM Plex Mono',monospace}
@@ -172,6 +173,17 @@ p strong{color:#fff}
     <div class="horodatage" id="horodatage"></div>
   </div>
 
+  <!-- SUCCÈS -->
+  <div id="signed-banner" style="display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:14px;padding:32px 24px;margin-bottom:20px;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:12px">✅</div>
+    <div style="font-family:var(--ff);font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:6px">Clause signée électroniquement</div>
+    <div style="font-size:.85rem;color:var(--mut);margin-bottom:24px">Votre PDF est généré et archivé.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
+      <a id="dl-link" href="#" download style="display:inline-block;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.35);color:var(--gold);font-family:var(--ff);font-weight:700;font-size:.9rem;padding:11px 28px;border-radius:10px;text-decoration:none">⬇️ Télécharger mon PDF</a>
+      <a href="/guide.html" style="display:inline-block;background:linear-gradient(135deg,var(--gold),#e08f00);color:var(--navy);font-family:var(--ff);font-weight:800;font-size:.95rem;padding:12px 28px;border-radius:10px;text-decoration:none">Accéder au Guide S@FE →</a>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -260,21 +272,99 @@ function updateBtn() {
   btn.disabled = !ok;
 }
 
+function genererPDF(nom, email, lieu, dateStr, sigDataUrl) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W = 210, M = 20;
+
+  doc.setFillColor(10, 22, 40);
+  doc.rect(0, 0, W, 297, 'F');
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(18); doc.setTextColor(245,158,11);
+  doc.text('S@FE CRM', M, 22);
+  doc.setFontSize(9); doc.setTextColor(148,163,184);
+  doc.text('Clause de Confidentialité et de Sécurité', M, 29);
+  doc.setDrawColor(245,158,11); doc.setLineWidth(0.5);
+  doc.line(M, 33, W-M, 33);
+
+  let y = 42;
+  doc.setFontSize(13); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
+  doc.text('Clause de Confidentialité et de Sécurité', M, y); y += 10;
+
+  const sections = [
+    ['Parties', `Éditeur : S@FE SASU — Michel Sébastien ALONSO\n66 av. des Champs-Élysées, 75008 Paris — SIRET : 104 699 558 00011\n\nCollaborateur : ${nom}\n${email}`],
+    ['Engagement de Sécurité S@fe', "La protection des données est au cœur de l'architecture S@FE. Toutes les informations centralisées au sein du CRM sont sécurisées grâce au protocole S@fe, garantissant une protection robuste des flux d'informations."],
+    ['1. Protection et Chiffrement des Données', "L'ensemble des données clients, prospects et transactions fait l'objet d'un chiffrement de bout en bout, tant en cours de transit que lors de leur stockage. Seules les personnes explicitement habilitées disposent des clés d'accès nécessaires."],
+    ['2. Intégrité et Résilience de l\'Infrastructure', "L'infrastructure intègre des mécanismes de redondance active et de surveillance proactive. Les sauvegardes sont exécutées de façon distribuée sur des serveurs sécurisés, prévenant toute altération ou perte de données."],
+    ['3. Conformité Réglementaire et Confidentialité', "Aucune donnée ne sera vendue, partagée ou exposée à des entités tierces sans consentement explicite, en dehors des obligations légales. Le protocole S@fe s'aligne totalement avec le RGPD."],
+  ];
+
+  sections.forEach(([titre, texte]) => {
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(245,158,11);
+    doc.text(titre, M, y); y += 6;
+    doc.setFont('helvetica','normal'); doc.setTextColor(203,213,225); doc.setFontSize(9);
+    const lines = doc.splitTextToSize(texte, W - 2*M);
+    lines.forEach(l => { if (y > 255) { doc.addPage(); doc.setFillColor(10,22,40); doc.rect(0,0,W,297,'F'); y = 20; } doc.text(l, M, y); y += 5; });
+    y += 4;
+  });
+
+  y += 4;
+  doc.setDrawColor(245,158,11); doc.line(M, y, W-M, y); y += 8;
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(255,255,255);
+  doc.text('Signature électronique', M, y); y += 7;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(203,213,225);
+  doc.text(`Signataire : ${nom}`, M, y); y += 5;
+  doc.text(`E-mail : ${email}`, M, y); y += 5;
+  doc.text(`Fait à ${lieu}, le ${dateStr}`, M, y); y += 5;
+  doc.text(`Horodatage : ${new Date().toLocaleString('fr-FR', {timeZone:'Europe/Paris'})} (Europe/Paris)`, M, y); y += 8;
+  doc.addImage(sigDataUrl, 'PNG', M, y, 80, 25); y += 30;
+  doc.setFontSize(7); doc.setTextColor(100,116,139);
+  doc.text('Document généré automatiquement par S@FE CRM — safe-digitalisation.fr', M, y);
+
+  return doc;
+}
+
 async function signer() {
-  const lieu = document.getElementById('sig-lieu').value.trim();
+  const nom     = document.getElementById('sig-nom').value.trim();
+  const email   = document.getElementById('sig-email').value.trim();
+  const lieu    = document.getElementById('sig-lieu').value.trim();
+  const dateStr = document.getElementById('sig-date').value;
+
   if (!lieu) { alert('Veuillez indiquer la ville de signature.'); document.getElementById('sig-lieu').focus(); return; }
   if (!hasSig) { alert('Veuillez apposer votre signature.'); return; }
 
   const btn = document.getElementById('btn-sign');
-  btn.disabled = true; btn.textContent = 'Enregistrement…';
+  btn.disabled = true; btn.textContent = 'Génération du PDF…';
 
   try {
     const sigData = sigCanvas.toDataURL('image/png');
+
+    // Génération PDF
+    const pdfDoc = genererPDF(nom, email, lieu, dateStr, sigData);
+    const pdfBlob = pdfDoc.output('blob');
+
+    // Upload vers Supabase Storage
+    btn.textContent = 'Upload en cours…';
+    const fileName = `PDF/CLAUSE/clause-user_${nom.replace(/\s+/g,'-')}_${new Date().toISOString().slice(0,10)}_${Date.now()}.pdf`;
+    const { error: uploadError } = await sb.storage
+      .from('contrats-pdf')
+      .upload(fileName, pdfBlob, { contentType: 'application/pdf', upsert: false });
+    if (uploadError) throw new Error('Upload PDF : ' + uploadError.message);
+
+    const { data: urlData } = sb.storage.from('contrats-pdf').getPublicUrl(fileName);
+    const pdfUrl = urlData.publicUrl;
+
+    // Enregistrement en base
+    btn.textContent = 'Enregistrement…';
     const { error } = await sb.from('clauses_confidentialite').insert({
-      user_id:    currentUser.id,
-      signature:  sigData,
-      ip:         null,
-      user_agent: navigator.userAgent,
+      user_id:               currentUser.id,
+      signature:             sigData,
+      ip:                    null,
+      user_agent:            navigator.userAgent,
+      nom_signataire:        nom,
+      email_signataire:      email,
+      signed_pdf_clause_url: pdfUrl,
     });
     if (error) throw new Error(error.message);
 
@@ -284,7 +374,13 @@ async function signer() {
       clause_signee_at: new Date().toISOString()
     }).eq('id', currentUser.id);
 
-    window.location.href = '/guide.html';
+    // Afficher le bloc succès
+    document.getElementById('sig-section').style.display = 'none';
+    const banner = document.getElementById('signed-banner');
+    banner.style.display = 'block';
+    document.getElementById('dl-link').href = pdfUrl;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
   } catch(e) {
     alert('Erreur : ' + e.message);
     btn.disabled = false;
@@ -322,7 +418,8 @@ function renderViewMode(clause) {
       <strong style="color:var(--mut-2)">Navigateur :</strong> ${clause.user_agent ? clause.user_agent.slice(0,80) + '…' : '—'}<br>
       <strong style="color:var(--mut-2)">Référence :</strong> ${clause.id}
     </div>
-    <div style="text-align:center;margin-top:20px">
+    <div style="text-align:center;margin-top:20px;display:flex;flex-direction:column;gap:10px;align-items:center">
+      ${clause.signed_pdf_clause_url ? `<a href="${clause.signed_pdf_clause_url}" target="_blank" style="display:inline-block;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.35);color:var(--gold);font-family:var(--ff);font-weight:700;font-size:.9rem;padding:11px 24px;border-radius:10px;text-decoration:none">⬇️ Télécharger mon PDF</a>` : ''}
       <a href="/guide.html" style="display:inline-block;background:var(--blue-2);color:#fff;font-family:var(--ff);font-weight:700;font-size:.9rem;padding:11px 24px;border-radius:10px;text-decoration:none">← Retour au guide</a>
     </div>`;
   page.appendChild(viewBlock);

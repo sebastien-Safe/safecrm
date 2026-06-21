@@ -69,7 +69,12 @@ footer a{color:var(--blue)}
   <div id="state-paid" class="msg" style="display:none"><div class="ic">✅</div><h1>Commande déjà réglée</h1><p>Ce bon de commande a été signé et payé. Vous n'avez rien de plus à faire. Merci pour votre confiance.</p></div>
 
   <!-- État : paiement confirmé (retour Stripe) -->
-  <div id="state-success" class="msg" style="display:none"><div class="ic">🎉</div><h1>Merci, c'est confirmé !</h1><p>Votre paiement a été accepté et votre commande est enregistrée. Vous recevrez un e-mail de confirmation de Stripe. Votre chargé de clientèle S@FE prendra contact avec vous sous 48h.</p></div>
+  <div id="state-success" class="msg" style="display:none">
+    <div class="ic">🎉</div>
+    <h1>Merci, c'est confirmé !</h1>
+    <p>Votre paiement a été accepté et votre commande est enregistrée. Vous recevrez un e-mail de confirmation de Stripe. Votre chargé de clientèle S@FE prendra contact avec vous sous 48h.</p>
+    <a id="success-dl-bdc" href="#" target="_blank" style="display:none;margin-top:18px" class="btn btn-pay" download>⬇️ Télécharger mon bon de commande (PDF)</a>
+  </div>
 
   <!-- État : annulé (retour Stripe sans paiement) -->
   <div id="state-cancel" class="msg" style="display:none"><div class="ic">↩️</div><h1>Paiement annulé</h1><p>Vous avez quitté la page de paiement. Votre bon de commande est toujours valide — vous pouvez réessayer en cliquant ci-dessous.</p><button class="btn btn-pay" style="max-width:320px;margin:18px auto 0" onclick="location.search='?id='+ORDER_ID">Réessayer le paiement</button></div>
@@ -137,12 +142,131 @@ footer a{color:var(--blue)}
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="assets/config.js"></script>
 <script>
 const params   = new URLSearchParams(location.search);
 const ORDER_ID = params.get('id');
 const STATUS   = params.get('status');
 let ORDER = null;
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function normalizeName(str) {
+  return (str || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toUpperCase().replace(/[^A-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+}
+
+function genererBDCPdf(o) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W = 210, M = 20;
+
+  doc.setFillColor(248, 249, 252);
+  doc.rect(0, 0, W, 297, 'F');
+
+  doc.setFillColor(10, 22, 40);
+  doc.rect(0, 0, W, 40, 'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(20); doc.setTextColor(245,158,11);
+  doc.text('S@FE', M, 18);
+  doc.setFontSize(9); doc.setTextColor(255,255,255);
+  doc.text('BON DE COMMANDE', M, 26);
+  doc.setFontSize(8); doc.setTextColor(148,163,184);
+  doc.text('Ref. BON-' + (o.id || '').slice(0,8).toUpperCase(), M, 33);
+
+  let y = 52;
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(10,22,40);
+  doc.text('Client', M, y);
+  doc.text('Prestataire', W/2 + 2, y); y += 5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,41,59);
+  const clientLines = [
+    o.client_name || '—',
+    o.client_entreprise || '',
+    o.client_siret ? 'SIRET : ' + o.client_siret : '',
+    o.client_email || '',
+  ].filter(Boolean);
+  const prestLines = ['S@FE SASU', '66 av. des Champs-Elysees', '75008 Paris', 'SIRET : 104 699 558 00011'];
+  const maxL = Math.max(clientLines.length, prestLines.length);
+  for (let i = 0; i < maxL; i++) {
+    if (clientLines[i]) doc.text(clientLines[i], M,       y);
+    if (prestLines[i])  doc.text(prestLines[i],  W/2 + 2, y);
+    y += 4.5;
+  }
+  y += 6;
+
+  doc.setDrawColor(226,232,240); doc.setLineWidth(0.3);
+  doc.line(M, y, W-M, y); y += 6;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(10,22,40);
+  doc.text('Prestation commandee', M, y); y += 5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,41,59);
+  doc.text('Service : ' + (o.produit || '—'), M, y); y += 4.5;
+  if (o.formule) { doc.text('Formule : ' + o.formule, M, y); y += 4.5; }
+  if (o.engagement_mois > 0) { doc.text('Engagement : ' + o.engagement_mois + ' mois', M, y); y += 4.5; }
+  y += 4;
+
+  const montant = Number(o.montant || 0);
+  const setup   = Number(o.frais_mise_en_place || 0);
+  const remise  = Number(o.remise || 0);
+  const isRecur = o.recurrence === 'Mensuel';
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(10,22,40);
+  doc.text('Detail financier (HT)', M, y); y += 5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,41,59);
+  if (setup > 0) { doc.text('Frais de mise en service : ' + setup.toFixed(2) + ' EUR HT', M, y); y += 4.5; }
+  doc.text((isRecur ? 'Abonnement mensuel : ' : 'Montant : ') + montant.toFixed(2) + ' EUR HT' + (isRecur ? ' / mois' : ''), M, y); y += 4.5;
+  if (remise > 0) { doc.text('Remise : -' + remise.toFixed(2) + ' EUR', M, y); y += 4.5; }
+  const total = setup > 0 ? setup + montant : montant - remise;
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(37,99,235);
+  doc.text('Total HT : ' + total.toFixed(2) + ' EUR' + (isRecur ? ' (1er mois)' : ''), M, y); y += 4.5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(100,116,139);
+  doc.text('TVA 20% : ' + (total * 0.2).toFixed(2) + ' EUR  —  TTC : ' + (total * 1.2).toFixed(2) + ' EUR', M, y); y += 8;
+
+  doc.setLineWidth(0.3); doc.setDrawColor(226,232,240);
+  doc.line(M, y, W-M, y); y += 6;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(10,22,40);
+  doc.text('Acceptation electronique', M, y); y += 5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(30,41,59);
+  doc.text('Le client declare avoir lu et accepte le present bon de commande et les CGV SAFE-CGV-2026-001.', M, y); y += 4.5;
+  doc.text('Acceptation enregistree le : ' + new Date().toLocaleString('fr-FR', {timeZone:'Europe/Paris'}) + ' (Europe/Paris)', M, y); y += 4.5;
+  doc.text('Paiement Stripe confirme — ' + ORDER_ID, M, y); y += 10;
+
+  doc.setFontSize(7); doc.setTextColor(100,116,139);
+  doc.text('S@FE Digitalisation — SAS a capital variable — SIRET 104 699 558 00011 — 66 av. des Champs-Elysees, 75008 Paris', M, y); y += 4;
+  doc.text('Document genere automatiquement par S@FE CRM — safe-digitalisation.fr', M, y);
+
+  return doc;
+}
+
+async function genererEtUploaderBDC(o) {
+  try {
+    const siret  = (o.client_siret || '').replace(/\s/g, '');
+    const siren  = siret.length >= 9 ? siret.slice(0, 9) : '';
+    const idFich = siret || siren || normalizeName(o.client_entreprise || o.client_name || ORDER_ID.slice(0,8));
+    const date   = new Date().toISOString().slice(0, 10);
+    const fileName = `PDF/BDC/BDC_${idFich}_${date}_${Date.now()}.pdf`;
+
+    const pdfDoc  = genererBDCPdf(o);
+    const pdfBlob = pdfDoc.output('blob');
+
+    const { error: uploadError } = await sb.storage
+      .from('contrats-pdf')
+      .upload(fileName, pdfBlob, { contentType:'application/pdf', upsert:false });
+    if (uploadError) throw new Error(uploadError.message);
+
+    const { data: urlData } = sb.storage.from('contrats-pdf').getPublicUrl(fileName);
+    const pdfUrl = urlData.publicUrl;
+
+    await sb.rpc('set_contract_pdf_url', { p_contract_id: ORDER_ID, p_pdf_url: pdfUrl });
+
+    const dlBtn = document.getElementById('success-dl-bdc');
+    dlBtn.href = pdfUrl;
+    dlBtn.style.display = 'inline-block';
+  } catch(e) {
+    console.warn('PDF BDC non généré :', e.message);
+  }
+}
 
 function $(s) { return document.querySelector(s); }
 function show(id) { document.querySelectorAll('[id^="state-"]').forEach(el => el.style.display = 'none'); $(id).style.display = ''; }
@@ -161,8 +285,38 @@ async function init() {
     return;
   }
 
-  if (STATUS === 'success') { show('#state-success'); return; }
   if (STATUS === 'cancel')  { show('#state-cancel');  return; }
+
+  if (STATUS === 'success') {
+    show('#state-success');
+    // Charger les données pour générer le PDF BDC
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/get-order-data`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ contract_id: ORDER_ID }),
+      });
+      const data = await resp.json();
+      if (resp.ok && !data.error && data.contract && data.contact) {
+        const o = {
+          id:                  data.contract.id,
+          client_name:         `${data.contact.prenom || ''} ${data.contact.nom || ''}`.trim(),
+          client_email:        data.contact?.email        || '',
+          client_entreprise:   data.contact?.entreprise   || '',
+          client_siret:        data.contact?.siret        || '',
+          produit:             data.contract.type,
+          formule:             data.contract.formule,
+          montant:             data.contract.montant,
+          frais_mise_en_place: data.contract.frais_mise_en_place || 0,
+          remise:              data.contract.remise || 0,
+          recurrence:          data.contract.recurrence,
+          engagement_mois:     data.contract.engagement_mois,
+        };
+        await genererEtUploaderBDC(o);
+      }
+    } catch(_) {}
+    return;
+  }
 
   try {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/get-order-data`, {

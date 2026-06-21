@@ -1,6 +1,6 @@
-// Chemins Supabase Storage pour les PDFs signés (phase 2)
-const STORAGE_PATH_CONTRATS = 'contrats-pdf/contrats/';
-const STORAGE_PATH_CLAUSES  = 'contrats-pdf/clause-de-confidentialite/';
+// Chemins Supabase Storage pour les PDFs signés
+const STORAGE_PATH_CONTRATS = 'contrats-pdf/PDF/BDC/';
+const STORAGE_PATH_CLAUSES  = 'contrats-pdf/PDF/CLAUSE/';
 
 // =========================================================
 // S@FE CRM — Générateur de bons de commande PDF

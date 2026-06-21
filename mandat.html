@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="assets/config.js"></script>
   <style>
     :root {
@@ -554,7 +555,8 @@
       <div class="success-icon">🏆</div>
       <h2>Contrat signé !</h2>
       <div class="contract-ref" id="success-ref"></div>
-      <p>Votre contrat de mandat S@FE est enregistré et horodaté. Vous allez recevoir une copie par email. Bienvenue dans l'équipe S@FE !</p>
+      <p>Votre contrat de mandat S@FE est enregistré et horodaté. Bienvenue dans l'équipe S@FE !</p>
+      <a id="success-dl-pdf" href="#" target="_blank" style="display:none;margin-bottom:12px" class="btn btn-out">⬇️ Télécharger mon contrat (PDF)</a>
       <button class="btn btn-pri" onclick="window.location.href='/'">Accéder au CRM →</button>
     </div>
   </div>
@@ -567,6 +569,99 @@ let currentStep = 1;
 let sigCanvas, sigCtx, isDrawing = false, hasSig = false;
 let currentUser = null;
 let mandatNumero = null;
+
+function normalizeName(str) {
+  return (str || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toUpperCase().replace(/[^A-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+}
+
+function genererMandatPDF(data) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W = 210, M = 20;
+
+  doc.setFillColor(10, 22, 40);
+  doc.rect(0, 0, W, 297, 'F');
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(18); doc.setTextColor(245,158,11);
+  doc.text('S@FE CRM', M, 22);
+  doc.setFontSize(9); doc.setTextColor(148,163,184);
+  doc.text('Contrat de Mandat — Agent Commercial Independant', M, 29);
+  doc.setDrawColor(245,158,11); doc.setLineWidth(0.5);
+  doc.line(M, 33, W-M, 33);
+
+  let y = 42;
+  doc.setFontSize(11); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
+  doc.text('Contrat de Mandat d\'Agent Commercial', M, y); y += 6;
+  doc.setFontSize(8); doc.setTextColor(148,163,184); doc.setFont('helvetica','normal');
+  doc.text('Ref. : ' + (data.numero || '—') + '   |   Version : SAFE-AC-2026-V1', M, y); y += 10;
+
+  doc.setDrawColor(245,158,11,0.3); doc.setLineWidth(0.3);
+  doc.line(M, y, W-M, y); y += 6;
+
+  doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(245,158,11);
+  doc.text('Le Mandant', M, y);
+  doc.text('Le Mandataire', W/2 + 2, y); y += 5;
+  doc.setFont('helvetica','normal'); doc.setTextColor(203,213,225);
+  const mandantLines = ['S@FE SASU', '66 av. des Champs-Elysees, 75008 Paris', 'SIRET : 104 699 558 00011', 'Michel Sebastien ALONSO, President'];
+  const mandataireLines = [
+    data.prenom + ' ' + data.nom,
+    data.adresse,
+    data.cp + ' ' + data.ville,
+    data.siret ? 'SIRET : ' + data.siret : 'SIRET : non renseigne',
+    data.rsac  ? 'RSAC : ' + data.rsac   : 'RSAC : en cours',
+  ];
+  const maxLines = Math.max(mandantLines.length, mandataireLines.length);
+  for (let i = 0; i < maxLines; i++) {
+    if (mandantLines[i])    doc.text(mandantLines[i],    M,        y);
+    if (mandataireLines[i]) doc.text(mandataireLines[i], W/2 + 2,  y);
+    y += 4.5;
+  }
+  y += 4;
+
+  doc.line(M, y, W-M, y); y += 6;
+
+  const articles = [
+    ['Objet du mandat', 'Mission de promouvoir, prospecter et conclure des contrats de prestation au nom et pour le compte de S@FE SASU, a titre non exclusif, sur l\'ensemble du territoire national.'],
+    ['Perimetre', 'Referencement Local, Mise en conformite RGPD, DPO externalise, Cyberscurite, Click & Collect, Options a la carte. Toute nouvelle offre est automatiquement integree sauf notification contraire.'],
+    ['Commissionnement (grille SAFE-AC-2026-V1)', 'Commissions calculees sur les montants HT reellement encaisses. J+30 : commission mise en place. J+60 a J+180 : commissions recurrentes. J+210 : bonus fidelite + derniere commission. Impaye client = 0 EUR de commission ce mois.'],
+    ['Propriete du portefeuille', 'Tous les clients restes propriete exclusive de S@FE SASU. A la resiliation, le portefeuille revient au mandant sans indemnite. Non-demarchage post-contrat : 3 ans.'],
+    ['Obligations du mandataire', 'Respect des regles RGPD et politique commerciale S@FE. RC Pro recommandee (souscription sous 90 jours si absente a la signature). Immatriculation RSAC obligatoire.'],
+    ['Droit applicable', 'Droit francais — Tribunal de Commerce de Paris.'],
+  ];
+
+  articles.forEach(([titre, texte]) => {
+    if (y > 250) { doc.addPage(); doc.setFillColor(10,22,40); doc.rect(0,0,W,297,'F'); y = 20; }
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(245,158,11);
+    doc.text(titre, M, y); y += 5;
+    doc.setFont('helvetica','normal'); doc.setTextColor(203,213,225); doc.setFontSize(8);
+    doc.splitTextToSize(texte, W - 2*M).forEach(l => {
+      if (y > 270) { doc.addPage(); doc.setFillColor(10,22,40); doc.rect(0,0,W,297,'F'); y = 20; }
+      doc.text(l, M, y); y += 4.5;
+    });
+    y += 3;
+  });
+
+  if (y > 220) { doc.addPage(); doc.setFillColor(10,22,40); doc.rect(0,0,W,297,'F'); y = 20; }
+  y += 4;
+  doc.setDrawColor(245,158,11); doc.line(M, y, W-M, y); y += 8;
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(255,255,255);
+  doc.text('Signature electronique', M, y); y += 6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(203,213,225);
+  doc.text('Signataire : ' + data.prenom + ' ' + data.nom, M, y); y += 4.5;
+  doc.text('E-mail : ' + data.email, M, y); y += 4.5;
+  doc.text('Horodatage : ' + new Date().toLocaleString('fr-FR', {timeZone:'Europe/Paris'}) + ' (Europe/Paris)', M, y); y += 4.5;
+  doc.text('Verification OTP : ' + data.otpAt, M, y); y += 4.5;
+  doc.text('Empreinte document (SHA-256) : ' + data.docHash.slice(0,32) + '...', M, y); y += 8;
+
+  doc.addImage(data.sigDataUrl, 'PNG', M, y, 80, 25); y += 30;
+
+  doc.setFontSize(7); doc.setTextColor(100,116,139);
+  doc.text('Document genere automatiquement par S@FE CRM — safe-digitalisation.fr — Ref. ' + (data.numero || ''), M, y);
+
+  return doc;
+}
 
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
@@ -731,17 +826,49 @@ document.getElementById('btn-confirm-sign').addEventListener('click', async () =
     const now      = new Date().toISOString();
     const hasRcpro = document.getElementById('has-rcpro').checked;
 
+    const prenom = document.getElementById('f-prenom').value.trim();
+    const nom    = document.getElementById('f-nom').value.trim();
+    const siret  = document.getElementById('f-siret').value.trim() || null;
+    const rsac   = document.getElementById('f-rsac').value.trim()  || null;
+
+    btn.textContent = 'Génération du PDF…';
+    const pdfData = {
+      numero: mandatNumero, prenom, nom,
+      adresse: document.getElementById('f-adresse').value.trim(),
+      cp:      document.getElementById('f-cp').value.trim(),
+      ville:   document.getElementById('f-ville').value.trim(),
+      siret, rsac,
+      email:   currentUser.email,
+      sigDataUrl: sigData,
+      otpAt:   new Date(now).toLocaleString('fr-FR', {timeZone:'Europe/Paris'}),
+      docHash,
+    };
+    const pdfDoc  = genererMandatPDF(pdfData);
+    const pdfBlob = pdfDoc.output('blob');
+
+    btn.textContent = 'Upload en cours…';
+    const date     = new Date().toISOString().slice(0, 10);
+    const fileName = `PDF/MANDATS/contrat_${normalizeName(nom)}_${normalizeName(prenom)}_${date}_${Date.now()}.pdf`;
+    const { error: uploadError } = await sb.storage
+      .from('contrats-pdf')
+      .upload(fileName, pdfBlob, { contentType:'application/pdf', upsert:false });
+    if (uploadError) throw new Error('Upload PDF : ' + uploadError.message);
+
+    const { data: urlData } = sb.storage.from('contrats-pdf').getPublicUrl(fileName);
+    const pdfUrl = urlData.publicUrl;
+
+    btn.textContent = 'Enregistrement…';
     const { error: mandatErr } = await sb.from('mandats').insert({
       user_id:            currentUser.id,
       numero:             mandatNumero,
-      prenom:             document.getElementById('f-prenom').value.trim(),
-      nom:                document.getElementById('f-nom').value.trim(),
+      prenom,
+      nom,
       adresse:            document.getElementById('f-adresse').value.trim(),
       code_postal:        document.getElementById('f-cp').value.trim(),
       ville:              document.getElementById('f-ville').value.trim(),
       region:             document.getElementById('f-region').value,
-      siret:              document.getElementById('f-siret').value.trim()           || null,
-      rsac_numero:        document.getElementById('f-rsac').value.trim()            || null,
+      siret,
+      rsac_numero:        rsac,
       rsac_greffe:        document.getElementById('f-greffe').value.trim()          || null,
       rcpro_assureur:     hasRcpro ? (document.getElementById('f-rcpro-assureur').value.trim()  || null) : null,
       rcpro_numero:       hasRcpro ? (document.getElementById('f-rcpro-numero').value.trim()    || null) : null,
@@ -754,9 +881,14 @@ document.getElementById('btn-confirm-sign').addEventListener('click', async () =
       statut:             'signe',
       grille_version:     'SAFE-AC-2026-V1',
       grille_acceptee_at: now,
+      signed_pdf_url:     pdfUrl,
     });
 
     if (mandatErr) throw new Error(mandatErr.message);
+
+    const dlBtn = document.getElementById('success-dl-pdf');
+    dlBtn.href = pdfUrl;
+    dlBtn.style.display = 'inline-block';
     goStep(5);
   } catch (e) {
     alert('Erreur : ' + e.message);
