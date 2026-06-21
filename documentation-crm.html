@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Documentation S@FE CRM — Fonctionnalités complètes</title>
+<style>
+/* ── Variables ──────────────────────────────────────────── */
+:root {
+  --navy:#0a1628; --navy2:#142240; --gold:#f59e0b; --gold2:#fbbf24;
+  --blue:#3b82f6; --green:#22c55e; --red:#ef4444;
+  --txt:#1e293b; --txt2:#475569; --txt3:#94a3b8;
+  --line:#e2e8f0; --bg:#f8fafc; --white:#fff;
+  --r:10px;
+}
+/* ── Reset ──────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth}
+body{background:var(--white);color:var(--txt);font-family:'Segoe UI',Arial,Helvetica,sans-serif;line-height:1.7}
+a{color:var(--blue);text-decoration:none}
+/* ── Print ──────────────────────────────────────────────── */
+@media print{
+  .no-print{display:none!important}
+  .page-break{page-break-before:always}
+  body{font-size:12px}
+  .cover{page-break-after:always}
+}
+/* ── Layout ─────────────────────────────────────────────── */
+.wrap{max-width:960px;margin:0 auto;padding:0 24px}
+/* ── Topbar ─────────────────────────────────────────────── */
+.topbar{background:var(--navy);padding:14px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--gold)}
+.topbar .brand{font-weight:900;font-size:1.1rem;color:var(--gold);letter-spacing:-.3px}
+.topbar .sub{font-size:.8rem;color:var(--txt3);flex:1}
+.topbar .actions{display:flex;gap:10px}
+.btn{padding:8px 18px;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;transition:opacity .15s}
+.btn-gold{background:var(--gold);color:#000}
+.btn-out{background:transparent;border:1px solid rgba(255,255,255,.25);color:var(--white)}
+.btn:hover{opacity:.85}
+/* ── Cover ──────────────────────────────────────────────── */
+.cover{background:var(--navy);min-height:88vh;display:flex;align-items:center;justify-content:center;padding:60px 24px}
+.cover-inner{text-align:center;max-width:680px}
+.cover-logo{font-size:3.5rem;font-weight:900;color:var(--gold);letter-spacing:-1px;margin-bottom:8px}
+.cover-tagline{font-size:.95rem;color:var(--txt3);letter-spacing:.2em;text-transform:uppercase;margin-bottom:48px}
+.cover-title{font-size:2.2rem;font-weight:800;color:var(--white);line-height:1.25;margin-bottom:16px}
+.cover-sub{font-size:1rem;color:var(--txt3);line-height:1.8;margin-bottom:40px}
+.cover-meta{display:inline-flex;gap:32px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 28px}
+.cover-meta span{font-size:.82rem;color:var(--txt3)}<br>.cover-meta strong{color:var(--white);display:block;font-size:1rem}
+/* ── TOC ────────────────────────────────────────────────── */
+.toc{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:28px 32px;margin:40px 0}
+.toc h2{font-size:1rem;font-weight:800;color:var(--navy);margin-bottom:18px;text-transform:uppercase;letter-spacing:.08em}
+.toc ol{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:4px 32px}
+.toc li a{font-size:.88rem;color:var(--txt2);display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.toc li a:hover{color:var(--navy)}
+.toc li a .num{background:var(--navy);color:var(--gold);font-weight:800;font-size:.72rem;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+/* ── Sections ───────────────────────────────────────────── */
+.section{margin:48px 0}
+.section-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid var(--gold)}
+.section-num{background:var(--navy);color:var(--gold);font-weight:900;font-size:.9rem;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.section-title{font-size:1.35rem;font-weight:800;color:var(--navy)}
+/* ── Sub-section ────────────────────────────────────────── */
+h3{font-size:1rem;font-weight:700;color:var(--navy);margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+h3::before{content:'';display:block;width:4px;height:16px;background:var(--gold);border-radius:2px}
+h4{font-size:.88rem;font-weight:700;color:var(--txt2);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.06em}
+p{font-size:.9rem;color:var(--txt2);margin-bottom:10px;line-height:1.75}
+/* ── Lists ──────────────────────────────────────────────── */
+ul,ol{padding-left:0;list-style:none}
+ul li,ol li{font-size:.88rem;color:var(--txt2);padding:4px 0 4px 18px;position:relative;line-height:1.6}
+ul li::before{content:'▸';position:absolute;left:0;color:var(--gold);font-size:.8rem;top:5px}
+ol{counter-reset:li}
+ol li{counter-increment:li}
+ol li::before{content:counter(li)'.';position:absolute;left:0;color:var(--navy);font-weight:700;font-size:.8rem;top:5px}
+/* ── Feature cards ──────────────────────────────────────── */
+.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.feature-card{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.feature-card .fc-title{font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:6px}
+.feature-card .fc-body{font-size:.82rem;color:var(--txt2);line-height:1.65}
+/* ── Tables ─────────────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+thead tr{background:var(--navy)}
+thead th{color:var(--white);font-weight:700;padding:9px 12px;text-align:left;white-space:nowrap}
+thead th:first-child{border-radius:8px 0 0 0}
+thead th:last-child{border-radius:0 8px 0 0}
+tbody tr:nth-child(even){background:var(--bg)}
+tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5}
+.tc{text-align:center}
+.check{color:var(--green);font-weight:700}
+.cross{color:var(--txt3)}
+.partial{color:var(--gold);font-weight:700}
+/* ── Badges ─────────────────────────────────────────────── */
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700;letter-spacing:.04em}
+.b-admin{background:rgba(59,130,246,.12);color:#1d4ed8}
+.b-dci{background:rgba(245,158,11,.12);color:#92400e}
+.b-all{background:rgba(34,197,94,.12);color:#14532d}
+.b-super{background:rgba(239,68,68,.12);color:#991b1b}
+/* ── Info box ───────────────────────────────────────────── */
+.info-box{background:rgba(245,158,11,.07);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0;font-size:.86rem;color:var(--txt2);line-height:1.7}
+.info-box strong{color:var(--navy)}
+/* ── Highlight row ──────────────────────────────────────── */
+.hi-navy{background:var(--navy2)!important}
+.hi-navy td{color:var(--white)!important;font-weight:600}
+/* ── Email list ─────────────────────────────────────────── */
+.email-list{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.email-item{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:start;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.email-id{background:var(--navy);color:var(--gold);font-weight:800;font-size:.78rem;width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.email-name{font-size:.88rem;font-weight:700;color:var(--navy)}
+.email-trigger{font-size:.78rem;color:var(--txt2);margin-top:2px}
+.email-fn{font-size:.75rem;color:var(--txt3);font-family:monospace;background:rgba(0,0,0,.05);padding:2px 7px;border-radius:4px;white-space:nowrap}
+/* ── Responsive ─────────────────────────────────────────── */
+@media(max-width:700px){
+  .feature-grid,.toc ol{grid-template-columns:1fr}
+  .cover-title{font-size:1.6rem}
+  .cover-meta{gap:16px;flex-wrap:wrap;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar no-print">
+  <span class="brand">S@FE</span>
+  <span class="sub">Documentation CRM — Fonctionnalités complètes</span>
+  <div class="actions">
+    <a href="index.html" class="btn btn-out">← CRM</a>
+    <button class="btn btn-gold" onclick="window.print()">Imprimer / PDF</button>
+  </div>
+</div>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-logo">S@FE</div>
+    <div class="cover-tagline">Système de Gestion Commerciale</div>
+    <h1 class="cover-title">Documentation complète<br>des fonctionnalités CRM</h1>
+    <p class="cover-sub">Référentiel exhaustif de toutes les fonctionnalités du CRM S@FE — gestion commerciale, contrats, commissions, automatisations et administration.</p>
+    <div class="cover-meta">
+      <div><strong>Version</strong><span>2026-V1</span></div>
+      <div><strong>Date</strong><span>21 juin 2026</span></div>
+      <div><strong>Éditeur</strong><span>S@FE SASU</span></div>
+      <div><strong>Rôles</strong><span>Tous niveaux</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- TABLE DES MATIÈRES -->
+<div class="toc">
+  <h2>Table des matières</h2>
+  <ol>
+    <li><a href="#s1"><span class="num">1</span>Authentification &amp; Sécurité</a></li>
+    <li><a href="#s2"><span class="num">2</span>Gestion des Contacts</a></li>
+    <li><a href="#s3"><span class="num">3</span>Gestion des Contrats</a></li>
+    <li><a href="#s4"><span class="num">4</span>Paiements Stripe</a></li>
+    <li><a href="#s5"><span class="num">5</span>Commissions &amp; Bordereaux</a></li>
+    <li><a href="#s6"><span class="num">6</span>Tableau de Bord &amp; Alertes</a></li>
+    <li><a href="#s7"><span class="num">7</span>Tâches &amp; Suivi</a></li>
+    <li><a href="#s8"><span class="num">8</span>Résultats &amp; Cockpit</a></li>
+    <li><a href="#s9"><span class="num">9</span>Emails Automatiques (Brevo)</a></li>
+    <li><a href="#s10"><span class="num">10</span>Documents &amp; PDF</a></li>
+    <li><a href="#s11"><span class="num">11</span>Administration</a></li>
+    <li><a href="#s12"><span class="num">12</span>Droits par Rôle</a></li>
+  </ol>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 1. AUTHENTIFICATION & SÉCURITÉ -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="s1">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <div class="section-title">Authentification &amp; Sécurité</div>
+  </div>
+
+  <h3>Connexion &amp; Gestion de session</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title">Connexion email / mot de passe</div>
+      <div class="fc-body">Authentification sécurisée via Supabase Auth. Session automatiquement expirée après 8 heures d'inactivité.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Double authentification (2FA/TOTP)</div>
+      <div class="fc-body">QR code scannable (Google Authenticator, Authy). Code 6 chiffres à chaque connexion. Trust 2h après validation. Enrôlement obligatoire si absent.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Mot de passe oublié</div>
+      <div class="fc-body">Lien de réinitialisation envoyé par email. Renouvellement obligatoire tous les 45 jours avec avertissement anticipé.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Verrouillage automatique</div>
+      <div class="fc-body">Compte bloqué après 5 tentatives de connexion échouées. Déblocage manuel par l'administrateur.</div>
+    </div>
+  </div>
+
+  <h3>Audit &amp; Journalisation</h3>
+  <ul>
+    <li>Enregistrement de chaque tentative de connexion (réussie ou échouée) via l'Edge Function <code>record-login-failure</code></li>
+    <li>Journal consultable par l'admin : 50 dernières tentatives avec date, email, résultat (✓/✗), indicateur de verrouillage et adresse IP</li>
+    <li>Alertes d'intrusion automatiques : détection des essais multiples et création d'alerte rouge dans le panel admin</li>
+    <li>Résolution manuelle des alertes par l'administrateur (bouton « Résolu ✓ »)</li>
+  </ul>
+
+  <h3>Clause de Confidentialité</h3>
+  <ul>
+    <li><strong>Collaborateurs CRM</strong> : signature numérique obligatoire avant accès au CRM (canvas + horodatage). PDF archivé dans Supabase Storage et envoyé par email (template Brevo ID 7).</li>
+    <li><strong>Signataires externes / publics</strong> : page dédiée sans authentification, inclut le numéro ORIAS. PDF archivé et envoyé (template Brevo ID 6).</li>
+    <li>Intégralité du document consultable en mode lecture seule via paramètre URL <code>?view=id</code>.</li>
+  </ul>
+
+  <h3>Contrat de Mandat Agent Commercial</h3>
+  <p>Signature électronique en 4 étapes : lecture du contrat complet → renseignement des informations mandataire → signature canvas → validation OTP par email. SHA-256 du texte du contrat calculé et enregistré. PDF archivé et email envoyé automatiquement avec toute la documentation commerciale (template Brevo ID 5).</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 2. GESTION DES CONTACTS -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s2">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">Gestion des Contacts</div>
+  </div>
+
+  <h3>Création &amp; édition d'un contact</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title">Identité complète</div>
+      <div class="fc-body">Nom, prénom, téléphone, email, LinkedIn. Dénomination entreprise, forme juridique, SIRET.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Adresse avec autocomplétion</div>
+      <div class="fc-body">Intégration API Gouv (api-adresse.data.gouv.fr). Sélection automatique ville selon code postal.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Activités professionnelles</div>
+      <div class="fc-body">Cases à cocher : Digitalisation, RGPD, Assurance, Click &amp; Collect, Autre. Utilisées pour le filtrage.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Consentements RGPD explicites</div>
+      <div class="fc-body">3 consentements distincts : téléphone, email, courrier. Obligatoires pour prospection légale.</div>
+    </div>
+  </div>
+
+  <h3>Statuts &amp; Cycle de vie</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Statut</th><th>Signification</th><th>Déclenchement</th></tr></thead>
+    <tbody>
+      <tr><td>Prospect</td><td>Contact créé, pas encore qualifié</td><td>Création manuelle</td></tr>
+      <tr><td>Prospect chaud</td><td>Intérêt manifesté</td><td>Mise à jour manuelle</td></tr>
+      <tr><td>Prospect très chaud</td><td>En cours de signature</td><td>Mise à jour manuelle</td></tr>
+      <tr><td>Client</td><td>Contrat signé et actif</td><td>Contrat créé avec statut Signé</td></tr>
+      <tr><td>Ex-client</td><td>Contrat résilié</td><td>Résiliation validée</td></tr>
+      <tr><td class="b-admin">RGPD KO</td><td>Contact non conforme — coordonnées masquées</td><td>Consentement expiré / révoqué</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Suivi des interactions</h3>
+  <ul>
+    <li><strong>Types</strong> : Téléphone, Email, Visite terrain, LinkedIn, Facebook, Autre</li>
+    <li><strong>Contenu</strong> : Type, date, objet de l'échange, compte-rendu détaillé, suite à donner</li>
+    <li><strong>Liens</strong> : Associée optionnellement à un contact et/ou un contrat</li>
+    <li><strong>Historique</strong> : Chronologique, modifiable, visible dans la fiche contact</li>
+  </ul>
+
+  <h3>Fonctions avancées</h3>
+  <ul>
+    <li><strong>Transfert de client</strong> : Changer le commercial responsable (bouton « Transférer client »)</li>
+    <li><strong>Propriété stricte</strong> : Chaque contact appartient à son créateur ; seul le propriétaire ou un super-admin peut le modifier</li>
+    <li><strong>Verrouillage RGPD KO</strong> : Coordonnées masquées, édition bloquée si contact en état de non-conformité RGPD</li>
+    <li><strong>Journalisation RGPD</strong> : Toute modification sensible est logguée automatiquement</li>
+    <li><strong>Recherche &amp; filtres</strong> : Recherche globale (nom, entreprise, email), filtre par activité, filtre par commercial responsable</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 3. GESTION DES CONTRATS -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s3">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <div class="section-title">Gestion des Contrats</div>
+  </div>
+
+  <h3>Création d'un contrat</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title">Types de prestation (9)</div>
+      <div class="fc-body">Référencement Local · Mise en conformité RGPD · DPO Externalisé · Audit RGPD · Cybersécurité · Click &amp; Collect · Gestion Fiche Google Business · Courtage Assurance · Autre</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Tarification complète</div>
+      <div class="fc-body">Montant HT, frais de mise en place, remise optionnelle. Calcul automatique du montant net et du TTC. Récurrence : Ponctuel / Mensuel / Annuel.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Dates &amp; engagement</div>
+      <div class="fc-body">Date de début + durée d'engagement en mois. Échéance calculée automatiquement. Alertes J-7 et J-3 avant fin d'engagement.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Formule souscrite</div>
+      <div class="fc-body">Sélection parmi les formules prédéfinies (Essentiel, Boost, Pro, Premium…) ou saisie d'une formule personnalisée.</div>
+    </div>
+  </div>
+
+  <h3>Statuts du cycle de vie contrat</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Statut</th><th>Déclencheur</th></tr></thead>
+    <tbody>
+      <tr><td>Devis envoyé</td><td>Création initiale</td></tr>
+      <tr><td>Signé</td><td>Signature bon de commande</td></tr>
+      <tr><td>Contrat en cours</td><td>Paiement Stripe confirmé</td></tr>
+      <tr><td>Demande de résiliation</td><td>Commercial ou client demande</td></tr>
+      <tr><td>Résiliation en attente Stripe</td><td>Admin a validé, traitement Stripe en cours</td></tr>
+      <tr><td>Terminé / Résilié</td><td>Fin d'abonnement confirmée</td></tr>
+      <tr><td>Erreur résiliation</td><td>Échec de l'appel Stripe</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Résiliation d'abonnement</h3>
+  <ul>
+    <li><strong>Niveau 1 / DCI</strong> : soumet une « Demande de résiliation » — l'admin valide ou rejette</li>
+    <li><strong>Admin</strong> : valide directement la résiliation via l'Edge Function <code>cancel-subscription</code></li>
+    <li>En cas d'erreur Stripe : bouton « Relancer la synchronisation » pour relancer l'appel</li>
+    <li>Email de confirmation envoyé automatiquement au client (template Brevo ID 3)</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 4. PAIEMENTS STRIPE -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="s4">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <div class="section-title">Paiements Stripe</div>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title">Création d'abonnement</div>
+      <div class="fc-body">Edge Function <code>creaye-checkout</code> crée une session Stripe. Lien de paiement généré et transmis au client. Synchronisation automatique du statut contrat après paiement.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Portail client Stripe</div>
+      <div class="fc-body">Génère un lien temporaire vers le portail Stripe self-service. Le client peut modifier son moyen de paiement, télécharger ses factures, ou résilier lui-même. Lien copié automatiquement dans le presse-papier.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Webhook Stripe</div>
+      <div class="fc-body">Écoute les événements Stripe : création / mise à jour / suppression d'abonnement, paiement réussi, paiement échoué. Met à jour le statut du contrat dans Supabase en temps réel.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Gestion des impayés</div>
+      <div class="fc-body">Impayé client = commission DCI de 0 € pour le mois concerné. Aucune rétroactivité sur les commissions déjà versées. S@FE absorbe la perte.</div>
+    </div>
+  </div>
+
+  <h3>Emails transactionnels Stripe</h3>
+  <ul>
+    <li><strong>Paiement validé</strong> (ID 2) : confirmation envoyée au client avec facture jointe</li>
+    <li><strong>Paiement refusé</strong> (ID 1) : alerte envoyée au client avec montant, service, et date de prochain essai</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 5. COMMISSIONS & BORDEREAUX -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s5">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <div class="section-title">Commissions &amp; Bordereaux</div>
+  </div>
+
+  <h3>Grille de commissionnement (SAFE-AC-2026-V1)</h3>
+
+  <h4>Référencement Local</h4>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Formule</th><th>Mensuel HT</th><th>MeP HT</th><th>Engagement</th><th>Comm. signature</th><th>Bonus fidélité</th><th>Comm. récurrente</th></tr></thead>
+    <tbody>
+      <tr><td>Essentiel</td><td>79 €</td><td>190 €</td><td>6 mois</td><td>75 € fixe</td><td>75 € (mois 7)</td><td>15 % / mois</td></tr>
+      <tr><td>Boost</td><td>149 €</td><td>290 €</td><td>6 mois</td><td>100 € fixe</td><td>100 € (mois 7)</td><td>15 % / mois</td></tr>
+      <tr><td>Prestige</td><td>249 €</td><td>—</td><td>3 mois</td><td>—</td><td>—</td><td>15 % / mois</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>Click &amp; Collect</h4>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Formule</th><th>Mensuel HT</th><th>MeP HT</th><th>Engagement</th><th>Comm. signature</th><th>Bonus fidélité</th><th>Comm. récurrente</th></tr></thead>
+    <tbody>
+      <tr><td>Essentiel</td><td>39 €</td><td>150 €</td><td>3 mois</td><td>50 € fixe</td><td>50 € (mois 4)</td><td>15 % / mois</td></tr>
+      <tr><td>Pro</td><td>79 €</td><td>250 €</td><td>3 mois</td><td>100 € fixe</td><td>100 € (mois 4)</td><td>15 % / mois</td></tr>
+      <tr><td>Premium</td><td>129 €</td><td>—</td><td>3 mois</td><td>—</td><td>—</td><td>15 % / mois</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>Autres offres</h4>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Offre</th><th>Tarif</th><th>Type</th><th>Commission</th></tr></thead>
+    <tbody>
+      <tr><td>DPO Externalisé</td><td>189 € / mois</td><td>Mensuel, 12 mois</td><td>50 € signature + 10 % / mois</td></tr>
+      <tr><td>Audit RGPD TPE</td><td>1 490 € HT</td><td>Ponctuel</td><td>298 € fixe</td></tr>
+      <tr><td>Audit RGPD+ PME</td><td>2 990 € HT</td><td>Ponctuel</td><td>598 € fixe</td></tr>
+      <tr><td>Audit RGPD ETI</td><td>≥ 5 500 € HT</td><td>Ponctuel</td><td>20 % du montant HT</td></tr>
+      <tr><td>Audit de vulnérabilité</td><td>490 € HT</td><td>Ponctuel</td><td>98 € fixe</td></tr>
+      <tr><td>Pack Sécurité Essentiel</td><td>990 € HT</td><td>Ponctuel</td><td>198 € fixe</td></tr>
+      <tr><td>Pack Résilience Pro</td><td>1 990 € HT</td><td>Ponctuel</td><td>398 € fixe</td></tr>
+      <tr><td>Options à la carte</td><td>220 – 390 € HT</td><td>Ponctuel</td><td>10 % du montant HT</td></tr>
+      <tr><td>Veille menaces</td><td>89 € HT / mois</td><td>Mensuel</td><td>10 % / mois</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="info-box"><strong>Règle générale :</strong> Les commissions sont calculées sur les montants HT réellement encaissés par S@FE. Un impayé client = 0 € de commission pour le mois concerné. Aucune rétroactivité sur les commissions déjà versées.</div>
+
+  <h3>Échéancier des versements</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Échéance</th><th>Nature du versement</th></tr></thead>
+    <tbody>
+      <tr><td>J + 30</td><td>Commission sur frais de mise en place</td></tr>
+      <tr><td>J + 60</td><td>Commission récurrente mois 1</td></tr>
+      <tr><td>J + 90</td><td>Commission récurrente mois 2</td></tr>
+      <tr><td>J + 120</td><td>Commission récurrente mois 3</td></tr>
+      <tr><td>J + 150</td><td>Commission récurrente mois 4</td></tr>
+      <tr><td>J + 180</td><td>Commission récurrente mois 5</td></tr>
+      <tr class="hi-navy"><td>J + 210</td><td>Bonus fidélité + dernière commission récurrente</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Bordereaux de commission</h3>
+  <ul>
+    <li>Génération mensuelle par l'admin : sélection de la période + commercial DCI</li>
+    <li>PDF du bordereau généré automatiquement (jsPDF) et joint à l'email Brevo (template ID 4)</li>
+    <li>Stockage du bordereau dans <code>bordereau_log</code> avec statut : À envoyer → Facture reçue → Facture payée</li>
+    <li>Email de notification au DCI lors du paiement effectif (template à créer)</li>
+    <li><strong>Bonus fidélité</strong> : versé uniquement si le client a payé 100 % de toutes les échéances dans les délais ET n'a pas résilié avant la fin de l'engagement initial</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 6. TABLEAU DE BORD & ALERTES -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s6">
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <div class="section-title">Tableau de Bord &amp; Alertes</div>
+  </div>
+
+  <h3>Statistiques principales</h3>
+  <div class="feature-grid">
+    <div class="feature-card"><div class="fc-title">Contacts au total</div><div class="fc-body">Nombre de contacts appartenant au commercial connecté.</div></div>
+    <div class="feature-card"><div class="fc-title">Clients actifs</div><div class="fc-body">Contacts avec statut « Client » (contrat en cours).</div></div>
+    <div class="feature-card"><div class="fc-title">Contrats en cours</div><div class="fc-body">Contrats dont le statut n'est ni Terminé ni Résilié.</div></div>
+    <div class="feature-card"><div class="fc-title">Tâches en retard</div><div class="fc-body">Tâches dont l'échéance est dépassée et non terminées.</div></div>
+  </div>
+
+  <h3>Alertes contextuelles (selon rôle)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Alerte</th><th>Visible par</th><th>Déclencheur</th></tr></thead>
+    <tbody>
+      <tr><td>Échéances contrats J-7 / J-3</td><td>Tous</td><td>Contrats fin engagement proche — bouton « Interagir »</td></tr>
+      <tr><td>Risque de résiliation (churn)</td><td>N1, DCI</td><td>Client sans contact depuis 60 jours</td></tr>
+      <tr><td>Potentiel montée en gamme</td><td>DCI</td><td>Client avec CA faible vs potentiel identifié</td></tr>
+      <tr><td>Demandes de résiliation en attente</td><td>Admin</td><td>Commercial a soumis une demande — actions Valider / Rejeter / Relancer</td></tr>
+      <tr><td>Bordereaux à envoyer</td><td>Admin</td><td>Fin de mois approche avec bordereaux non traités</td></tr>
+      <tr><td>Nouveaux contrats signés</td><td>Admin</td><td>Contrats signés cette semaine</td></tr>
+      <tr><td>Messages du DCI</td><td>Niveau 1</td><td>Message envoyé par le DCI parent</td></tr>
+      <tr><td>Rappel facturation</td><td>DCI</td><td>Dernier jour ouvré du mois — « Émettez votre facture »</td></tr>
+      <tr><td>Demandes d'assistance en attente</td><td>Admin</td><td>Ticket support ouvert sans réponse</td></tr>
+      <tr><td>Mes demandes en cours</td><td>Tous</td><td>Tickets support ouverts par l'utilisateur</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Horloge Paris</h3>
+  <p>Affichage temps réel de la date et de l'heure (Europe/Paris), mis à jour toutes les 30 secondes.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 7. TÂCHES & SUIVI -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="s7">
+  <div class="section-header">
+    <div class="section-num">7</div>
+    <div class="section-title">Tâches &amp; Suivi</div>
+  </div>
+
+  <h3>Création et gestion des tâches</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title">Types de tâche</div>
+      <div class="fc-body">Premier contact · Rendez-vous visio · Rendez-vous terrain · Autre. Les RDV disposent de champs spécifiques (date/heure, lieu ou lien visio).</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Priorités &amp; assignation</div>
+      <div class="fc-body">3 niveaux de priorité : Basse / Normale / Haute. Assignation à n'importe quel utilisateur de l'équipe.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Liens contextuels</div>
+      <div class="fc-body">Chaque tâche peut être liée à un contact et/ou un contrat spécifique pour une navigation directe.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Horodatage de complétion</div>
+      <div class="fc-body">Date/heure enregistrée automatiquement au passage en statut « Terminé » pour les métriques de performance.</div>
+    </div>
+  </div>
+
+  <h3>Vue Kanban</h3>
+  <ul>
+    <li>3 colonnes : <strong>À faire</strong> · <strong>En cours</strong> · <strong>Terminé</strong></li>
+    <li>Transition rapide via boutons dans chaque carte (« → En cours » / « → Terminé »)</li>
+    <li>Filtrage par commercial assigné</li>
+    <li>Top 6 tâches en attente affichées sur le tableau de bord</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 8. RÉSULTATS & COCKPIT -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s8">
+  <div class="section-header">
+    <div class="section-num">8</div>
+    <div class="section-title">Résultats &amp; Cockpit Commercial</div>
+  </div>
+
+  <h3>Vue Niveau 1 — Mes objectifs</h3>
+  <ul>
+    <li>Jauges visuelles (SVG dégradé bleu → or) : Entrées en contact / CA généré / Commissions</li>
+    <li>Objectifs mensuels personnalisables (modal d'édition)</li>
+    <li>Prorata automatique selon jours travaillés renseignés en début de mois</li>
+    <li>Calcul : cible = objectif_base × (jours_renseignés / jours_référence)</li>
+  </ul>
+
+  <h3>Vue DCI / Admin — Cockpit commercial</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title">Filtres hiérarchiques</div>
+      <div class="fc-body">Filtrage par région, département, secteur, niveau DCI, niveau commercial. Grille de cartes secteurs mise à jour dynamiquement.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">KPIs par carte secteur</div>
+      <div class="fc-body">Contrats actifs · Signés ce mois · CA généré · CA récurrent · Taux de transformation · Taux d'atteinte objectif · Dernière activité · Statut bordereau</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Drill-down équipe</div>
+      <div class="fc-body">Clic sur un DCI → affichage détaillé des commerciaux Niveau 1 rattachés avec leurs propres KPIs.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Codage couleur objectifs</div>
+      <div class="fc-body">Rouge &lt; 50 % · Orange 50–75 % · Vert &gt; 75 % de l'objectif atteint.</div>
+    </div>
+  </div>
+
+  <h3>Gestion d'équipe (DCI)</h3>
+  <ul>
+    <li>Modal « Gérer mon équipe » : statistiques équipe (nb membres, CA total, prime cooptation 3 %)</li>
+    <li>Liste des Niveau 1 rattachés avec mini-profil et statistiques individuelles</li>
+    <li>Envoi de messages à toute l'équipe : notification push dans le CRM de chaque membre</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 9. EMAILS AUTOMATIQUES (BREVO) -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="s9">
+  <div class="section-header">
+    <div class="section-num">9</div>
+    <div class="section-title">Emails Automatiques (Brevo)</div>
+  </div>
+
+  <p>Tous les emails transactionnels sont envoyés via l'API Brevo v3, avec les pièces jointes PDF le cas échéant. L'échec d'un envoi n'interrompt jamais l'opération métier (<em>fire-and-forget</em>).</p>
+
+  <div class="email-list">
+    <div class="email-item">
+      <div class="email-id">1</div>
+      <div>
+        <div class="email-name">Paiement refusé</div>
+        <div class="email-trigger">Envoyé au client → Destinataire : client · Déclencheur : <code>invoice.payment_failed</code> Stripe · Params : FIRST_NAME, MONTANT, SERVICE, NEXT_ATTEMPT, COMMERCIAL_*</div>
+      </div>
+      <div class="email-fn">stripe-webhook</div>
+    </div>
+    <div class="email-item">
+      <div class="email-id">2</div>
+      <div>
+        <div class="email-name">Paiement validé</div>
+        <div class="email-trigger">Envoyé au client → Destinataire : client · Déclencheur : <code>invoice.payment_succeeded</code> Stripe · Facture jointe en PDF</div>
+      </div>
+      <div class="email-fn">stripe-webhook</div>
+    </div>
+    <div class="email-item">
+      <div class="email-id">3</div>
+      <div>
+        <div class="email-name">Résiliation confirmée</div>
+        <div class="email-trigger">Envoyé au client → Destinataire : client · Déclencheur : Validation résiliation par admin · Reply-to : commercial DCI · Params : SERVICE, date de fin</div>
+      </div>
+      <div class="email-fn">send-crm-email</div>
+    </div>
+    <div class="email-item">
+      <div class="email-id">4</div>
+      <div>
+        <div class="email-name">Bordereau de commission</div>
+        <div class="email-trigger">Envoyé au DCI → Destinataire : commercial DCI · Déclencheur : Génération du bordereau mensuel · PDF bordereau joint · Params : MONTANT, nb contrats, période</div>
+      </div>
+      <div class="email-fn">send-crm-email</div>
+    </div>
+    <div class="email-item">
+      <div class="email-id">5</div>
+      <div>
+        <div class="email-name">Mandat DCI signé</div>
+        <div class="email-trigger">Envoyé au DCI → Destinataire : signataire + BCC admin · Déclencheur : Signature électronique du mandat · Pièces jointes : mandat signé + 8 documents commerciaux</div>
+      </div>
+      <div class="email-fn">send-mandat-email</div>
+    </div>
+    <div class="email-item">
+      <div class="email-id">6</div>
+      <div>
+        <div class="email-name">Clause de confidentialité — Public</div>
+        <div class="email-trigger">Envoyé au signataire externe → Destinataire : signataire + BCC admin · Déclencheur : Signature sur clause-public.html · PDF joint · Inclut numéro ORIAS</div>
+      </div>
+      <div class="email-fn">send-clause-email</div>
+    </div>
+    <div class="email-item">
+      <div class="email-id">7</div>
+      <div>
+        <div class="email-name">Clause de confidentialité — Collaborateur</div>
+        <div class="email-trigger">Envoyé au collaborateur CRM → Destinataire : utilisateur connecté + BCC admin · Déclencheur : Signature sur clause-confidentialite.html · PDF joint</div>
+      </div>
+      <div class="email-fn">send-clause-email</div>
+    </div>
+    <div class="email-item" style="border-color:var(--gold)">
+      <div class="email-id" style="background:rgba(245,158,11,.15);color:var(--gold)">—</div>
+      <div>
+        <div class="email-name">Paiement des commissions</div>
+        <div class="email-trigger">Envoyé au DCI → Destinataire : commercial DCI · Déclencheur : Statut bordereau passé à « Facture payée » · Template à créer dans Brevo</div>
+      </div>
+      <div class="email-fn">send-crm-email</div>
+    </div>
+  </div>
+
+  <h3>Documents joints automatiquement (mandat DCI)</h3>
+  <p>À la signature du mandat, le DCI reçoit les 9 documents suivants dans un seul email :</p>
+  <div class="feature-grid">
+    <div>
+      <ul>
+        <li>Mandat DCI signé (PDF personnalisé horodaté)</li>
+        <li>Mandat DCI vierge (exemplaire de référence)</li>
+        <li>Grille de commissionnement SAFE-AC-2026-V1</li>
+        <li>Conditions Générales de Vente SAFE-CGV-2026-001</li>
+        <li>Charte de sous-traitance RGPD (Art. 28)</li>
+      </ul>
+    </div>
+    <div>
+      <ul>
+        <li>Fiche produit — Référencement Local</li>
+        <li>Fiche produit — Click &amp; Collect</li>
+        <li>Fiche produit — Cybersécurité</li>
+        <li>Fiche produit — RGPD &amp; DPO Externalisé</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 10. DOCUMENTS & PDF -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s10">
+  <div class="section-header">
+    <div class="section-num">10</div>
+    <div class="section-title">Documents &amp; PDF</div>
+  </div>
+
+  <h3>Documents générés automatiquement</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Document</th><th>Référence</th><th>Contenu</th><th>Stockage</th></tr></thead>
+    <tbody>
+      <tr><td>Bon de commande</td><td>SAFE-BC-SEO / CC / CYBER / RGPD</td><td>Parties, formule, tarifs, CGV intégrées</td><td>contrats-pdf/PDF/BDC/</td></tr>
+      <tr><td>Clause de confidentialité</td><td>—</td><td>Engagement sécurité + signature canvas + horodatage</td><td>contrats-pdf/PDF/CLAUSE/</td></tr>
+      <tr><td>Contrat de mandat</td><td>SAFE-AC-2026-V1</td><td>Contrat complet + grille + signature OTP</td><td>contrats-pdf/PDF/MANDATS/</td></tr>
+      <tr><td>CGV seules</td><td>SAFE-CGV-2026-001</td><td>4 sections CGV + footer</td><td>Téléchargement local</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Documents statiques (Force de vente)</h3>
+  <p>Stockés dans <code>contrats-pdf/WORK/Force-de-vente/documents-contractuels/</code> et générés via la page <strong>admin-docs.html</strong> :</p>
+  <ul>
+    <li>Mandat DCI vierge · Grille de commissionnement · CGV S@FE · Charte RGPD sous-traitance</li>
+    <li>Fiche produit Référencement Local · Click &amp; Collect · Cybersécurité · RGPD &amp; DPO</li>
+  </ul>
+
+  <h3>Conditions Générales de Vente (intégrées aux BDC)</h3>
+  <ul>
+    <li><strong>Section 1</strong> : Durées d'engagement, frais de mise en place non remboursables, pénalités résiliation anticipée</li>
+    <li><strong>Section 2</strong> : Règles de commissionnement DCI (réservé mandataire)</li>
+    <li><strong>Section 3</strong> : Propriété exclusive du portefeuille par S@FE, non-démarchage 3 ans</li>
+    <li><strong>Section 4</strong> : Compatibilité Mandat / CGV — droit français, Tribunal de Commerce de Paris</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 11. ADMINISTRATION -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="s11">
+  <div class="section-header">
+    <div class="section-num">11</div>
+    <div class="section-title">Administration</div>
+  </div>
+
+  <h3>Panel Admin — 5 onglets</h3>
+
+  <h4>Vue d'ensemble</h4>
+  <p>Totaux cumulés tous utilisateurs depuis le 1ᵉʳ du mois : entrées en contact, CA généré, commissions. Jauges SVG.</p>
+
+  <h4>Par utilisateur</h4>
+  <p>Grille de tous les utilisateurs avec photos, mini-jauges et codage couleur (rouge/orange/vert selon % objectif). Clic pour voir le détail d'un utilisateur.</p>
+
+  <h4>Gestion utilisateurs</h4>
+  <ul>
+    <li>Créer un utilisateur : prénom, email, rôle, mot de passe généré (affiché une seule fois)</li>
+    <li>Modifier les détails du profil : identité, adresse professionnelle, SIRET, région/département/secteur</li>
+    <li>Réinitialiser le mot de passe</li>
+    <li>Bloquer / débloquer un compte</li>
+    <li>Rôles : Niveau 1 (user) · DCI (dci) · Admin (admin) · Super Admin (super_admin)</li>
+  </ul>
+
+  <h4>RGPD — 4 sous-onglets</h4>
+  <ul>
+    <li><strong>Registre des traitements</strong> (Art. 30) : table complète avec finalité, base légale, catégories de données, destinataires, durée de conservation, mesures de sécurité · Export PDF</li>
+    <li><strong>Journal RGPD</strong> : log de tous les événements sensibles (création, suppression, export de données personnelles) avec utilisateur et horodatage</li>
+    <li><strong>Demandes de droits</strong> : suivi des demandes d'accès, rectification, suppression (Art. 17+) de bout en bout</li>
+    <li><strong>Rapports de conformité</strong> : évaluations d'impact et audits automatiques</li>
+  </ul>
+
+  <h4>Sécurité</h4>
+  <ul>
+    <li>Journal des 50 dernières tentatives de connexion : date, email, résultat, verrouillage, IP</li>
+    <li>Alertes d'intrusion non résolues affichées en bandeau rouge</li>
+    <li>Résolution manuelle des alertes</li>
+  </ul>
+
+  <h3>Réinitialisation des données de test</h3>
+  <div class="info-box"><strong>⚠️ Super Admin uniquement — Irréversible.</strong> Supprime tous les contacts, contrats, tâches, interactions, mandats et notifications. Conserve les comptes utilisateurs. Confirmation par frappe de « RÉINITIALISER ».</div>
+
+  <h3>Génération des documents Force de Vente</h3>
+  <p>Page <strong>admin-docs.html</strong> accessible depuis le panel admin : génère et uploade en un clic les 8 documents PDF commerciaux dans Supabase Storage (opération ponctuelle, à relancer si mise à jour des documents).</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 12. DROITS PAR RÔLE -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s12">
+  <div class="section-header">
+    <div class="section-num">12</div>
+    <div class="section-title">Droits par Rôle</div>
+  </div>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Fonctionnalité</th>
+        <th class="tc">Niveau 1</th>
+        <th class="tc">DCI (N2)</th>
+        <th class="tc">Admin</th>
+        <th class="tc">Super Admin</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="5" style="background:var(--bg);font-weight:700;color:var(--navy);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;padding:10px 12px">Contacts &amp; Contrats</td></tr>
+      <tr><td>Créer / modifier ses contacts</td><td class="tc check">✓</td><td class="tc check">✓</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+      <tr><td>Voir tous les contacts</td><td class="tc cross">—</td><td class="tc partial">Équipe</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+      <tr><td>Créer / modifier des contrats</td><td class="tc check">✓</td><td class="tc check">✓</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+      <tr><td>Demander une résiliation</td><td class="tc check">✓</td><td class="tc check">✓</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+      <tr><td>Valider / rejeter une résiliation</td><td class="tc cross">—</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+      <tr><td>Transférer un contact</td><td class="tc cross">—</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+
+      <tr><td colspan="5" style="background:var(--bg);font-weight:700;color:var(--navy);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;padding:10px 12px">Résultats &amp; Commissions</td></tr>
+      <tr><td>Mes objectifs (jauges perso)</td><td class="tc check">✓</td><td class="tc check">✓</td><td class="tc cross">—</td><td class="tc cross">—</td></tr>
+      <tr><td>Cockpit commercial (équipe)</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+      <tr><td>Générer bordereaux commissions</td><td class="tc cross">—</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+      <tr><td>Voir résultats tous utilisateurs</td><td class="tc cross">—</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+
+      <tr><td colspan="5" style="background:var(--bg);font-weight:700;color:var(--navy);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;padding:10px 12px">Équipe &amp; Communication</td></tr>
+      <tr><td>Gérer son équipe (Niveau 1)</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc cross">—</td><td class="tc check">✓</td></tr>
+      <tr><td>Envoyer un message à l'équipe</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc cross">—</td><td class="tc check">✓</td></tr>
+      <tr><td>Voir prime de cooptation 3 %</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc cross">—</td><td class="tc check">✓</td></tr>
+
+      <tr><td colspan="5" style="background:var(--bg);font-weight:700;color:var(--navy);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;padding:10px 12px">Administration &amp; Sécurité</td></tr>
+      <tr><td>Panel admin complet</td><td class="tc cross">—</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+      <tr><td>Gestion des utilisateurs</td><td class="tc cross">—</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+      <tr><td>Registre RGPD &amp; journal</td><td class="tc partial">Ses données</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+      <tr><td>Audit de sécurité / connexions</td><td class="tc cross">—</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+      <tr><td>Génération docs Force de Vente</td><td class="tc cross">—</td><td class="tc cross">—</td><td class="tc check">✓</td><td class="tc check">✓</td></tr>
+      <tr><td>Réinitialisation données test</td><td class="tc cross">—</td><td class="tc cross">—</td><td class="tc cross">—</td><td class="tc check">✓</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="info-box" style="margin-top:24px">
+    <strong>Architecture technique :</strong> 9 Edge Functions Supabase (Deno) · Supabase Auth (JWT) · Stripe (abonnements &amp; webhook) · Brevo API v3 (7 templates actifs) · Supabase Storage (2 buckets) · jsPDF (génération PDF client) · API Adresse Gouv (autocomplétion)
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="border-top:2px solid var(--line);padding:32px 0;margin:40px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+  <div>
+    <div style="font-size:.95rem;font-weight:800;color:var(--navy)">S@FE SASU</div>
+    <div style="font-size:.8rem;color:var(--txt3)">66 av. des Champs-Élysées, 75008 Paris · SIRET 104 699 558 00011</div>
+    <div style="font-size:.8rem;color:var(--txt3)">contact@safe-digitalisation.fr · safe-digitalisation.fr</div>
+  </div>
+  <div style="font-size:.8rem;color:var(--txt3);text-align:right">
+    Documentation CRM v2026-V1<br>
+    Mise à jour : 21 juin 2026<br>
+    Confidentiel — Usage interne
+  </div>
+</div>
+
+</div><!-- /wrap -->
+</body>
+</html>
