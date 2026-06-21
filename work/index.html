@@ -9,6 +9,7 @@
 <link rel="shortcut icon" href="/work/favicon.svg">
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/plexsans-400.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/sora-800.woff2" crossorigin>
+<link rel="stylesheet" href="/work/shared.css">
 <style>
 :root{
   --navy:#0a1628; --navy-mid:#142240; --blue:#1a3a6e;
@@ -1294,72 +1295,82 @@ function doPDF(step, contact, contract){
 }
 
 /* ============================================================
-   JOURNAL (localStorage + Supabase tasks comme trace)
+   JOURNAL (Supabase — table work_journal)
    ============================================================ */
 async function logAction(wf, contact, contract, status){
-  const entry = {
-    id: Date.now(),
-    date: new Date().toISOString(),
-    wf_id: wf.id,
-    wf_label: wf.label,
-    wf_icon: wf.icon,
-    contact_nom: contact.nom,
-    contact_entreprise: contact.entreprise||'',
-    contract_type: contract.type||'',
-    status,
-    user: currentUser.prenom||currentUser.email,
-  };
-  const stored = JSON.parse(localStorage.getItem('safe_work_journal')||'[]');
-  stored.unshift(entry);
-  localStorage.setItem('safe_work_journal', JSON.stringify(stored.slice(0,100)));
-  journalData = stored;
-  updateJournalBadge();
+  try {
+    await sbPost('work_journal', {
+      user_id:            currentUser.id,
+      user_nom:           currentUser.prenom || currentUser.email,
+      wf_id:              wf.id,
+      wf_label:           wf.label,
+      wf_icon:            wf.icon,
+      contact_id:         contact.id,
+      contact_nom:        contact.nom,
+      contact_entreprise: contact.entreprise || '',
+      contract_type:      contract.type || '',
+      status,
+    });
+  } catch(e){ console.warn('[Journal] Erreur écriture:', e); }
+  await loadJournal();
 }
 
 async function loadJournal(){
-  journalData = JSON.parse(localStorage.getItem('safe_work_journal')||'[]');
+  try {
+    const data = await sbGet('work_journal', 'order=created_at.desc&limit=100');
+    journalData = Array.isArray(data) ? data : [];
+  } catch(e){
+    console.warn('[Journal] Erreur lecture:', e);
+    journalData = [];
+  }
   updateJournalBadge();
-  renderJournal();
   renderDashJournal();
+  const view = document.getElementById('view-journal');
+  if(view && view.style.display !== 'none') renderJournal();
 }
 
 function updateJournalBadge(){
-  document.getElementById('journal-count').textContent = journalData.length;
+  const el = document.getElementById('journal-count');
+  if(!el) return;
+  const today = new Date().toDateString();
+  const n = journalData.filter(e => new Date(e.created_at).toDateString() === today).length;
+  el.textContent = n || journalData.length || '0';
+}
+
+function _renderJournalEntry(e, short = false){
+  const date = new Date(e.created_at).toLocaleString('fr-FR');
+  return `
+    <div class="journal-item">
+      <div class="journal-ico" style="background:rgba(59,130,246,.1)">${e.wf_icon||'⚡'}</div>
+      <div class="journal-body">
+        <div class="journal-title">${e.wf_label||'—'} — ${e.contact_nom||'—'}${!short&&e.contact_entreprise?' ('+e.contact_entreprise+')':''}</div>
+        <div class="journal-meta">
+          ${date}${!short?` · Contrat : ${e.contract_type||'—'}`:''}
+          · Par : ${e.user_nom||'—'}
+          ${!short?` · <span style="color:${e.status==='completed'?'var(--ok)':'var(--warn)'}">${e.status==='completed'?'✓ Terminé':'En cours'}</span>`:''}
+        </div>
+      </div>
+    </div>`;
 }
 
 function renderJournal(){
   const container = document.getElementById('journal-list');
-  if(!journalData.length){ container.innerHTML='<div class="empty"><div class="ico">📋</div><p>Aucune action enregistrée</p></div>'; return; }
-  container.innerHTML = journalData.map(e=>`
-    <div class="journal-item">
-      <div class="journal-ico" style="background:rgba(59,130,246,.1)">${e.wf_icon}</div>
-      <div class="journal-body">
-        <div class="journal-title">${e.wf_label} — ${e.contact_nom}${e.contact_entreprise?' ('+e.contact_entreprise+')':''}</div>
-        <div class="journal-meta">
-          ${new Date(e.date).toLocaleString('fr-FR')} · 
-          Contrat : ${e.contract_type||'—'} · 
-          Par : ${e.user} · 
-          <span style="color:${e.status==='completed'?'var(--ok)':'var(--warn)'}">
-            ${e.status==='completed'?'✓ Terminé':'En cours'}
-          </span>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  if(!container) return;
+  if(!journalData.length){
+    container.innerHTML='<div class="empty"><div class="ico">📋</div><p>Aucune action enregistrée</p></div>';
+    return;
+  }
+  container.innerHTML = journalData.map(e => _renderJournalEntry(e)).join('');
 }
 
 function renderDashJournal(){
   const container = document.getElementById('dash-journal-preview');
-  if(!journalData.length){ container.innerHTML='<div class="empty"><div class="ico">📋</div><p>Aucune action enregistrée</p></div>'; return; }
-  container.innerHTML = journalData.slice(0,3).map(e=>`
-    <div class="journal-item">
-      <div class="journal-ico" style="background:rgba(59,130,246,.1)">${e.wf_icon}</div>
-      <div class="journal-body">
-        <div class="journal-title">${e.wf_label} — ${e.contact_nom}</div>
-        <div class="journal-meta">${new Date(e.date).toLocaleString('fr-FR')} · ${e.user}</div>
-      </div>
-    </div>
-  `).join('');
+  if(!container) return;
+  if(!journalData.length){
+    container.innerHTML='<div class="empty"><div class="ico">📋</div><p>Aucune action enregistrée</p></div>';
+    return;
+  }
+  container.innerHTML = journalData.slice(0,3).map(e => _renderJournalEntry(e, true)).join('');
 }
 
 /* ============================================================
