@@ -18,8 +18,19 @@ async function loadCnil() {
 
   el.innerHTML = '<div class="loader"><div class="spinner"></div> Interrogation de data.gouv.fr…</div>';
 
-  // Extraire le SIREN (9 premiers chiffres du SIRET, sans espaces/tirets)
-  const siret = (currentContact.siret || '').replace(/[\s\-]/g, '');
+  // Recharger le contact pour avoir le SIRET à jour (peut avoir été saisi après l'ouverture du module)
+  const { data: fresh } = await supa.from('contacts')
+    .select('id,nom,prenom,entreprise,siret')
+    .eq('id', currentContact.id)
+    .maybeSingle();
+  if (fresh) {
+    Object.assign(currentContact, fresh);
+    const idx = allContacts.findIndex(c => c.id === currentContact.id);
+    if (idx >= 0) allContacts[idx] = { ...allContacts[idx], ...fresh };
+  }
+
+  // Extraire le SIREN (ne garder que les chiffres pour tolérer tout format)
+  const siret = (currentContact.siret || '').replace(/\D/g, '');
   const siren = siret.length >= 9 ? siret.slice(0, 9) : null;
   const nomEntreprise = (currentContact.entreprise || '').trim();
 

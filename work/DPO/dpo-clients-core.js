@@ -8,6 +8,7 @@ const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let currentContact = null;
 let allContacts    = [];
+let _scoreMap      = {};
 
 /* ── Navigation ── */
 function showView(id) {
@@ -32,6 +33,13 @@ function selectContact(contact) {
   if (nameEl) nameEl.textContent = [contact.nom, contact.prenom].filter(Boolean).join(' ') || contact.entreprise || '—';
   const topEl = document.getElementById('topbar-contact-name');
   if (topEl) topEl.textContent = contact.nom || '';
+  // Score sidebar
+  const scoreEl = document.getElementById('sidebar-score');
+  if (scoreEl) {
+    const s = _scoreMap[contact.id] ?? null;
+    if (s !== null) { scoreEl.textContent = s + '%'; scoreEl.style.color = scoreColor(s); }
+    else            { scoreEl.textContent = '—%';    scoreEl.style.color = ''; }
+  }
   // Charger la première sous-vue
   const firstItem = document.querySelector('.subnav-item[data-view="traitements"]');
   switchSubView('traitements', firstItem);
@@ -163,14 +171,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   ]);
 
   allContacts = contacts || [];
-  const scoreMap = {};
-  (profiles || []).forEach(p => { scoreMap[p.contact_id] = p.score_global; });
+  _scoreMap = {};
+  (profiles || []).forEach(p => { _scoreMap[p.contact_id] = p.score_global; });
 
   // Peupler la sidebar
   const listEl = document.getElementById('sidebar-contacts');
   if (listEl) {
     listEl.innerHTML = allContacts.map(c => {
-      const score = scoreMap[c.id] ?? null;
+      const score = _scoreMap[c.id] ?? null;
       const nom = [c.nom, c.prenom].filter(Boolean).join(' ') || c.entreprise || '—';
       return `
         <div class="sidebar-contact-item" data-id="${c.id}" data-search="${nom.toLowerCase()}">
