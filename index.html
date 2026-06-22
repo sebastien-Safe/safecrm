@@ -236,10 +236,6 @@
   <aside class="sidebar">
     <img src="assets/logo.png" alt="S@FE" class="brand-logo">
     <nav class="navlinks">
-      <button data-view="dashboard" class="navlink active">🏠 Tableau de bord</button>
-
-      <div class="nav-sep"></div>
-
       <!-- Mon activité -->
       <button class="nav-section-lbl nav-toggle" data-grp="activite">Mon activité <em class="nav-chevron">▾</em></button>
       <div class="nav-group" id="grp-activite">
@@ -266,9 +262,9 @@
 
       <div class="nav-sep"></div>
 
-      <!-- Réglages -->
-      <button class="nav-section-lbl nav-toggle" data-grp="reglages">Réglages <em class="nav-chevron">▾</em></button>
-      <div class="nav-group" id="grp-reglages">
+      <!-- Réglages (admin uniquement) -->
+      <button class="nav-section-lbl nav-toggle admin-only" data-grp="reglages" style="display:none">Réglages <em class="nav-chevron">▾</em></button>
+      <div class="nav-group admin-only" id="grp-reglages" style="display:none">
         <a class="sidebar-item sidebar-sub" href="/work/connecteurs.html"><span class="ico">🔌</span> Connecteurs</a>
         <a class="sidebar-item sidebar-sub" href="https://github.com/sebastien-Safe/" target="_blank" rel="noopener"><img src="/icons/tiers/github.svg" class="ico-img" alt="GitHub"> GitHub</a>
         <a class="sidebar-item sidebar-sub" href="https://supabase.com/dashboard/" target="_blank" rel="noopener"><img src="/icons/tiers/supabase.svg" class="ico-img" alt="Supabase"> Supabase</a>
