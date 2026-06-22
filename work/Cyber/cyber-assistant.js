@@ -43,7 +43,7 @@ async function loadCyberAssistant() {
   el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
 
   const db = window.supa || supa;
-  const keys = ['grok', 'anthropic', 'mistral'];
+  const keys = ['groq', 'grok', 'anthropic', 'mistral'];
   const results = await Promise.all(
     keys.map(k => db.from('safe_connectors').select('statut,label').eq('service_key', k).maybeSingle())
   );
