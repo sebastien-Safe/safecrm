@@ -18,6 +18,9 @@ function showView(id) {
 
 function selectContact(contact) {
   currentContact = contact;
+  // Masquer la liste clients, afficher la nav client
+  const sidebarEl = document.querySelector('.dpo-sidebar');
+  if (sidebarEl) sidebarEl.style.display = 'none';
   // Highlight sidebar
   document.querySelectorAll('.sidebar-contact-item').forEach(el => {
     el.classList.toggle('active', el.dataset.id === String(contact.id));
@@ -37,6 +40,9 @@ function selectContact(contact) {
 function clearContact() {
   currentContact = null;
   document.querySelectorAll('.sidebar-contact-item').forEach(el => el.classList.remove('active'));
+  // Réafficher la liste clients, masquer la nav client
+  const sidebarEl = document.querySelector('.dpo-sidebar');
+  if (sidebarEl) sidebarEl.style.display = '';
   const subnav = document.getElementById('dpo-subnav');
   if (subnav) subnav.style.display = 'none';
   const topEl = document.getElementById('topbar-contact-name');
