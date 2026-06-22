@@ -158,7 +158,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <h1 class="cover-title">Documentation complète<br>des fonctionnalités CRM</h1>
     <p class="cover-sub">Référentiel exhaustif de toutes les fonctionnalités du CRM S@FE — gestion commerciale, contrats, commissions, automatisations et administration.</p>
     <div class="cover-meta">
-      <div><strong>Version</strong><span>2026-V3</span></div>
+      <div><strong>Version</strong><span>2026-V4</span></div>
       <div><strong>Date</strong><span>22 juin 2026</span></div>
       <div><strong>Éditeur</strong><span>S@FE SASU</span></div>
       <div><strong>Rôles</strong><span>Tous niveaux</span></div>
@@ -186,6 +186,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <li><a href="#s12"><span class="num">12</span>Droits par Rôle</a></li>
     <li><a href="#s13"><span class="num">13</span>Modules Work IA (SEO · DPO · Cyber)</a></li>
     <li><a href="#s14"><span class="num">14</span>Architecture Technique &amp; Schémas</a></li>
+    <li><a href="#s15"><span class="num">15</span>Documents Juridiques &amp; Conformité</a></li>
   </ol>
 </div>
 
@@ -1366,6 +1367,98 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 15. DOCUMENTS JURIDIQUES & CONFORMITÉ -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s15">
+  <div class="section-header">
+    <div class="section-num">15</div>
+    <div class="section-title">Documents Juridiques &amp; Conformité</div>
+  </div>
+
+  <p>Registre des accords juridiques, contrats de sous-traitance et documents réglementaires de S@FE SASU. Tous les documents sont archivés dans le dossier <code>/legal/</code> du projet.</p>
+
+  <div class="info-box">
+    <strong>Accès complet :</strong> <a href="legal/index.html">legal/index.html</a> — Registre complet des documents juridiques et de conformité.
+  </div>
+
+  <h3>DPA Supabase — Accord de Traitement des Données</h3>
+  <p>Le Data Processing Addendum (DPA) avec Supabase Pte. Ltd encadre le traitement des données personnelles des utilisateurs du CRM S@FE hébergées sur l'infrastructure Supabase.</p>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Paramètre</th><th>Valeur</th></tr></thead>
+    <tbody>
+      <tr><td>Référence document</td><td><code>HZYF3-QZBHS-CRXUM-MBMJK</code></td></tr>
+      <tr><td>Date de signature</td><td>22 juin 2026 — Michel Sébastien ALONSO, Président</td></tr>
+      <tr><td>Rôle S@FE</td><td>Responsable de traitement (Controller / Business)</td></tr>
+      <tr><td>Rôle Supabase</td><td>Sous-traitant (Processor / Service Provider)</td></tr>
+      <tr><td>Base légale (SCCs)</td><td>Clauses Contractuelles Types EU 2021/914 — Module 2 (contrôleur → sous-traitant)</td></tr>
+      <tr><td>Droit applicable</td><td>Droit irlandais — Juridiction : tribunaux d'Irlande</td></tr>
+      <tr><td>Notification incident sécurité</td><td>48 heures maximum (clause 10.1)</td></tr>
+      <tr><td>Données sensibles</td><td>Aucune (case "None" cochée dans la Part 1)</td></tr>
+      <tr><td>Conservation post-résiliation</td><td>30 jours (Retention Period — clause 11.2)</td></tr>
+      <tr><td>Audit compliance</td><td>1 fois par an · 30 jours de préavis écrit</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Données couvertes par le DPA</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title">Catégories de données</div>
+      <div class="fc-body">Informations de contact (nom, prénom, email) · Informations d'usage · Informations de compte (nom, email, mot de passe hashé) · Toutes données déterminées par S@FE.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Personnes concernées</div>
+      <div class="fc-body">Utilisateurs autorisés du CRM (commerciaux, DCI, admins) · Utilisateurs finaux des clients de S@FE, tels que soumis par S@FE.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Nature du traitement</div>
+      <div class="fc-body">Stockage · Suppression · Rectification · Analyse · Transfert · Agrégation — en continu, pendant toute la durée du contrat.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Finalité</div>
+      <div class="fc-body">Fourniture des services de base de données et d'outillage pour le développement et l'exploitation des applications web et mobiles de S@FE.</div>
+    </div>
+  </div>
+
+  <h3>Mesures de sécurité Supabase (Schedule 1)</h3>
+  <ul>
+    <li>Chiffrement at-rest AES-256 sur tous les disques et sauvegardes</li>
+    <li>Clés de chiffrement générées par projet, protégées par HSMs conformes FIPS 140-2</li>
+    <li>Chiffrement en transit TLS 1.2 + suites de chiffrement modernes</li>
+    <li>Accès internes basé sur le Principe du Moindre Privilège + 2FA obligatoire (no SMS)</li>
+    <li>Journaux d'audit de toutes les interactions internes et des projets clients</li>
+    <li>Sauvegardes quotidiennes chiffrées, stockées indépendamment (objectif 99,99% disponibilité)</li>
+    <li>Tests de pénétration réguliers par des cabinets tiers spécialisés</li>
+    <li>Plan de réponse aux incidents régulièrement testé et mis à jour</li>
+  </ul>
+
+  <h3>Sous-traitants autorisés (Schedule 3)</h3>
+  <p>Supabase notifiera S@FE avec au moins <strong>30 jours de préavis</strong> de tout changement de sous-traitant. S@FE dispose de <strong>5 jours</strong> pour formuler une objection écrite.</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Sous-traitant</th><th>Service</th></tr></thead>
+    <tbody>
+      <tr><td>Amazon Web Services · Cloudflare · Google · Fly.io · Vercel</td><td>Hébergement infrastructure</td></tr>
+      <tr><td>Upstash, Inc.</td><td>Hébergement données serverless</td></tr>
+      <tr><td>Functional Software (Sentry) · Braintrust Data</td><td>Monitoring &amp; tracing erreurs</td></tr>
+      <tr><td>OpenAI, LLC</td><td>Traitement langage naturel (NLP)</td></tr>
+      <tr><td>Latacora, LLC</td><td>Sécurité managée (MSSP)</td></tr>
+      <tr><td>Sublime Security</td><td>Sécurité email</td></tr>
+      <tr><td>Active Campaign/Postmark · Hubspot · FrontApp · Notion · PandaDoc · Slack</td><td>Communication utilisateurs</td></tr>
+      <tr><td>Github, Inc.</td><td>Authentification comptes</td></tr>
+      <tr><td>Hex Technologies · Clay Labs · Clazar · Atlassian · ConfigCat · Supabase Inc.</td><td>Analytics, marketplace, support, feature flags</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="info-box" style="margin-top:20px">
+    <strong>Obligations S@FE (clause 4.1 DPA) :</strong> Informer les personnes concernées du traitement de leurs données · Obtenir les consentements nécessaires · Mettre en œuvre des mesures techniques pour permettre l'exercice des droits RGPD (accès, rectification, effacement, portabilité) · Répondre aux demandes dans les délais légaux.
+  </div>
+</div>
+
 <!-- FOOTER -->
 <div style="border-top:2px solid var(--line);padding:32px 0;margin:40px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
   <div>
@@ -1374,7 +1467,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <div style="font-size:.8rem;color:var(--txt3)">contact@safe-digitalisation.fr · safe-digitalisation.fr</div>
   </div>
   <div style="font-size:.8rem;color:var(--txt3);text-align:right">
-    Documentation CRM v2026-V3<br>
+    Documentation CRM v2026-V4<br>
     Mise à jour : 22 juin 2026<br>
     Confidentiel — Usage interne
   </div>

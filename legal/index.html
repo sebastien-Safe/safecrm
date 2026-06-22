@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S@FE — Documents Juridiques & Conformité</title>
+<style>
+:root{--navy:#0a1628;--navy2:#142240;--gold:#f59e0b;--blue:#3b82f6;--green:#22c55e;--txt:#1e293b;--txt2:#475569;--txt3:#94a3b8;--line:#e2e8f0;--bg:#f8fafc;--white:#fff}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',Arial,Helvetica,sans-serif;line-height:1.7}
+.topbar{background:var(--navy);padding:14px 24px;display:flex;align-items:center;gap:16px;border-bottom:2px solid var(--gold)}
+.topbar .brand{font-weight:900;font-size:1.1rem;color:var(--gold)}
+.topbar .sub{font-size:.8rem;color:var(--txt3);flex:1}
+.btn{padding:8px 18px;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-out{background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff}
+.wrap{max-width:900px;margin:0 auto;padding:40px 24px}
+h1{font-size:1.6rem;font-weight:800;color:var(--navy);margin-bottom:8px}
+.subtitle{font-size:.9rem;color:var(--txt2);margin-bottom:36px}
+.category{margin-bottom:36px}
+.category h2{font-size:.85rem;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.doc-card{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:10px;display:flex;align-items:flex-start;gap:18px;transition:box-shadow .15s}
+.doc-card:hover{box-shadow:0 4px 18px rgba(0,0,0,.07)}
+.doc-icon{font-size:1.6rem;flex-shrink:0;margin-top:2px}
+.doc-info{flex:1}
+.doc-title{font-size:.95rem;font-weight:700;color:var(--navy);margin-bottom:4px}
+.doc-desc{font-size:.83rem;color:var(--txt2);line-height:1.6;margin-bottom:8px}
+.doc-meta{display:flex;flex-wrap:wrap;gap:8px}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700}
+.tag-green{background:rgba(34,197,94,.1);color:#15803d}
+.tag-blue{background:rgba(59,130,246,.1);color:#1d4ed8}
+.tag-gold{background:rgba(245,158,11,.1);color:#92400e}
+.tag-navy{background:rgba(10,22,40,.08);color:var(--navy)}
+.doc-actions{display:flex;gap:8px;margin-left:auto;flex-shrink:0;align-items:center}
+.btn-sm{padding:6px 14px;border-radius:7px;font-size:.78rem;font-weight:700;border:none;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-secondary{background:var(--bg);color:var(--txt2);border:1px solid var(--line)}
+.info-box{background:rgba(245,158,11,.07);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:12px 16px;font-size:.85rem;color:var(--txt2);margin-bottom:28px}
+.info-box strong{color:var(--navy)}
+footer{margin-top:48px;padding-top:24px;border-top:1px solid var(--line);font-size:.78rem;color:var(--txt3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="brand">S@FE</span>
+  <span class="sub">Documents Juridiques &amp; Conformité</span>
+  <a href="../index.html" class="btn btn-out">← CRM</a>
+</div>
+
+<div class="wrap">
+  <h1>Documents Juridiques &amp; Conformité</h1>
+  <p class="subtitle">Registre des contrats, accords de traitement des données et documents réglementaires de S@FE SASU.</p>
+
+  <div class="info-box">
+    <strong>Confidentialité :</strong> Ces documents sont à usage interne et confidentiel. Tout accès doit être tracé. Toute transmission externe nécessite l'accord du Président.
+  </div>
+
+  <!-- RGPD & Protection des données -->
+  <div class="category">
+    <h2>RGPD &amp; Protection des données</h2>
+
+    <div class="doc-card">
+      <div class="doc-icon">📋</div>
+      <div class="doc-info">
+        <div class="doc-title">DPA Supabase — Data Processing Addendum</div>
+        <div class="doc-desc">Accord de traitement des données personnelles avec Supabase Pte. Ltd (sous-traitant base de données). Encadre le traitement des données clients via les services Supabase (PostgreSQL, Auth, Storage, Edge Functions). Inclut les Clauses Contractuelles Types EU (SCCs — Module 2 contrôleur → sous-traitant), addendum UK et addendum Suisse.</div>
+        <div class="doc-meta">
+          <span class="tag tag-green">✓ Signé</span>
+          <span class="tag tag-blue">RGPD Art. 28</span>
+          <span class="tag tag-navy">Réf. HZYF3-QZBHS-CRXUM-MBMJK</span>
+          <span class="tag tag-gold">22 juin 2026</span>
+        </div>
+      </div>
+      <div class="doc-actions">
+        <a href="supabase-dpa-2026.pdf" class="btn-sm btn-primary" download>⬇ PDF</a>
+      </div>
+    </div>
+
+    <div class="doc-card">
+      <div class="doc-icon">🔏</div>
+      <div class="doc-info">
+        <div class="doc-title">Registre des activités de traitement (RGPD Art. 30)</div>
+        <div class="doc-desc">Registre interne des traitements de données personnelles effectués par S@FE SASU en tant que responsable de traitement. Consultable dans le module DPO du CRM.</div>
+        <div class="doc-meta">
+          <span class="tag tag-blue">Art. 30 RGPD</span>
+          <span class="tag tag-navy">Module DPO CRM</span>
+        </div>
+      </div>
+      <div class="doc-actions">
+        <a href="../index.html" class="btn-sm btn-secondary">Ouvrir CRM</a>
+      </div>
+    </div>
+
+    <div class="doc-card">
+      <div class="doc-icon">📄</div>
+      <div class="doc-info">
+        <div class="doc-title">Clause de confidentialité collaborateurs</div>
+        <div class="doc-desc">Engagement de confidentialité signé par chaque collaborateur CRM avant accès. Signature électronique canvas + horodatage. Archivé dans Supabase Storage. Envoi automatique par email (template Brevo ID 7).</div>
+        <div class="doc-meta">
+          <span class="tag tag-green">Automatisé</span>
+          <span class="tag tag-navy">Supabase Storage</span>
+        </div>
+      </div>
+      <div class="doc-actions">
+        <a href="../clause-de-confidentialite.html" class="btn-sm btn-secondary">Voir page</a>
+      </div>
+    </div>
+
+    <div class="doc-card">
+      <div class="doc-icon">⚖️</div>
+      <div class="doc-info">
+        <div class="doc-title">Politique de confidentialité publique</div>
+        <div class="doc-desc">Politique de confidentialité destinée aux prospects et clients de S@FE. Accessible publiquement.</div>
+        <div class="doc-meta">
+          <span class="tag tag-blue">RGPD Art. 13 &amp; 14</span>
+          <span class="tag tag-green">Public</span>
+        </div>
+      </div>
+      <div class="doc-actions">
+        <a href="../clause-public.html" class="btn-sm btn-secondary">Voir page</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contrats commerciaux -->
+  <div class="category">
+    <h2>Contrats commerciaux</h2>
+
+    <div class="doc-card">
+      <div class="doc-icon">🤝</div>
+      <div class="doc-info">
+        <div class="doc-title">Contrat de Mandat Agent Commercial</div>
+        <div class="doc-desc">Mandat confiant la mission de démarchage commercial à un Agent Commercial DCI. Signature électronique 4 étapes : lecture → informations → signature canvas → OTP email. SHA-256 du texte calculé et enregistré. PDF archivé et envoyé avec 8 pièces jointes (template Brevo ID 5).</div>
+        <div class="doc-meta">
+          <span class="tag tag-green">Automatisé</span>
+          <span class="tag tag-navy">Supabase Storage</span>
+          <span class="tag tag-gold">ORIAS requis</span>
+        </div>
+      </div>
+      <div class="doc-actions">
+        <a href="../mandat.html" class="btn-sm btn-secondary">Voir page</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sous-traitants (Schedule 3 DPA Supabase) -->
+  <div class="category">
+    <h2>Sous-traitants Supabase (Schedule 3 DPA)</h2>
+    <div class="doc-card">
+      <div class="doc-icon">🏢</div>
+      <div class="doc-info">
+        <div class="doc-title">Liste des sous-traitants autorisés</div>
+        <div class="doc-desc">Conformément à l'article 6.3 du DPA Supabase, les entités suivantes sont autorisées à traiter les données couvertes :</div>
+        <div style="margin-top:10px;font-size:.82rem;color:var(--txt2);display:grid;grid-template-columns:1fr 1fr;gap:4px 24px">
+          <span>• Supabase, Inc. — Support</span>
+          <span>• Amazon Web Services — Hébergement</span>
+          <span>• Cloudflare, Inc. — Hébergement</span>
+          <span>• Google, LLC — Hébergement</span>
+          <span>• Fly.io, Inc. — Hébergement</span>
+          <span>• Vercel, Inc. — Hébergement</span>
+          <span>• Upstash, Inc. — Data serverless</span>
+          <span>• Functional Software (Sentry) — Monitoring</span>
+          <span>• Braintrust Data — Monitoring</span>
+          <span>• OpenAI, LLC — NLP/IA</span>
+          <span>• Latacora, LLC — Sécurité managée</span>
+          <span>• Sublime Security — Sécurité email</span>
+          <span>• Active Campaign / Postmark — Communication</span>
+          <span>• Hubspot, Inc. — Communication</span>
+          <span>• FrontApp, Inc. — Communication</span>
+          <span>• Github, Inc. — Authentification</span>
+          <span>• PandaDoc, Inc. — Documents</span>
+          <span>• Atlassian Corp. — Status page</span>
+          <span>• Hex Technologies — Analytics</span>
+          <span>• Notion Labs — Communication</span>
+          <span>• Clay Labs — Customer insight</span>
+          <span>• Clazar, Inc. — Marketplace</span>
+          <span>• Slack Technologies — Communication</span>
+          <span>• ConfigCat — Feature flags</span>
+        </div>
+        <div class="doc-meta" style="margin-top:10px">
+          <span class="tag tag-blue">DPA Schedule 3</span>
+          <span class="tag tag-gold">Notification 30 jours si modification</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paramètres clés DPA -->
+  <div class="category">
+    <h2>Paramètres clés — DPA Supabase</h2>
+    <div class="doc-card">
+      <div class="doc-icon">ℹ️</div>
+      <div class="doc-info">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;font-size:.84rem">
+          <div><strong style="color:var(--navy)">Rôle S@FE</strong><br><span style="color:var(--txt2)">Responsable de traitement (Controller)</span></div>
+          <div><strong style="color:var(--navy)">Rôle Supabase</strong><br><span style="color:var(--txt2)">Sous-traitant (Processor)</span></div>
+          <div><strong style="color:var(--navy)">Données traitées</strong><br><span style="color:var(--txt2)">Nom, prénom, email, informations d'usage, identifiants de compte</span></div>
+          <div><strong style="color:var(--navy)">Données sensibles</strong><br><span style="color:var(--txt2)">Aucune (cochée "None" dans la Part 1)</span></div>
+          <div><strong style="color:var(--navy)">Fréquence</strong><br><span style="color:var(--txt2)">Continue</span></div>
+          <div><strong style="color:var(--navy)">Nature du traitement</strong><br><span style="color:var(--txt2)">Stockage, suppression, rectification, analyse, transfert, agrégation</span></div>
+          <div><strong style="color:var(--navy)">Durée de conservation</strong><br><span style="color:var(--txt2)">Durée du contrat + 30 jours après résiliation</span></div>
+          <div><strong style="color:var(--navy)">Droit applicable (SCCs)</strong><br><span style="color:var(--txt2)">Droit irlandais — Juridiction : tribunaux d'Irlande</span></div>
+          <div><strong style="color:var(--navy)">Notification incident</strong><br><span style="color:var(--txt2)">Dans les 48h (clause 10.1)</span></div>
+          <div><strong style="color:var(--navy)">Audit possible</strong><br><span style="color:var(--txt2)">1 fois/an · 30 jours de préavis</span></div>
+          <div><strong style="color:var(--navy)">Contact Supabase DPO</strong><br><span style="color:var(--txt2)">privacy@supabase.io</span></div>
+          <div><strong style="color:var(--navy)">Date de signature</strong><br><span style="color:var(--txt2)">22 juin 2026 — Michel Sébastien ALONSO, Président</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>S@FE SASU · 66 av. des Champs-Élysées, 75008 Paris · SIRET 104 699 558 00011</span>
+    <span>Mis à jour le 22 juin 2026 · Confidentiel</span>
+  </footer>
+</div>
+</body>
+</html>
