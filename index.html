@@ -246,6 +246,7 @@
         <button data-view="contacts" class="navlink">👥 Contacts</button>
         <button data-view="contracts" class="navlink">📄 Contrats</button>
         <button data-view="resultats" class="navlink" id="nav-resultats">📊 Résultats</button>
+        <button class="navlink" id="lk-tasks" onclick="switchView('tasks')">✅ Tâches</button>
         <button data-view="agenda" class="navlink" id="nav-agenda">📅 Agenda</button>
         <button class="navlink dci-only" style="display:none" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
       </div>
@@ -264,7 +265,6 @@
 
       <div class="nav-sep"></div>
 
-      <button class="navlink" id="lk-tasks" onclick="switchView('tasks')">✅ Tâches</button>
       <a class="navlink" href="/work/?view=journal">📋 Journal</a>
       <a href="/work/" class="navlink admin-only" style="display:none;text-decoration:none">🛡️ S@FE WORK</a>
       <button class="navlink admin-only" style="display:none" onclick="switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)">👨‍💼 GESTION</button>
