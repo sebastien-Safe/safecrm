@@ -241,14 +241,15 @@
       <div class="nav-sep"></div>
 
       <!-- Section déroulante Mon activité -->
-      <div class="nav-group" id="nav-group-activite">
-        <button class="nav-group-toggle" onclick="toggleNavGroup('activite')">📁 Mon activité <span class="nav-group-arrow">▾</span></button>
-        <div class="nav-group-items" id="nav-group-items-activite">
-          <button data-view="contacts" class="navlink">👥 Contacts</button>
-          <button data-view="contracts" class="navlink">📄 Contrats</button>
-          <button data-view="resultats" class="navlink" id="nav-resultats">📊 Résultats</button>
-          <button class="navlink dci-only" style="display:none" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
-        </div>
+      <div class="sidebar-collapsible-head open" onclick="toggleSection('activite')">
+        <span class="sidebar-section-label">Mon activité</span>
+        <span class="sidebar-section-arrow" id="arrow-activite">▴</span>
+      </div>
+      <div class="sidebar-collapsible-body open" id="section-activite">
+        <button data-view="contacts" class="navlink">👥 Contacts</button>
+        <button data-view="contracts" class="navlink">📄 Contrats</button>
+        <button data-view="resultats" class="navlink" id="nav-resultats">📊 Résultats</button>
+        <button class="navlink dci-only" style="display:none" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
       </div>
 
       <!-- Section OUTILS (Admin uniquement) -->
@@ -1328,8 +1329,12 @@
 <script src="assets/dpo/dpo-client-crm.js"></script>
 
 <script>
-function toggleNavGroup(id) {
-  document.getElementById('nav-group-' + id).classList.toggle('collapsed');
+function toggleSection(id){
+  const body  = document.getElementById('section-'+id);
+  const arrow = document.getElementById('arrow-'+id);
+  if(!body) return;
+  const open = body.classList.toggle('open');
+  if(arrow) arrow.textContent = open ? '▴' : '▾';
 }
 </script>
 <script>

@@ -100,14 +100,12 @@ button{font-family:var(--ff-body)}
 /* Navigation sections */
 .nav-sep{height:1px;background:rgba(255,255,255,.08);margin:6px 6px}
 .nav-section-lbl{font-size:.62rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#475569;padding:8px 14px 2px;pointer-events:none;user-select:none}
-/* Accordéon menu latéral */
-.nav-group{display:flex;flex-direction:column}
-.nav-group-toggle{text-align:left;background:transparent;border:0;color:#475569;font-size:.62rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:8px 14px 2px;cursor:pointer;font-family:var(--ff-body);display:flex;justify-content:space-between;align-items:center;border-radius:8px;transition:.15s;width:100%}
-.nav-group-toggle:hover{color:#94a3b8}
-.nav-group-arrow{transition:transform .2s;font-size:.7rem;font-weight:400}
-.nav-group.collapsed .nav-group-arrow{transform:rotate(-90deg)}
-.nav-group-items{display:flex;flex-direction:column;gap:4px}
-.nav-group.collapsed .nav-group-items{display:none}
+.sidebar-collapsible-head{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;cursor:pointer;border-radius:8px;transition:.12s;user-select:none;margin-bottom:2px}
+.sidebar-collapsible-head:hover{background:rgba(255,255,255,.04)}
+.sidebar-section-label{font-family:var(--ff-mono);font-size:.62rem;letter-spacing:.18em;color:#475569;text-transform:uppercase}
+.sidebar-section-arrow{font-size:.6rem;color:#475569;transition:transform .2s;line-height:1}
+.sidebar-collapsible-body{overflow:hidden;max-height:0;transition:max-height .28s ease;display:flex;flex-direction:column;gap:4px}
+.sidebar-collapsible-body.open{max-height:500px}
 /* Carte secteur cockpit Résultats */
 .secteur-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;cursor:pointer;transition:border-color .15s,transform .15s;position:relative}
 .secteur-card:hover{border-color:var(--accent);transform:translateY(-2px)}
