@@ -1,0 +1,47 @@
+REGISTRE DE TÉLÉCHARGEMENT - DOCUMENTS STRIPE RGPD
+====================================================
+
+S@FE SASU | SIRET: 104 699 558 00011
+Date: Mon Jun 22 14:59:59 CEST 2026
+
+DOCUMENTS TÉLÉCHARGÉS
+=====================
+
+1. Stripe-DPA-2025-Nov-18.pdf
+   URL: https://assets.stripeassets.com/fzn2n1nzq965/5uwos9VnPFvcboDlZcGKJn/...
+   Type: PDF (Direct)
+   Statut: ✓ Téléchargé
+
+2. Stripe-Services-Agreement.html
+   URL: https://stripe.com/legal/ssa
+   Type: HTML (Page Web)
+   Note: Le DPA est inclus dans le SSA (Section 4)
+
+3. Stripe-Data-Transfers-Addendum.html
+   URL: https://stripe.com/legal/dta
+   Type: HTML (Page Web)
+   Mécanismes: Data Privacy Framework + EEA SCCs
+
+4. Stripe-SubProcessors-List.html
+   URL: https://stripe.com/service-providers/legal
+   Type: HTML (Page Web)
+
+5. Stripe-Privacy-Policy.html
+   URL: https://stripe.com/privacy
+   Type: HTML (Page Web)
+
+STATUT CONFORMITÉ STRIPE
+========================
+
+Entité Stripe pour France: Stripe Payments Europe, Limited (SPEL)
+Mécanisme Transfert: Data Privacy Framework + EEA SCCs (Module 2)
+Statut DPA: ✓ INCLUS dans Stripe Services Agreement
+Signature Requise: NON (automatiquement appliqué)
+Action Requise: AUCUNE
+
+ARCHIVAGE
+=========
+
+Tous les documents sont archivés dans: legal/stripe/
+
+Document généré automatiquement par: download-stripe-docs.sh

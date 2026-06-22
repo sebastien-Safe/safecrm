@@ -1,0 +1,8783 @@
+<!DOCTYPE html>
+<html
+  class="MktRoot"
+  lang="fr-FR"
+  data-js-controller="Page"
+  data-page-id="subprocessors_global"
+  data-page-title="Stripe Service Providers, Sub-Processors &amp; Affiliates"
+  data-loading
+>
+  <head>
+    <script>window.__capturedErrors = [];
+window.onerror = function (message, url, line, column, error) { __capturedErrors.push(error); };
+window.onunhandledrejection = function(evt) { __capturedErrors.push(evt.reason); }
+</script>
+<meta
+  name="sentry-config"
+  data-js-dsn=""
+  data-js-release="0a5c46eebdc14874ef5002cffb4cc93fc220e58b"
+  data-js-environment="production"
+  data-js-project="mkt"
+>
+
+    <meta name="edge-experiment-treatments" content="">
+<meta name="experiment-treatments" content="">
+<meta name="experiment-token" content="b057adf6ae48d01b200ec6a224d57961b0a61532">
+    
+
+    <script>(() => {
+  const getExperimentsContent = () =>
+    document.querySelector('meta[name="edge-experiment-treatments"]')
+      ?.content ||
+    document.querySelector('meta[name="experiment-treatments"]')?.content;
+
+  const buildAssignedRules = (experimentId, variantId) => {
+    const expClass = CSS.escape(experimentId);
+    const varClass = CSS.escape(variantId);
+    return [
+      `.${expClass}.${varClass}.client-variant-wrapper { display: unset; }`,
+      `.${expClass}.control.client-variant-wrapper { display: none; }`,
+    ];
+  };
+
+  const generateClientSideExperimentsStyle = () => {
+    const baseRules = [
+      '.client-variant-wrapper { display: none; }',
+      '.control.client-variant-wrapper { display: unset; }',
+    ];
+
+    const experimentsContent = getExperimentsContent();
+
+    if (!experimentsContent) {
+      return baseRules.join('\n');
+    }
+
+    const assignedRules = experimentsContent
+      .split(',')
+      .map((entry) => {
+        const [experimentId, variantId, , , , renderSide] = entry.split('.');
+        return {experimentId, variantId, renderSide};
+      })
+      .filter((exp) => exp.renderSide === 'c' && exp.variantId !== 'control')
+      .flatMap((exp) => buildAssignedRules(exp.experimentId, exp.variantId));
+
+    return [...baseRules, ...assignedRules].join('\n');
+  };
+
+  const style = document.createElement('style');
+  style.id = 'experiments-style';
+  style.textContent = generateClientSideExperimentsStyle();
+  document.head.appendChild(style);
+
+  document.currentScript?.remove();
+})();
+</script>
+
+    
+    
+
+    <meta name="request-country" content="FR"/>
+
+    <script type="application/json" id="AnalyticsConfigurationJSON" >{"GTM_ID":"GTM-WK8882T","GTM_FRAME_URL":"https://b.stripecdn.com/stripethirdparty-srv/assets/","patchMismatchedCids":false,"environment":"production"}</script>
+
+    <template id="source-attribution-loader">
+  <script defer
+    src="https://b.stripecdn.com/mkt-statics-srv/assets/imt-c6db40f85b2b62ab8b55cf59ec83fabf.js"
+    data-store_url="https://b.stripecdn.com/mkt-statics-srv/assets/store-936f0d847a16164e7f6b15d74659c4a9.html">
+  </script>
+</template>
+
+    <template data-js-controller="UniversalChatInitializer" data-should-show-universal-chat-cta-large="true">
+  <button class="UniversalChatCtaButton" data-universal-chat-cta data-testid="chat-button" aria-label="Discuter avec Stripe">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" width="20" height="20"  viewBox="0 0 20 20" class="UniversalChatCtaButton__bubbleLeft">
+    <path fill="#fff" stroke="#0A2540" d="M18.14 14.55a9.43 9.43 0 1 0-3.59 3.59l3.91 1.3c.21.07.57.12.83-.13.27-.27.23-.63.15-.83l-1.3-3.93Z"></path>
+  </svg>
+
+  <div class="UniversalChatCtaButton__bubbleRightContainer">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" width="20" height="20"  viewBox="0 0 20 20">
+      <path fill="#fff" stroke="#0A2540" d="m1.86 14.55-1.3 3.93c-.08.2-.12.56.15.83.26.25.62.2.83.13l3.9-1.3a9.43 9.43 0 1 0-3.58-3.6Z"></path>
+    </svg>
+    <svg width="14" height="4" viewBox="0 0 14 4" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlnsxlink="http://www.w3.org/1999/xlink" class="UniversalChatCtaButton__typingIndicator">
+      <circle class="UniversalChatCtaButton__typingBubble" cx="2" cy="1.5" r="1.5" fill="#0a2540"></circle>
+      <circle class="UniversalChatCtaButton__typingBubble" cx="7" cy="1.5" r="1.5" fill="#0a2540"></circle>
+      <circle class="UniversalChatCtaButton__typingBubble" cx="12" cy="1.5" r="1.5" fill="#0a2540"></circle>
+    </svg>
+  </div>
+</button>
+  <button
+  class="UniversalChatCtaButtonLarge"
+  data-universal-chat-cta-large
+  data-testid="chat-button"
+  aria-label="Discuter avec Stripe"
+  data-js-controller="UniversalChatCtaButtonLarge"
+>
+  <div class="UniversalChatCtaButtonLarge__icon">
+    <div class="UniversalChatCtaButtonLarge__iconInner">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" width="20" height="20"  viewBox="0 0 20 20" class="UniversalChatCtaButtonLarge__bubbleLeft">
+        <path fill="#000" stroke="#e7ecf1" d="M18.14 14.55a9.43 9.43 0 1 0-3.59 3.59l3.91 1.3c.21.07.57.12.83-.13.27-.27.23-.63.15-.83l-1.3-3.93Z"></path>
+      </svg>
+
+      <div class="UniversalChatCtaButtonLarge__bubbleRightContainer">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" width="20" height="20"  viewBox="0 0 20 20">
+          <path fill="#000" stroke="#e7ecf1" d="m1.86 14.55-1.3 3.93c-.08.2-.12.56.15.83.26.25.62.2.83.13l3.9-1.3a9.43 9.43 0 1 0-3.58-3.6Z"></path>
+        </svg>
+        <svg width="14" height="4" viewBox="0 0 14 4" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlnsxlink="http://www.w3.org/1999/xlink" class="UniversalChatCtaButtonLarge__typingIndicator">
+          <circle class="UniversalChatCtaButtonLarge__typingBubble" cx="2" cy="1.5" r="1.5" fill="#e7ecf1"></circle>
+          <circle class="UniversalChatCtaButtonLarge__typingBubble" cx="7" cy="1.5" r="1.5" fill="#e7ecf1"></circle>
+          <circle class="UniversalChatCtaButtonLarge__typingBubble" cx="12" cy="1.5" r="1.5" fill="#e7ecf1"></circle>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="UniversalChatCtaButtonLarge__text">
+    Discuter par chat avec le service commercial de Stripe
+  </div>
+</button>
+  <div class="UniversalChatCtaCard__wrapper UniversalChatCtaCard__wrapper--fixed" data-universal-chat-cta-card>
+  <div class="UniversalChatCtaCard">
+    <button
+      class="UniversalChatCtaCard__close"
+      data-universal-chat-cta-card-close
+      type="button"
+      aria-label="Fermer le chat"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M12 4L4 12M4 4L12 12" stroke="#425466" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <div class="UniversalChatCtaCard__header">
+      <div class="UniversalChatCtaCard__avatars">
+        <img
+          class="UniversalChatCtaCard__avatar UniversalChatCtaCard__avatar--1"
+          data-universal-chat-avatar-1
+          src=""
+          alt=""
+          width="34"
+          height="34"
+        />
+        <img
+          class="UniversalChatCtaCard__avatar UniversalChatCtaCard__avatar--2"
+          data-universal-chat-avatar-2
+          src=""
+          alt=""
+          width="38"
+          height="38"
+        />
+      </div>
+
+      <div class="UniversalChatCtaCard__availability">
+        <span class="UniversalChatCtaCard__dot" aria-hidden="true"></span>
+        <span class="UniversalChatCtaCard__agentCount">
+          <span data-universal-chat-agent-count>8</span>&nbsp;représentants commerciaux disponibles
+        </span>
+      </div>
+    </div>
+
+    <p class="UniversalChatCtaCard__subtitle">Nous sommes à votre disposition pour discuter des besoins de votre entreprise.</p>
+  </div>
+
+  <button
+    class="UniversalChatCtaCard__cta"
+    data-universal-chat-cta-card-open
+    type="button"
+    aria-label="Discuter par chat avec ventes"
+  >
+    Discuter par chat<span class="UniversalChatCtaCard__ctaSuffix" aria-hidden="true">&nbsp;avec ventes</span>
+  </button>
+</div>
+
+  <iframe data-universal-chat-iframe title="Chat Widget" src="https://support-conversations.stripe.com/widget?entrypoint=dot_com&audience=dot_com" style="position: fixed; right: 24px; bottom: 0px; left: auto; z-index: 2147483639; width: 390px; max-height: 708px; overflow: hidden; background-color: rgb(230, 235, 241); border: 0px; border-radius: 8px 8px 0 0; box-shadow: rgba(0, 0, 0, 0.05) 0px 12px 15px, rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.08) 0px 5px 9px; transition: 0.2s ease-in-out; transform: translate(0, 100%); height: calc(-40px + 100svh); opacity: 0;"></iframe>
+
+  <div data-universal-chat-unseen-messages-count-div style="display: none; visibility: hidden; position: fixed; right: 11px; bottom: 33px; z-index: 2147483640; height: 24px; width: 24px; color: #ffffff; background-color: #635bff; border-radius: 50%; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 500; padding-bottom: 2px;"></div>
+</template>
+
+    <meta charset='utf-8' />
+    
+    <meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover' />
+
+    
+      <link rel="icon" type="image/svg+xml" href="https://images.stripeassets.com/fzn2n1nzq965/1hgcBNd12BfT9VLgbId7By/01d91920114b124fb4cf6d448f9f06eb/favicon.svg" />
+<link rel="icon" type="image/png" href="https://images.stripeassets.com/fzn2n1nzq965/4vVgZi0ZMoEzOhkcv7EVwK/8cce6fdcf2733b2ec8e99548908847ed/favicon.png?w=96&amp;h=96" sizes="96x96" />
+<link rel="shortcut icon" href="https://assets.stripeassets.com/fzn2n1nzq965/nu0iR4KqmkdJ52fgRts09/c3a10df318e7ffb1f516073daadea625/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="https://images.stripeassets.com/fzn2n1nzq965/4vVgZi0ZMoEzOhkcv7EVwK/8cce6fdcf2733b2ec8e99548908847ed/favicon.png?w=180&amp;h=180" />
+    
+    
+    
+    <meta name="description" content="">
+    
+
+    
+      <link rel="canonical" href="https://stripe.com/fr/legal/service-providers">
+<link rel="alternate" href="https://stripe.com/legal/service-providers" hreflang="x-default">
+<link rel="alternate" href="https://stripe.com/legal/service-providers" hreflang="en-US">
+<link rel="alternate" href="https://stripe.com/es-us/legal/service-providers" hreflang="es-US">
+<link rel="alternate" href="https://stripe.com/zh-us/legal/service-providers" hreflang="zh-US">
+<link rel="alternate" href="https://stripe.com/ae/legal/service-providers" hreflang="en-AE">
+<link rel="alternate" href="https://stripe.com/at/legal/service-providers" hreflang="de-AT">
+<link rel="alternate" href="https://stripe.com/en-at/legal/service-providers" hreflang="en-AT">
+<link rel="alternate" href="https://stripe.com/au/legal/service-providers" hreflang="en-AU">
+<link rel="alternate" href="https://stripe.com/nl-be/legal/service-providers" hreflang="nl-BE">
+<link rel="alternate" href="https://stripe.com/fr-be/legal/service-providers" hreflang="fr-BE">
+<link rel="alternate" href="https://stripe.com/de-be/legal/service-providers" hreflang="de-BE">
+<link rel="alternate" href="https://stripe.com/en-be/legal/service-providers" hreflang="en-BE">
+<link rel="alternate" href="https://stripe.com/en-bg/legal/service-providers" hreflang="en-BG">
+<link rel="alternate" href="https://stripe.com/br/legal/service-providers" hreflang="pt-BR">
+<link rel="alternate" href="https://stripe.com/en-br/legal/service-providers" hreflang="en-BR">
+<link rel="alternate" href="https://stripe.com/en-ca/legal/service-providers" hreflang="en-CA">
+<link rel="alternate" href="https://stripe.com/fr-ca/legal/service-providers" hreflang="fr-CA">
+<link rel="alternate" href="https://stripe.com/de-ch/legal/service-providers" hreflang="de-CH">
+<link rel="alternate" href="https://stripe.com/fr-ch/legal/service-providers" hreflang="fr-CH">
+<link rel="alternate" href="https://stripe.com/it-ch/legal/service-providers" hreflang="it-CH">
+<link rel="alternate" href="https://stripe.com/en-ch/legal/service-providers" hreflang="en-CH">
+<link rel="alternate" href="https://stripe.com/en-cy/legal/service-providers" hreflang="en-CY">
+<link rel="alternate" href="https://stripe.com/en-cz/legal/service-providers" hreflang="en-CZ">
+<link rel="alternate" href="https://stripe.com/de/legal/service-providers" hreflang="de-DE">
+<link rel="alternate" href="https://stripe.com/en-de/legal/service-providers" hreflang="en-DE">
+<link rel="alternate" href="https://stripe.com/en-dk/legal/service-providers" hreflang="en-DK">
+<link rel="alternate" href="https://stripe.com/en-ee/legal/service-providers" hreflang="en-EE">
+<link rel="alternate" href="https://stripe.com/es/legal/service-providers" hreflang="es-ES">
+<link rel="alternate" href="https://stripe.com/en-es/legal/service-providers" hreflang="en-ES">
+<link rel="alternate" href="https://stripe.com/en-fi/legal/service-providers" hreflang="en-FI">
+<link rel="alternate" href="https://stripe.com/sv-fi/legal/service-providers" hreflang="sv-FI">
+<link rel="alternate" href="https://stripe.com/fr/legal/service-providers" hreflang="fr-FR">
+<link rel="alternate" href="https://stripe.com/en-fr/legal/service-providers" hreflang="en-FR">
+<link rel="alternate" href="https://stripe.com/gb/legal/service-providers" hreflang="en-GB">
+<link rel="alternate" href="https://stripe.com/en-gi/legal/service-providers" hreflang="en-GI">
+<link rel="alternate" href="https://stripe.com/en-gr/legal/service-providers" hreflang="en-GR">
+<link rel="alternate" href="https://stripe.com/en-hk/legal/service-providers" hreflang="en-HK">
+<link rel="alternate" href="https://stripe.com/zh-hk/legal/service-providers" hreflang="zh-HK">
+<link rel="alternate" href="https://stripe.com/en-hr/legal/service-providers" hreflang="en-HR">
+<link rel="alternate" href="https://stripe.com/it-hr/legal/service-providers" hreflang="it-HR">
+<link rel="alternate" href="https://stripe.com/en-hu/legal/service-providers" hreflang="en-HU">
+<link rel="alternate" href="https://stripe.com/ie/legal/service-providers" hreflang="en-IE">
+<link rel="alternate" href="https://stripe.com/in/legal/service-providers" hreflang="en-IN">
+<link rel="alternate" href="https://stripe.com/it/legal/service-providers" hreflang="it-IT">
+<link rel="alternate" href="https://stripe.com/en-it/legal/service-providers" hreflang="en-IT">
+<link rel="alternate" href="https://stripe.com/jp/legal/service-providers" hreflang="ja-JP">
+<link rel="alternate" href="https://stripe.com/en-jp/legal/service-providers" hreflang="en-JP">
+<link rel="alternate" href="https://stripe.com/de-li/legal/service-providers" hreflang="de-LI">
+<link rel="alternate" href="https://stripe.com/en-li/legal/service-providers" hreflang="en-LI">
+<link rel="alternate" href="https://stripe.com/en-lt/legal/service-providers" hreflang="en-LT">
+<link rel="alternate" href="https://stripe.com/fr-lu/legal/service-providers" hreflang="fr-LU">
+<link rel="alternate" href="https://stripe.com/de-lu/legal/service-providers" hreflang="de-LU">
+<link rel="alternate" href="https://stripe.com/en-lu/legal/service-providers" hreflang="en-LU">
+<link rel="alternate" href="https://stripe.com/en-lv/legal/service-providers" hreflang="en-LV">
+<link rel="alternate" href="https://stripe.com/en-my/legal/service-providers" hreflang="en-MY">
+<link rel="alternate" href="https://stripe.com/zh-my/legal/service-providers" hreflang="zh-MY">
+<link rel="alternate" href="https://stripe.com/en-mt/legal/service-providers" hreflang="en-MT">
+<link rel="alternate" href="https://stripe.com/mx/legal/service-providers" hreflang="es-MX">
+<link rel="alternate" href="https://stripe.com/en-mx/legal/service-providers" hreflang="en-MX">
+<link rel="alternate" href="https://stripe.com/nl/legal/service-providers" hreflang="nl-NL">
+<link rel="alternate" href="https://stripe.com/en-nl/legal/service-providers" hreflang="en-NL">
+<link rel="alternate" href="https://stripe.com/en-no/legal/service-providers" hreflang="en-NO">
+<link rel="alternate" href="https://stripe.com/nz/legal/service-providers" hreflang="en-NZ">
+<link rel="alternate" href="https://stripe.com/en-pl/legal/service-providers" hreflang="en-PL">
+<link rel="alternate" href="https://stripe.com/pt-pt/legal/service-providers" hreflang="pt-PT">
+<link rel="alternate" href="https://stripe.com/en-pt/legal/service-providers" hreflang="en-PT">
+<link rel="alternate" href="https://stripe.com/en-ro/legal/service-providers" hreflang="en-RO">
+<link rel="alternate" href="https://stripe.com/se/legal/service-providers" hreflang="sv-SE">
+<link rel="alternate" href="https://stripe.com/en-se/legal/service-providers" hreflang="en-SE">
+<link rel="alternate" href="https://stripe.com/en-sg/legal/service-providers" hreflang="en-SG">
+<link rel="alternate" href="https://stripe.com/zh-sg/legal/service-providers" hreflang="zh-SG">
+<link rel="alternate" href="https://stripe.com/en-si/legal/service-providers" hreflang="en-SI">
+<link rel="alternate" href="https://stripe.com/it-si/legal/service-providers" hreflang="it-SI">
+<link rel="alternate" href="https://stripe.com/en-sk/legal/service-providers" hreflang="en-SK">
+<link rel="alternate" href="https://stripe.com/th/legal/service-providers" hreflang="th-TH">
+<link rel="alternate" href="https://stripe.com/en-th/legal/service-providers" hreflang="en-TH">
+<link rel="alternate" href="https://stripe.com/br/legal/service-providers" hreflang="pt">
+<link rel="alternate" href="https://stripe.com/nl/legal/service-providers" hreflang="nl">
+<link rel="alternate" href="https://stripe.com/legal/service-providers" hreflang="en">
+<link rel="alternate" href="https://stripe.com/fr/legal/service-providers" hreflang="fr">
+<link rel="alternate" href="https://stripe.com/de/legal/service-providers" hreflang="de">
+<link rel="alternate" href="https://stripe.com/it/legal/service-providers" hreflang="it">
+<link rel="alternate" href="https://stripe.com/jp/legal/service-providers" hreflang="ja">
+<link rel="alternate" href="https://stripe.com/zh-sg/legal/service-providers" hreflang="zh">
+<link rel="alternate" href="https://stripe.com/es/legal/service-providers" hreflang="es">
+<link rel="alternate" href="https://stripe.com/se/legal/service-providers" hreflang="sv">
+<link rel="alternate" href="https://stripe.com/th/legal/service-providers" hreflang="th">
+
+    
+
+    <title>Stripe Service Providers, Sub-Processors &amp; Affiliates</title>
+
+    
+    <meta name="format-detection" content="telephone=no">
+    
+    
+
+    
+      
+      
+      
+      
+      
+
+      <meta name="facebook-domain-verification" content="zvsnguqc5l0xz3at5o9beubpl46dv8" />
+      <meta property="og:title" content="Stripe Service Providers, Sub-Processors &amp; Affiliates">
+      <meta property="og:description" content="">
+      <meta property="og:image" name="og:image" content="https://images.stripeassets.com/fzn2n1nzq965/K3ReOAHQ6AnjETRznub9X/661ff26eb5e9568354c8ac2e9bf4f9fd/Generic_Social_Card.png?q=80">
+
+      <meta name="og:url" content="https://stripe.com/fr/legal/service-providers">
+
+
+      
+      <meta name="twitter:site" content="@stripe">
+      <meta name="twitter:image" content="https://images.stripeassets.com/fzn2n1nzq965/K3ReOAHQ6AnjETRznub9X/661ff26eb5e9568354c8ac2e9bf4f9fd/Generic_Social_Card.png?q=80">
+      <meta name="twitter:card" content="summary_large_image">
+      <meta name="twitter:title" content="Stripe Service Providers, Sub-Processors &amp; Affiliates">
+      <meta name="twitter:description" content="">
+    
+
+    
+    
+    
+    
+
+    
+      <meta name="stripe:notification-path"
+  data-js-controller="NotificationCenterLoader"
+  data-js-notification-path="/fr/notifications"
+>
+    
+
+    
+
+    <meta data-js-controller="ScrollDepthTracker"></meta>
+    
+    
+      <meta data-js-controller="MonitorWebVitals"></meta>
+    
+
+    
+    <link rel="preconnect" href="https://q.stripe.com" crossorigin>
+<link rel="dns-prefetch" href="https://q.stripe.com">
+    <link rel="preconnect" href="https://images.stripeassets.com" crossorigin>
+<link rel="dns-prefetch" href="https://images.stripeassets.com">
+    <link rel="preconnect" href="https://assets.stripeassets.com" crossorigin>
+<link rel="dns-prefetch" href="https://assets.stripeassets.com">
+    
+      
+    
+    
+      
+    
+    <script>new MutationObserver(e=>{for(const d of e)if(d.addedNodes)for(const e of d.addedNodes)e instanceof HTMLLinkElement&&void 0!==e.dataset.jsLazyStyle&&e.addEventListener("load",function(){this.media="all"})}).observe(document.head,{childList:!0}),document.addEventListener("DOMContentLoaded",()=>{for(const e of document.querySelectorAll("link[data-js-lazy-style]"))"all"!==e.media&&(e.media="all")});
+</script>
+    <link rel="preconnect" href="https://b.stripecdn.com" crossorigin>
+<link rel="dns-prefetch" href="https://b.stripecdn.com">
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Page-b3e6e505ec9cdc64d74e.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-RefreshedSiteHeader-268781483601d83f706f.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Guides-f00064c54f795e59f164.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-UserLogo-0ee93be3bfc013809430.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-NavigationItem-f544686084df21c54839.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Link-d2d3aeca535307db3b84.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-CopyTitle-c641e014b3946628bc95.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-List-f0dd86d0ff490fdd7e75.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Copy-1d1c3373b0854daf173b.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Content-ea5e1c7c531bf0b19f54.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Title-e3b0c44298fc1c149afb.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Paragraph-e3b0c44298fc1c149afb.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-ListBasic-e3b0c44298fc1c149afb.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-RowLayout-9272a8ee72d3dac4a6ef.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-ColumnLayout-86727a6ab99d7e86820f.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Section-b4cc97dde2285e8f3b5b.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-SiteFooterSection-801324a67f6b0168e107.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-GlobalizationPicker-cb59e0de1d5c3aeaa184.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Flag-4ff2f9bcdf4404265882.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-LocaleControl-09ce62c550a15bb456e5.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-CtaButton-b06ef0cc0329843d44e7.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-HoverArrow-b6270c66306d9a48d4e8.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-UniversalChatCtaButton-8aa0bd81148af3cf06f1.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-UniversalChatCtaButtonLarge-309b7eee3096c2febc3b.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-UniversalChatCtaCard-b89e60734357be6900bf.css">
+            
+
+            <link rel="preload" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1/f965fdf4.woff2" as="font" crossorigin>
+          
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-fonts-79c606a1251d238d4708.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-global-8de066c6d50820453884.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-White-e97cfe352f6402a27dd4.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Light-b8ef30ce6bd4667ef9f4.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Dark-7c177d402d3875fa8e4c.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-SemiDark-c360011f6a51855455a7.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Transparent-bdd8e13604d56721da9e.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Hub-ff0110a4dd95a71fe24e.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Legacy-ffa4f24cd3ca18798c6a.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-LegacyLight-c4964a08822288e5ca89.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-LegacyDark-d19fb27941422687f6e0.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Chroma-87787f8a17a7694cc56b.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-CottonCandy-34902095724678b38c34.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-LemonLime-13ff3a38b624e377a552.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Overcast-81fe349430811fb7e7a0.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Perennial-854f0de6b75daa0af865.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Pomegranate-41bf31c2ab13e3303495.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Slate-bc2bc8abf6c1a4bdaaf9.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Sunburst-a883cb3d33b1332bbc9a.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Sunset-852ef64feef5cc52c82c.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Tropical-4894817f3839a23051cc.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Twilight-4cf03cc2b6b49192800f.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Wintergreen-2a184b526d0f98be2716.css">
+            
+
+              <link rel="stylesheet" href="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Layout-2fe3591ea951e6ccab8e.css">
+            
+
+        <script type="application/json" data-js-script-registry>
+          [{"critical":true,"path":"https://b.stripecdn.com/mkt-statics-srv/assets/v1-RefreshedSiteHeader-MELR2ISN.js"},{"critical":true,"path":"https://b.stripecdn.com/mkt-statics-srv/assets/v1-LocaleControl-7J3PIRRV.js"},{"critical":true,"path":"https://b.stripecdn.com/mkt-statics-srv/assets/v1-Page-RDREYF6K.js"},{"critical":true,"path":"https://b.stripecdn.com/mkt-statics-srv/assets/v1-Sentry-IABPFTSH.js"},{"critical":true,"path":"https://b.stripecdn.com/mkt-statics-srv/assets/v1-EnforceSameSiteLaxOnCookies-5NDXH4YF.js"},{"critical":true,"path":"https://b.stripecdn.com/mkt-statics-srv/assets/v1-LoaderScript-ZVRIFCJX.js"},{"critical":true,"path":"https://b.stripecdn.com/mkt-statics-srv/assets/v1-UniversalChatInitializer-C2QJG57N.js"},{"critical":true,"path":"https://b.stripecdn.com/mkt-statics-srv/assets/v1-UniversalChatCtaButtonLarge-EVABYHNT.js"},{"critical":true,"path":"https://b.stripecdn.com/mkt-statics-srv/assets/v1-Loader-3M2PSR3O.js"},{"critical":true,"path":"https://b.stripecdn.com/mkt-statics-srv/assets/v1-ScrollDepthTracker-LZR6OSBH.js"},{"critical":true,"path":"https://b.stripecdn.com/mkt-statics-srv/assets/v1-MonitorWebVitals-3473JCJL.js"}]
+        </script>
+      
+
+        <script type="module" src="https://b.stripecdn.com/mkt-statics-srv/assets/v1-Bootstrapper-I7RQIWUA.js"></script>
+      
+
+  </head>
+  <body
+    class="
+      MktBody
+      theme--White
+      flavor--Chroma
+      accent--Blurple
+      
+    "
+    
+    
+  >
+    <div id="MktContent">
+      <header
+  class="
+    SiteHeader
+    SiteHeader--noTransitions
+    SiteHeader--refreshed
+    SiteHeader--hasContactSales
+    
+    
+    SiteHeader--excludesNav
+    
+    
+    
+    
+    SiteHeader--hasGuides
+    "
+  data-menu-state="closed"
+  data-js-controller="SiteHeader"
+>
+  <div class="SiteHeader__overlay" data-js-target="SiteHeader.overlayEl"></div>
+  <div class="SiteHeader__stickyContainer" data-js-target="SiteHeader.stickyContainerEl">
+    <div class="SiteHeader__stickyShadow" data-js-target="SiteHeader.stickyShadowEl"></div>
+    
+    <div class="SiteHeader__guidesContainer">
+      <div
+  class='
+    Guides
+    SiteHeader__guides
+  '
+  aria-hidden='true'
+>
+  <div class='Guides__container'>
+    <div class='Guides__guide'></div>
+    <div class='Guides__guide'></div>
+    <div class='Guides__guide'></div>
+    <div class='Guides__guide'></div>
+    <div class='Guides__guide'></div>
+  </div>
+</div>
+    </div>
+    
+    <div class="SiteHeader__container" data-js-target="SiteHeader.headerContainerEl">
+      <div class="SiteHeader__navContainer">
+        <h1 class="SiteHeader__logo">
+          <a href="/fr"
+            class="SiteHeader__logoLink"
+            data-js-controller="AnalyticsButton"
+            data-analytics-category="Navigation"
+            data-analytics-action="Clicked"
+            data-analytics-label="Stripe Logo"
+            data-testid="header-stripe-logo"
+          >
+            <svg viewBox="0 0 60 25" xmlns="http://www.w3.org/2000/svg" width="60" height="25" class="UserLogo variant-- "><title>Stripe logo</title><path fill="var(--userLogoColor, #0A2540)" d="M59.64 14.28h-8.06c.19 1.93 1.6 2.55 3.2 2.55 1.64 0 2.96-.37 4.05-.95v3.32a8.33 8.33 0 0 1-4.56 1.1c-4.01 0-6.83-2.5-6.83-7.48 0-4.19 2.39-7.52 6.3-7.52 3.92 0 5.96 3.28 5.96 7.5 0 .4-.04 1.26-.06 1.48zm-5.92-5.62c-1.03 0-2.17.73-2.17 2.58h4.25c0-1.85-1.07-2.58-2.08-2.58zM40.95 20.3c-1.44 0-2.32-.6-2.9-1.04l-.02 4.63-4.12.87V5.57h3.76l.08 1.02a4.7 4.7 0 0 1 3.23-1.29c2.9 0 5.62 2.6 5.62 7.4 0 5.23-2.7 7.6-5.65 7.6zM40 8.95c-.95 0-1.54.34-1.97.81l.02 6.12c.4.44.98.78 1.95.78 1.52 0 2.54-1.65 2.54-3.87 0-2.15-1.04-3.84-2.54-3.84zM28.24 5.57h4.13v14.44h-4.13V5.57zm0-4.7L32.37 0v3.36l-4.13.88V.88zm-4.32 9.35v9.79H19.8V5.57h3.7l.12 1.22c1-1.77 3.07-1.41 3.62-1.22v3.79c-.52-.17-2.29-.43-3.32.86zm-8.55 4.72c0 2.43 2.6 1.68 3.12 1.46v3.36c-.55.3-1.54.54-2.89.54a4.15 4.15 0 0 1-4.27-4.24l.01-13.17 4.02-.86v3.54h3.14V9.1h-3.13v5.85zm-4.91.7c0 2.97-2.31 4.66-5.73 4.66a11.2 11.2 0 0 1-4.46-.93v-3.93c1.38.75 3.1 1.31 4.46 1.31.92 0 1.53-.24 1.53-1C6.26 13.77 0 14.51 0 9.95 0 7.04 2.28 5.3 5.62 5.3c1.36 0 2.72.2 4.09.75v3.88a9.23 9.23 0 0 0-4.1-1.06c-.86 0-1.44.25-1.44.9 0 1.85 6.29.97 6.29 5.88z" fill-rule="evenodd"/></svg>
+          </a>
+        </h1>
+
+        
+      </div>
+    </div>
+    
+  </div>
+</header>
+
+
+<script>(() => {
+  function displayContentForState(state) {
+    document
+      .querySelectorAll(`template[data-mount-on-state="${state}"]`)
+      .forEach((template) =>
+        document
+          .querySelectorAll(template.dataset.mountTarget)
+          .forEach((target) => {
+            while (target.firstChild) target.removeChild(target.firstChild);
+            target.appendChild(template.content.cloneNode(true));
+          }),
+      );
+  }
+  const siteAuthCookie = document.cookie.match(/(?:^|;)\s*site-auth=([^;]+);?/);
+  const hasLoggedInCookie = document.cookie.match(
+    /(?:^|;)\s*__Secure-has_logged_in=([^;]+);?/,
+  );
+
+  const isLoggedIn = siteAuthCookie && siteAuthCookie[1] === '1';
+  const hasLoggedIn = hasLoggedInCookie && hasLoggedInCookie[1];
+
+  if (isLoggedIn) {
+    displayContentForState('logged-in');
+  } else if (hasLoggedIn) {
+    displayContentForState('logged-out-existing');
+  } else {
+    displayContentForState('logged-out-new');
+  }
+})();
+</script>
+  <section
+  
+  class="
+    Section
+    LegalPage__layout
+    theme--White
+    
+    
+    
+    Section--paddingNormal
+    
+    
+    
+    Section--hasGuides
+    Section--hasStickyNav
+    
+  "
+  
+  data-js-controller="LegalNavController"
+  
+  
+  
+>
+  <div class="Section__masked">
+    <div class="Section__backgroundMask">
+      <div class="
+        Section__background
+        
+      ">
+        
+        <div
+  class='
+    Guides
+    
+  '
+  aria-hidden='true'
+>
+  <div class='Guides__container'>
+    <div class='Guides__guide'></div>
+    <div class='Guides__guide'></div>
+    <div class='Guides__guide'></div>
+    <div class='Guides__guide'></div>
+    <div class='Guides__guide'></div>
+  </div>
+</div>
+      </div>
+      
+    </div>
+    <div class='Section__container'>
+      <div class='Section__layoutContainer'>
+        <div class='Section__layout'>
+          
+            <div
+  class="
+    RowLayout
+    
+  "
+  
+  
+  
+>
+  <div
+  class='
+    ColumnLayout
+    
+    
+    
+  '
+  
+  
+  
+  data-columns='1,3'
+  
+  
+>
+  <nav>
+  <section
+  class="
+    List
+    
+    
+    
+  "
+  
+  
+  
+>
+  <ul class='List__list'>
+    
+      <li
+  class="
+    List__item
+    ListItem
+    LegalNavItem
+    LegalNavItem--isTopLevel
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/legal"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='legal_global_navigation_legal_home'
+  
+  
+  
+  
+  
+>Juridique</a>
+  
+
+  
+</li>
+      
+    
+      
+        <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    <h2
+  class="
+    CopyTitle
+    CopyTitle--variantDetail
+    CopyTitle--inline
+    
+    
+    
+  "
+  
+>Politique de confidentialité</h2>
+<section
+  class="
+    List
+    
+    
+    
+  "
+  
+  
+  
+>
+  <ul class='List__list'>
+    
+      <li
+  class="
+    List__item
+    ListItem
+    LegalNavItem
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/privacy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='legal_nav_standard_privacy_privacy_policy'
+  
+  
+  
+  
+  
+>Politique de confidentialité</a>
+  
+
+  
+</li>
+  
+    <li
+  class="
+    List__item
+    ListItem
+    LegalNavItem
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/privacy-center/legal"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='legal_nav_standard_privacy_privacy_center'
+  
+  
+  
+  
+  
+>Centre de confidentialité de Stripe.</a>
+  
+
+  
+</li>
+  
+    <li
+  class="
+    List__item
+    ListItem
+    LegalNavItem
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/legal/dpa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='legal_global_navigation_data_processing_agreement'
+  
+  
+  
+  
+  
+>Contrat de traitement des données</a>
+  
+
+  
+</li>
+  
+    <li
+  class="
+    List__item
+    ListItem
+    LegalNavItem
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/legal/dta"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='legal_global_navigation_data_transfer_addendum'
+  
+  
+  
+  
+  
+>Contrat de traitement des données</a>
+  
+
+  
+</li>
+  
+    <li
+  class="
+    List__item
+    ListItem
+    LegalNavItem
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/legal/supplierdpa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='legal_global_navigation_supplier_data_processing_agreement'
+  
+  
+  
+  
+  
+>Supplier Data Processing Agreement</a>
+  
+
+  
+</li>
+  
+    <li
+  class="
+    List__item
+    ListItem
+    LegalNavItem
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/legal/supplierdta"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='legal_global_navigation_supplier_data_transfers_addendum'
+  
+  
+  
+  
+  
+>Supplier Data Transfers Addendum</a>
+  
+
+  
+</li>
+  
+    <li
+  class="
+    List__item
+    ListItem
+    LegalNavItem
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/legal/data-privacy-framework"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='legal_nav_standard_privacy_data_privacy_framework'
+  
+  
+  
+  
+  
+>Cadre de protection des données</a>
+  
+
+  
+</li>
+  
+    <li
+  class="
+    List__item
+    ListItem
+    LegalNavItem
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/service-providers/legal"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='legal_nav_standard_privacy_service_providers'
+  
+  
+  
+  
+  
+>Liste des prestataires de services</a>
+  
+
+  
+</li>
+  
+    <li
+  class="
+    List__item
+    ListItem
+    LegalNavItem
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/cookies-policy/legal"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='legal_nav_standard_privacy_cookies_policy'
+  
+  
+  
+  
+  
+>Politique sur l&#39;utilisation des cookies</a>
+  
+
+  
+</li>
+    
+  </ul>
+  
+</section>
+  
+
+  
+</li>
+    
+  </ul>
+  
+</section>
+</nav>
+        <div
+  class="
+    RowLayout
+    LegalContainer__rowLayout
+  "
+  
+  
+  
+>
+  <section
+  
+  
+  class="
+    Copy
+    
+    variant--Hero
+    
+  "
+  style="
+    
+    
+    --paddingRight: var(--columnPaddingNormal);
+    
+    
+    
+    
+    
+    
+    
+  "
+  
+>
+  
+  
+    <header class="Copy__header">
+      
+      
+      
+      
+        <h1
+          class="
+            Copy__title
+            
+          "
+          >
+          Stripe Sub-Processors List
+        </h1>
+      
+      
+    </header>
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+          
+          <main class="LegalContent">
+  <div
+  class="
+    RowLayout
+    
+  "
+  
+  
+  
+>
+  <div class="RichTextContainer">
+          <h3 id=last-updated-december-20-2025>Last updated: December 20, 2025</h3><p>To support Stripe in delivering its Services, Stripe engages service providers, Sub-Processors and affiliates to assist Stripe with its data processing activities on behalf of Stripe Business Users as defined in our Stripe Services Agreement.</p>
+        </div>
+      
+    
+      
+        <div class="RichTextContainer">
+          <h2 id=summary-of-changes><strong>Summary of Changes</strong></h2><p>We’ve updated this page because we strive to be clear about our use of Personal Data and the third party service providers we engage. The below outlines a few highlights of the changes we made, so please review this page carefully. If you have questions or queries, please <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/au/legal/privacy-center#contact-us"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>contact us</a>.</p><p>You will see that in our List of Affiliates we have:</p><ul>
+  
+    <li>converted Stripe, Inc. into Stripe, LLC. This change goes into effect on January 3, 2026</li>
+  
+    <li>added Stripe Technology Company Limited (STC) as a Stripe Affiliate. STC is a new data controller for Stripe in the EMEA and APAC regions. Please visit our <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/ie/legal/privacy-center#which-stripe-entities-are-involved"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Privacy Center</a> for more information on Stripe data controllers</li>
+  
+    <li>updated the description of Stripe Payment Europe Limited (SPEL) to clarify SPEL’s role in User contracting for certain jurisdictions</li>
+  
+    <li>updated the purpose of processing description for Stripe Payments Europe, Limited - Italian Branch to clarify this Affiliate provides local marketing and customer support services within Italy going forward </li>
+  
+    <li>added Stripe Technology Europe, Limited as a new Stripe Affiliate Sub-processor (although this entity was already mentioned, it wasn’t separately listed); Stripe Global Technology, LLC, a new Stripe Affiliate Sub-processor; Lemon Squeezy, LLC, an acquired Stripe Affiliate Sub-processor; TPS Unlimited, Inc., a Stripe-owned TaxJar entity we will start using towards the end of 2025 for Stripe Tax filings; Horkos, Inc. (d/b/a Privy), a recently-acquired company in the stablecoin space; and Bridge Ventures, LLC, Bridge Building Sp. Z.o.o., and Bridge Building S.A., another recently-acquired company also in the stablecoin space</li>
+  
+</ul><p>Similarly, in our list of Sub-processors we: </p><ul>
+  
+    <li>added NETSTARS Co., Ltd., a payment method integration service provider for Japan</li>
+  
+    <li>added FreedomPay, Inc. as a payment gateway service provider for Terminal</li>
+  
+    <li>added Jack Henry &amp; Associates, Inc. and Mitek Systems, Inc., two parties we use for check scanning for payments and remote deposits</li>
+  
+    <li>removed Khoros, LLC and replaced them with Sprinklr Inc.</li>
+  
+    <li>removed Romania as a processing location for Cognizant Worldwide Limited and added India</li>
+  
+</ul>
+        </div>
+      
+    
+      
+        <div class="RichTextContainer">
+          <h2 id=what-is-a-sub-processor><strong>What is a Sub-processor?</strong></h2><p>When Stripe engages third party service providers in our capacity as a data processor for our Business Users’ personal data, the General Data Protection Regulation (“GDPR”) and a number of other global privacy frameworks call these third-party service providers sub-processors. Sub-processors are service providers who have or potentially will have access to or process personal data that Stripe processes for, and on behalf of, Stripe’s Business Users.</p><p>This page outlines the types of service providers, Sub-processors, and affiliates we utilize, where they are located, and a description of the work they carry out.</p>
+        </div>
+      
+    
+      
+        <div class="RichTextContainer">
+          <h2 id=due-diligence><strong>Due Diligence</strong></h2><p>Before engaging any service provider (including Sub-processors), we perform due diligence, including a vendor security assessment. Our service providers are subject to contract terms designed to ensure that these service providers process personal data only for the purposes of providing services to Stripe and in accordance with our commitments to Business Users and applicable data protection laws.</p>
+        </div>
+      
+    
+      
+        <div class="RichTextContainer">
+          <h2 id=list-of-sub-processors><strong>List of Sub-processors</strong></h2><div class='RichTextTable'><table><tbody><tr><td><p><strong>NAME</strong></p></td><td><p><strong>DATA</strong></p></td><td><p><strong>PURPOSE OF PROCESSING</strong></p></td><td><p><strong>ENTITY COUNTRY</strong></p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://aws.amazon.com/privacy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Amazon Web Services, Inc.</a></p></td><td><p>Business User and Representative data and End Customer data</p></td><td><p>Cloud service provider</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://aws.amazon.com/privacy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Amazon Internet Services Private Limited</a></p></td><td><p>Business User data and Representative Data. 
+
+Furthermore, in order to meet regulatory data localization requirements for Indian payment transactions, Stripe India Private Limited stores certain data on servers located in India</p></td><td><p>Cloud service provider</p></td><td><p>India</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.sprinklr.com/privacy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Sprinklr, Inc.</a></p></td><td><p>Information included in the query as provided by the requester</p></td><td><p>Tool to help manage incoming queries via social media</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.salesforce.com/company/privacy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Salesforce, Inc.</a></p></td><td><p>The information included by the individual reaching out to Stripe, such as name, email address, phone number, and other information that may be included based on the nature of the communication</p></td><td><p>Customer service platform that supports customer interactions e.g. email</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.twilio.com/legal/privacy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Twilio, Inc</a>.</p></td><td><p>Business User data &amp; End Customer data</p></td><td><p>Cloud communications platform as a service including two factor authentication and user support</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.imachines.com/privacy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Intuition Machines, Inc.</a></p></td><td><p>Business User data &amp; End Customer data</p></td><td><p>Tool that provides hCaptcha for fraud prevention</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://usa.visa.com/legal/global-privacy-notice.html"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Verifi, Inc.</a></p></td><td><p>Business User data &amp; End Customer data</p></td><td><p>Tool that helps resolve and reduce transaction disputes </p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.jackhenry.com/privacy-policy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Jack Henry &amp; Associates, Inc.</a></p></td><td><p>Business User data &amp; End Customer data</p></td><td><p>Paper check scanning and verification for electronic clearance</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.miteksystems.com/privacy-policy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Mitek Systems, Inc.</a></p></td><td><p>Business User data &amp; End Customer data</p></td><td><p>Paper check scanning and verification for electronic clearance</p></td><td><p>United States</p></td></tr><tr><td><p><strong>User Support</strong></p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.telusinternational.com/privacypolicy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>TELUS International (Cda)</a></p></td><td><p>Information included in the queries raised by the individuals contacting Stripe support</p></td><td><p>Provide Business User support in several languages and timezones</p></td><td><p>Ireland</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.amlrightsource.com/privacy-policy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>AML Rightsource</a></p></td><td><p>Information included in the queries raised by the individuals contacting Stripe support</p></td><td><p>Provide Business User support in several languages and timezones</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.tp.com/media/lfao43uy/website_privacy_notice_english.pdf"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Teleperformance Colombia S.A.S.</a></p></td><td><p>Information included in the queries raised by the individuals contacting Stripe support</p></td><td><p>Provide Business User support in several languages and timezones</p></td><td><p>Colombia</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.tdcx.com/policies/privacy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>TDCX (MY) SDN. BHD.</a></p></td><td><p>Information included in the queries raised by the individuals contacting Stripe support</p></td><td><p>Provide Business User support in several languages and timezones</p></td><td><p>Malaysia </p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.cognizant.com/us/en/privacy-notice"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Cognizant Worldwide Limited</a></p></td><td><p>Information included in the queries raised by the individuals contacting Stripe support</p></td><td><p>Provide Business User support in several languages and timezones</p></td><td><p>Philippines, India</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.wns.com/privacy-policy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>WNS Global Services (UK) International Limited</a></p></td><td><p>Information included in the queries raised by the individuals contacting Stripe support</p></td><td><p>Provide Business User support in several languages and timezones</p></td><td><p>United Kingdom, India</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Microsoft Corporation</a></p></td><td><p>Information included in the queries raised by the individuals contacting Stripe support</p></td><td><p>Provide AI technology to improve the quality of user support operations</p></td><td><p>United States </p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://front.com/legal/privacy-notice"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>FrontApp, Inc.</a></p></td><td><p>Information included in the queries raised by the individuals contacting Stripe support</p></td><td><p>Customer service tool that supports customer interactions e.g. email</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://adish.biz/gdprpolicy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Adish Co., Ltd.</a></p></td><td><p>Information included in the queries raised by the individuals contacting Stripe support</p></td><td><p>Provide Business User support in Japanese </p></td><td><p>Japan</p></td></tr><tr><td><p><strong>Stripe Identity</strong></p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.trulioo.com/privacy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Trulioo Information Services, Inc.</a></p></td><td><p>End Customer data</p></td><td><p>Identity verification for End Customers of Business Users</p></td><td><p>Canada</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.lseg.com/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>London Stock Exchange Group plc</a></p></td><td><p>End Customer data</p></td><td><p>Identity verification for End Customers of Business Users</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.inscribe.ai/privacy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>InscribeAI, Inc.</a></p></td><td><p>End Customer data</p></td><td><p>Identity verification for End Customers of Business Users</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.datazoo.com/policy/privacy-policy#:~:text=We%20will%20only%20ever%20use,relevant%20and%20applicable%20Privacy%20Laws."
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Data Zoo Pty Limited</a></p></td><td><p>End Customer data</p></td><td><p>Identity verification for End Customers of Business Users</p></td><td><p>Australia</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://shuftipro.com/privacy-policy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Shufti Pro Limited</a></p></td><td><p>End Customer data</p></td><td><p>Identity verification for End Customers of Business Users</p></td><td><p>United Kingdom </p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.lexisnexis.com/en-us/terms/privacy-policy.page"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>LexisNexis Risk Solutions FL, Inc.</a></p></td><td><p>End Customer data</p></td><td><p>Identity verification for End Customers of Business Users</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://ekata.com/privacy-policy/#:~:text=We%20obtain%20Personal%20Information%20from,us%20to%20provide%20our%20Services"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Ekata, Inc.</a></p></td><td><p>End Customer data</p></td><td><p>Identity verification for End Customers of Business Users</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.lob.com/privacy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Lob.com, Inc.</a></p></td><td><p>End Customer data</p></td><td><p>Identity verification for End Customers of Business Users</p></td><td><p>United States</p></td></tr><tr><td><p><strong>Stripe Atlas</strong></p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://legalinc.com/privacy-policy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>LegalInc.com, Inc.</a></p></td><td><p>Stripe Atlas Representatives’ personal data as required for incorporation in the State of Delaware</p></td><td><p>File incorporation documents in the State of Delaware</p></td><td><p>United States</p></td></tr><tr><td><p><strong>Terminal</strong></p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://corporate.freedompay.com/privacy-policy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>FreedomPay, Inc.</a></p></td><td><p>Business User data &amp; End Customer data</p></td><td><p>Payment gateway services provider</p></td><td><p>United States</p></td></tr><tr><td><p><strong>Payment method integration service providers</strong></p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.ppro.com/legal/privacy-notice/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>PPRO Payment Services S.A.</a></p></td><td><p>End Customer and Business User data</p></td><td><p>Payment method integration service provider</p></td><td><p>Luxembourg</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://payla.de/en/privacypolicy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Payla Services GmbH</a></p></td><td><p>End Customer and Business User data</p></td><td><p>Payment method integration service provider</p></td><td><p>Germany</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://netstars.co.jp/en/privacy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>NETSTARS Co., Ltd.</a></p></td><td><p>End Customer and Business User data</p></td><td><p>Payment method integration service provider</p></td><td><p>Japan</p></td></tr></tbody></table></div>
+        </div>
+      
+    
+      
+        <div class="RichTextContainer">
+          <h2 id=list-of-service-providers><strong>List of Service Providers</strong></h2><p>The below list of service providers are some key third parties Stripe works with across our products and services. You will also find some service providers that Stripe works with for a specific Stripe product or service.</p><div class='RichTextTable'><table><tbody><tr><td><p><strong>NAME</strong></p></td><td><p><strong>DATA</strong></p></td><td><p><strong>PURPOSE OF PROCESSING</strong></p></td><td><p><strong>ENTITY COUNTRY</strong></p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.docusign.com/company/privacy-policy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>DocuSign, Inc.</a></p></td><td><p>Business User data</p></td><td><p>eSignatures</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://policies.google.com/privacy?hl=en-US#intro"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Google, LLC</a></p></td><td><p>Business User data, End Customers’ data and Visitors’ data</p></td><td><p>Email, file storage, collaboration tools, and services to help protect our Sites (e.g. ReCAPTCHA) and to measure interactions on our Sites</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://documents.marketo.com/legal/privacy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Marketo, Inc.</a></p></td><td><p>Business User data</p></td><td><p>Marketing tool</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.salesforce.com/eu/company/privacy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Salesforce.com, Inc.</a></p></td><td><p>Business User data</p></td><td><p>Customer relationship management platform which stores Business User contact information as well as supporting information about the business relationship</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://zoom.us/privacy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Zoom Video Communications, Inc.</a></p></td><td><p>Business User data, insofar as that is shared in spoken word between the conversing parties</p></td><td><p>Video conferencing system</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://ekata.com/privacy-policy/#:~:text=We%20obtain%20Personal%20Information%20from,us%20to%20provide%20our%20Services"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Ekata, Inc.</a></p></td><td><p>Business User data</p></td><td><p>Provide sanctions screening services</p></td><td><p>United States</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.legitscript.com/privacy-policy/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>LegitScript, LLC</a></p></td><td><p>Business User data</p></td><td><p>Provide merchant monitoring services</p></td><td><p>United States</p></td></tr><tr><td><p>User and Sales support service providers</p></td><td><p>Information included in the queries raised by the individuals contacting Stripe support</p></td><td><p>Provide user and sales support in several languages and timezones</p></td><td><p>Various</p></td></tr><tr><td><p>Verification service providers</p></td><td><p>Business User data and End Customer data</p></td><td><p>Help verify the identity of Stripe Business Users and End Customers, and mitigate fraud</p></td><td><p>Various</p></td></tr><tr><td><p>Stripe Issuing</p></td><td><p>
+</p></td><td><p>
+</p></td><td><p>
+</p></td></tr><tr><td><p><a
+  class="
+    Link
+    
+  "
+  href="https://www.idemia.com/legal-notes-privacy-policy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Idemia America Corp.</a></p></td><td><p>Cardholder name, PAN, CVV, expiration date, shipping address</p></td><td><p>Printing the cards for Stripe Issuing</p></td><td><p>United States</p></td></tr><tr><td><p>Stripe Terminal</p></td><td><p>
+</p></td><td><p>
+</p></td><td><p>
+</p></td></tr><tr><td><p>Lantec (UK) Ltd</p></td><td><p>Business User name and address for shipping purposes</p></td><td><p>To enable hardware ordered from Stripe to be shipped to Business Users in Europe</p></td><td><p>United Kingdom</p></td></tr></tbody></table></div>
+        </div>
+      
+    
+      
+        <div class="RichTextContainer">
+          <h2 id=list-of-affiliates><strong>List of Affiliates</strong></h2><h3 id=other-stripe-entities-involved-in-offering-the-services><strong>Other Stripe Entities Involved in Offering the Services</strong></h3><p>Stripe may need to rely on Stripe affiliates to help provide the Services to our Business Users, their Customers and our End Users. Stripe affiliates are other entities delivering elements of the Services to our Business Users and End Users. The Stripe affiliates involved in the processing of personal data will depend on the location of our Business Users, their End Customers and our End User, and the nature of the services Stripe is providing.</p><div class='RichTextTable'><table><tbody><tr><td><p><strong>Name</strong></p></td><td><p><strong>Region </strong></p></td><td><p><strong>Entity Country </strong></p></td><td><p><strong>Purpose of Processing</strong></p></td></tr><tr><td><p>Stripe Payments Canada, Ltd.</p></td><td><p>AMER</p></td><td><p>Canada </p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/en-ca/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/en-ca/ssa</a></p></td></tr><tr><td><p>Stripe Brokering, Inc.</p></td><td><p>AMER</p></td><td><p>United States </p></td><td><p>Provide lending facilitation services to bank partners in connection with Stripe Capital loans in the United States</p></td></tr><tr><td><p>Stripe, Inc. (until January 2, 2026) Stripe, LLC (per January 3, 2026)</p></td><td><p>AMER</p></td><td><p>United States </p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/fr/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/ssa</a> </p></td></tr><tr><td><p>Stripe Payments Company </p></td><td><p>AMER</p></td><td><p>United States</p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/fr/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/ssa</a> and <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/fr/legal/spc"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/legal/spc</a></p></td></tr><tr><td><p>Stripe Servicing, Inc.</p></td><td><p>AMER</p></td><td><p>United States</p></td><td><p>Provide credit collection services related to Stripe Capital in the United States</p></td></tr><tr><td><p>Stripe Global Technology, LLC</p></td><td><p>AMER</p></td><td><p>United States</p></td><td><p>UX and related services in connection with the stablecoin financial account product</p></td></tr><tr><td><p>Lemon Squeezy, LLC</p></td><td><p>AMER</p></td><td><p>United States</p></td><td><p>Merchant of record related services</p></td></tr><tr><td><p>TPS Unlimited, Inc.</p></td><td><p>AMER</p></td><td><p>United States</p></td><td><p>Tax-filing related services</p></td></tr><tr><td><p>Horkos, Inc. (d/b/a Privy)</p></td><td><p>AMER</p></td><td><p>United States</p></td><td><p>Crypto and stablecoin related services</p></td></tr><tr><td><p>Bridge Ventures, LLC</p></td><td><p>AMER</p></td><td><p>United States</p></td><td><p>Crypto and stablecoin related services</p></td></tr><tr><td><p>Stripe Payments Australia Pty Ltd A.C.N. 160 180 343</p></td><td><p>APAC</p></td><td><p>Australia</p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/au/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/au/ssa</a></p></td></tr><tr><td><p>Stripe India Private Limited</p></td><td><p>APAC</p></td><td><p>India</p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/en-in/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/en-in/ssa</a></p><p>In order to meet regulatory data localization requirements for Indian payment transactions, Stripe India Private Limited stores certain data on servers located in India.</p></td></tr><tr><td><p>Stripe Technology India Private Limited</p></td><td><p>APAC</p></td><td><p>India</p></td><td><p>Provides user support as well as internal operational support to other Stripe Affiliates</p></td></tr><tr><td><p>PT Stripe Payments Indonesia</p></td><td><p>APAC</p></td><td><p>Indonesia</p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/en-id/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/id/ssa</a></p></td></tr><tr><td><p>Stripe Japan, Inc. </p></td><td><p>APAC</p></td><td><p>Japan</p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/en-jp/legal"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/en-jp/legal</a></p></td></tr><tr><td><p>Stripe Payments Malaysia Sdn. Bhd.</p></td><td><p>APAC</p></td><td><p>Malaysia</p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/en-my/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/en-my/ssa</a></p></td></tr><tr><td><p>Stripe New Zealand Limited</p></td><td><p>APAC</p></td><td><p>New Zealand </p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/nz/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/nz/ssa</a></p></td></tr><tr><td><p>Stripe Payments Singapore Pte. Ltd.</p></td><td><p>APAC</p></td><td><p>Singapore</p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/en-sg/legal"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/en-sg/legal</a></p></td></tr><tr><td><p>Stripe Payments (Thailand) Ltd.</p></td><td><p>APAC</p></td><td><p>Thailand</p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/th/legal/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/th/legal/ssa</a></p></td></tr><tr><td><p>BBPOS Devices Limited</p></td><td><p>APAC</p></td><td><p>Hong Kong SAR</p></td><td><p>Providing customer support services in relation to Stripe Terminal products</p></td></tr><tr><td><p>Noaliasing SPRL</p></td><td><p>EMEA</p></td><td><p>Belgium</p></td><td><p>Provide local marketing and customer support services within Belgium</p></td></tr><tr><td><p>Stripe France SARL</p></td><td><p>EMEA</p></td><td><p>France</p></td><td><p>Provide local marketing and customer support services within France </p></td></tr><tr><td><p>Stripe Deutschland GmbH</p></td><td><p>EMEA</p></td><td><p>Germany</p></td><td><p>Provide local marketing and customer support services within Germany</p></td></tr><tr><td><p>Stripe Payments Europe Limited</p></td><td><p>EMEA</p></td><td><p>Ireland</p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/ie/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/ie/ssa</a> and <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/ie/legal/dpa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/ie/legal/dpa</a>.</p></td></tr><tr><td><p>Stripe Technology Company Limited</p></td><td><p>EMEA</p></td><td><p>Ireland</p></td><td><p>Data controller located in Ireland with primary responsibility for processing Personal Data outside of the Americas. </p><p>Together with relevant Stripe local regulated entities (those who are licensed, authorized or registered by a Local Regulatory Authority) and Stripe Payments Europe Limited. </p></td></tr><tr><td><p>Stripe Technology Europe, Limited</p></td><td><p>EMEA</p></td><td><p>Ireland</p></td><td><p>For payment services, as an e-money institution regulated by the Central Bank of Ireland.</p></td></tr><tr><td><p>Stripe Israel Payments Ltd.</p></td><td><p>EMEA</p></td><td><p>Israel</p></td><td><p>Provide local marketing and customer support services within Israel </p></td></tr><tr><td><p>Stripe Payments Europe, Limited - Italian Branch</p></td><td><p>EMEA</p></td><td><p>Italy </p></td><td><p>Provide local marketing and customer support services within Italy</p></td></tr><tr><td><p>Stripe Netherlands B.V. </p></td><td><p>EMEA</p></td><td><p>Netherlands</p></td><td><p>Provide local marketing and customer support services within the Netherlands </p></td></tr><tr><td><p>Stripe Payments sp. z o.o.</p></td><td><p>EMEA</p></td><td><p>Poland</p></td><td><p>Provide local marketing and customer support services within Poland</p></td></tr><tr><td><p>Stripe Spain S.L.</p></td><td><p>EMEA</p></td><td><p>Spain</p></td><td><p>Provide local marketing and customer support services within Spain</p></td></tr><tr><td><p>Tiny Experiment Aktiebolag</p></td><td><p>EMEA</p></td><td><p>Sweden</p></td><td><p>Provide local marketing and customer support services within Sweden </p></td></tr><tr><td><p>Stripe Switzerland GmbH</p><p>
+</p></td><td><p>EMEA</p></td><td><p>Switzerland</p></td><td><p>Provide local marketing and customer support services within Switzerland</p></td></tr><tr><td><p>Stripe Romania S.R.L.</p></td><td><p>EMEA</p></td><td><p>Romania</p></td><td><p>Provide local marketing and customer support services within Romania</p></td></tr><tr><td><p>Stripe FZ-LLC</p></td><td><p>EMEA</p></td><td><p>United Arab Emirates </p></td><td><p>Provide local marketing and customer support services within the United Arab Emirates</p></td></tr><tr><td><p>Stripe Payments UK, Ltd.</p></td><td><p>EMEA</p></td><td><p>UK</p></td><td><p>Together with Stripe Technology Company Limited and Stripe Payments Europe Limited, the e-money licensed entity with the UK FCA. Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/ie/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/gs/ssa</a></p></td></tr><tr><td><p>Bridge Building Sp. Z.o.o.</p></td><td><p>EMEA</p></td><td><p>Poland</p></td><td><p>Crypto and stablecoin related services</p></td></tr><tr><td><p>Bridge Building S.A.</p></td><td><p>EMEA</p></td><td><p>Luxembourg</p></td><td><p>Crypto and stablecoin related services</p></td></tr><tr><td><p>Stripe Brasil Soluções de Pagamento - Instituição de Pagamento Ltda</p></td><td><p>LATAM</p></td><td><p>Brazil</p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/br/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/br/ssa</a></p></td></tr><tr><td><p>Stripe Payments Mexico, S. de R.L. de C.V.</p></td><td><p>LATAM</p></td><td><p>Mexico</p></td><td><p>Please see <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/en-mx/ssa"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>https://stripe.com/en-mx/ssa</a></p><p>Provides user support as well as internal operational support to other Stripe Affiliates.</p></td></tr></tbody></table></div>
+        </div>
+      
+    
+      
+        <div class="RichTextContainer">
+          <h2 id=updates-to-this-page><strong>Updates to this Page</strong></h2><p>Due to the nature of our global business and the volume of Business Users, our business needs and services providers may change from time to time. For example, we may deprecate a service provider to consolidate and minimize our use of service providers. Similarly, we may add a service provider if we believe that doing so will enhance our ability to deliver our Services.</p><p>We will periodically update this page to reflect additions and removals to our list of service providers, Sub-processors and Affiliates. If you are a Business User, you may subscribe to receive email notifications of updates to our list of Sub-processors on this page <a
+  class="
+    Link
+    
+  "
+  href="https://dashboard.stripe.com/settings/communication-preferences"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>here</a>.</p><p>Under the terms of our Data Processing Agreement (DPA), a Business User may reasonably object in writing to the processing of its personal data by a new Sub-processor within 30 days following the update of this page. If a Business User does not object during the 30 day time period, the appointment of the new Sub-processor shall be deemed accepted by the Business User. If you are a Business User and want to know more about our DPA, please contact us.</p><p>For more information on Stripe’s privacy practices, please visit our <a
+  class="
+    Link
+    
+  "
+  href="https://stripe.com/fr/privacy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label=''
+  
+  
+  
+  
+  
+>Privacy Policy</a>. If you have any questions regarding this page, please contact us.</p>
+        </div>
+</div>
+</main>
+</div>
+</div>
+</div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <footer
+  
+  class="
+    Section
+    SiteFooterSection
+    theme--Light
+    flavor--Chroma
+    accent--Slate
+    
+    Section--paddingNormal
+    
+    
+    
+    Section--hasGuides
+    Section--hasStickyNav
+    Section--hasBorderTop
+  "
+  
+  
+  
+  
+  
+>
+  <div class="Section__masked">
+    <div class="Section__backgroundMask">
+      <div class="
+        Section__background
+        
+      ">
+        
+        <div
+  class='
+    Guides
+    
+  '
+  aria-hidden='true'
+>
+  <div class='Guides__container'>
+    <div class='Guides__guide'></div>
+    <div class='Guides__guide'></div>
+    <div class='Guides__guide'></div>
+    <div class='Guides__guide'></div>
+    <div class='Guides__guide'></div>
+  </div>
+</div>
+      </div>
+      
+    </div>
+    <div class='Section__container'>
+      <div class='Section__layoutContainer'>
+        <div class='Section__layout'>
+          
+            <nav class="SiteFooterSection__layout">
+      <div class='SiteFooterSection__column--locale SiteFooterSection__column'>
+        <div class='SiteFooterSection__localeContainer'>
+          <div class="SiteFooterSection__logo">
+            <a
+              class='SiteFooterSection__logoLink'
+              href='/fr'
+              data-js-controller="AnalyticsButton"
+              data-analytics-category='Navigation'
+              data-analytics-action='Clicked'
+              data-analytics-label='global_footer__stripe_logo'
+              aria-label='Aller sur la page d'accueil Stripe'
+              data-testid="footer-stripe-logo"
+            >
+              <svg viewBox="0 0 60 25" xmlns="http://www.w3.org/2000/svg" width="60" height="25" class="UserLogo variant-- "><title>Stripe logo</title><path fill="var(--userLogoColor, #0A2540)" d="M59.64 14.28h-8.06c.19 1.93 1.6 2.55 3.2 2.55 1.64 0 2.96-.37 4.05-.95v3.32a8.33 8.33 0 0 1-4.56 1.1c-4.01 0-6.83-2.5-6.83-7.48 0-4.19 2.39-7.52 6.3-7.52 3.92 0 5.96 3.28 5.96 7.5 0 .4-.04 1.26-.06 1.48zm-5.92-5.62c-1.03 0-2.17.73-2.17 2.58h4.25c0-1.85-1.07-2.58-2.08-2.58zM40.95 20.3c-1.44 0-2.32-.6-2.9-1.04l-.02 4.63-4.12.87V5.57h3.76l.08 1.02a4.7 4.7 0 0 1 3.23-1.29c2.9 0 5.62 2.6 5.62 7.4 0 5.23-2.7 7.6-5.65 7.6zM40 8.95c-.95 0-1.54.34-1.97.81l.02 6.12c.4.44.98.78 1.95.78 1.52 0 2.54-1.65 2.54-3.87 0-2.15-1.04-3.84-2.54-3.84zM28.24 5.57h4.13v14.44h-4.13V5.57zm0-4.7L32.37 0v3.36l-4.13.88V.88zm-4.32 9.35v9.79H19.8V5.57h3.7l.12 1.22c1-1.77 3.07-1.41 3.62-1.22v3.79c-.52-.17-2.29-.43-3.32.86zm-8.55 4.72c0 2.43 2.6 1.68 3.12 1.46v3.36c-.55.3-1.54.54-2.89.54a4.15 4.15 0 0 1-4.27-4.24l.01-13.17 4.02-.86v3.54h3.14V9.1h-3.13v5.85zm-4.91.7c0 2.97-2.31 4.66-5.73 4.66a11.2 11.2 0 0 1-4.46-.93v-3.93c1.38.75 3.1 1.31 4.46 1.31.92 0 1.53-.24 1.53-1C6.26 13.77 0 14.51 0 9.95 0 7.04 2.28 5.3 5.62 5.3c1.36 0 2.72.2 4.09.75v3.88a9.23 9.23 0 0 0-4.1-1.06c-.86 0-1.44.25-1.44.9 0 1.85 6.29.97 6.29 5.88z" fill-rule="evenodd"/></svg>
+            </a>
+          </div>
+
+          
+            <div class="SiteFooterSection__localeControls">
+              <div class="LocaleControl " data-js-controller="LocaleControl">
+  <button
+    class="LocaleControl__trigger"
+    data-js-target="LocaleControl.trigger"
+    aria-label="France. Sélectionnez votre pays"
+    data-testid="footer-locale-button"
+  >
+    <svg class="LocaleControl__triggerIcon" width="16" height="16" viewBox="0 0 16 16">
+      
+          <path d="M3.54 8.04h4.42v4.43c0 .57.76.75 1.01.24l4.96-9.93a.54.54 0 0 0-.72-.72L3.3 7.03c-.5.25-.33 1.01.24 1.01" fill="#0A2540" fill-rule="evenodd"/>
+
+        
+    </svg>
+
+    <span data-js-target="LocaleControl.triggerLabel">France (Français)</span>
+  </button>
+
+  <div
+    class="LocaleControl__popup"
+    data-js-target="LocaleControl.popup"
+    aria-hidden="true"
+  ><section class="GlobalizationPicker">
+      <div class="GlobalizationPicker__body">
+        
+
+        <ul class="GlobalizationPicker__countryList">
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryDE
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="DE"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Allemagne</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/de/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Deutsch'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-DE-de-link"
+  data-country-code="DE"
+      data-language-code="de"
+      data-globalization-active="false"
+      data-display-name="Allemagne (Deutsch)"
+>Deutsch</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-de/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-DE-en-GB-link"
+  data-country-code="DE"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Allemagne (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryAU
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="AU"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Australie</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/au/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-AU-en-GB-link"
+  data-country-code="AU"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Australie (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryAT
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="AT"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Autriche</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/at/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Deutsch'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-AT-de-link"
+  data-country-code="AT"
+      data-language-code="de"
+      data-globalization-active="false"
+      data-display-name="Autriche (Deutsch)"
+>Deutsch</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-at/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-AT-en-GB-link"
+  data-country-code="AT"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Autriche (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryBE
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="BE"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Belgique</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/nl-be/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Nederlands'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-BE-nl-link"
+  data-country-code="BE"
+      data-language-code="nl"
+      data-globalization-active="false"
+      data-display-name="Belgique (Nederlands)"
+>Nederlands</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/fr-be/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Français'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-BE-fr-link"
+  data-country-code="BE"
+      data-language-code="fr"
+      data-globalization-active="false"
+      data-display-name="Belgique (Français)"
+>Français</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/de-be/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Deutsch'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-BE-de-link"
+  data-country-code="BE"
+      data-language-code="de"
+      data-globalization-active="false"
+      data-display-name="Belgique (Deutsch)"
+>Deutsch</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-be/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-BE-en-GB-link"
+  data-country-code="BE"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Belgique (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryBR
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="BR"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Brésil</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/br/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Português'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-BR-pt-BR-link"
+  data-country-code="BR"
+      data-language-code="pt-BR"
+      data-globalization-active="false"
+      data-display-name="Brésil (Português)"
+>Português</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-br/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-BR-en-link"
+  data-country-code="BR"
+      data-language-code="en"
+      data-globalization-active="false"
+      data-display-name="Brésil (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryBG
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="BG"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Bulgarie</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-bg/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-BG-en-GB-link"
+  data-country-code="BG"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Bulgarie (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryCA
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="CA"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Canada</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-ca/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-CA-en-GB-link"
+  data-country-code="CA"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Canada (English)"
+>English</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/fr-ca/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Français'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-CA-fr-CA-link"
+  data-country-code="CA"
+      data-language-code="fr-CA"
+      data-globalization-active="false"
+      data-display-name="Canada (Français)"
+>Français</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryCY
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="CY"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Chypre</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-cy/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-CY-en-GB-link"
+  data-country-code="CY"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Chypre (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryHR
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="HR"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Croatie</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-hr/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-HR-en-GB-link"
+  data-country-code="HR"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Croatie (English)"
+>English</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/it-hr/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Italiano'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-HR-it-link"
+  data-country-code="HR"
+      data-language-code="it"
+      data-globalization-active="false"
+      data-display-name="Croatie (Italiano)"
+>Italiano</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryDK
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="DK"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Danemark</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-dk/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-DK-en-GB-link"
+  data-country-code="DK"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Danemark (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryAE
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="AE"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Émirats arabes unis</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/ae/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-AE-en-link"
+  data-country-code="AE"
+      data-language-code="en"
+      data-globalization-active="false"
+      data-display-name="Émirats arabes unis (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryES
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="ES"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Espagne</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/es/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Español'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-ES-es-link"
+  data-country-code="ES"
+      data-language-code="es"
+      data-globalization-active="false"
+      data-display-name="Espagne (Español)"
+>Español</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-es/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-ES-en-GB-link"
+  data-country-code="ES"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Espagne (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+              
+              </ul><ul class="GlobalizationPicker__countryList">
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryEE
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="EE"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Estonie</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-ee/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-EE-en-GB-link"
+  data-country-code="EE"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Estonie (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryUS
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="US"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">États-Unis</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/us/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-US-en-link"
+  data-country-code="US"
+      data-language-code="en"
+      data-globalization-active="false"
+      data-display-name="États-Unis (English)"
+>English</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/es-us/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Español'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-US-es-419-link"
+  data-country-code="US"
+      data-language-code="es-419"
+      data-globalization-active="false"
+      data-display-name="États-Unis (Español)"
+>Español</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/zh-us/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='简体中文'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-US-zh-CN-link"
+  data-country-code="US"
+      data-language-code="zh-CN"
+      data-globalization-active="false"
+      data-display-name="États-Unis (简体中文)"
+>简体中文</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryFI
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="FI"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Finlande</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-fi/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-FI-en-GB-link"
+  data-country-code="FI"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Finlande (English)"
+>English</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/sv-fi/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Svenska'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-FI-sv-link"
+  data-country-code="FI"
+      data-language-code="sv"
+      data-globalization-active="false"
+      data-display-name="Finlande (Svenska)"
+>Svenska</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <svg class="GlobalizationPicker__countryCheckIcon" width="16" height="16" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zm3.41 4.93L6.64 9.54 5.38 8.18a.7.7 0 0 0-.87-.04.61.61 0 0 0-.18.8l1.5 2.45c.15.22.41.36.69.36.28 0 .53-.14.68-.36.24-.31 4.82-5.78 4.82-5.78.6-.6-.13-1.15-.6-.68z" fill="var(--accentColor)" fill-rule="evenodd"/></svg>
+  
+
+  <span class="GlobalizationPicker__country">France</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem GlobalizationPicker__countryLanguageListItem--active">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/fr/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Français'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-FR-fr-link"
+  data-country-code="FR"
+      data-language-code="fr"
+      data-globalization-active="true"
+      data-display-name="France (Français)"
+>Français</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-fr/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-FR-en-GB-link"
+  data-country-code="FR"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="France (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryGI
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="GI"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Gibraltar</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-gi/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-GI-en-GB-link"
+  data-country-code="GI"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Gibraltar (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryGR
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="GR"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Grèce</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-gr/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-GR-en-GB-link"
+  data-country-code="GR"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Grèce (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryHK
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="HK"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Hong Kong</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-hk/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-HK-en-GB-link"
+  data-country-code="HK"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Hong Kong (English)"
+>English</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/zh-hk/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='简体中文'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-HK-zh-CN-link"
+  data-country-code="HK"
+      data-language-code="zh-CN"
+      data-globalization-active="false"
+      data-display-name="Hong Kong (简体中文)"
+>简体中文</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryHU
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="HU"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Hongrie</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-hu/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-HU-en-GB-link"
+  data-country-code="HU"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Hongrie (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryIN
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="IN"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Inde</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/in/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-IN-en-GB-link"
+  data-country-code="IN"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Inde (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryIE
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="IE"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Irlande</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/ie/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-IE-en-GB-link"
+  data-country-code="IE"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Irlande (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryIT
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="IT"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Italie</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/it/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Italiano'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-IT-it-link"
+  data-country-code="IT"
+      data-language-code="it"
+      data-globalization-active="false"
+      data-display-name="Italie (Italiano)"
+>Italiano</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-it/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-IT-en-GB-link"
+  data-country-code="IT"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Italie (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryJP
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="JP"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Japon</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/jp/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='日本語'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-JP-ja-link"
+  data-country-code="JP"
+      data-language-code="ja"
+      data-globalization-active="false"
+      data-display-name="Japon (日本語)"
+>日本語</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-jp/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-JP-en-link"
+  data-country-code="JP"
+      data-language-code="en"
+      data-globalization-active="false"
+      data-display-name="Japon (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+              
+              </ul><ul class="GlobalizationPicker__countryList">
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryLV
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="LV"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Lettonie</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-lv/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-LV-en-GB-link"
+  data-country-code="LV"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Lettonie (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryLI
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="LI"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Liechtenstein</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/de-li/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Deutsch'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-LI-de-link"
+  data-country-code="LI"
+      data-language-code="de"
+      data-globalization-active="false"
+      data-display-name="Liechtenstein (Deutsch)"
+>Deutsch</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-li/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-LI-en-GB-link"
+  data-country-code="LI"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Liechtenstein (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryLT
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="LT"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Lituanie</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-lt/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-LT-en-GB-link"
+  data-country-code="LT"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Lituanie (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryLU
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="LU"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Luxembourg</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/fr-lu/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Français'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-LU-fr-link"
+  data-country-code="LU"
+      data-language-code="fr"
+      data-globalization-active="false"
+      data-display-name="Luxembourg (Français)"
+>Français</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/de-lu/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Deutsch'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-LU-de-link"
+  data-country-code="LU"
+      data-language-code="de"
+      data-globalization-active="false"
+      data-display-name="Luxembourg (Deutsch)"
+>Deutsch</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-lu/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-LU-en-GB-link"
+  data-country-code="LU"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Luxembourg (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryMY
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="MY"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Malaisie</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-my/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-MY-en-GB-link"
+  data-country-code="MY"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Malaisie (English)"
+>English</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/zh-my/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='简体中文'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-MY-zh-CN-link"
+  data-country-code="MY"
+      data-language-code="zh-CN"
+      data-globalization-active="false"
+      data-display-name="Malaisie (简体中文)"
+>简体中文</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryMT
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="MT"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Malte</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-mt/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-MT-en-GB-link"
+  data-country-code="MT"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Malte (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryMX
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="MX"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Mexique</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/mx/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Español'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-MX-es-419-link"
+  data-country-code="MX"
+      data-language-code="es-419"
+      data-globalization-active="false"
+      data-display-name="Mexique (Español)"
+>Español</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-mx/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-MX-en-link"
+  data-country-code="MX"
+      data-language-code="en"
+      data-globalization-active="false"
+      data-display-name="Mexique (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryNO
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="NO"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Norvège</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-no/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-NO-en-GB-link"
+  data-country-code="NO"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Norvège (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryNZ
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="NZ"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Nouvelle-Zélande</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/nz/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-NZ-en-GB-link"
+  data-country-code="NZ"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Nouvelle-Zélande (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryNL
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="NL"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Pays-Bas</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/nl/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Nederlands'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-NL-nl-link"
+  data-country-code="NL"
+      data-language-code="nl"
+      data-globalization-active="false"
+      data-display-name="Pays-Bas (Nederlands)"
+>Nederlands</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-nl/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-NL-en-GB-link"
+  data-country-code="NL"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Pays-Bas (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryPL
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="PL"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Pologne</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-pl/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-PL-en-GB-link"
+  data-country-code="PL"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Pologne (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryPT
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="PT"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Portugal</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/pt-pt/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Português'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-PT-pt-BR-link"
+  data-country-code="PT"
+      data-language-code="pt-BR"
+      data-globalization-active="false"
+      data-display-name="Portugal (Português)"
+>Português</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-pt/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-PT-en-GB-link"
+  data-country-code="PT"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Portugal (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+              
+              </ul><ul class="GlobalizationPicker__countryList">
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryCZ
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="CZ"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">République tchèque</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-cz/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-CZ-en-GB-link"
+  data-country-code="CZ"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="République tchèque (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryRO
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="RO"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Roumanie</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-ro/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-RO-en-GB-link"
+  data-country-code="RO"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Roumanie (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryGB
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="GB"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Royaume-Uni</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/gb/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-GB-en-GB-link"
+  data-country-code="GB"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Royaume-Uni (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countrySG
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="SG"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Singapour</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-sg/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-SG-en-GB-link"
+  data-country-code="SG"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Singapour (English)"
+>English</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/zh-sg/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='简体中文'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-SG-zh-CN-link"
+  data-country-code="SG"
+      data-language-code="zh-CN"
+      data-globalization-active="false"
+      data-display-name="Singapour (简体中文)"
+>简体中文</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countrySK
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="SK"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Slovaquie</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-sk/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-SK-en-GB-link"
+  data-country-code="SK"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Slovaquie (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countrySI
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="SI"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Slovénie</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-si/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-SI-en-GB-link"
+  data-country-code="SI"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Slovénie (English)"
+>English</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/it-si/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Italiano'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-SI-it-link"
+  data-country-code="SI"
+      data-language-code="it"
+      data-globalization-active="false"
+      data-display-name="Slovénie (Italiano)"
+>Italiano</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countrySE
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="SE"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Suède</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/se/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Svenska'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-SE-sv-link"
+  data-country-code="SE"
+      data-language-code="sv"
+      data-globalization-active="false"
+      data-display-name="Suède (Svenska)"
+>Svenska</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-se/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-SE-en-GB-link"
+  data-country-code="SE"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Suède (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryCH
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="CH"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Suisse</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/de-ch/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Deutsch'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-CH-de-link"
+  data-country-code="CH"
+      data-language-code="de"
+      data-globalization-active="false"
+      data-display-name="Suisse (Deutsch)"
+>Deutsch</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/fr-ch/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Français'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-CH-fr-link"
+  data-country-code="CH"
+      data-language-code="fr"
+      data-globalization-active="false"
+      data-display-name="Suisse (Français)"
+>Français</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/it-ch/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='Italiano'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-CH-it-link"
+  data-country-code="CH"
+      data-language-code="it"
+      data-globalization-active="false"
+      data-display-name="Suisse (Italiano)"
+>Italiano</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-ch/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-CH-en-GB-link"
+  data-country-code="CH"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Suisse (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+            
+            <li class="GlobalizationPicker__countryListItem">
+  
+    <img
+  class="
+    Flag
+    Flag--countryTH
+    GlobalizationPicker__countryFlagIcon
+  "
+  
+  
+  src="https://images.stripeassets.com/fzn2n1nzq965/6NuF1mvaIeEQbkEzqr5ri7/b4adfbc07d16fa159404eca23c2ab99a/flags.svg"
+  alt="TH"
+  loading="lazy"
+>
+  
+
+  <span class="GlobalizationPicker__country">Thaïlande</span>
+
+  <ul class="GlobalizationPicker__countryLanguageList">
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/th/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='ไทย'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-TH-th-link"
+  data-country-code="TH"
+      data-language-code="th"
+      data-globalization-active="false"
+      data-display-name="Thaïlande (ไทย)"
+>ไทย</a>
+</li>
+    
+      <li class="GlobalizationPicker__countryLanguageListItem ">
+  <a
+  class="
+    Link
+    GlobalizationPicker__countryLanguage
+  "
+  href="https://stripe.com/en-th/legal/service-providers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Languages'
+  data-analytics-action='Clicked'
+  data-analytics-label='English'
+  
+  data-js-target-list="LocaleControl.items"
+  
+  data-testid="footer-locale-TH-en-GB-link"
+  data-country-code="TH"
+      data-language-code="en-GB"
+      data-globalization-active="false"
+      data-display-name="Thaïlande (English)"
+>English</a>
+</li>
+    
+  </ul>
+</li>
+
+            
+          
+        </ul>
+      </div>
+    </section></div>
+</div>
+            </div>
+          
+        </div>
+      </div>
+
+      <div class='SiteFooterSection__column'>
+        <section
+  class="
+    List
+    List--hasTitle
+    
+    
+  "
+  
+  
+  
+>
+    <h1
+  class="
+    CopyTitle
+    CopyTitle--variant
+    CopyTitle--inline
+    
+    
+    List__title
+  "
+  
+>Produits et tarifs</h1>
+  
+  <ul class='List__list'>
+    
+      <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/pricing"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__pricing'
+  
+  
+  
+  data-testid="footer-products-pricing-list-item"
+  
+>Tarifs</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/atlas"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__atlas'
+  
+  
+  
+  data-testid="footer-products-atlas-list-item"
+  
+>Atlas</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/authorization-boost"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__authorization_boost'
+  
+  
+  
+  data-testid="footer-products-authorization-boost-list-item"
+  
+>Authorization Boost</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/billing"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__billing'
+  
+  
+  
+  data-testid="footer-products-billing-list-item"
+  
+>Billing</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/capital/platforms"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__capital'
+  
+  
+  
+  data-testid="footer-products-capital-list-item"
+  
+>Capital</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/payments/checkout"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__checkout'
+  
+  
+  
+  data-testid="footer-products-checkout-list-item"
+  
+>Checkout</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/climate"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__climate'
+  
+  
+  
+  data-testid="footer-products-climate-list-item"
+  
+>Climate</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/connect"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__connect'
+  
+  
+  
+  data-testid="footer-products-connect-list-item"
+  
+>Connect</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/crypto"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__crypto'
+  
+  
+  
+  data-testid="footer-products-crypto-list-item"
+  
+>Cryptomonnaie</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/data-pipeline"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__data_pipeline'
+  
+  
+  
+  data-testid="footer-products-data-pipeline-list-item"
+  
+>Data Pipeline</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/payments/elements"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__elements'
+  
+  
+  
+  data-testid="footer-products-elements-list-item"
+  
+>Elements</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/financial-connections"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__financial_connections'
+  
+  
+  
+  data-testid="footer-products-financial-connections-list-item"
+  
+>Financial Connections</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/identity"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__identity'
+  
+  
+  
+  data-testid="footer-products-identity-list-item"
+  
+>Identity</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/invoicing"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__invoicing'
+  
+  
+  
+  data-testid="footer-products-invoicing-list-item"
+  
+>Invoicing</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/issuing"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__issuing'
+  
+  
+  
+  data-testid="footer-products-issuing-list-item"
+  
+>Issuing</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/payments/link"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__link'
+  
+  
+  
+  data-testid="footer-products-link-list-item"
+  
+>Link</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/managed-payments"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__managed_payments'
+  
+  
+  
+  data-testid="footer-products-managed-payments-list-item"
+  
+>Managed Payments</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/payments/payment-links"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__payment_links'
+  
+  
+  
+  data-testid="footer-products-payment-links-list-item"
+  
+>Liens de paiement</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/payments"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__payments'
+  
+  
+  
+  data-testid="footer-products-payments-list-item"
+  
+>Payments</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/connect/payouts"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__connect_payouts'
+  
+  
+  
+  data-testid="footer-products-connect-payouts-list-item"
+  
+>Payouts</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/radar"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__radar'
+  
+  
+  
+  data-testid="footer-products-radar-list-item"
+  
+>Radar</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/revenue-recognition"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__revenue_recognition'
+  
+  
+  
+  data-testid="footer-products-revenue-recognition-list-item"
+  
+>Revenue Recognition</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/sigma"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__sigma'
+  
+  
+  
+  data-testid="footer-products-sigma-list-item"
+  
+>Stripe Sigma</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/tax"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__tax'
+  
+  
+  
+  data-testid="footer-products-tax-list-item"
+  
+>Stripe Tax</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/terminal"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__terminal'
+  
+  
+  
+  data-testid="footer-products-terminal-list-item"
+  
+>Terminal</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/treasury"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__treasury'
+  
+  
+  
+  data-testid="footer-products-treasury-list-item"
+  
+>Treasury</a>
+  
+
+  
+</li>
+    
+  </ul>
+  
+</section>
+      </div>
+
+      <div class='SiteFooterSection__column'>
+        
+        <section
+  class="
+    List
+    List--hasTitle
+    
+    
+  "
+  
+  
+  
+>
+    <h1
+  class="
+    CopyTitle
+    CopyTitle--variant
+    CopyTitle--inline
+    
+    
+    List__title
+  "
+  
+>Solutions</h1>
+  
+  <ul class='List__list'>
+    
+      <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/enterprise"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__enterprise'
+  
+  
+  
+  data-testid="footer-use-cases-enterprise-list-item"
+  
+>Grandes entreprises</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/startups"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__startups'
+  
+  
+  
+  data-testid="footer-use-cases-startups-list-item"
+  
+>Start-up</a>
+  
+
+  
+</li>
+
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/agentic-commerce"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__agentic_commerce'
+  
+  
+  
+  data-testid="footer-use-cases-agentic-commerce-list-item"
+  
+>Commerce agentique</a>
+  
+
+  
+</li>
+          
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/crypto"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__crypto'
+  
+  
+  
+  data-testid="footer-use-cases-crypto-list-item"
+  
+>Cryptomonnaie</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/ecommerce"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__ecommerce'
+  
+  
+  
+  data-testid="footer-use-cases-ecommerce-list-item"
+  
+>E-commerce</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/embedded-finance"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__embedded_finance'
+  
+  
+  
+  data-testid="footer-use-cases-embedded-finance-list-item"
+  
+>Services financiers intégrés</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/finance-automation"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__finance_automation'
+  
+  
+  
+  data-testid="footer-use-cases-finance-automation-list-item"
+  
+>Automatisation des opérations financières</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/global-businesses"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__global_businesses'
+  
+  
+  
+  data-testid="footer-company-global-businesses-list-item"
+  
+>
+          
+            Entreprises internationales
+          
+        </a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/in-app-payments"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__in_app_payments'
+  
+  
+  
+  data-testid="footer-company-in-app-payments-list-item"
+  
+>Paiements dans l’application</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/marketplaces"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__marketplaces'
+  
+  
+  
+  data-testid="footer-use-cases-marketplaces-list-item"
+  
+>Marketplaces</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/platforms"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__platforms'
+  
+  
+  
+  data-testid="footer-use-cases-platforms-list-item"
+  
+>Plateformes</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/saas"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__saas'
+  
+  
+  
+  data-testid="footer-use-cases-saas-list-item"
+  
+>SaaS</a>
+  
+
+  
+</li>
+
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/ai"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__ai_companies'
+  
+  
+  
+  data-testid="footer-use-cases-ai-list-item"
+  
+>Entreprises d'IA</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/use-cases/creator-economy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__creator_economy'
+  
+  
+  
+  data-testid="footer-use-cases-creator-economy-list-item"
+  
+>Économie des créateurs</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/industries/travel"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='Travel Industry'
+  
+  
+  
+  data-testid="footer-industries-travel-list-item"
+  
+>Hôtellerie, voyages et loisirs</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/industries/insurance"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__insurance'
+  
+  
+  
+  data-testid="footer-industries-insurance-list-item"
+  
+>Assurance</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/industries/media-entertainment"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__media_entertainment'
+  
+  
+  
+  data-testid="footer-industries-media-and-entertainment-list-item"
+  
+>Médias et divertissements</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/industries/nonprofits"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__nonprofits'
+  
+  
+  
+  data-testid="footer-industries-nonprofits-list-item"
+  
+>Organisations à but non lucratif</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/industries/public-sector"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__public_sector'
+  
+  
+  
+  data-testid="footer-industries-public-sector-list-item"
+  
+>Secteur public</a>
+  
+
+  
+</li>
+          
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/industries/retail"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__retail'
+  
+  
+  
+  data-testid="footer-industries-retail-list-item"
+  
+>Vente au détail</a>
+  
+
+  
+</li>
+    
+  </ul>
+  
+</section>
+
+        <section
+  class="
+    List
+    List--hasTitle
+    
+    
+  "
+  
+  
+  
+>
+    <h1
+  class="
+    CopyTitle
+    CopyTitle--variant
+    CopyTitle--inline
+    
+    
+    List__title
+  "
+  
+>Intégrations et solutions sur mesure</h1>
+  
+  <ul class='List__list'>
+    
+      
+        <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://marketplace.stripe.com/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__stripe_app_marketplace'
+  
+  
+  
+  data-testid="footer-solutions-app-marketplace-list-item"
+  
+>Stripe App Marketplace</a>
+  
+
+  
+</li>
+      
+        <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/partners"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__partner_ecosystem'
+  
+  
+  
+  data-testid="footer-solutions-partners-ecosystem-list-item"
+  
+>Écosystème de partenaires Stripe</a>
+  
+
+  
+</li>
+      
+        <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/professional-services"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__professional_services'
+  
+  
+  
+  data-testid="footer-solutions-professional-services-list-item"
+  
+>Services aux entreprises</a>
+  
+
+  
+</li>
+      
+    
+  </ul>
+  
+</section>
+
+        <section
+  class="
+    List
+    List--hasTitle
+    
+    
+  "
+  
+  
+  
+>
+    <h1
+  class="
+    CopyTitle
+    CopyTitle--variant
+    CopyTitle--inline
+    
+    
+    List__title
+  "
+  
+>Développeurs</h1>
+  
+  <ul class='List__list'>
+    
+      
+        <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://docs.stripe.com/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__documentation'
+  
+  
+  
+  data-testid="footer-developers-docs-list-item"
+  
+>Documentation</a>
+  
+
+  
+</li>
+      
+        <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://docs.stripe.com/api"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__api_reference'
+  
+  
+  
+  data-testid="footer-developers-api-list-item"
+  
+>Documentation de l'API</a>
+  
+
+  
+</li>
+      
+        <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://status.stripe.com/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__api_status'
+  
+  
+  
+  data-testid="footer-developers-system-status-list-item"
+  
+>État de l'API</a>
+  
+
+  
+</li>
+      
+        <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://docs.stripe.com/changelog"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__api_changelog'
+  
+  
+  
+  data-testid="footer-developers-api-changelog-list-item"
+  
+>Liste des modifications de l'API</a>
+  
+
+  
+</li>
+      
+        <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://docs.stripe.com/development"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__libraries_and_sdks'
+  
+  
+  
+  data-testid="footer-developers-libraries-and_sdks-list-item"
+  
+>Bibliothèques et SDK</a>
+  
+
+  
+</li>
+      
+        <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.dev/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__developer_blog'
+  
+  
+  
+  data-testid="footer-developers-developer-blog-list-item"
+  
+>Blog du développeur</a>
+  
+
+  
+</li>
+      
+    
+  </ul>
+  
+</section>
+      </div>
+
+      <div class="SiteFooterSection__column SiteFooterSection__column--isMobileFooterLayout">
+        <section
+  class="
+    List
+    List--hasTitle
+    
+    
+  "
+  
+  
+  
+>
+    <h1
+  class="
+    CopyTitle
+    CopyTitle--variant
+    CopyTitle--inline
+    
+    
+    List__title
+  "
+  
+>Ressources</h1>
+  
+  <ul class='List__list'>
+    
+      <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/guides"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__guides'
+  
+  
+  
+  data-testid="footer-resources-guides-list-item"
+  
+>Guides</a>
+  
+
+  
+</li>
+  
+  <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/customers"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__customer_stories'
+  
+  
+  
+  data-testid="footer-resources-customer-stories-list-item"
+  
+>Témoignages de nos clients</a>
+  
+
+  
+</li>
+  
+  <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/blog"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__blog'
+  
+  
+  
+  data-testid="footer-resources-blog-list-item"
+  
+>Blog</a>
+  
+
+  
+</li>
+  
+  <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/sessions"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__annual_conference'
+  
+  
+  
+  data-testid="footer-resources-sessions-list-item"
+  
+>Sessions : conférence annuelle</a>
+  
+
+  
+</li>
+  
+  <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/privacy"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__privacy_and_terms'
+  
+  
+  
+  data-testid="footer-resources-privacy-list-item"
+  
+>Confidentialité et conditions générales</a>
+  
+
+  
+</li>
+  
+  <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/legal/restricted-businesses"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__prohibited_and_restricted_businesses'
+  
+  
+  
+  data-testid="footer-resources-restricted-businesses-list-item"
+  
+>Activités interdites ou soumises à conditions</a>
+  
+
+  
+</li>
+  
+  <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/spc/licenses"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__licenses'
+  
+  
+  
+  data-testid="footer-resources-licenses-list-item"
+  
+>Licences</a>
+  
+
+  
+</li>
+  
+  <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/sitemap"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__sitemap'
+  
+  
+  
+  data-testid="footer-resources-sitemap-list-item"
+  
+>Plan du site</a>
+  
+
+  
+</li>
+  
+  <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/cookie-settings"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__cookie_settings'
+  
+  
+  
+  data-testid="footer-resources-cookie-settings-list-item"
+  
+>Paramètres des cookies</a>
+  
+
+  
+</li>
+  <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/legal/france-legal-notice"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__your_legal_notice'
+  
+  
+  
+  
+  
+>Mentions légales</a>
+  
+
+  
+</li>
+  
+  
+  <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://stripe.com/fr/resources/more"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__more_resources'
+  
+  
+  
+  data-testid="footer-resources-more-resources-list-item"
+  
+>Plus de ressources</a>
+  
+
+  
+</li>
+    
+  </ul>
+  
+</section>
+        <section
+  class="
+    List
+    List--hasTitle
+    
+    
+  "
+  
+  
+  
+>
+    <h1
+  class="
+    CopyTitle
+    CopyTitle--variant
+    CopyTitle--inline
+    
+    
+    List__title
+  "
+  
+>Entreprise</h1>
+  
+  <ul class='List__list'>
+    
+      <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/roadmap"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__product_roadmap'
+  
+  
+  
+  data-testid="footer-company-product-roadmap-list-item"
+  
+>Feuille de route produits</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/jobs"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__jobs'
+  
+  
+  
+  data-testid="footer-company-jobs-list-item"
+  
+>Carrières</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/newsroom"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__newsroom'
+  
+  
+  
+  data-testid="footer-company-newsroom-list-item"
+  
+>Presse</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://press.stripe.com/"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__stripe_press'
+  
+  
+  
+  data-testid="footer-company-stripe-press-list-item"
+  
+>Stripe Press</a>
+  
+
+  
+</li>
+          <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/contact/sales"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__contact_sales'
+  
+  
+  
+  data-testid="footer-resources-contact-sales-list-item"
+  
+>Contactez-nous</a>
+  
+
+  
+</li>
+    
+  </ul>
+  
+</section>
+        <section
+  class="
+    List
+    List--hasTitle
+    
+    
+  "
+  
+  
+  
+>
+    <h1
+  class="
+    CopyTitle
+    CopyTitle--variant
+    CopyTitle--inline
+    
+    
+    List__title
+  "
+  
+>Service d'assistance</h1>
+  
+  <ul class='List__list'>
+    
+      <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="https://support.stripe.com/?referrerLocale=fr-fr"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__get_support'
+  
+  
+  
+  data-testid="footer-resources-support-list-item"
+  
+>Obtenir de l'aide</a>
+  
+
+  
+</li>
+  <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    
+    
+    <a
+  class="
+    Link
+    ListItem__label
+  "
+  href="/fr/support-plans"
+  
+  
+  
+  data-js-controller='AnalyticsButton'
+  data-analytics-category='Links'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__managed_support_plans'
+  
+  
+  
+  data-testid="footer-resources-support-plans-list-item"
+  
+>Offres de support gérées</a>
+  
+
+  
+</li>
+    
+  </ul>
+  
+</section>
+
+        
+        <section
+  class="
+    List
+    
+    
+    SignInList
+  "
+  
+  
+  
+>
+  <ul class='List__list'>
+    
+      <a
+  class='
+    CtaButton
+    variant--Link
+    CtaButton--arrow
+    
+    
+  '
+  href="https://dashboard.stripe.com/login"
+  
+  data-js-controller='AnalyticsButton'
+  
+  data-analytics-category='Buttons'
+  data-analytics-action='Clicked'
+  data-analytics-label='global_footer__sign_in'
+  
+  
+  
+  
+  
+>Connexion<span class="nobr">&nbsp;<svg
+    class="
+      HoverArrow
+      
+      
+    "
+    width="10"
+    height="10"
+    viewBox="0 0 10 10"
+    aria-hidden="true"
+  >
+    <g fill-rule="evenodd">
+      
+        <path class="HoverArrow__linePath" d="M0 5h7" />
+        <path class="HoverArrow__tipPath" d="M1 1l4 4-4 4" />
+      
+    </g>
+  </svg>
+</span>
+</a>
+    
+  </ul>
+  
+</section>
+      </div>
+      
+        
+      
+      <section
+  class="
+    List
+    
+    
+    SiteFooterSection__copyright
+  "
+  
+  
+  
+>
+  <ul class='List__list'>
+    
+      <li
+  class="
+    List__item
+    ListItem
+    
+    
+    
+  "
+  
+  
+>
+  
+
+  
+    © 2026 Stripe, LLC
+  
+
+  
+</li>
+    
+  </ul>
+  
+</section>
+    </nav>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+    </div>
+  </body>
+</html>
