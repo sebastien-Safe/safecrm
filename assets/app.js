@@ -468,6 +468,7 @@ function switchView(view) {
   if (view === 'admin') renderAdmin();
   if (view === 'resultats') renderResultats();
   if (view === 'agenda') renderAgenda();
+  if (view === 'pipeline' && typeof loadPipeline === 'function') loadPipeline();
 }
 
 // ---------------------------------------------------------
