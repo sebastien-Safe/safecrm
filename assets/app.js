@@ -3893,9 +3893,9 @@ async function executeReset() {
     document.getElementById('reset-test-modal').classList.remove('show');
     document.getElementById('reset-test-btn-wrap').style.display = 'none';
 
-    // Recharger les données
-    await renderAll();
-    alert('✅ Réinitialisation effectuée. Toutes les données de test ont été supprimées.');
+    // Recharger toutes les données depuis Supabase (les tâches sont préservées)
+    await loadAll();
+    alert('✅ Réinitialisation effectuée. Contacts, contrats et interactions supprimés. Les tâches ont été conservées.');
   } catch(e) {
     alert('Erreur : ' + e.message);
     btn.disabled = false;
