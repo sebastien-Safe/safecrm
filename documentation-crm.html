@@ -106,11 +106,35 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
 .email-name{font-size:.88rem;font-weight:700;color:var(--navy)}
 .email-trigger{font-size:.78rem;color:var(--txt2);margin-top:2px}
 .email-fn{font-size:.75rem;color:var(--txt3);font-family:monospace;background:rgba(0,0,0,.05);padding:2px 7px;border-radius:4px;white-space:nowrap}
+/* ── Diagram / Chart ─────────────────────────────────────── */
+.arch-wrap{background:var(--navy);border-radius:14px;padding:28px;margin:16px 0;overflow-x:auto}
+.arch-wrap svg{display:block;margin:0 auto}
+.chart-bars{display:flex;gap:10px;align-items:flex-end;height:120px;margin:12px 0}
+.chart-bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.chart-bar{width:100%;border-radius:6px 6px 0 0;background:var(--blue);min-height:4px;transition:height .3s}
+.chart-label{font-size:.68rem;color:var(--txt3);text-align:center;line-height:1.2}
+.chart-val{font-size:.75rem;font-weight:700;color:var(--navy)}
+.flow-row{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:14px 0}
+.flow-box{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.8rem;font-weight:700;color:var(--navy);white-space:nowrap}
+.flow-box.navy{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+.flow-box.green{background:rgba(34,197,94,.08);border-color:var(--green);color:#15803d}
+.flow-box.red{background:rgba(239,68,68,.08);border-color:var(--red);color:#b91c1c}
+.flow-box.gold{background:rgba(245,158,11,.1);border-color:var(--gold);color:#92400e}
+.flow-arrow{font-size:1rem;color:var(--txt3);padding:0 6px;flex-shrink:0}
+.ia-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}
+.ia-card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.ia-card .ia-name{font-size:.9rem;font-weight:800;color:var(--navy)}
+.ia-card .ia-status{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:10px;align-self:flex-start}
+.ia-status.actif{background:rgba(34,197,94,.12);color:#15803d}
+.ia-status.simule{background:rgba(245,158,11,.12);color:#92400e}
+.ia-status.off{background:var(--bg);color:var(--txt3)}
+.ia-card .ia-desc{font-size:.78rem;color:var(--txt2);line-height:1.55}
 /* ── Responsive ─────────────────────────────────────────── */
 @media(max-width:700px){
   .feature-grid,.toc ol{grid-template-columns:1fr}
   .cover-title{font-size:1.6rem}
   .cover-meta{gap:16px;flex-wrap:wrap;justify-content:center}
+  .flow-row{gap:4px}
 }
 </style>
 </head>
@@ -134,8 +158,8 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <h1 class="cover-title">Documentation complète<br>des fonctionnalités CRM</h1>
     <p class="cover-sub">Référentiel exhaustif de toutes les fonctionnalités du CRM S@FE — gestion commerciale, contrats, commissions, automatisations et administration.</p>
     <div class="cover-meta">
-      <div><strong>Version</strong><span>2026-V1</span></div>
-      <div><strong>Date</strong><span>21 juin 2026</span></div>
+      <div><strong>Version</strong><span>2026-V2</span></div>
+      <div><strong>Date</strong><span>22 juin 2026</span></div>
       <div><strong>Éditeur</strong><span>S@FE SASU</span></div>
       <div><strong>Rôles</strong><span>Tous niveaux</span></div>
     </div>
@@ -160,6 +184,8 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <li><a href="#s10"><span class="num">10</span>Documents &amp; PDF</a></li>
     <li><a href="#s11"><span class="num">11</span>Administration</a></li>
     <li><a href="#s12"><span class="num">12</span>Droits par Rôle</a></li>
+    <li><a href="#s13"><span class="num">13</span>Modules Work IA (SEO · DPO · Cyber)</a></li>
+    <li><a href="#s14"><span class="num">14</span>Architecture Technique &amp; Schémas</a></li>
   </ol>
 </div>
 
@@ -642,6 +668,38 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
       </div>
       <div class="email-fn">send-crm-email</div>
     </div>
+    <div class="email-item" style="border-color:#10b981">
+      <div class="email-id" style="background:rgba(16,185,129,.12);color:#065f46">SEO</div>
+      <div>
+        <div class="email-name">Rapport SEO — PDF joint</div>
+        <div class="email-trigger">Envoyé au client → Destinataire : client · Déclencheur : Clic « 📧 Envoyer par email » dans l'Assistant SEO · PDF généré côté client (jsPDF, thème vert) joint automatiquement · Type <code>rapport_seo</code></div>
+      </div>
+      <div class="email-fn">send-crm-email</div>
+    </div>
+    <div class="email-item" style="border-color:#b8952a">
+      <div class="email-id" style="background:rgba(184,149,42,.12);color:#78580e">DPO</div>
+      <div>
+        <div class="email-name">Rapport RGPD — PDF joint</div>
+        <div class="email-trigger">Envoyé au client → Destinataire : client · Déclencheur : Clic « 📧 Envoyer par email » dans l'Assistant DPO · PDF généré côté client (jsPDF, thème marine/gold) joint automatiquement · Type <code>rapport_dpo</code></div>
+      </div>
+      <div class="email-fn">send-crm-email</div>
+    </div>
+    <div class="email-item" style="border-color:#60a5fa">
+      <div class="email-id" style="background:rgba(96,165,250,.12);color:#1d4ed8">CYBER</div>
+      <div>
+        <div class="email-name">Rapport Cybersécurité — PDF joint</div>
+        <div class="email-trigger">Envoyé au client → Destinataire : client · Déclencheur : Clic « 📧 Email rapport » dans l'Audit Cybersécurité · PDF brandé S@FE (score, catégories ANSSI, détail items) joint automatiquement · Type <code>rapport_cyber</code></div>
+      </div>
+      <div class="email-fn">send-crm-email</div>
+    </div>
+    <div class="email-item" style="border-color:#ef4444">
+      <div class="email-id" style="background:rgba(239,68,68,.12);color:#991b1b">🚨</div>
+      <div>
+        <div class="email-name">Alerte Incident Cyber</div>
+        <div class="email-trigger">Envoyé au client → Destinataire : client · Déclencheur : Déclaration d'un incident grave ou critique (popup de confirmation) OU bouton « 🚨 Alerter » sur l'incident · Header rouge/orange selon gravité · Type <code>alerte_incident</code></div>
+      </div>
+      <div class="email-fn">send-crm-email</div>
+    </div>
   </div>
 
   <h3>Documents joints automatiquement (mandat DCI)</h3>
@@ -805,7 +863,423 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   </div>
 
   <div class="info-box" style="margin-top:24px">
-    <strong>Architecture technique :</strong> 9 Edge Functions Supabase (Deno) · Supabase Auth (JWT) · Stripe (abonnements &amp; webhook) · Brevo API v3 (7 templates actifs) · Supabase Storage (2 buckets) · jsPDF (génération PDF client) · API Adresse Gouv (autocomplétion)
+    <strong>Architecture technique :</strong> 10 Edge Functions Supabase (Deno) · Supabase Auth (JWT) · Stripe (abonnements &amp; webhook) · Brevo API v3 (12 types d'envoi) · Supabase Storage (2 buckets) · jsPDF client-side (PDF SEO · RGPD · Cybersécurité · Bordereau) · API Adresse Gouv (autocomplétion) · Groq / Grok / Anthropic / Mistral (connecteurs IA)
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 13. MODULES WORK IA -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s13">
+  <div class="section-header">
+    <div class="section-num">13</div>
+    <div class="section-title">Modules Work IA — SEO · DPO · Cybersécurité</div>
+  </div>
+
+  <p>Les modules Work sont des espaces de travail avancés accessibles depuis <code>/work/index.html</code>. Ils exploitent les connecteurs IA pour produire des analyses, rapports et alertes personnalisés pour chaque client.</p>
+
+  <h3>Connecteurs IA</h3>
+  <p>Quatre fournisseurs d'IA sont supportés, interrogés dans l'ordre de priorité suivant via la Edge Function <code>call-ia</code> :</p>
+  <div class="ia-grid">
+    <div class="ia-card">
+      <div class="ia-name">🟢 Groq AI</div>
+      <div class="ia-status actif">Priorité 1</div>
+      <div class="ia-desc">Llama 3.3 70B · Inférence ultra-rapide · groq.com · Clé <code>GROQ_API_KEY</code></div>
+    </div>
+    <div class="ia-card">
+      <div class="ia-name">⚡ Grok (xAI)</div>
+      <div class="ia-status simule">Priorité 2</div>
+      <div class="ia-desc">Grok-2 · api.x.ai · Clé <code>GROK_API_KEY</code> · Format OpenAI-compatible</div>
+    </div>
+    <div class="ia-card">
+      <div class="ia-name">🤖 Anthropic</div>
+      <div class="ia-status simule">Priorité 3</div>
+      <div class="ia-desc">Claude Haiku · api.anthropic.com · Clé <code>ANTHROPIC_API_KEY</code></div>
+    </div>
+    <div class="ia-card">
+      <div class="ia-name">💬 Mistral</div>
+      <div class="ia-status off">Priorité 4</div>
+      <div class="ia-desc">Mistral-large · api.mistral.ai · Clé <code>MISTRAL_API_KEY</code></div>
+    </div>
+  </div>
+  <p>Les statuts (<em>actif · simulé · désactivé</em>) sont gérés dans la table <code>safe_connectors</code> et configurables depuis la page <strong>Connecteurs</strong> de l'admin.</p>
+
+  <h3>Module SEO — Assistant Référencement Local</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title">🤖 Assistant IA</div>
+      <div class="fc-body">Conversation contextuelle (client sélectionné). Suggestions rapides pré-définies. Réponses démo en mode simulé.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">📄 Export PDF brandé</div>
+      <div class="fc-body">Thème vert S@FE. Header « Rapport SEO — Référencement local ». Support multi-pages. Pagination automatique.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">📧 Email + PDF joint</div>
+      <div class="fc-body">PDF généré côté client (jsPDF) puis encodé base64. Transmis à l'Edge Function <code>send-crm-email</code> type <code>rapport_seo</code>. Envoi Brevo avec pièce jointe.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">🔍 Grille d'évaluation</div>
+      <div class="fc-body">Critères Google Business Profile, avis clients, concurrence locale, mots-clés. Score calculé par catégorie. Téléchargeable.</div>
+    </div>
+  </div>
+
+  <h3>Module DPO — Assistant RGPD</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title">🤖 Assistant IA</div>
+      <div class="fc-body">Conversation IA contextualisée. Prompts pré-définis (registre des traitements, fuite de données, DPIA, réponse CNIL).</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">📄 Rapport RGPD PDF</div>
+      <div class="fc-body">Thème marine/gold S@FE. Header « Rapport RGPD — Protection des données ». Footer « Document confidentiel RGPD ». Multi-pages.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">📧 Email + PDF joint</div>
+      <div class="fc-body">PDF base64 transmis à l'Edge Function. Type <code>rapport_dpo</code>. Envoyé au client avec le commercial en reply-to.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">📋 Registre des traitements</div>
+      <div class="fc-body">Gestion des traitements RGPD par client. Catégories, bases légales, durées de conservation, transferts hors UE.</div>
+    </div>
+  </div>
+
+  <h3>Module Cybersécurité — Audit &amp; Incidents</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title">🛡 Audit ANSSI/CIS</div>
+      <div class="fc-body">23 points de contrôle, 6 catégories pondérées. Statuts : Conforme · Partiel · Non conforme · N/A. Score calculé par catégorie et score global.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">📄 Rapport PDF brandé</div>
+      <div class="fc-body">Thème marine/rouge S@FE. Score prominent (48px). Barre de progression par catégorie. Détail item par item avec statut coloré. Footer paginé.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">📧 Email rapport + PDF</div>
+      <div class="fc-body">Bouton « 📧 Email rapport » dans l'audit. PDF généré automatiquement et joint. Score, badge (satisfaisant/à améliorer/critique) affiché dans l'email. Type <code>rapport_cyber</code>.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">🚨 Alertes incidents</div>
+      <div class="fc-body">Déclaration d'incident grave/critique → popup de confirmation → email d'alerte automatique. Bouton « 🚨 Alerter » sur chaque incident ouvert grave/critique. Email header rouge/orange selon gravité. Type <code>alerte_incident</code>.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">🤖 Assistant IA Cyber</div>
+      <div class="fc-body">Réponses sur : phishing, ransomware, politique mots de passe, sauvegardes, audit. Mode démo avec réponses ANSSI contextualisées.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">📋 Plan d'action</div>
+      <div class="fc-body">Génération automatique d'un plan d'action depuis les items non conformes de l'audit. Prioritisation par catégorie ANSSI.</div>
+    </div>
+  </div>
+
+  <h3>Flux PDF → Email (commun aux 3 modules)</h3>
+  <div class="flow-row">
+    <div class="flow-box navy">Assistant Work</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box gold">jsPDF (client-side)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">base64 string</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box navy">Edge Fn send-crm-email</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box green">Brevo API v3</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box green">Email + PDF joint ✅</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 14. ARCHITECTURE TECHNIQUE & SCHÉMAS -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s14">
+  <div class="section-header">
+    <div class="section-num">14</div>
+    <div class="section-title">Architecture Technique &amp; Schémas</div>
+  </div>
+
+  <h3>Architecture globale</h3>
+  <div class="arch-wrap">
+    <svg width="860" height="460" viewBox="0 0 860 460" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto">
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#475569"/>
+        </marker>
+        <marker id="arr-g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#22c55e"/>
+        </marker>
+        <marker id="arr-gold" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#f59e0b"/>
+        </marker>
+      </defs>
+
+      <!-- Background layers -->
+      <rect width="860" height="460" fill="#0a1628" rx="12"/>
+
+      <!-- Title -->
+      <text x="430" y="28" text-anchor="middle" fill="#f59e0b" font-family="Arial" font-size="14" font-weight="bold">ARCHITECTURE S@FE CRM</text>
+
+      <!-- === FRONTEND === -->
+      <rect x="20" y="50" width="200" height="390" rx="8" fill="#142240" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="120" y="72" text-anchor="middle" fill="#60a5fa" font-family="Arial" font-size="10" font-weight="bold">FRONTEND (Vanilla JS)</text>
+      <!-- Pages -->
+      <rect x="34" y="82" width="172" height="24" rx="5" fill="#1e3a5f"/>
+      <text x="120" y="98" text-anchor="middle" fill="#fff" font-family="Arial" font-size="9">CRM Principal (index.html)</text>
+      <rect x="34" y="112" width="172" height="24" rx="5" fill="#1e3a5f"/>
+      <text x="120" y="128" text-anchor="middle" fill="#fff" font-family="Arial" font-size="9">SEO Assistant</text>
+      <rect x="34" y="142" width="172" height="24" rx="5" fill="#1e3a5f"/>
+      <text x="120" y="158" text-anchor="middle" fill="#fff" font-family="Arial" font-size="9">DPO Assistant</text>
+      <rect x="34" y="172" width="172" height="24" rx="5" fill="#1e3a5f"/>
+      <text x="120" y="188" text-anchor="middle" fill="#fff" font-family="Arial" font-size="9">Cyber Audit / Incidents</text>
+      <rect x="34" y="202" width="172" height="24" rx="5" fill="#1e3a5f"/>
+      <text x="120" y="218" text-anchor="middle" fill="#fff" font-family="Arial" font-size="9">Admin / Connecteurs</text>
+      <!-- jsPDF badge -->
+      <rect x="34" y="244" width="172" height="30" rx="5" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" stroke-width="1"/>
+      <text x="120" y="257" text-anchor="middle" fill="#f59e0b" font-family="Arial" font-size="9" font-weight="bold">jsPDF (client-side)</text>
+      <text x="120" y="268" text-anchor="middle" fill="#94a3b8" font-family="Arial" font-size="8">PDF SEO · DPO · Cyber · BDC</text>
+      <!-- connectors-guard -->
+      <rect x="34" y="282" width="172" height="30" rx="5" fill="rgba(139,92,246,0.1)" stroke="#8b5cf6" stroke-width="1"/>
+      <text x="120" y="295" text-anchor="middle" fill="#a78bfa" font-family="Arial" font-size="9" font-weight="bold">connectors-guard.js</text>
+      <text x="120" y="306" text-anchor="middle" fill="#94a3b8" font-family="Arial" font-size="8">callIA · getActiveIAConnector</text>
+
+      <!-- === SUPABASE === -->
+      <rect x="250" y="50" width="200" height="390" rx="8" fill="#0f1f12" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="350" y="72" text-anchor="middle" fill="#4ade80" font-family="Arial" font-size="10" font-weight="bold">SUPABASE (Backend)</text>
+      <!-- Auth -->
+      <rect x="264" y="82" width="172" height="24" rx="5" fill="#14532d"/>
+      <text x="350" y="98" text-anchor="middle" fill="#fff" font-family="Arial" font-size="9">Auth (JWT + MFA)</text>
+      <!-- DB -->
+      <rect x="264" y="112" width="172" height="44" rx="5" fill="#14532d"/>
+      <text x="350" y="128" text-anchor="middle" fill="#4ade80" font-family="Arial" font-size="9" font-weight="bold">PostgreSQL</text>
+      <text x="350" y="142" text-anchor="middle" fill="#86efac" font-family="Arial" font-size="7.5">contacts · contrats · profiles</text>
+      <text x="350" y="151" text-anchor="middle" fill="#86efac" font-family="Arial" font-size="7.5">cyber_audits · incidents · connectors</text>
+      <!-- Edge Fns -->
+      <rect x="264" y="164" width="172" height="174" rx="5" fill="rgba(34,197,94,0.06)" stroke="#22c55e" stroke-width="1"/>
+      <text x="350" y="178" text-anchor="middle" fill="#4ade80" font-family="Arial" font-size="9" font-weight="bold">Edge Functions (Deno)</text>
+      <text x="350" y="194" text-anchor="middle" fill="#86efac" font-family="Arial" font-size="8">send-crm-email</text>
+      <text x="350" y="207" text-anchor="middle" fill="#86efac" font-family="Arial" font-size="8">call-ia</text>
+      <text x="350" y="220" text-anchor="middle" fill="#86efac" font-family="Arial" font-size="8">stripe-webhook</text>
+      <text x="350" y="233" text-anchor="middle" fill="#86efac" font-family="Arial" font-size="8">send-mandat-email</text>
+      <text x="350" y="246" text-anchor="middle" fill="#86efac" font-family="Arial" font-size="8">send-clause-email</text>
+      <text x="350" y="259" text-anchor="middle" fill="#86efac" font-family="Arial" font-size="8">test-brevo</text>
+      <text x="350" y="272" text-anchor="middle" fill="#86efac" font-family="Arial" font-size="8">intrusion-guard (sécurité)</text>
+      <!-- Storage -->
+      <rect x="264" y="345" width="172" height="30" rx="5" fill="#14532d"/>
+      <text x="350" y="358" text-anchor="middle" fill="#4ade80" font-family="Arial" font-size="9" font-weight="bold">Storage (S3-compat.)</text>
+      <text x="350" y="369" text-anchor="middle" fill="#86efac" font-family="Arial" font-size="8">contrats-pdf · clauses-pdf</text>
+      <!-- RLS -->
+      <rect x="264" y="382" width="172" height="24" rx="5" fill="#14532d"/>
+      <text x="350" y="398" text-anchor="middle" fill="#fff" font-family="Arial" font-size="9">RLS Policies (Row Level Security)</text>
+
+      <!-- === EXTERNAL SERVICES === -->
+      <rect x="480" y="50" width="175" height="390" rx="8" fill="#1a0a2e" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="568" y="72" text-anchor="middle" fill="#c084fc" font-family="Arial" font-size="10" font-weight="bold">SERVICES EXTERNES</text>
+      <!-- Brevo -->
+      <rect x="494" y="82" width="147" height="44" rx="5" fill="#1e0b3e"/>
+      <text x="568" y="98" text-anchor="middle" fill="#c084fc" font-family="Arial" font-size="9" font-weight="bold">Brevo API v3</text>
+      <text x="568" y="112" text-anchor="middle" fill="#e9d5ff" font-family="Arial" font-size="7.5">12 types d'envoi · PDF joints</text>
+      <text x="568" y="121" text-anchor="middle" fill="#e9d5ff" font-family="Arial" font-size="7.5">Templates Brevo + HTML custom</text>
+      <!-- Stripe -->
+      <rect x="494" y="134" width="147" height="34" rx="5" fill="#1e0b3e"/>
+      <text x="568" y="150" text-anchor="middle" fill="#c084fc" font-family="Arial" font-size="9" font-weight="bold">Stripe</text>
+      <text x="568" y="162" text-anchor="middle" fill="#e9d5ff" font-family="Arial" font-size="7.5">Abonnements · Webhooks</text>
+      <!-- IA Providers -->
+      <rect x="494" y="176" width="147" height="104" rx="5" fill="rgba(139,92,246,0.06)" stroke="#8b5cf6" stroke-width="1"/>
+      <text x="568" y="192" text-anchor="middle" fill="#c084fc" font-family="Arial" font-size="9" font-weight="bold">Connecteurs IA</text>
+      <rect x="502" y="198" width="131" height="16" rx="3" fill="rgba(34,197,94,0.15)"/>
+      <text x="568" y="210" text-anchor="middle" fill="#4ade80" font-family="Arial" font-size="8">① Groq (Llama 3.3-70B)</text>
+      <rect x="502" y="218" width="131" height="16" rx="3" fill="rgba(245,158,11,0.1)"/>
+      <text x="568" y="230" text-anchor="middle" fill="#fbbf24" font-family="Arial" font-size="8">② Grok / xAI</text>
+      <rect x="502" y="238" width="131" height="16" rx="3" fill="rgba(96,165,250,0.1)"/>
+      <text x="568" y="250" text-anchor="middle" fill="#93c5fd" font-family="Arial" font-size="8">③ Anthropic (Claude)</text>
+      <rect x="502" y="258" width="131" height="16" rx="3" fill="rgba(168,85,247,0.1)"/>
+      <text x="568" y="270" text-anchor="middle" fill="#d8b4fe" font-family="Arial" font-size="8">④ Mistral</text>
+      <!-- API Adresse -->
+      <rect x="494" y="290" width="147" height="30" rx="5" fill="#1e0b3e"/>
+      <text x="568" y="305" text-anchor="middle" fill="#c084fc" font-family="Arial" font-size="9" font-weight="bold">API Adresse Gouv</text>
+      <text x="568" y="316" text-anchor="middle" fill="#e9d5ff" font-family="Arial" font-size="7.5">Autocomplétion adresses FR</text>
+
+      <!-- === SECURITY === -->
+      <rect x="685" y="50" width="155" height="200" rx="8" fill="#1c0a0a" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="762" y="72" text-anchor="middle" fill="#f87171" font-family="Arial" font-size="10" font-weight="bold">SÉCURITÉ</text>
+      <rect x="699" y="82" width="127" height="22" rx="5" fill="#450a0a"/>
+      <text x="762" y="97" text-anchor="middle" fill="#fca5a5" font-family="Arial" font-size="8">RLS Row Level Security</text>
+      <rect x="699" y="110" width="127" height="22" rx="5" fill="#450a0a"/>
+      <text x="762" y="125" text-anchor="middle" fill="#fca5a5" font-family="Arial" font-size="8">JWT Auth (Supabase)</text>
+      <rect x="699" y="138" width="127" height="22" rx="5" fill="#450a0a"/>
+      <text x="762" y="153" text-anchor="middle" fill="#fca5a5" font-family="Arial" font-size="8">Anti-intrusion Edge Fn</text>
+      <rect x="699" y="166" width="127" height="22" rx="5" fill="#450a0a"/>
+      <text x="762" y="181" text-anchor="middle" fill="#fca5a5" font-family="Arial" font-size="8">Ban automatique (5 échecs)</text>
+      <rect x="699" y="194" width="127" height="22" rx="5" fill="#450a0a"/>
+      <text x="762" y="209" text-anchor="middle" fill="#fca5a5" font-family="Arial" font-size="8">Journal sécurité + admin panel</text>
+      <rect x="699" y="222" width="127" height="22" rx="5" fill="#450a0a"/>
+      <text x="762" y="237" text-anchor="middle" fill="#fca5a5" font-family="Arial" font-size="8">RGPD · Consentements explicites</text>
+
+      <!-- Arrows Frontend → Supabase -->
+      <line x1="222" y1="140" x2="250" y2="140" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="222" y1="200" x2="250" y2="200" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="222" y1="260" x2="250" y2="260" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arr-gold)"/>
+
+      <!-- Arrows Supabase → External -->
+      <line x1="452" y1="200" x2="480" y2="200" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+      <line x1="452" y1="240" x2="480" y2="240" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+      <line x1="452" y1="290" x2="480" y2="290" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+      <!-- Legend -->
+      <text x="430" y="432" text-anchor="middle" fill="#475569" font-family="Arial" font-size="8">→ Appel API / JWT  </text>
+      <text x="430" y="444" text-anchor="middle" fill="#94a3b8" font-family="Arial" font-size="7.5">Tous les accès DB passent par RLS · Toutes les Edge Functions vérifient le JWT Supabase</text>
+    </svg>
+  </div>
+
+  <h3>Flux de données — Rapport avec PDF</h3>
+  <div style="overflow-x:auto">
+  <div style="display:flex;flex-direction:column;gap:10px;min-width:600px">
+    <div class="flow-row">
+      <div class="flow-box navy">1. Utilisateur</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">Clic "Envoyer par email"</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box gold">2. jsPDF génère le PDF</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">Encodage base64</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-box">base64 en mémoire</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box navy">3. POST Edge Fn send-crm-email</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">JWT validé · Contact récupéré</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box gold">4. HTML email généré</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-box gold">HTML + base64 PDF</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box navy">5. POST Brevo API v3</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box green">6. Email livré ✅</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box green">PDF joint ✅</div>
+    </div>
+  </div>
+  </div>
+
+  <h3>Flux sécurité — Connexion</h3>
+  <div style="overflow-x:auto">
+  <div style="display:flex;flex-direction:column;gap:10px;min-width:600px">
+    <div class="flow-row">
+      <div class="flow-box navy">Tentative de connexion</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">Edge Fn intrusion-guard</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">Compteur IP / email</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box red">≥ 5 échecs → BAN</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-box green">Succès</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">JWT Supabase (RLS actif)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">Vérification is_admin/role</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box green">Accès données propres ✅</div>
+    </div>
+  </div>
+  </div>
+
+  <h3>Modules &amp; Edge Functions</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Edge Function</th><th>Rôle</th><th>Auth</th><th>Version</th></tr></thead>
+    <tbody>
+      <tr><td><code>send-crm-email</code></td><td>12 types d'email transactionnels · PDF joints (SEO · DPO · Cyber · Bordereau · Facture)</td><td>JWT + is_admin</td><td>v10</td></tr>
+      <tr><td><code>call-ia</code></td><td>Routage IA multi-fournisseur (Groq · Grok · Anthropic · Mistral)</td><td>JWT</td><td>v4</td></tr>
+      <tr><td><code>stripe-webhook</code></td><td>Webhooks Stripe (payment_succeeded · payment_failed)</td><td>Stripe signature</td><td>—</td></tr>
+      <tr><td><code>send-mandat-email</code></td><td>Email mandat DCI signé + 8 pièces jointes Supabase Storage</td><td>JWT</td><td>—</td></tr>
+      <tr><td><code>send-clause-email</code></td><td>Email clause de confidentialité (collaborateur + public)</td><td>JWT / public</td><td>—</td></tr>
+      <tr><td><code>test-brevo</code></td><td>Test d'envoi des 9 templates Brevo (admin uniquement)</td><td>Public (admin-only par logique)</td><td>—</td></tr>
+      <tr><td><code>intrusion-guard</code></td><td>Détection bruteforce · Ban IP/email · Journal sécurité</td><td>Aucune (pré-auth)</td><td>—</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Graphique — Répartition des modules</h3>
+  <div style="background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:24px;margin:12px 0">
+    <div style="font-size:.8rem;font-weight:700;color:var(--navy);margin-bottom:16px">Couverture fonctionnelle par domaine</div>
+    <div class="chart-bars">
+      <div class="chart-bar-col">
+        <div class="chart-val">100%</div>
+        <div class="chart-bar" style="height:100%;background:#3b82f6"></div>
+        <div class="chart-label">Contacts &amp;<br>Contrats</div>
+      </div>
+      <div class="chart-bar-col">
+        <div class="chart-val">100%</div>
+        <div class="chart-bar" style="height:100%;background:#8b5cf6"></div>
+        <div class="chart-label">Emails<br>Brevo</div>
+      </div>
+      <div class="chart-bar-col">
+        <div class="chart-val">100%</div>
+        <div class="chart-bar" style="height:100%;background:#f59e0b"></div>
+        <div class="chart-label">PDF<br>Auto</div>
+      </div>
+      <div class="chart-bar-col">
+        <div class="chart-val">100%</div>
+        <div class="chart-bar" style="height:100%;background:#22c55e"></div>
+        <div class="chart-label">Sécurité<br>Auth</div>
+      </div>
+      <div class="chart-bar-col">
+        <div class="chart-val">95%</div>
+        <div class="chart-bar" style="height:95%;background:#06b6d4"></div>
+        <div class="chart-label">Modules<br>Work IA</div>
+      </div>
+      <div class="chart-bar-col">
+        <div class="chart-val">100%</div>
+        <div class="chart-bar" style="height:100%;background:#ef4444"></div>
+        <div class="chart-label">Cyber<br>Audit</div>
+      </div>
+      <div class="chart-bar-col">
+        <div class="chart-val">90%</div>
+        <div class="chart-bar" style="height:90%;background:#10b981"></div>
+        <div class="chart-label">DPO<br>RGPD</div>
+      </div>
+      <div class="chart-bar-col">
+        <div class="chart-val">100%</div>
+        <div class="chart-bar" style="height:100%;background:#f97316"></div>
+        <div class="chart-label">Commissions<br>Stripe</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Stack technique</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title">🏗 Frontend</div>
+      <div class="fc-body">Vanilla JS (ES2022) · HTML5 · CSS3 custom properties · Aucun framework · Supabase JS SDK v2 · jsPDF v2.5.1</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">⚙️ Backend</div>
+      <div class="fc-body">Supabase (PostgreSQL 15 · Auth · Storage · Edge Functions Deno) · Row Level Security sur toutes les tables</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">🔌 APIs tierces</div>
+      <div class="fc-body">Brevo v3 (emails) · Stripe (paiements) · Groq API · xAI Grok · Anthropic · Mistral · API Adresse Gouv</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">🛡 Sécurité</div>
+      <div class="fc-body">JWT · RLS PostgreSQL · Anti-bruteforce · Chiffrement at-rest Supabase · HTTPS · Secrets Vault Supabase</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">🤖 IA</div>
+      <div class="fc-body">4 fournisseurs avec fallback automatique · Système de connecteurs configurable · Mode simulation · Prompt système par module</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">📄 PDF</div>
+      <div class="fc-body">Génération client-side (jsPDF) pour SEO · DPO · Cyber · BDC · Bordereau. Transmission base64 à l'Edge Function pour envoi Brevo.</div>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:16px">
+    <strong>Déploiement :</strong> Supabase Cloud (région EU West) · Aucun serveur applicatif (serverless total) · Hébergement statique (HTML/JS/CSS) · Mise à jour continue via Supabase MCP · Zéro dépendance npm en production
   </div>
 </div>
 
@@ -817,8 +1291,8 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <div style="font-size:.8rem;color:var(--txt3)">contact@safe-digitalisation.fr · safe-digitalisation.fr</div>
   </div>
   <div style="font-size:.8rem;color:var(--txt3);text-align:right">
-    Documentation CRM v2026-V1<br>
-    Mise à jour : 21 juin 2026<br>
+    Documentation CRM v2026-V2<br>
+    Mise à jour : 22 juin 2026<br>
     Confidentiel — Usage interne
   </div>
 </div>
