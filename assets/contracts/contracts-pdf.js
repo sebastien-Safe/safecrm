@@ -576,6 +576,11 @@ function generateContractPDF() {
   }, contact);
 
   if (res && res.filename) {
+    if (typeof logRgpd === 'function') logRgpd('pdf_contrat_genere', 'Contrats', {
+      entityType: 'contrat', entityId: contract.id, criticite: 'Attention',
+      donnees: 'données contractuelles client (bon de commande)',
+      details: { fichier: res.filename, type: contract.type, contact_id: contract.contact_id },
+    });
     alert(`Bon de commande téléchargé : ${res.filename}`);
   }
 }

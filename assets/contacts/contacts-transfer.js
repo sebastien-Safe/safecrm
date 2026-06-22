@@ -45,8 +45,18 @@ async function confirmTransferContact() {
   if (error) {
     $('#transfer-error').textContent = "Erreur : " + (error.message || JSON.stringify(error));
     $('#transfer-error').style.display = 'block';
+    if (typeof logRgpd === 'function') logRgpd('transfert_contact', 'Contacts', {
+      entityType: 'contact', entityId: contactId, criticite: 'Critique', resultat: 'Erreur',
+      donnees: 'created_by, contact_id, contrats et tâches liés',
+      details: { contact_nom: c?.nom, cible: target?.prenom || target?.email },
+    });
     return;
   }
+  if (typeof logRgpd === 'function') logRgpd('transfert_contact', 'Contacts', {
+    entityType: 'contact', entityId: contactId, criticite: 'Critique',
+    donnees: 'created_by, contact_id, contrats et tâches liés',
+    details: { contact_nom: c?.nom, vers: target?.prenom || target?.email, target_id: targetUserId },
+  });
   $('#transfer-modal').classList.remove('show');
   closeContactModal();
   await loadAll();

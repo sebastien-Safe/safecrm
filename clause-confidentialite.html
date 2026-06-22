@@ -210,7 +210,11 @@ async function init() {
   // Vérifier si déjà signé
   const { data: existing } = await sb.from('clauses_confidentialite')
     .select('id').eq('user_id', currentUser.id).maybeSingle();
-  if (existing) { window.location.href = '/guide.html'; return; }
+  if (existing) {
+    const dest = new URLSearchParams(window.location.search).get('redirect') || '/guide.html';
+    window.location.href = dest;
+    return;
+  }
 
   // Remplir les infos
   const { data: profile } = await sb.from('profiles')
@@ -368,6 +372,24 @@ async function signer() {
     });
     if (error) throw new Error(error.message);
 
+    // Journal RGPD — signature clause (inline)
+    try {
+      const { data: prof } = await sb.from('profiles').select('prenom, nom, role, is_admin').eq('id', currentUser.id).maybeSingle();
+      const roleLabel = prof?.is_admin ? 'Administrateur' : (prof?.role === 'dci' ? 'DCI' : 'Utilisateur');
+      await sb.from('audit_logs').insert({
+        user_id: currentUser.id,
+        user_role: roleLabel,
+        action: 'clause_confidentialite_signee',
+        module: 'RGPD',
+        entity_type: 'clause',
+        entity_id: null,
+        donnees_concernees: 'nom, email, signature SVG, user-agent, PDF clause',
+        criticite: 'Critique',
+        resultat: 'Succès',
+        details: { nom_signataire: nom, email_signataire: email },
+      });
+    } catch(e) { console.warn('[RGPD] log clause_confidentialite_signee :', e); }
+
     // Marquer sur profiles
     await sb.from('profiles').update({
       clause_confidentialite_signee: true,
@@ -393,12 +415,14 @@ async function signer() {
       });
     } catch (e) { console.warn('Email clause non envoyé :', e); }
 
-    // Afficher le bloc succès
+    // Afficher le bloc succès puis rediriger
     document.getElementById('sig-section').style.display = 'none';
     const banner = document.getElementById('signed-banner');
     banner.style.display = 'block';
     document.getElementById('dl-link').href = pdfUrl;
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    const redirectDest = new URLSearchParams(window.location.search).get('redirect');
+    if (redirectDest) setTimeout(() => { window.location.href = redirectDest; }, 3000);
 
   } catch(e) {
     alert('Erreur : ' + e.message);

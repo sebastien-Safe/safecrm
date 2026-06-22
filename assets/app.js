@@ -197,6 +197,9 @@ async function sendPasswordReset() {
   const redirectTo = window.location.origin + window.location.pathname;
   const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
   if (error) { $('#forgot-error').textContent = 'Erreur : ' + error.message; return; }
+  if (typeof logRgpd === 'function') logRgpd('mot_de_passe_reinitialise', 'Sécurité', {
+    criticite: 'Attention', donnees: 'email', details: { email },
+  });
   $('#forgot-success').style.display = 'block';
 }
 
@@ -359,7 +362,7 @@ async function loadAll() {
   await ensureUserObjectifs();
   renderAll();
   checkRgpdExpiry(); // Vérification RGPD automatique au login
-  //if (!isAdmin()) checkMandatSigne(); // Redirection vers signature si mandat absent
+  if (!isAdmin()) await checkClauseSigne(); // Clause de confidentialité obligatoire à la 1ère connexion
   checkPasswordStatus();             // Vérification mot de passe + renouvellement 45j
   loadBordereaux();     // Bordereaux admin
   loadNotifContracts(); // Notifications nouveaux contrats (admin)
@@ -917,6 +920,9 @@ async function changePassword() {
     $('#password-error').textContent = 'Erreur : ' + error.message;
     return;
   }
+  if (typeof logRgpd === 'function') logRgpd('mot_de_passe_modifie', 'Sécurité', {
+    criticite: 'Attention', donnees: 'mot de passe (non stocké)',
+  });
   $('#profile-new-password').value = '';
   $('#profile-new-password-2').value = '';
   $('#password-success').style.display = 'block';
@@ -1926,6 +1932,11 @@ async function adminToggleAdmin(userId) {
     : `Promouvoir ${u.prenom || u.email} super-administrateur ? Il/elle aura accès à tous les chiffres et à la gestion des comptes.`)) return;
   const { error } = await sb.rpc('admin_set_admin', { target_user_id: userId, make_admin: !u.is_admin });
   if (error) { alert("Erreur : " + error.message); return; }
+  if (typeof logRgpd === 'function') logRgpd('role_utilisateur_modifie', 'Administration', {
+    entityType: 'utilisateur', entityId: userId, criticite: 'Critique',
+    donnees: 'rôle, is_admin',
+    details: { utilisateur: u.prenom || u.email, action: !u.is_admin ? 'Promotion admin' : 'Rétrogradation admin' },
+  });
   await loadAdminUsers();
   renderAdminUsers();
 }
@@ -1934,7 +1945,6 @@ async function adminDeleteUser(userId) {
   const u = state.adminUsers.find(x => x.id === userId);
   if (!u) return;
   const label = u.prenom || u.email;
-  // Double confirmation pour une action irréversible
   if (!confirm(
     `⚠️ SUPPRESSION DÉFINITIVE\n\n` +
     `Vous êtes sur le point de supprimer définitivement le compte de ${label} (${u.email}).\n\n` +
@@ -1944,7 +1954,6 @@ async function adminDeleteUser(userId) {
     `• Pour seulement bloquer la connexion (réversible), utilisez plutôt "Révoquer"\n\n` +
     `Continuer ?`
   )) return;
-  // Confirmation explicite par saisie du prénom/email
   const typed = prompt(`Pour confirmer, tapez exactement : ${label}`);
   if (typed !== label) {
     alert("Suppression annulée (texte non identique).");
@@ -1952,10 +1961,14 @@ async function adminDeleteUser(userId) {
   }
   const { error } = await sb.rpc('admin_delete_user', { target_user_id: userId });
   if (error) { alert("Erreur : " + error.message); return; }
+  if (typeof logRgpd === 'function') logRgpd('utilisateur_supprime', 'Administration', {
+    entityType: 'utilisateur', entityId: userId, criticite: 'Critique',
+    donnees: 'user_id, email, profil',
+    details: { utilisateur: label, email: u.email },
+  });
   alert(`✅ Compte ${label} supprimé définitivement.`);
   await loadAdminUsers();
   renderAdminUsers();
-  // Recharger les profils pour mettre à jour "Ajouté par" dans les listes
   await loadAllProfiles();
   renderContacts();
   renderContracts();
@@ -1969,6 +1982,11 @@ async function adminToggleBan(userId, banned) {
     : `Restaurer l'accès pour ${u.prenom || u.email} ?`)) return;
   const { error } = await sb.rpc('admin_set_banned', { target_user_id: userId, banned });
   if (error) { alert("Erreur : " + error.message); return; }
+  if (typeof logRgpd === 'function') logRgpd(banned ? 'utilisateur_bloque' : 'utilisateur_debloque', 'Administration', {
+    entityType: 'utilisateur', entityId: userId, criticite: 'Critique',
+    donnees: 'statut connexion',
+    details: { utilisateur: u.prenom || u.email, email: u.email, action: banned ? 'Accès révoqué' : 'Accès restauré' },
+  });
   await loadAdminUsers();
   renderAdminUsers();
 }
@@ -3525,12 +3543,19 @@ async function checkMandatSigne() {
       .eq('statut', 'signe')
       .maybeSingle();
     if (error) { console.warn('checkMandatSigne:', error); return; }
-    if (!data) {
-      // Aucun mandat signé → redirection vers la page de signature
-      window.location.href = '/mandat.html';
-    }
+    if (!data) window.location.href = '/mandat.html';
   } catch(e) {
     console.warn('checkMandatSigne:', e);
+  }
+}
+
+async function checkClauseSigne() {
+  try {
+    const { data } = await sb.from('clauses_confidentialite')
+      .select('id').eq('user_id', state.user.id).maybeSingle();
+    if (!data) window.location.href = '/clause-confidentialite.html?redirect=/';
+  } catch(e) {
+    console.warn('checkClauseSigne:', e);
   }
 }
 

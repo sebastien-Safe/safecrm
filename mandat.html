@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="assets/config.js"></script>
+  <script src="/assets/config.js"></script>
   <style>
     :root {
       --navy:#0a1628; --navy-2:#142240; --navy-3:#1a2d4a;
@@ -885,6 +885,25 @@ document.getElementById('btn-confirm-sign').addEventListener('click', async () =
     });
 
     if (mandatErr) throw new Error(mandatErr.message);
+
+    // Journal RGPD — signature mandat (inline, hors app.js)
+    try {
+      const { data: { session: s } } = await sb.auth.getSession();
+      const { data: prof } = await sb.from('profiles').select('prenom, nom, role, is_admin').eq('id', currentUser.id).maybeSingle();
+      const roleLabel = prof?.is_admin ? 'Administrateur' : (prof?.role === 'dci' ? 'DCI' : 'Utilisateur');
+      await sb.from('audit_logs').insert({
+        user_id: currentUser.id,
+        user_role: roleLabel,
+        action: 'mandat_signe',
+        module: 'Mandats',
+        entity_type: 'mandat',
+        entity_id: null,
+        donnees_concernees: 'prénom, nom, adresse, SIRET, RSAC, signature SVG, IP, user-agent',
+        criticite: 'Critique',
+        resultat: 'Succès',
+        details: { numero: mandatNumero, signed_at: now, user_nom: `${prenom} ${nom}` },
+      });
+    } catch(e) { console.warn('[RGPD] log mandat_signe :', e); }
 
     // Envoi Brevo : mandat signé au commercial + BCC admin
     try {

@@ -422,7 +422,12 @@ async function _plUploadPJ(contactId, input) {
   if (upEl) upEl.style.display = '';
   for (const file of input.files) {
     const { error } = await sb.storage.from(PJ_BUCKET).upload(`pj/${contactId}/${file.name}`, file, { upsert: true });
-    if (error) console.error('[pipeline] upload PJ', error);
+    if (error) { console.error('[pipeline] upload PJ', error); continue; }
+    if (typeof logRgpd === 'function') logRgpd('pj_uploadee', 'Pipeline', {
+      entityType: 'contact', entityId: contactId, criticite: 'Attention',
+      donnees: 'fichier client (PDF/document)',
+      details: { fichier: file.name, taille_ko: Math.round(file.size / 1024) },
+    });
   }
   if (upEl) upEl.style.display = 'none';
   input.value = '';
@@ -435,6 +440,11 @@ async function _plDeletePJ(contactId, filename, event) {
   if (!confirm(`Supprimer "${filename}" ?`)) return;
   const { error } = await sb.storage.from(PJ_BUCKET).remove([`pj/${contactId}/${filename}`]);
   if (error) { console.error('[pipeline] delete PJ', error); return; }
+  if (typeof logRgpd === 'function') logRgpd('pj_supprimee', 'Pipeline', {
+    entityType: 'contact', entityId: contactId, criticite: 'Critique',
+    donnees: 'fichier client supprimé définitivement',
+    details: { fichier: filename },
+  });
   delete _plPJCache[contactId];
   await _plLoadPJ(contactId);
 }

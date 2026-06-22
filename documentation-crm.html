@@ -187,6 +187,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <li><a href="#s13"><span class="num">13</span>Modules Work IA (SEO · DPO · Cyber)</a></li>
     <li><a href="#s14"><span class="num">14</span>Architecture Technique &amp; Schémas</a></li>
     <li><a href="#s15"><span class="num">15</span>Documents Juridiques &amp; Conformité</a></li>
+    <li><a href="#s16"><span class="num">16</span>Journal RGPD — Registre des traitements &amp; traçabilité</a></li>
   </ol>
 </div>
 
@@ -281,13 +282,13 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
 
   <h3>Clause de Confidentialité</h3>
   <ul>
-    <li><strong>Collaborateurs CRM</strong> : signature numérique obligatoire avant accès au CRM (canvas + horodatage). PDF archivé dans Supabase Storage et envoyé par email (template Brevo ID 7).</li>
+    <li><strong>Collaborateurs CRM</strong> : signature numérique <strong>bloquante à la première connexion</strong> — si aucune clause signée n'est trouvée dans <code>clauses_confidentialite</code>, le CRM redirige automatiquement vers <code>/clause-confidentialite.html?redirect=/</code>. Retour automatique après signature (3 s). PDF archivé dans Supabase Storage et envoyé par email (template Brevo ID 7). L'action est logguée : <code>clause_confidentialite_signee</code> — Critique.</li>
     <li><strong>Signataires externes / publics</strong> : page dédiée sans authentification, inclut le numéro ORIAS. PDF archivé et envoyé (template Brevo ID 6).</li>
     <li>Intégralité du document consultable en mode lecture seule via paramètre URL <code>?view=id</code>.</li>
   </ul>
 
   <h3>Contrat de Mandat Agent Commercial</h3>
-  <p>Signature électronique en 4 étapes : lecture du contrat complet → renseignement des informations mandataire → signature canvas → validation OTP par email. SHA-256 du texte du contrat calculé et enregistré. PDF archivé et email envoyé automatiquement avec toute la documentation commerciale (template Brevo ID 5).</p>
+  <p>Signature électronique en 4 étapes : lecture du contrat complet → renseignement des informations mandataire → signature canvas → validation OTP par email. SHA-256 du texte du contrat calculé et enregistré. PDF archivé et email envoyé automatiquement avec toute la documentation commerciale (template Brevo ID 5). L'action est logguée : <code>mandat_signe</code> — Critique. Accessible via <code>/mandat.html</code> ou <code>/Force-de-vente/mandat.html</code> (redirection).</p>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════ -->
@@ -1459,6 +1460,111 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 16. JOURNAL RGPD -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s16">
+  <div class="section-header">
+    <div class="section-num">16</div>
+    <div class="section-title">Journal RGPD — Registre des traitements &amp; traçabilité</div>
+  </div>
+
+  <h3>Architecture du journal</h3>
+  <p>Toutes les actions ayant une incidence sur des données personnelles sont enregistrées dans la table <code>audit_logs</code> (Supabase). Cette table est <strong>immuable</strong> : un trigger PostgreSQL bloque toute opération <code>DELETE</code> ou <code>UPDATE</code>, conformément à l'article 30 du RGPD (obligation de tenue du registre des activités de traitement). Elle ne peut jamais être purgée, même par un administrateur.</p>
+  <div class="info-box">
+    <strong>Base légale :</strong> RGPD art. 5(2) — Principe de responsabilité (<em>accountability</em>). Art. 30 — Registre des activités de traitement. CNIL délibération 2017-190 — obligation de journaliser les exports de données personnelles.
+  </div>
+
+  <h3>Structure d'un enregistrement <code>audit_logs</code></h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>user_id</code></td><td>UUID</td><td>Auteur de l'action (auth.uid)</td></tr>
+      <tr><td><code>user_role</code></td><td>text</td><td>Rôle au moment de l'action (Utilisateur / DCI / Administrateur)</td></tr>
+      <tr><td><code>action</code></td><td>text</td><td>Code machine de l'action (voir table ci-dessous)</td></tr>
+      <tr><td><code>module</code></td><td>text</td><td>Module CRM concerné (Contacts, Contrats, Pipeline, Administration…)</td></tr>
+      <tr><td><code>entity_type</code></td><td>text</td><td>Type d'entité visée (contact, contrat, utilisateur…)</td></tr>
+      <tr><td><code>entity_id</code></td><td>UUID</td><td>Identifiant de l'entité concernée</td></tr>
+      <tr><td><code>donnees_concernees</code></td><td>text</td><td>Description des données personnelles impliquées</td></tr>
+      <tr><td><code>criticite</code></td><td>text</td><td><code>Info</code> · <code>Attention</code> · <code>Critique</code></td></tr>
+      <tr><td><code>resultat</code></td><td>text</td><td><code>Succès</code> · <code>Erreur</code></td></tr>
+      <tr><td><code>details</code></td><td>JSONB</td><td>Contexte complémentaire (noms, IDs, ancienne/nouvelle valeur…)</td></tr>
+      <tr><td><code>created_at</code></td><td>timestamptz</td><td>Horodatage UTC (affiché en Europe/Paris dans l'interface)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Catalogue complet des actions tracées</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Code action</th><th>Libellé</th><th>Criticité</th><th>Module</th><th>Déclencheur</th></tr></thead>
+    <tbody>
+      <tr><td><code>contact_cree</code></td><td>Création contact</td><td><span class="badge b-all">Info</span></td><td>Contacts</td><td>Enregistrement nouveau contact</td></tr>
+      <tr><td><code>contact_modifie</code></td><td>Modification contact</td><td><span class="badge b-all">Info</span></td><td>Contacts</td><td>Sauvegarde modal contact</td></tr>
+      <tr><td><code>contact_supprime</code></td><td>Suppression contact</td><td><span class="badge b-dci">Attention</span></td><td>Contacts</td><td>Bouton supprimer fiche</td></tr>
+      <tr><td><code>transfert_contact</code></td><td>Transfert contact</td><td><span class="badge b-admin">Critique</span></td><td>Contacts</td><td>RPC <code>transfer_contact</code></td></tr>
+      <tr><td><code>contrat_cree</code></td><td>Création contrat</td><td><span class="badge b-all">Info</span></td><td>Contrats</td><td>Enregistrement nouveau contrat</td></tr>
+      <tr><td><code>contrat_modifie</code></td><td>Modification contrat</td><td><span class="badge b-all">Info</span></td><td>Contrats</td><td>Sauvegarde modal contrat</td></tr>
+      <tr><td><code>contrat_supprime</code></td><td>Suppression contrat</td><td><span class="badge b-dci">Attention</span></td><td>Contrats</td><td>Bouton supprimer contrat</td></tr>
+      <tr><td><code>pdf_contrat_genere</code></td><td>Bon de commande généré (PDF)</td><td><span class="badge b-dci">Attention</span></td><td>Contrats</td><td>Téléchargement PDF bon de commande — CNIL délibération 2017-190</td></tr>
+      <tr><td><code>interaction_creee</code></td><td>Nouvel échange</td><td><span class="badge b-all">Info</span></td><td>Contacts</td><td>Enregistrement interaction</td></tr>
+      <tr><td><code>interaction_supprimee</code></td><td>Suppression échange</td><td><span class="badge b-dci">Attention</span></td><td>Contacts</td><td>Suppression interaction</td></tr>
+      <tr><td><code>pj_uploadee</code></td><td>Pièce jointe déposée</td><td><span class="badge b-dci">Attention</span></td><td>Pipeline</td><td>Upload fichier Supabase Storage <code>contrats-pdf/pj/{id}/</code></td></tr>
+      <tr><td><code>pj_supprimee</code></td><td>Pièce jointe supprimée</td><td><span class="badge b-admin">Critique</span></td><td>Pipeline</td><td>Suppression fichier Storage (irréversible)</td></tr>
+      <tr><td><code>profil_modifie</code></td><td>Modification profil</td><td><span class="badge b-all">Info</span></td><td>Profil</td><td>Sauvegarde informations personnelles</td></tr>
+      <tr><td><code>mot_de_passe_reinitialise</code></td><td>Réinitialisation mot de passe</td><td><span class="badge b-dci">Attention</span></td><td>Sécurité</td><td>Demande email reset (<code>resetPasswordForEmail</code>)</td></tr>
+      <tr><td><code>mot_de_passe_modifie</code></td><td>Modification mot de passe</td><td><span class="badge b-dci">Attention</span></td><td>Sécurité</td><td>Changement via profil (<code>updateUser</code>)</td></tr>
+      <tr><td><code>role_utilisateur_modifie</code></td><td>Modification rôle utilisateur</td><td><span class="badge b-admin">Critique</span></td><td>Administration</td><td>Promotion / rétrogradation admin (<code>admin_set_admin</code>)</td></tr>
+      <tr><td><code>utilisateur_supprime</code></td><td>Suppression compte utilisateur</td><td><span class="badge b-admin">Critique</span></td><td>Administration</td><td>RPC <code>admin_delete_user</code> (double confirmation)</td></tr>
+      <tr><td><code>utilisateur_bloque</code></td><td>Accès utilisateur révoqué</td><td><span class="badge b-admin">Critique</span></td><td>Administration</td><td>RPC <code>admin_set_banned</code> banned=true</td></tr>
+      <tr><td><code>utilisateur_debloque</code></td><td>Accès utilisateur restauré</td><td><span class="badge b-admin">Critique</span></td><td>Administration</td><td>RPC <code>admin_set_banned</code> banned=false</td></tr>
+      <tr><td><code>mandat_signe</code></td><td>Signature mandat DCI</td><td><span class="badge b-admin">Critique</span></td><td>Mandats</td><td>Insert table <code>mandats</code> statut=signe, après OTP vérifié</td></tr>
+      <tr><td><code>clause_confidentialite_signee</code></td><td>Signature clause de confidentialité</td><td><span class="badge b-admin">Critique</span></td><td>RGPD</td><td>Insert table <code>clauses_confidentialite</code> — obligatoire 1ère connexion</td></tr>
+      <tr><td><code>export_registre_pdf</code></td><td>Export registre RGPD (PDF)</td><td><span class="badge b-admin">Critique</span></td><td>RGPD</td><td>Téléchargement registre complet</td></tr>
+      <tr><td><code>export_journal_csv</code></td><td>Export journal RGPD (CSV)</td><td><span class="badge b-admin">Critique</span></td><td>RGPD</td><td>Export CSV journal d'audit</td></tr>
+      <tr><td><code>export_journal_pdf</code></td><td>Export journal RGPD (PDF)</td><td><span class="badge b-admin">Critique</span></td><td>RGPD</td><td>Export PDF journal d'audit</td></tr>
+      <tr><td><code>export_bordereau_commission</code></td><td>Export bordereau commission</td><td><span class="badge b-dci">Attention</span></td><td>Commissions</td><td>Téléchargement bordereau DCI</td></tr>
+      <tr><td><code>paiement_confirme</code></td><td>Paiement confirmé</td><td><span class="badge b-all">Info</span></td><td>Paiements</td><td>Webhook Stripe <code>payment_intent.succeeded</code></td></tr>
+      <tr><td><code>resiliation_validee</code></td><td>Résiliation validée</td><td><span class="badge b-dci">Attention</span></td><td>Contrats</td><td>Validation admin résiliation + annulation Stripe</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Première connexion — obligations bloquantes</h3>
+  <p>Deux obligations doivent être satisfaites avant qu'un utilisateur puisse accéder au CRM. Elles sont vérifiées dans <code>loadAll()</code> à chaque démarrage de session :</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title">Clause de confidentialité (<code>checkClauseSigne</code>)</div>
+      <div class="fc-body">Vérifie l'existence d'une ligne dans <code>clauses_confidentialite</code> pour l'utilisateur courant. Si absente → redirection immédiate vers <code>/clause-confidentialite.html?redirect=/</code>. Après signature, retour automatique au CRM (3 s). S'applique à tous les rôles sauf admin.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Mandat agent commercial (<code>checkMandatSigne</code>)</div>
+      <div class="fc-body">Disponible mais <strong>désactivé</strong> par choix produit — la signature du mandat n'est pas forcée au login. Accessible depuis <code>/mandat.html</code> ou <code>/Force-de-vente/mandat.html</code> (redirect).</div>
+    </div>
+  </div>
+
+  <h3>Pipeline Kanban &amp; RGPD</h3>
+  <p>Le Pipeline Kanban fait des appels directs à Supabase (sans passer par les service layers). Les actions suivantes sont néanmoins tracées dans le journal RGPD :</p>
+  <ul>
+    <li><strong>Upload PJ</strong> (<code>pj_uploadee</code> — Attention) : nom du fichier, taille, contact_id.</li>
+    <li><strong>Suppression PJ</strong> (<code>pj_supprimee</code> — Critique) : nom du fichier, contact_id. La suppression dans Supabase Storage est irréversible.</li>
+    <li>Les déplacements de colonnes, changements de priorité et modifications de checklist ne constituent pas des traitements de données personnelles au sens strict — ils ne sont pas logués.</li>
+  </ul>
+
+  <h3>Accès au journal RGPD</h3>
+  <ul>
+    <li>Interface dédiée : <strong>Onglet Administration → Journal RGPD</strong> (réservé aux rôles <code>admin</code> et <code>super_admin</code>).</li>
+    <li>Filtres : période, module, criticité, résultat, recherche libre.</li>
+    <li>Exports : PDF · CSV · Excel — chaque export est lui-même logué (<code>export_journal_pdf</code> / <code>export_journal_csv</code>).</li>
+    <li>La table <code>audit_logs</code> est protégée par RLS : seuls les admins peuvent lire en SELECT. Aucun rôle ne peut DELETE ou UPDATE (trigger immuable).</li>
+  </ul>
+
+  <div class="info-box" style="margin-top:20px">
+    <strong>Référence légale :</strong> RGPD art. 30 · CNIL délibération 2017-190 · NIS2 (directive UE 2022/2555) — obligation de traçabilité des accès et actions sur les systèmes traitant des données sensibles. La conservation du journal est illimitée (les logs ne peuvent être supprimés).
+  </div>
+</div>
+
 <!-- FOOTER -->
 <div style="border-top:2px solid var(--line);padding:32px 0;margin:40px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
   <div>
@@ -1467,8 +1573,8 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <div style="font-size:.8rem;color:var(--txt3)">contact@safe-digitalisation.fr · safe-digitalisation.fr</div>
   </div>
   <div style="font-size:.8rem;color:var(--txt3);text-align:right">
-    Documentation CRM v2026-V4<br>
-    Mise à jour : 22 juin 2026<br>
+    Documentation CRM v2026-V5<br>
+    Mise à jour : 23 juin 2026<br>
     Confidentiel — Usage interne
   </div>
 </div>

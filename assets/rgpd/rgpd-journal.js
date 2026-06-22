@@ -70,6 +70,19 @@ const JOURNAL_ACTION_LABELS = {
   resiliation_programmee_stripe: 'Résiliation programmée (Stripe)',
   resiliation_annulee_stripe:    'Résiliation annulée (Stripe)',
   resiliation_effective_stripe:  'Résiliation effective (Stripe)',
+  // Actions RGPD — ajoutées session 2026-06
+  transfert_contact:             'Transfert contact',
+  role_utilisateur_modifie:      'Modification rôle utilisateur',
+  utilisateur_supprime:          'Suppression compte utilisateur',
+  utilisateur_bloque:            'Accès utilisateur révoqué',
+  utilisateur_debloque:          'Accès utilisateur restauré',
+  mandat_signe:                  'Signature mandat DCI',
+  clause_confidentialite_signee: 'Signature clause de confidentialité',
+  pj_uploadee:                   'Pièce jointe déposée',
+  pj_supprimee:                  'Pièce jointe supprimée',
+  pdf_contrat_genere:            'Bon de commande généré (PDF)',
+  mot_de_passe_reinitialise:     'Réinitialisation mot de passe',
+  mot_de_passe_modifie:          'Modification mot de passe',
 };
 
 const JOURNAL_CRITICITE_CLASS = {
