@@ -176,10 +176,14 @@ tbody tr:hover td{background:rgba(255,255,255,.02)}
     <div class="hdr-div"></div>
     <div><div class="hdr-title">Grille d'évaluation</div><div class="hdr-sub">Recrutement DCI — Réunion du 22 juin 2026</div></div>
     <div class="hdr-actions no-print">
+      <span id="save-indicator" style="font-size:12px;color:#5a6a88;align-self:center;white-space:nowrap"></span>
       <button class="btn btn-outline" onclick="resetAll()">↺ Réinitialiser</button>
+      <button class="btn btn-outline" onclick="downloadJSON()" title="Télécharger une sauvegarde JSON">💾 Sauvegarder</button>
+      <button class="btn btn-outline" onclick="loadFromFile()" title="Restaurer depuis un fichier JSON">📂 Restaurer</button>
       <button class="btn btn-gold" onclick="window.print()">🖨 Imprimer</button>
       <button class="btn btn-outline" onclick="window.close()">← Retour présentation</button>
     </div>
+    <input type="file" id="restore-file-input" accept=".json" style="display:none" onchange="onFileSelected(this)">
   </header>
 
   <div class="content">
@@ -432,8 +436,15 @@ function buildDecisions() {
 }
 
 // ── PERSISTENCE ───────────────────────────────────────────────────────
-function saveState() {
-  const state = { scores, notes: [], decisions: [], candNames: [], candZones: [] };
+const LS_KEY = 'safe_grille_state_2206';
+let _hasUnsavedDownload = false;
+
+function collectState() {
+  const state = {
+    version: 2,
+    savedAt: new Date().toISOString(),
+    scores, notes: [], decisions: [], candNames: [], candZones: []
+  };
   CANDIDATS.forEach((_, ci) => {
     state.notes.push(document.getElementById('note-' + ci)?.value || '');
     const sel = document.querySelector(`input[name="dec-${ci}"]:checked`);
@@ -443,47 +454,107 @@ function saveState() {
     state.candNames.push(ni ? ni.value : '');
     state.candZones.push(zi ? zi.value : '');
   });
-  try { sessionStorage.setItem('safe_grille_state', JSON.stringify(state)); } catch(e) {}
+  return state;
+}
+
+function saveState() {
+  const state = collectState();
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    _hasUnsavedDownload = true;
+    const ind = document.getElementById('save-indicator');
+    if (ind) { ind.textContent = '✓ Sauvegardé'; setTimeout(() => { ind.textContent = ''; }, 2000); }
+  } catch(e) {}
+}
+
+function applyState(state) {
+  if (!state) return;
+  if (state.scores) state.scores.forEach((row, ri) => row.forEach((v, ci) => {
+    scores[ri][ci] = v;
+    renderStars(ri, ci);
+  }));
+  if (state.notes) state.notes.forEach((n, ci) => {
+    const el = document.getElementById('note-' + ci);
+    if (el) el.value = n;
+  });
+  if (state.decisions) state.decisions.forEach((d, ci) => {
+    if (d) { const el = document.querySelector(`input[name="dec-${ci}"][value="${d}"]`); if (el) el.checked = true; }
+  });
+  CANDIDATS.forEach((_, ci) => {
+    const ni   = document.querySelector(`.th-cand-name-input[data-ci="${ci}"]`);
+    const zi   = document.querySelector(`.th-cand-zone-input[data-ci="${ci}"]`);
+    const name = state.candNames?.[ci] || '';
+    const zone = state.candZones?.[ci] || '';
+    if (ni) ni.value = name;
+    if (zi) zi.value = zone;
+    const label = name || `Candidat ${ci + 1}`;
+    const noteNameEl = document.getElementById('note-name-' + ci);
+    const noteZoneEl = document.getElementById('note-zone-' + ci);
+    const decNameEl  = document.getElementById('dec-name-'  + ci);
+    if (noteNameEl) noteNameEl.textContent = label;
+    if (noteZoneEl) noteZoneEl.textContent = zone ? `— ${zone}` : '';
+    if (decNameEl)  decNameEl.textContent  = label;
+  });
+  updateTotals();
 }
 
 function loadState() {
   try {
-    const raw = sessionStorage.getItem('safe_grille_state');
+    const raw = localStorage.getItem(LS_KEY);
     if (!raw) return;
-    const state = JSON.parse(raw);
-    if (state.scores) state.scores.forEach((row, ri) => row.forEach((v, ci) => {
-      scores[ri][ci] = v;
-      renderStars(ri, ci);
-    }));
-    if (state.notes) state.notes.forEach((n, ci) => {
-      const el = document.getElementById('note-' + ci);
-      if (el) el.value = n;
-    });
-    if (state.decisions) state.decisions.forEach((d, ci) => {
-      if (d) { const el = document.querySelector(`input[name="dec-${ci}"][value="${d}"]`); if (el) el.checked = true; }
-    });
-    CANDIDATS.forEach((_, ci) => {
-      const ni   = document.querySelector(`.th-cand-name-input[data-ci="${ci}"]`);
-      const zi   = document.querySelector(`.th-cand-zone-input[data-ci="${ci}"]`);
-      const name = state.candNames?.[ci] || '';
-      const zone = state.candZones?.[ci] || '';
-      if (ni) ni.value = name;
-      if (zi) zi.value = zone;
-      const label = name || `Candidat ${ci + 1}`;
-      const noteNameEl = document.getElementById('note-name-' + ci);
-      const noteZoneEl = document.getElementById('note-zone-' + ci);
-      const decNameEl  = document.getElementById('dec-name-'  + ci);
-      if (noteNameEl) noteNameEl.textContent = label;
-      if (noteZoneEl) noteZoneEl.textContent = zone ? `— ${zone}` : '';
-      if (decNameEl)  decNameEl.textContent  = label;
-    });
-    updateTotals();
+    applyState(JSON.parse(raw));
   } catch(e) {}
 }
 
+// ── EXPORT / IMPORT FICHIER ────────────────────────────────────────────
+function downloadJSON() {
+  const state = collectState();
+  const date  = new Date().toISOString().slice(0, 10);
+  const blob  = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url   = URL.createObjectURL(blob);
+  const a     = document.createElement('a');
+  a.href      = url;
+  a.download  = `grille-dci-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  _hasUnsavedDownload = false;
+  const ind = document.getElementById('save-indicator');
+  if (ind) { ind.textContent = '📥 Fichier téléchargé'; setTimeout(() => { ind.textContent = ''; }, 3000); }
+}
+
+function loadFromFile() {
+  document.getElementById('restore-file-input').click();
+}
+function onFileSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const state = JSON.parse(e.target.result);
+      if (!state.scores) throw new Error();
+      applyState(state);
+      saveState();
+      const ind = document.getElementById('save-indicator');
+      if (ind) { ind.textContent = '✓ Restauré'; setTimeout(() => { ind.textContent = ''; }, 2500); }
+    } catch { alert('Fichier invalide ou corrompu.'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// Avertissement fermeture avec données non téléchargées
+window.addEventListener('beforeunload', e => {
+  if (_hasUnsavedDownload) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
 function resetAll() {
   if (!confirm('Réinitialiser toutes les évaluations ?')) return;
-  sessionStorage.removeItem('safe_grille_state');
+  localStorage.removeItem(LS_KEY);
+  _hasUnsavedDownload = false;
   scores.forEach(row => row.fill(0));
   document.querySelectorAll('.stars .star').forEach(s => s.classList.remove('on'));
   CANDIDATS.forEach((_, ci) => {
