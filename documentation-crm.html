@@ -158,7 +158,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <h1 class="cover-title">Documentation complète<br>des fonctionnalités CRM</h1>
     <p class="cover-sub">Référentiel exhaustif de toutes les fonctionnalités du CRM S@FE — gestion commerciale, contrats, commissions, automatisations et administration.</p>
     <div class="cover-meta">
-      <div><strong>Version</strong><span>2026-V2</span></div>
+      <div><strong>Version</strong><span>2026-V3</span></div>
       <div><strong>Date</strong><span>22 juin 2026</span></div>
       <div><strong>Éditeur</strong><span>S@FE SASU</span></div>
       <div><strong>Rôles</strong><span>Tous niveaux</span></div>
@@ -225,6 +225,58 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <li>Alertes d'intrusion automatiques : détection des essais multiples et création d'alerte rouge dans le panel admin</li>
     <li>Résolution manuelle des alertes par l'administrateur (bouton « Résolu ✓ »)</li>
   </ul>
+
+  <h3>Isolation des données — Row Level Security (RLS)</h3>
+  <p>L'isolation des données entre commerciaux est appliquée <strong>simultanément à deux niveaux</strong> : dans l'interface et directement dans la base de données PostgreSQL via des politiques RLS, rendant tout contournement par API impossible même avec un token valide.</p>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Rôle</th><th>Contacts / Contrats visibles</th><th>Écriture autorisée sur</th><th>Suppression</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="badge b-all">Niveau 1 (user)</span></td>
+        <td>Ses propres fiches uniquement</td>
+        <td>Ses propres fiches uniquement</td>
+        <td>Ses propres fiches</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-dci">DCI (niveau 2)</span></td>
+        <td>Ses fiches + toutes les fiches de ses Niveau 1</td>
+        <td>Ses propres fiches uniquement</td>
+        <td>Ses propres fiches</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-admin">Admin / Super Admin</span></td>
+        <td>Toutes les fiches</td>
+        <td>Toutes les fiches</td>
+        <td>Toutes les fiches</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>Fonctions SQL de sécurité (SECURITY DEFINER)</h4>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="fc-title"><code>is_admin()</code></div>
+      <div class="fc-body">Retourne <code>true</code> si <code>profiles.is_admin = true</code> pour l'utilisateur courant. Utilisée dans toutes les policies d'écriture et de suppression.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title"><code>is_dci()</code></div>
+      <div class="fc-body">Retourne <code>true</code> si <code>profiles.role = 'dci'</code>. Permet au DCI d'accéder en lecture aux fiches de son équipe.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title"><code>get_team_ids()</code></div>
+      <div class="fc-body">Retourne le tableau des <code>id</code> de tous les profils dont <code>dci_parent_id = auth.uid()</code>. Utilisée dans la policy SELECT pour délimiter l'équipe visible du DCI.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fc-title">Policy SELECT (contacts, contrats, tâches)</div>
+      <div class="fc-body"><code>is_admin()</code> OU <code>created_by = auth.uid()</code> OU <code>(is_dci() ET created_by IN get_team_ids())</code>. Aucun accès direct en dehors de ces trois cas.</div>
+    </div>
+  </div>
+  <div class="info-box">
+    <strong>Vérification live :</strong> les policies actives ont été auditées directement via <code>pg_policies</code> — aucune policy ouverte (<code>USING true</code>) n'est présente sur les tables <code>contacts</code>, <code>contracts</code> ou <code>tasks</code>. La hiérarchie Niveau 1 / DCI / Admin est intégralement enforced au niveau PostgreSQL.
+  </div>
 
   <h3>Clause de Confidentialité</h3>
   <ul>
@@ -862,8 +914,39 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   </table>
   </div>
 
+  <h3>Détail de l'isolation RLS par opération</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Table</th>
+        <th>Opération</th>
+        <th>Policy active</th>
+        <th>Condition (résumée)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td rowspan="4"><code>contacts</code></td><td>SELECT</td><td><code>contacts_select</code></td><td>is_admin OU own OU (is_dci ET équipe)</td></tr>
+      <tr><td>INSERT</td><td><code>auth_insert_contacts</code></td><td>created_by = moi OU admin</td></tr>
+      <tr><td>UPDATE</td><td><code>auth_update_contacts</code></td><td>created_by = moi OU admin</td></tr>
+      <tr><td>DELETE</td><td><code>auth_delete_contacts</code></td><td>created_by = moi OU admin</td></tr>
+      <tr class="hi-navy"><td colspan="4"></td></tr>
+      <tr><td rowspan="4"><code>contracts</code></td><td>SELECT</td><td><code>contracts_select</code></td><td>is_admin OU own OU (is_dci ET équipe)</td></tr>
+      <tr><td>INSERT</td><td><code>auth_insert_contracts</code></td><td>created_by = moi OU admin</td></tr>
+      <tr><td>UPDATE</td><td><code>auth_update_contracts</code></td><td>created_by = moi OU admin</td></tr>
+      <tr><td>DELETE</td><td><code>auth_delete_contracts</code></td><td>created_by = moi OU admin</td></tr>
+      <tr class="hi-navy"><td colspan="4"></td></tr>
+      <tr><td rowspan="4"><code>tasks</code></td><td>SELECT</td><td><code>tasks_select</code></td><td>is_admin OU own OU (is_dci ET équipe)</td></tr>
+      <tr><td>INSERT</td><td><code>tasks_insert</code></td><td>is_admin OU created_by = moi</td></tr>
+      <tr><td>UPDATE</td><td><code>tasks_update</code></td><td>is_admin OU own OU (is_dci ET équipe)</td></tr>
+      <tr><td>DELETE</td><td><code>tasks_delete</code></td><td>created_by = moi OU admin</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="font-size:.8rem;color:var(--txt3);margin-top:6px">Statut audité en live via <code>SELECT * FROM pg_policies WHERE tablename IN ('contacts','contracts','tasks')</code> — aucune divergence entre le schéma local et la base de production.</p>
+
   <div class="info-box" style="margin-top:24px">
-    <strong>Architecture technique :</strong> 10 Edge Functions Supabase (Deno) · Supabase Auth (JWT) · Stripe (abonnements &amp; webhook) · Brevo API v3 (12 types d'envoi) · Supabase Storage (2 buckets) · jsPDF client-side (PDF SEO · RGPD · Cybersécurité · Bordereau) · API Adresse Gouv (autocomplétion) · Groq / Grok / Anthropic / Mistral (connecteurs IA)
+    <strong>Architecture technique :</strong> 10 Edge Functions Supabase (Deno) · Supabase Auth (JWT + TOTP MFA) · RLS hiérarchique sur toutes les tables sensibles (is_admin / is_dci / get_team_ids) · Stripe (abonnements &amp; webhook) · Brevo API v3 (12 types d'envoi) · Supabase Storage (2 buckets) · jsPDF client-side (PDF SEO · RGPD · Cybersécurité · Bordereau) · API Adresse Gouv (autocomplétion) · Groq / Grok / Anthropic / Mistral (connecteurs IA)
   </div>
 </div>
 
@@ -1266,7 +1349,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     </div>
     <div class="feature-card">
       <div class="fc-title">🛡 Sécurité</div>
-      <div class="fc-body">JWT · RLS PostgreSQL · Anti-bruteforce · Chiffrement at-rest Supabase · HTTPS · Secrets Vault Supabase</div>
+      <div class="fc-body">JWT · RLS hiérarchique PostgreSQL (is_admin / is_dci / get_team_ids) · Anti-bruteforce 5 tentatives · TOTP MFA · Chiffrement at-rest Supabase · HTTPS · Secrets Vault Supabase · CSP / nosniff</div>
     </div>
     <div class="feature-card">
       <div class="fc-title">🤖 IA</div>
@@ -1291,7 +1374,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <div style="font-size:.8rem;color:var(--txt3)">contact@safe-digitalisation.fr · safe-digitalisation.fr</div>
   </div>
   <div style="font-size:.8rem;color:var(--txt3);text-align:right">
-    Documentation CRM v2026-V2<br>
+    Documentation CRM v2026-V3<br>
     Mise à jour : 22 juin 2026<br>
     Confidentiel — Usage interne
   </div>

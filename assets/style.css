@@ -84,9 +84,12 @@ button{font-family:var(--ff-body)}
 .sidebar{
   width:230px;flex:none;background:var(--navy-mid);border-right:1px solid var(--line);
   display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;
+  overflow:hidden;
 }
-.sidebar .brand{margin-bottom:30px;padding-left:6px}
-.navlinks{display:flex;flex-direction:column;gap:4px;flex:1}
+.sidebar .brand{margin-bottom:30px;padding-left:6px;flex-shrink:0}
+.navlinks{display:flex;flex-direction:column;gap:4px;flex:1;overflow-y:auto;min-height:0;scrollbar-width:none}
+.navlinks::-webkit-scrollbar{display:none}
+.sidebar-footer{flex-shrink:0}
 .navlink{
   text-align:left;background:transparent;border:0;color:var(--mut-2);font-size:.92rem;font-weight:500;
   padding:11px 14px;border-radius:10px;cursor:pointer;transition:.15s;font-family:var(--ff-body);
