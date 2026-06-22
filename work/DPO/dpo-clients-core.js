@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!session) { window.location.href = '/'; return; }
 
   const [{ data: contacts }, { data: profiles }] = await Promise.all([
-    supa.from('contacts').select('id,nom,prenom,entreprise,email,statut').order('nom'),
+    supa.from('contacts').select('id,nom,prenom,entreprise,email,statut,siret').order('nom'),
     supa.from('dpo_client_profiles').select('contact_id,score_global'),
   ]);
 
