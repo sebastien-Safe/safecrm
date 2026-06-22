@@ -100,7 +100,7 @@ const TASK_TYPE_BADGE = { 'Premier contact': 'badge-blue', 'RDV visio': 'badge-g
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
-    // Vérifier si la session dépasse 8h dès le démarrage (ex: rechargement de page)
+    // Vérifier si la session dépasse 4h dès le démarrage (ex: rechargement de page)
     const signinAt = parseInt(localStorage.getItem('safe_signin_at') || '0', 10);
     if (signinAt && Date.now() - signinAt > SESSION_MAX_MS) {
       localStorage.removeItem('safe_signin_at');
@@ -295,16 +295,54 @@ async function logout() {
   await sb.auth.signOut();
 }
 
-// Vérification de la durée de session (8h max) — appelée toutes les 5 minutes
-const SESSION_MAX_MS = 8 * 3600 * 1000; // 8 heures
+// Vérification de la durée de session (4h max) — appelée toutes les 5 minutes
+const SESSION_MAX_MS  = 4 * 3600 * 1000;           // 4 heures (RGPD Art.42)
+const SESSION_WARN_MS = SESSION_MAX_MS - 15 * 60 * 1000; // alerte à -15 min
+let   _sessionWarnShown = false;
+
+function _showSessionWarningBanner() {
+  if (document.getElementById('session-warn-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'session-warn-banner';
+  banner.style.cssText = [
+    'position:fixed;bottom:20px;right:20px;z-index:9999',
+    'background:#1e293b;border:1px solid rgba(245,158,11,.4)',
+    'border-radius:12px;padding:14px 18px;max-width:340px',
+    'box-shadow:0 8px 32px rgba(0,0,0,.45)',
+    'display:flex;align-items:flex-start;gap:12px',
+    'animation:fadeInUp .3s ease',
+  ].join(';');
+  banner.innerHTML = `
+    <span style="font-size:1.4rem;flex-shrink:0">⚠️</span>
+    <div>
+      <div style="font-weight:700;color:#fff;font-size:.9rem;margin-bottom:3px">Session expire dans 15 min</div>
+      <div style="font-size:.78rem;color:#94a3b8;line-height:1.5">
+        Par sécurité (Art.42 RGPD), votre session est limitée à 4h.<br>
+        Enregistrez votre travail et reconnectez-vous si besoin.
+      </div>
+      <button onclick="document.getElementById('session-warn-banner').remove()"
+        style="margin-top:8px;background:none;border:1px solid rgba(255,255,255,.15);border-radius:6px;
+               padding:4px 10px;color:#94a3b8;font-size:.75rem;cursor:pointer">
+        Compris
+      </button>
+    </div>`;
+  document.body.appendChild(banner);
+}
+
 function checkSessionExpiry() {
   if (!state.user) return;
   const signinAt = parseInt(localStorage.getItem('safe_signin_at') || '0', 10);
   if (!signinAt) return;
-  if (Date.now() - signinAt > SESSION_MAX_MS) {
-    console.warn('[S@FE CRM] Session expirée après 8h — déconnexion automatique.');
+  const elapsed = Date.now() - signinAt;
+  if (elapsed > SESSION_MAX_MS) {
+    console.warn('[S@FE CRM] Session expirée après 4h — déconnexion automatique.');
     localStorage.removeItem('safe_signin_at');
     sb.auth.signOut();
+    return;
+  }
+  if (!_sessionWarnShown && elapsed > SESSION_WARN_MS) {
+    _sessionWarnShown = true;
+    _showSessionWarningBanner();
   }
 }
 setInterval(checkSessionExpiry, 5 * 60 * 1000); // toutes les 5 min
@@ -2660,8 +2698,26 @@ async function disableTotp() {
   } catch (e) { alert('Erreur : ' + (e.message || e)); }
 }
 
-// Vérification TOTP après login — obligatoire pour tous les utilisateurs
-// Trust device : si le code a été validé il y a moins de 2h sur ce navigateur, on ne le redemande pas.
+// Rôles nécessitant un TOTP obligatoire (Art.42 RGPD — accès aux données sensibles)
+// Correspond à admin_global / dpo / broker_admin dans la nomenclature RGPD du CRM
+const TOTP_REQUIRED_ROLES = ['admin_candy', 'super_admin'];
+
+// Journalisation des événements TOTP dans totp_audit (non bloquant)
+async function _logTotpEvent(event, role) {
+  try {
+    await sb.from('totp_audit').insert({
+      user_id:    state.user?.id || null,
+      event,
+      role:       role || getRole(),
+      user_agent: navigator.userAgent.slice(0, 200),
+    });
+  } catch (_) { /* non bloquant */ }
+}
+
+// Vérification TOTP après login
+// - Rôles privilégiés (admin_candy, super_admin) : TOTP obligatoire, enrollment forcé si absent
+// - Autres rôles : TOTP vérifié si déjà enrôlé volontairement, sinon passé
+// Trust device : code validé il y a moins de 2h → pas de re-challenge
 async function challengeTOTPIfNeeded() {
   try {
     const userId   = state.user?.id || '';
@@ -2671,17 +2727,33 @@ async function challengeTOTPIfNeeded() {
     // Appareil de confiance encore valide (< 2h) → pas de challenge
     if (trustExp > Date.now()) return true;
 
+    // Récupérer le rôle (state.profile pas encore chargé à ce stade du login)
+    let userRole = 'user';
+    try {
+      const { data: pData } = await sb.from('profiles').select('role').eq('id', userId).maybeSingle();
+      userRole = pData?.role || 'user';
+    } catch (_) {}
+    const isPrivileged = TOTP_REQUIRED_ROLES.includes(userRole);
+
     const { data: factorsData } = await sb.auth.mfa.listFactors();
     const totp = (factorsData?.totp || []).find(f => f.status === 'verified');
 
-    // Aucun TOTP enrôlé → pas de MFA (enrôlement volontaire uniquement)
-    if (!totp) return true;
+    if (!totp) {
+      if (isPrivileged) {
+        // Rôle privilégié sans TOTP → enrollment forcé, non annulable
+        await _logTotpEvent('enrollment_required', userRole);
+        return await _forceTotpEnrollment();
+      }
+      // Rôle standard → TOTP volontaire, on passe
+      return true;
+    }
 
     // TOTP enrôlé → vérifier le niveau d'assurance
     const { data: aalData } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
     if (aalData && aalData.currentLevel === aalData.nextLevel) {
       // Déjà vérifié dans cette session → marquer trust 2h
       localStorage.setItem(trustKey, String(Date.now() + 2 * 3600 * 1000));
+      await _logTotpEvent('verify_ok_aal', userRole);
       return true;
     }
 
@@ -2695,6 +2767,7 @@ async function challengeTOTPIfNeeded() {
 
       $('#totp-challenge-cancel').onclick = async () => {
         modal.classList.remove('show');
+        await _logTotpEvent('challenge_cancelled', userRole);
         await sb.auth.signOut();
         resolve(false);
       };
@@ -2708,10 +2781,11 @@ async function challengeTOTPIfNeeded() {
           const v = await sb.auth.mfa.verify({ factorId: totp.id, challengeId: ch.data.id, code });
           if (v.error) throw v.error;
           modal.classList.remove('show');
-          // Marquer l'appareil de confiance pour 2h
           localStorage.setItem(trustKey, String(Date.now() + 2 * 3600 * 1000));
+          await _logTotpEvent('verify_ok', userRole);
           resolve(true);
         } catch (e) {
+          await _logTotpEvent('verify_fail', userRole);
           err.textContent = 'Code refusé : ' + (e.message || e);
           err.style.display = 'block';
         }
