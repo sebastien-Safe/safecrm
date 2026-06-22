@@ -172,10 +172,6 @@
       <a class="mob-lk" href="/work/" onclick="closeMobMenu()"><span class="ico">🛡️</span> S@FE Work</a>
       <button class="mob-lk admin-only" id="mob-lk-admin" onclick="closeMobMenu();switchView('admin');setTimeout(()=>switchAdminTab('overview'),50)"><span class="ico">👨‍💼</span> Gestion</button>
     </div>
-    <div class="mob-sec super-admin-only" id="mob-sec-danger" style="display:none">
-      <div class="mob-divider" style="margin:4px 0 8px"></div>
-      <button class="mob-lk danger" onclick="closeMobMenu();openResetModal()"><span class="ico">&#9888;&#65039;</span> R&#233;init. donn&#233;es test</button>
-    </div>
   </div>
   <!-- Footer toujours visible en bas, jamais scrollé hors écran -->
   <div class="mob-footer">
@@ -277,12 +273,6 @@
       <button class="navlink admin-only" style="display:none" onclick="switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)">👨‍💼 GESTION</button>
     </nav>
     <div class="sidebar-footer">
-      <div class="super-admin-only" id="reset-test-btn-wrap" style="display:none">
-        <button class="btn btn-out btn-sm" onclick="openResetModal()"
-          style="width:100%;color:var(--alert);border-color:var(--alert);font-size:.75rem">
-          ⚠️ Réinit. données test
-        </button>
-      </div>
       <button class="btn btn-out btn-sm" onclick="openHelp('contextual')" title="Centre d'aide"
         style="width:100%;display:flex;align-items:center;gap:7px;justify-content:center;font-size:.78rem;border-color:rgba(245,158,11,.4);color:#f59e0b">
         ❓ Centre d'aide
@@ -1061,33 +1051,6 @@
   </div>
 </div>
 
-<!-- ================= MODALE RÉINITIALISATION TEST ================= -->
-<div class="modal" id="reset-test-modal">
-  <div class="box" style="max-width:480px;border:2px solid var(--alert)">
-    <div style="text-align:center;font-size:2.5rem;margin-bottom:12px">⚠️</div>
-    <h3 style="color:var(--alert);text-align:center;margin-bottom:8px">Réinitialisation des données de test</h3>
-    <p class="mut" style="font-size:.88rem;text-align:center;margin-bottom:20px;line-height:1.6">
-      Cette action supprimera <strong style="color:#fff">définitivement</strong> tous les contacts, contrats, interactions, mandats et notifications.<br>
-      Les <strong style="color:#fff">tâches et comptes utilisateurs seront conservés</strong>.<br><br>
-      Cette opération est <strong style="color:var(--alert)">irréversible</strong> et ne pourra être effectuée qu'une seule fois.
-    </p>
-    <div class="field" style="margin-bottom:20px">
-      <label style="font-size:.78rem;font-family:var(--ff-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--mut)">
-        Tapez <strong style="color:#fff">RÉINITIALISER</strong> pour confirmer
-      </label>
-      <input id="reset-confirm-input" type="text" placeholder="RÉINITIALISER"
-        style="background:var(--navy-2);border:1px solid var(--alert);border-radius:10px;padding:10px 14px;color:#fff;font-family:var(--ff-mono);font-size:.9rem;width:100%;outline:none;margin-top:6px">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-out" onclick="$('#reset-test-modal').classList.remove('show')">Annuler</button>
-      <button class="btn" id="reset-confirm-btn"
-        style="background:var(--alert);color:#fff;opacity:.4;cursor:not-allowed"
-        disabled onclick="executeReset()">
-        🗑 Réinitialiser définitivement
-      </button>
-    </div>
-  </div>
-</div>
 
 <!-- ================= MODALE GÉNÉRER MDP ================= -->
 <div class="modal" id="generer-mdp-modal">
