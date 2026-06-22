@@ -170,7 +170,7 @@
     <div class="mob-sec admin-only" id="mob-sec-outils" style="display:none">
       <div class="mob-sec-lbl">🛠️ Outils</div>
       <a class="mob-lk" href="/work/" onclick="closeMobMenu()"><span class="ico">🛡️</span> S@FE Work</a>
-      <button class="mob-lk admin-only" id="mob-lk-admin" onclick="mobNav('admin')"><span class="ico">⚙️</span> Administration</button>
+      <button class="mob-lk admin-only" id="mob-lk-admin" onclick="closeMobMenu();switchView('admin');setTimeout(()=>switchAdminTab('overview'),50)"><span class="ico">👨‍💼</span> Gestion</button>
     </div>
     <div class="mob-sec super-admin-only" id="mob-sec-danger" style="display:none">
       <div class="mob-divider" style="margin:4px 0 8px"></div>
@@ -241,38 +241,43 @@
       <div class="nav-sep"></div>
 
       <!-- Mon activité -->
-      <div class="nav-section-lbl">Mon activité</div>
-      <button data-view="contacts" class="navlink">👥 Contacts</button>
-      <button data-view="contracts" class="navlink">📄 Contrats</button>
-      <button data-view="resultats" class="navlink" id="nav-resultats">📊 Résultats</button>
-      <button data-view="agenda" class="navlink" id="nav-agenda">📅 Agenda</button>
-      <button class="navlink dci-only" style="display:none" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
+      <button class="nav-section-lbl nav-toggle" data-grp="activite">Mon activité <em class="nav-chevron">▾</em></button>
+      <div class="nav-group" id="grp-activite">
+        <button data-view="contacts" class="navlink">👥 Contacts</button>
+        <button data-view="contracts" class="navlink">📄 Contrats</button>
+        <button data-view="resultats" class="navlink" id="nav-resultats">📊 Résultats</button>
+        <button data-view="agenda" class="navlink" id="nav-agenda">📅 Agenda</button>
+        <button class="navlink dci-only" style="display:none" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
+      </div>
 
       <div class="nav-sep"></div>
 
       <!-- Modules -->
-      <div class="nav-section-lbl">Modules</div>
-      <a class="sidebar-item sidebar-sub" href="/work/SEO/module-seo-clients.html"><span class="ico">🚀</span> SEO</a>
-      <a class="sidebar-item sidebar-sub" href="/work/Cyber/module-cyber-clients.html"><span class="ico">💻</span> Cybersec</a>
-      <a class="sidebar-item sidebar-sub" href="/work/DPO/module-dpo-clients.html"><span class="ico">⚖️</span> DPO</a>
-      <a class="sidebar-item sidebar-sub" href="/work/Social/module-social-clients.html"><span class="ico">📱</span> Social</a>
-      <a class="sidebar-item sidebar-sub" href="/work/ClickCollect/module-clickcollect-clients.html"><span class="ico">🛒</span> Click &amp; Collect</a>
+      <button class="nav-section-lbl nav-toggle" data-grp="modules">Modules <em class="nav-chevron">▾</em></button>
+      <div class="nav-group" id="grp-modules">
+        <a class="sidebar-item sidebar-sub" href="/work/SEO/module-seo-clients.html"><span class="ico">🚀</span> SEO</a>
+        <a class="sidebar-item sidebar-sub" href="/work/Cyber/module-cyber-clients.html"><span class="ico">💻</span> Cybersec</a>
+        <a class="sidebar-item sidebar-sub" href="/work/DPO/module-dpo-clients.html"><span class="ico">⚖️</span> DPO</a>
+        <a class="sidebar-item sidebar-sub" href="/work/Social/module-social-clients.html"><span class="ico">📱</span> Social</a>
+        <a class="sidebar-item sidebar-sub" href="/work/ClickCollect/module-clickcollect-clients.html"><span class="ico">🛒</span> Click &amp; Collect</a>
+      </div>
 
       <div class="nav-sep"></div>
 
       <!-- Réglages -->
-      <div class="nav-section-lbl">Réglages</div>
-      <a class="sidebar-item sidebar-sub" href="/work/connecteurs.html"><span class="ico">🔌</span> Connecteurs</a>
-      <a class="sidebar-item sidebar-sub" href="https://github.com/sebastien-Safe/" target="_blank" rel="noopener"><img src="/icons/tiers/github.svg" class="ico-img" alt="GitHub"> GitHub</a>
-      <a class="sidebar-item sidebar-sub" href="https://supabase.com/dashboard/" target="_blank" rel="noopener"><img src="/icons/tiers/supabase.svg" class="ico-img" alt="Supabase"> Supabase</a>
-      <a class="sidebar-item sidebar-sub" href="vscode://"><img src="/icons/tiers/vscode.svg" class="ico-img" alt="VSCode"> VSCode</a>
+      <button class="nav-section-lbl nav-toggle" data-grp="reglages">Réglages <em class="nav-chevron">▾</em></button>
+      <div class="nav-group" id="grp-reglages">
+        <a class="sidebar-item sidebar-sub" href="/work/connecteurs.html"><span class="ico">🔌</span> Connecteurs</a>
+        <a class="sidebar-item sidebar-sub" href="https://github.com/sebastien-Safe/" target="_blank" rel="noopener"><img src="/icons/tiers/github.svg" class="ico-img" alt="GitHub"> GitHub</a>
+        <a class="sidebar-item sidebar-sub" href="https://supabase.com/dashboard/" target="_blank" rel="noopener"><img src="/icons/tiers/supabase.svg" class="ico-img" alt="Supabase"> Supabase</a>
+        <a class="sidebar-item sidebar-sub" href="vscode://"><img src="/icons/tiers/vscode.svg" class="ico-img" alt="VSCode"> VSCode</a>
+      </div>
 
       <div class="nav-sep"></div>
 
       <button class="navlink" id="lk-tasks" onclick="switchView('tasks')">✅ Tâches</button>
       <a class="navlink" href="/work/?view=journal">📋 Journal</a>
       <a href="/work/" class="navlink admin-only" style="display:none;text-decoration:none">🛡️ S@FE WORK</a>
-      <button class="navlink admin-only" data-view="admin" style="display:none">⚙️ Administration</button>
       <button class="navlink admin-only" style="display:none" onclick="switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)">👨‍💼 GESTION</button>
     </nav>
     <div class="sidebar-footer">
@@ -1629,5 +1634,29 @@ window.addEventListener('appinstalled', () => {
   <div id="tuto-dots" style="text-align:center;margin-top:10px"></div>
 </div>
 
+<script>
+// ── Sections nav repliables ──
+(function () {
+  document.querySelectorAll('.nav-toggle').forEach(function (btn) {
+    var grpId = btn.dataset.grp;
+    var grp   = document.getElementById('grp-' + grpId);
+    if (!grp) return;
+    var key = 'nav_col_' + grpId;
+
+    // Restaurer l'état sauvegardé (ouvert par défaut)
+    if (localStorage.getItem(key) === '1') {
+      btn.classList.add('collapsed');
+      grp.classList.add('collapsed');
+    }
+
+    btn.addEventListener('click', function () {
+      var closing = !grp.classList.contains('collapsed');
+      grp.classList.toggle('collapsed', closing);
+      btn.classList.toggle('collapsed', closing);
+      localStorage.setItem(key, closing ? '1' : '0');
+    });
+  });
+})();
+</script>
 </body>
 </html>

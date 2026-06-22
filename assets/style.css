@@ -99,7 +99,13 @@ button{font-family:var(--ff-body)}
 .sidebar-footer{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:10px}
 /* Navigation sections */
 .nav-sep{height:1px;background:rgba(255,255,255,.08);margin:6px 6px}
-.nav-section-lbl{font-size:.62rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#475569;padding:8px 14px 2px;pointer-events:none;user-select:none}
+.nav-section-lbl{font-size:.62rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#475569;padding:8px 14px 2px}
+.nav-section-lbl.nav-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;text-align:left;cursor:pointer;border-radius:8px;transition:background .12s;user-select:none;padding-right:10px}
+.nav-section-lbl.nav-toggle:hover{background:rgba(255,255,255,.04);color:#94a3b8}
+.nav-chevron{font-style:normal;font-size:.65rem;color:#475569;transition:transform .22s ease;display:inline-block}
+.nav-toggle.collapsed .nav-chevron{transform:rotate(-90deg)}
+.nav-group{overflow:hidden;max-height:320px;transition:max-height .25s ease}
+.nav-group.collapsed{max-height:0}
 .sidebar-collapsible-head{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;cursor:pointer;border-radius:8px;transition:.12s;user-select:none;margin-bottom:2px}
 .sidebar-collapsible-head:hover{background:rgba(255,255,255,.04)}
 .sidebar-section-label{font-family:var(--ff-mono);font-size:.62rem;letter-spacing:.18em;color:#475569;text-transform:uppercase}
