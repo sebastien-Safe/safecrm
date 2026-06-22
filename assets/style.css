@@ -247,17 +247,18 @@ button{font-family:var(--ff-body)}
 
 /* ---------- RESPONSIVE ---------- */
 @media(max-width:1024px){
-  .app{flex-direction:column}
-  .sidebar{width:100%;height:auto;position:relative;flex-direction:row;align-items:center;flex-wrap:wrap;gap:10px;padding:14px 16px}
-  .sidebar .brand{margin-bottom:0;margin-right:auto}
-  .navlinks{flex-direction:row;flex:none;flex-wrap:wrap}
-  .sidebar-footer{flex-direction:row;align-items:center;border-top:0;padding-top:0;margin-left:auto}
-  #user-email{display:none}
+  /* Sidebar desktop cachée — navigation via drawer hamburger (index.html) */
   .main{padding:18px}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .dash-grid{grid-template-columns:1fr}
   .kanban{grid-template-columns:1fr}
   .field-row{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+  .filters input[type="text"]{min-width:0;width:100%}
+  .view-head{flex-direction:column;align-items:stretch}
+  .view-head-actions{justify-content:flex-end}
 }
 
 /* =========================================================

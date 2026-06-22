@@ -72,6 +72,9 @@
     display: none;
   }
   #mob-overlay.show { display: block; }
+  #mob-menu-btn {
+    top: max(12px, env(safe-area-inset-top, 12px));
+  }
   #mob-drawer {
     position: fixed;
     top: 0;
@@ -84,7 +87,7 @@
     display: flex;
     flex-direction: column;
     transition: left .28s cubic-bezier(.4,0,.2,1);
-    overflow-y: auto;
+    overflow: hidden; /* le scroll est géré par .mob-scroll, pas le drawer entier */
   }
   #mob-drawer.open { left: 0; }
   .mob-head {
@@ -95,6 +98,9 @@
     border-bottom: 1px solid rgba(255,255,255,.08);
     flex-shrink: 0;
   }
+  /* Zone centrale scrollable — header et footer restent toujours visibles */
+  .mob-scroll { flex: 1; overflow-y: auto; min-height: 0; scrollbar-width: none; }
+  .mob-scroll::-webkit-scrollbar { display: none; }
   .mob-brand { font-family: Sora, sans-serif; font-size: 1rem; font-weight: 800; color: #fff; }
   .mob-brand em { color: #f59e0b; font-style: normal; }
   .mob-close { background: none; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer; padding: 4px; line-height: 1; }
@@ -125,8 +131,10 @@
   .mob-lk.danger { color: #ff4d5e; }
   .mob-lk.danger:hover { background: rgba(255,77,94,.08); }
   .mob-divider { height: 1px; background: rgba(255,255,255,.06); margin: 6px 14px; }
-  .mob-footer { margin-top: auto; padding: 8px 10px 20px; border-top: 1px solid rgba(255,255,255,.06); }
-  .main-content { padding-top: 56px !important; }
+  /* Footer toujours ancré en bas, jamais scrollé hors écran */
+  .mob-footer { flex-shrink: 0; padding: 8px 10px; padding-bottom: max(20px, env(safe-area-inset-bottom, 20px)); border-top: 1px solid rgba(255,255,255,.06); }
+  /* Padding-top : compense le bouton hamburger fixe en haut à gauche */
+  .main { padding-top: max(62px, calc(env(safe-area-inset-top, 0px) + 58px)) !important; }
 }
 @media (min-width: 1025px) {
   #mob-menu-btn, #mob-overlay, #mob-drawer { display: none !important; }
@@ -144,28 +152,33 @@
     <div class="mob-brand">S<em>@</em>FE CRM</div>
     <button class="mob-close" onclick="closeMobMenu()">&#x2715;</button>
   </div>
-  <div class="mob-sec">
-    <div class="mob-sec-lbl">Navigation</div>
-    <button class="mob-lk mob-active" id="mob-lk-dashboard" onclick="mobNav('dashboard')"><span class="ico">🏠</span> Tableau de bord</button>
-    <button class="mob-lk" id="mob-lk-contacts" onclick="mobNav('contacts')"><span class="ico">👥</span> Contacts</button>
-    <button class="mob-lk" id="mob-lk-contracts" onclick="mobNav('contracts')"><span class="ico">📄</span> Contrats</button>
-    <button class="mob-lk" id="mob-lk-resultats" onclick="mobNav('resultats')"><span class="ico">📊</span> R&#233;sultats</button>
+  <!-- Zone scrollable : uniquement le contenu navigation -->
+  <div class="mob-scroll">
+    <div class="mob-sec">
+      <div class="mob-sec-lbl">Navigation</div>
+      <button class="mob-lk mob-active" id="mob-lk-dashboard" onclick="mobNav('dashboard')"><span class="ico">🏠</span> Tableau de bord</button>
+      <button class="mob-lk" id="mob-lk-contacts" onclick="mobNav('contacts')"><span class="ico">👥</span> Contacts</button>
+      <button class="mob-lk" id="mob-lk-contracts" onclick="mobNav('contracts')"><span class="ico">📄</span> Contrats</button>
+      <button class="mob-lk" id="mob-lk-resultats" onclick="mobNav('resultats')"><span class="ico">📊</span> R&#233;sultats</button>
+      <button class="mob-lk" onclick="closeMobMenu();switchView('tasks')"><span class="ico">✅</span> T&#226;ches</button>
+    </div>
+    <div class="mob-divider"></div>
+    <div class="mob-sec dci-only" id="mob-sec-dci" style="display:none">
+      <div class="mob-sec-lbl">&#128100; Gestion</div>
+      <button class="mob-lk" onclick="closeMobMenu();openEquipeModal()"><span class="ico">🤝</span> G&#233;rer mon &#233;quipe</button>
+    </div>
+    <div class="mob-sec admin-only" id="mob-sec-outils" style="display:none">
+      <div class="mob-sec-lbl">🛠️ Outils</div>
+      <a class="mob-lk" href="/work/" onclick="closeMobMenu()"><span class="ico">🛡️</span> S@FE Work</a>
+      <button class="mob-lk admin-only" id="mob-lk-admin" onclick="mobNav('admin')"><span class="ico">⚙️</span> Administration</button>
+      <button class="mob-lk" onclick="closeMobMenu();switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)"><span class="ico">📒</span> Registre RGPD</button>
+    </div>
+    <div class="mob-sec super-admin-only" id="mob-sec-danger" style="display:none">
+      <div class="mob-divider" style="margin:4px 0 8px"></div>
+      <button class="mob-lk danger" onclick="closeMobMenu();openResetModal()"><span class="ico">&#9888;&#65039;</span> R&#233;init. donn&#233;es test</button>
+    </div>
   </div>
-  <div class="mob-divider"></div>
-  <div class="mob-sec dci-only" id="mob-sec-dci" style="display:none">
-    <div class="mob-sec-lbl">&#128100; Gestion</div>
-    <button class="mob-lk" onclick="closeMobMenu();openEquipeModal()"><span class="ico">🤝</span> G&#233;rer mon &#233;quipe</button>
-  </div>
-  <div class="mob-sec admin-only" id="mob-sec-outils" style="display:none">
-    <div class="mob-sec-lbl">🛠️ Outils</div>
-    <a class="mob-lk" href="/work/" onclick="closeMobMenu()"><span class="ico">🛡️</span> S@FE Work</a>
-    <button class="mob-lk admin-only" id="mob-lk-admin" onclick="mobNav('admin')"><span class="ico">⚙️</span> Administration</button>
-    <button class="mob-lk" onclick="closeMobMenu();switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)"><span class="ico">📒</span> Registre RGPD</button>
-  </div>
-  <div class="mob-sec super-admin-only" id="mob-sec-danger" style="display:none">
-    <div class="mob-divider" style="margin:4px 0 8px"></div>
-    <button class="mob-lk danger" onclick="closeMobMenu();openResetModal()"><span class="ico">&#9888;&#65039;</span> R&#233;init. donn&#233;es test</button>
-  </div>
+  <!-- Footer toujours visible en bas, jamais scrollé hors écran -->
   <div class="mob-footer">
     <button class="mob-lk" onclick="closeMobMenu();openHelp('contextual')"><span class="ico">❓</span> Centre d'aide</button>
     <button class="mob-lk" onclick="closeMobMenu();openProfileModal()"><span class="ico">&#128100;</span> Mon profil</button>
