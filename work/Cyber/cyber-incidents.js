@@ -67,9 +67,9 @@ function renderIncidentList(list, archived = false) {
     const statLabel = { ouvert:'Ouvert', en_cours:'En cours', resolu:'Résolu', cloture:'Clôturé' }[inc.statut] || inc.statut;
     const statCls   = { ouvert:'badge-alert', en_cours:'badge-warn', resolu:'badge-ok', cloture:'badge-gray' }[inc.statut] || 'badge-gray';
     return `
-      <div class="item-row" onclick="openIncidentModal('${inc.id}')">
-        <span style="font-size:1.2rem;flex-shrink:0">${type.icon}</span>
-        <div class="item-row-info">
+      <div class="item-row">
+        <span style="font-size:1.2rem;flex-shrink:0;cursor:pointer" onclick="openIncidentModal('${inc.id}')">${type.icon}</span>
+        <div class="item-row-info" style="cursor:pointer" onclick="openIncidentModal('${inc.id}')">
           <div class="item-row-name">${escHtml(inc.titre)}</div>
           <div class="item-row-meta">
             ${fmtDate(inc.date_incident)} · ${escHtml(type.label)}
@@ -78,6 +78,9 @@ function renderIncidentList(list, archived = false) {
         </div>
         <span class="badge ${grav.cls}">${grav.icon} ${grav.label}</span>
         <span class="badge ${statCls}">${statLabel}</span>
+        ${!archived && (inc.niveau_gravite === 'grave' || inc.niveau_gravite === 'critique')
+          ? `<button class="btn btn-danger btn-sm" style="font-size:.7rem;padding:3px 8px;white-space:nowrap" onclick="event.stopPropagation();envoyerAlerteIncident('${inc.id}')">🚨 Alerter</button>`
+          : ''}
       </div>`;
   }).join('') + '</div>';
 }
@@ -168,6 +171,54 @@ async function saveIncident(id) {
   closeModal();
   toast(id ? 'Incident mis à jour' : 'Incident déclaré', 'ok');
   loadIncidents();
+
+  // Alerte auto pour nouveaux incidents graves/critiques
+  if (!id && (payload.niveau_gravite === 'grave' || payload.niveau_gravite === 'critique') && currentContact?.email) {
+    const gravLabel = payload.niveau_gravite === 'critique' ? 'CRITIQUE' : 'GRAVE';
+    const confirm = window.confirm(`⚠️ Incident ${gravLabel} enregistré.\n\nEnvoyer une alerte email au client (${currentContact.email}) ?`);
+    if (confirm) {
+      const { data: rows } = await supa.from('cyber_client_incidents').select('id').eq('contact_id', currentContact.id).eq('titre', payload.titre).order('created_at', { ascending: false }).limit(1);
+      const newId = rows?.[0]?.id;
+      if (newId) await envoyerAlerteIncident(newId, payload);
+    }
+  }
+}
+
+async function envoyerAlerteIncident(id, payloadCache = null) {
+  if (!currentContact?.email) { toast('Ce client n\'a pas d\'email', 'err'); return; }
+
+  let inc = payloadCache;
+  if (!inc) {
+    const { data } = await supa.from('cyber_client_incidents').select('*').eq('id', id).single();
+    if (!data) { toast('Incident introuvable', 'err'); return; }
+    inc = data;
+  }
+
+  const type = INCIDENT_TYPES.find(t => t.key === (inc.type_incident || inc.type)) || { label: inc.type_incident || inc.type || 'Autre' };
+
+  toast('⏳ Envoi alerte en cours…');
+  try {
+    const { data: { session } } = await supa.auth.getSession();
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/send-crm-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      body: JSON.stringify({
+        type:             'alerte_incident',
+        contact_id:       currentContact.id,
+        incident_titre:   inc.titre,
+        incident_type:    type.label,
+        incident_gravite: inc.niveau_gravite,
+        incident_desc:    inc.description   || inc.description   || null,
+        actions:          inc.actions_prises || null,
+        incident_date:    inc.date_incident,
+      }),
+    });
+    const result = await res.json();
+    if (!res.ok || result.error) throw new Error(result.error || 'Erreur envoi');
+    toast('Alerte incident envoyée ✅', 'ok');
+  } catch (err) {
+    toast('Erreur alerte : ' + (err.message || err), 'err');
+  }
 }
 
 async function deleteIncident(id) {

@@ -57,7 +57,8 @@ async function loadAudit() {
         </div>
         <div style="display:flex;flex-direction:column;gap:6px">
           <button class="btn btn-pri btn-sm" onclick="saveAllAudit()">💾 Sauvegarder</button>
-          <button class="btn btn-ghost btn-sm" onclick="exportAuditPDF()">PDF</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportAuditPDF()">📄 PDF</button>
+          <button class="btn btn-ghost btn-sm" id="cyber-email-btn" onclick="sendRapportCyberClient()" style="color:var(--ok);border-color:var(--ok)">📧 Email rapport</button>
         </div>
       </div>
     </div>
@@ -155,43 +156,136 @@ async function saveAllAudit() {
   loadAudit(); // recalcul score
 }
 
-/* ---- Export PDF ---- */
-async function exportAuditPDF() {
+/* ---- Export PDF (brandé S@FE) ---- */
+async function exportAuditPDF(returnBase64 = false) {
   const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
-  if (!jsPDF) { toast('jsPDF non disponible', 'err'); return; }
+  if (!jsPDF) { toast('jsPDF non disponible', 'err'); return null; }
+  if (!currentContact) { toast('Sélectionnez un client', 'err'); return null; }
 
   const { score, catScores } = await computeScoreCyber(currentContact.id);
-  const nom = currentContact.nom || currentContact.entreprise || 'Client';
+  const clientNom   = currentContact.entreprise || `${currentContact.prenom || ''} ${currentContact.nom || ''}`.trim() || 'Client';
+  const dateRapport = new Date().toLocaleDateString('fr-FR');
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  let y = 16;
+  const W = 210;
+  const navy = [13, 27, 54], white = [255, 255, 255];
+  const scoreClr = score >= 80 ? [22, 163, 74] : score >= 50 ? [217, 119, 6] : [220, 38, 38];
 
-  doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(10,22,40);
-  doc.text(`Audit Cybersécurité — ${nom}`, 14, y); y += 7;
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(80,80,80);
-  doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')} · Score global : ${score}%`, 14, y); y += 8;
+  // ── En-tête ──
+  doc.setFillColor(...navy); doc.rect(0, 0, W, 42, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(...white);
+  doc.text('S@FE — Rapport Cybersécurité', 14, 16);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(148, 163, 184);
+  doc.text(`Référentiel ANSSI / CIS Controls — ${dateRapport}`, 14, 24);
+  doc.text(`Client : ${clientNom}`, 14, 31);
+
+  // Score badge
+  doc.setFillColor(30, 41, 59); doc.roundedRect(W - 52, 7, 40, 28, 4, 4, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(...scoreClr);
+  doc.text(`${score}%`, W - 32, 23, { align: 'center' });
+  doc.setFontSize(6.5); doc.setTextColor(148, 163, 184);
+  const badge = score >= 80 ? 'SATISFAISANT' : score >= 50 ? 'À AMÉLIORER' : 'CRITIQUE';
+  doc.text(badge, W - 32, 30, { align: 'center' });
+
+  let y = 51;
+
+  // ── Synthèse catégories ──
+  const sumH = 8 + Object.keys(CYBER_CATS).length * 8;
+  doc.setFillColor(248, 250, 252); doc.rect(14, y, W - 28, sumH, 'F');
+  doc.setDrawColor(226, 232, 240); doc.rect(14, y, W - 28, sumH);
+  y += 6;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+  doc.text('Synthèse par catégorie', 18, y); y += 7;
 
   for (const [catKey, cat] of Object.entries(CYBER_CATS)) {
-    if (y > 260) { doc.addPage(); y = 14; }
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(10,22,40);
-    doc.text(`${cat.label} (${catScores[catKey]||0}%)`, 14, y); y += 5;
+    const cs = catScores[catKey] || 0;
+    const cc = cs >= 80 ? [22, 163, 74] : cs >= 50 ? [217, 119, 6] : [220, 38, 38];
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(51, 65, 85);
+    doc.text(cat.label, 18, y);
+    const bx = 105, bw = 72, bh = 3;
+    doc.setFillColor(226, 232, 240); doc.rect(bx, y - 3, bw, bh, 'F');
+    doc.setFillColor(...cc); doc.rect(bx, y - 3, bw * cs / 100, bh, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...cc);
+    doc.text(`${cs}%`, bx + bw + 4, y);
+    y += 8;
+  }
+  y += 6;
+
+  // ── Détail par catégorie ──
+  const stColors = { conforme: [22,163,74], partiel: [217,119,6], non_conforme: [220,38,38], na: [100,116,139], non_verifie: [148,163,184] };
+  const stLabels = { conforme: '✓ Conforme', partiel: '~ Partiel', non_conforme: '✗ Non conforme', na: 'N/A', non_verifie: '? Non vérifié' };
+
+  for (const [catKey, cat] of Object.entries(CYBER_CATS)) {
+    if (y > 255) { doc.addPage(); y = 14; }
+    doc.setFillColor(...navy); doc.rect(14, y, W - 28, 8, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(...white);
+    doc.text(`${cat.label}  —  ${catScores[catKey] || 0}%  (poids ${Math.round(cat.weight * 100)}%)`, 18, y + 5.5);
+    y += 11;
 
     for (const item of cat.items) {
-      if (y > 270) { doc.addPage(); y = 14; }
+      if (y > 268) { doc.addPage(); y = 14; }
       const row = _auditData[item.key] || {};
       const st  = row.statut || 'non_verifie';
-      const ico = { conforme:'✓', partiel:'~', non_conforme:'✗', na:'N/A', non_verifie:'?' }[st] || '?';
-      doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-      doc.setTextColor(st==='conforme'?34:st==='non_conforme'?200:80, st==='conforme'?180:80, 80);
-      doc.text(`  [${ico}] ${item.label}`, 14, y);
+      const cc  = stColors[st] || [148, 163, 184];
+      const lbl = stLabels[st] || '?';
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8); doc.setTextColor(51, 65, 85);
+      const lines = doc.splitTextToSize(item.label, 128);
+      doc.text(lines, 18, y);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7.8); doc.setTextColor(...cc);
+      doc.text(lbl, W - 58, y);
+      y += 4.8 * lines.length;
       if (row.notes) {
-        y += 4;
-        doc.setTextColor(100,100,100); doc.setFontSize(7.5);
-        doc.text(`       Note : ${row.notes}`, 14, y);
+        doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(100, 116, 139);
+        const nl = doc.splitTextToSize(`Note : ${row.notes}`, 148);
+        doc.text(nl, 22, y); y += 4.2 * nl.length;
       }
-      y += 5;
+      y += 2;
     }
-    y += 3;
+    y += 5;
   }
 
-  doc.save(`audit-cyber-${nom.replace(/[^a-z0-9]/gi,'_')}.pdf`);
+  // ── Pied de page ──
+  const pages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pages; i++) {
+    doc.setPage(i);
+    doc.setFillColor(248, 250, 252); doc.rect(0, 284, W, 13, 'F');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(148, 163, 184);
+    doc.text('S@FE Digitalisation — Document confidentiel Cybersécurité', 14, 290);
+    doc.text(`Page ${i}/${pages}`, W - 14, 290, { align: 'right' });
+  }
+
+  if (returnBase64) return doc.output('datauristring').split(',')[1];
+  doc.save(`Audit-Cyber-${clientNom.replace(/[^a-z0-9]/gi, '_')}-${dateRapport.replace(/\//g, '-')}.pdf`);
+}
+
+/* ---- Envoi rapport par email ---- */
+async function sendRapportCyberClient() {
+  if (!currentContact) { toast('Sélectionnez un client', 'err'); return; }
+  if (!currentContact.email) { toast('Ce client n\'a pas d\'email enregistré', 'err'); return; }
+
+  const btn = document.getElementById('cyber-email-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Génération PDF…'; }
+
+  try {
+    const { score, catScores } = await computeScoreCyber(currentContact.id);
+    const totalItems  = Object.values(CYBER_CATS).flatMap(c => c.items).length;
+    const nbConformes = Object.values(_auditData).filter(r => r.statut === 'conforme').length;
+
+    const pdf_base64 = await exportAuditPDF(true);
+    if (!pdf_base64) throw new Error('Génération PDF échouée');
+
+    if (btn) btn.textContent = '⏳ Envoi email…';
+    const { data: { session } } = await supa.auth.getSession();
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/send-crm-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      body: JSON.stringify({ type: 'rapport_cyber', contact_id: currentContact.id, score, nb_conformes: nbConformes, nb_total: totalItems, pdf_base64 }),
+    });
+    const result = await res.json();
+    if (!res.ok || result.error) throw new Error(result.error || 'Erreur envoi');
+    toast('Rapport Cybersécurité envoyé ✅', 'ok');
+  } catch (err) {
+    toast('Erreur : ' + (err.message || err), 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📧 Email rapport'; }
+  }
 }

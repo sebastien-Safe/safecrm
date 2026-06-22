@@ -504,5 +504,144 @@ serve(async (req) => {
     return json({ ok: true });
   }
 
+  // ── RAPPORT CYBER PAR EMAIL ───────────────────────────────────────────
+  if (type === "rapport_cyber") {
+    const { contact_id, score, nb_conformes, nb_total, pdf_base64 } = body;
+
+    const [{ data: contact }, commercial] = await Promise.all([
+      sb.from("contacts").select("nom, prenom, email, entreprise").eq("id", contact_id).maybeSingle(),
+      getCommercial(user.id),
+    ]);
+
+    if (!contact?.email) return json({ ok: true, skipped: "no contact email" });
+
+    const clientNom   = contact.entreprise || `${contact.prenom || ""} ${contact.nom || ""}`.trim();
+    const firstName   = contact.prenom || contact.nom || "Client";
+    const dateRapport = new Date().toLocaleDateString("fr-FR");
+    const scoreNum    = Number(score) || 0;
+    const scoreColor  = scoreNum >= 80 ? "#16a34a" : scoreNum >= 50 ? "#d97706" : "#dc2626";
+    const scoreBadge  = scoreNum >= 80 ? "Niveau satisfaisant" : scoreNum >= 50 ? "Améliorations requises" : "Niveau critique";
+
+    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Rapport Cybersécurité</title></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 16px"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:600px;width:100%">
+  <tr><td style="background:#0d1b36;padding:28px 32px;text-align:center">
+    <div style="font-size:26px;font-weight:800;color:#60a5fa">S<span style="color:#fff">@</span>FE</div>
+    <div style="color:#94a3b8;font-size:12px;margin-top:6px;text-transform:uppercase;letter-spacing:.08em">Rapport Cybersécurité — ANSSI/CIS</div>
+  </td></tr>
+  <tr><td style="padding:36px">
+    <p style="color:#1e293b;font-size:15px;margin:0 0 20px">Bonjour <strong>${escTs(firstName)}</strong>,</p>
+    <p style="color:#475569;font-size:14px;margin:0 0 24px;line-height:1.6">
+      Voici votre rapport de sécurité informatique du <strong>${dateRapport}</strong>. Le rapport complet est joint en PDF.
+    </p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:24px;text-align:center;margin-bottom:24px">
+      <div style="font-size:48px;font-weight:800;color:${scoreColor};line-height:1">${scoreNum}%</div>
+      <div style="font-size:13px;font-weight:700;color:${scoreColor};margin-top:6px">${scoreBadge}</div>
+      <div style="font-size:12px;color:#64748b;margin-top:4px">${nb_conformes || "—"}/${nb_total || "—"} points conformes</div>
+    </div>
+    <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:16px 20px;margin-bottom:24px">
+      <p style="font-size:12px;color:#b91c1c;font-weight:700;margin:0 0 6px;text-transform:uppercase">⚠️ Rappel sécurité</p>
+      <p style="font-size:12px;color:#475569;margin:0;line-height:1.6">
+        Les points non conformes représentent des risques réels pour votre activité. Notre équipe est disponible pour vous accompagner dans leur résolution.
+      </p>
+    </div>
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid #e2e8f0">
+      <p style="color:#475569;font-size:14px;margin:0 0 4px">Cordialement,</p>
+      <p style="color:#1e293b;font-size:14px;font-weight:700;margin:0">${escTs(commercial.prenom)} ${escTs(commercial.nom)}</p>
+      <p style="color:#64748b;font-size:12px;margin:4px 0 0">${escTs(commercial.titre)} — S@FE Digitalisation</p>
+    </div>
+  </td></tr>
+  <tr><td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:16px 36px;text-align:center">
+    <p style="color:#94a3b8;font-size:11px;margin:0">S@FE Digitalisation — Cybersécurité pour TPE/PME</p>
+  </td></tr>
+</table></td></tr></table></body></html>`;
+
+    const cyberAttachment = pdf_base64
+      ? { name: `Audit-Cyber-${clientNom.replace(/[^a-z0-9]/gi, "_")}-${dateRapport.replace(/\//g, "-")}.pdf`, content: String(pdf_base64) }
+      : undefined;
+
+    await sendBrevoHtml(
+      `Rapport Cybersécurité — ${clientNom} — Score ${scoreNum}%`,
+      { email: contact.email, name: clientNom },
+      html,
+      { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}` },
+      cyberAttachment,
+    );
+
+    return json({ ok: true });
+  }
+
+  // ── ALERTE INCIDENT CYBER ─────────────────────────────────────────────
+  if (type === "alerte_incident") {
+    const { contact_id, incident_titre, incident_type, incident_gravite, incident_desc, actions, incident_date } = body;
+
+    const [{ data: contact }, commercial] = await Promise.all([
+      sb.from("contacts").select("nom, prenom, email, entreprise").eq("id", contact_id).maybeSingle(),
+      getCommercial(user.id),
+    ]);
+
+    if (!contact?.email) return json({ ok: true, skipped: "no contact email" });
+
+    const clientNom   = contact.entreprise || `${contact.prenom || ""} ${contact.nom || ""}`.trim();
+    const firstName   = contact.prenom || contact.nom || "Client";
+    const dateAlerte  = new Date().toLocaleDateString("fr-FR");
+    const dateInc     = incident_date ? new Date(incident_date).toLocaleDateString("fr-FR") : dateAlerte;
+    const graviteColor = incident_gravite === "critique" ? "#dc2626" : "#ea580c";
+    const graviteLabel = { critique: "🚨 CRITIQUE", grave: "🔴 GRAVE", modere: "🟡 MODÉRÉ", faible: "🟢 FAIBLE" }[incident_gravite] || "⚠️";
+
+    const htmlActions = escTs(actions || "En cours d'investigation.").replace(/\n/g, "<br>");
+    const htmlDesc    = escTs(incident_desc || "").replace(/\n/g, "<br>");
+
+    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Alerte Incident Cyber</title></head>
+<body style="margin:0;padding:0;background:#fff1f2;font-family:Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff1f2;padding:32px 16px"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:600px;width:100%">
+  <tr><td style="background:${graviteColor};padding:24px 32px;text-align:center">
+    <div style="font-size:22px;font-weight:800;color:#fff">🛡 S@FE — Alerte Sécurité</div>
+    <div style="color:rgba(255,255,255,.85);font-size:13px;margin-top:6px">${graviteLabel} — ${dateAlerte}</div>
+  </td></tr>
+  <tr><td style="padding:32px">
+    <p style="color:#1e293b;font-size:15px;margin:0 0 16px">Bonjour <strong>${escTs(firstName)}</strong>,</p>
+    <p style="color:#475569;font-size:14px;margin:0 0 20px;line-height:1.6">
+      Un incident de sécurité a été détecté et enregistré. Voici les informations essentielles.
+    </p>
+    <div style="background:#fef2f2;border:2px solid ${graviteColor};border-radius:10px;padding:20px;margin-bottom:20px">
+      <div style="font-size:16px;font-weight:700;color:#1e293b;margin-bottom:10px">${escTs(incident_titre)}</div>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr><td style="font-size:12px;color:#64748b;padding:3px 0;width:120px">Type</td><td style="font-size:12px;color:#1e293b;font-weight:600">${escTs(incident_type)}</td></tr>
+        <tr><td style="font-size:12px;color:#64748b;padding:3px 0">Date incident</td><td style="font-size:12px;color:#1e293b;font-weight:600">${dateInc}</td></tr>
+        <tr><td style="font-size:12px;color:#64748b;padding:3px 0">Gravité</td><td style="font-size:12px;font-weight:700;color:${graviteColor}">${graviteLabel}</td></tr>
+      </table>
+      ${htmlDesc ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid #fca5a5;font-size:13px;color:#334155;line-height:1.6">${htmlDesc}</div>` : ""}
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:16px 20px;margin-bottom:24px">
+      <p style="font-size:12px;font-weight:700;color:#15803d;margin:0 0 6px;text-transform:uppercase">✅ Actions prises</p>
+      <p style="font-size:13px;color:#374151;margin:0;line-height:1.6">${htmlActions}</p>
+    </div>
+    <p style="color:#475569;font-size:13px;margin:0 0 20px;line-height:1.6">
+      Notre équipe reste à votre disposition. N'hésitez pas à nous contacter immédiatement si la situation évolue.
+    </p>
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid #e2e8f0">
+      <p style="color:#475569;font-size:14px;margin:0 0 4px">Cordialement,</p>
+      <p style="color:#1e293b;font-size:14px;font-weight:700;margin:0">${escTs(commercial.prenom)} ${escTs(commercial.nom)}</p>
+      <p style="color:#64748b;font-size:12px;margin:4px 0 0">${escTs(commercial.titre)} — S@FE Digitalisation</p>
+    </div>
+  </td></tr>
+  <tr><td style="background:#fef2f2;border-top:1px solid #fecaca;padding:16px 36px;text-align:center">
+    <p style="color:#94a3b8;font-size:11px;margin:0">S@FE Digitalisation — Cybersécurité pour TPE/PME</p>
+  </td></tr>
+</table></td></tr></table></body></html>`;
+
+    await sendBrevoHtml(
+      `🚨 Alerte Incident — ${escTs(incident_titre)} [${graviteLabel}]`,
+      { email: contact.email, name: clientNom },
+      html,
+      { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}` },
+    );
+
+    return json({ ok: true });
+  }
+
   return json({ error: "Type inconnu" }, 400);
 });
