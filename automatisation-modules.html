@@ -434,6 +434,90 @@
       .parallel-block { flex-direction:column; }
       .legend-item { font-size: 10px; padding: 3px 8px; }
     }
+
+    /* ── MISSING AUTOMATIONS ── */
+    .section-div.gold { color: var(--gold); }
+    .section-div.gold::before, .section-div.gold::after { background: rgba(212,168,67,.35); }
+
+    .miss-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 10px;
+      width: 100%;
+      max-width: 580px;
+      margin-bottom: 8px;
+    }
+    .miss-card {
+      padding: 13px 15px;
+      border-radius: 13px;
+      border: 1.5px dashed var(--gold);
+      background: rgba(212,168,67,.04);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: background .2s, box-shadow .2s;
+    }
+    .miss-card:hover {
+      background: rgba(212,168,67,.08);
+      box-shadow: 0 4px 18px rgba(212,168,67,.15);
+    }
+    .miss-head {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      font-weight: 700;
+      flex-wrap: wrap;
+      line-height: 1.3;
+    }
+    .miss-icon { font-size: 17px; flex-shrink: 0; }
+    .miss-title { flex: 1; }
+    .miss-desc { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
+
+    .api-tag {
+      font-size: 10px; padding: 2px 8px; border-radius: 50px;
+      font-weight: 700; white-space: nowrap; flex-shrink: 0;
+    }
+    .api-tag.free { background:rgba(16,185,129,.12); color:var(--c-brevo); border:1px solid rgba(16,185,129,.35); }
+    .api-tag.paid { background:rgba(212,168,67,.15); color:var(--gold);    border:1px solid rgba(212,168,67,.35); }
+    .api-tag.ai   { background:rgba(168,85,247,.12); color:var(--c-claude);border:1px solid rgba(168,85,247,.35); }
+
+    .stat-chip.target { color:var(--gold); border-color:rgba(212,168,67,.5); background:rgba(212,168,67,.08); }
+
+    /* stagger miss-grid on tab switch */
+    .miss-grid .miss-card { animation: stepIn .4s ease both; }
+
+
+    /* ── INACTIVE STEPS ── */
+    .step-card.inactive {
+      border-style: dashed;
+      border-color: var(--border);
+      background: rgba(255,255,255,.025);
+      opacity: .52;
+      cursor: not-allowed;
+      animation: none !important;
+      box-shadow: none !important;
+    }
+    .step-card.inactive:hover { transform: none !important; box-shadow: none !important; opacity: .65; }
+    .badge.lock { background: rgba(255,255,255,.07) !important; color: var(--muted) !important; }
+
+    .conn.off::before { background: linear-gradient(to bottom, rgba(255,255,255,.09), transparent); }
+    .conn.off::after  { color: rgba(255,255,255,.1); }
+    .conn.off .flow-light { display: none; }
+
+    .activation-gate {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; max-width: 540px;
+      margin: 22px 0 6px;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 1.3px; text-transform: uppercase;
+      color: var(--muted); opacity: .6;
+    }
+    .activation-gate::before, .activation-gate::after {
+      content: ''; flex: 1;
+      border-top: 1.5px dashed rgba(255,255,255,.1);
+    }
+
   </style>
 </head>
 <body>
@@ -475,7 +559,8 @@
     <h2 style="color:var(--c-dpo)">Module RGPD · DPO</h2>
     <p>Registre Art.30 · Analyse de risque · Mentions légales · Conformité totale</p>
     <div class="mod-stats">
-      <div class="stat-chip auto">🤖 85% automatisé</div>
+      <div class="stat-chip auto">🤖 85% actuel</div>
+      <div class="stat-chip target">🎯 97% visé</div>
       <div class="stat-chip human">👤 2 actions client</div>
       <div class="stat-chip ai"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> 6 analyses S@FE</div>
     </div>
@@ -623,6 +708,76 @@
     </div>
 
   </div>
+
+  <div class="flow">
+    <div class="activation-gate">🔒 En attente d'activation — Console Admin</div>
+
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">📡</span>
+        <div class="sc"><strong>Veille réglementaire CNIL / EDPB</strong><small>Flux RSS CNIL → S@FE analyse → alerte email si nouvelle obligation</small></div>
+        <span class="api-tag free">RSS FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">📋</span>
+        <div class="sc"><strong>Suivi demandes DSAR</strong><small>Formulaire exercice de droits + tracking 30j + relances Brevo automatiques</small></div>
+        <span class="api-tag free">FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">📄</span>
+        <div class="sc"><strong>Génération DPA sous-traitants</strong><small>S@FE génère un DPA personnalisé pour chaque sous-traitant déclaré</small></div>
+        <span class="api-tag ai">S@FE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🍪</span>
+        <div class="sc"><strong>Widget consentement RGPD</strong><small>S@FE génère le code HTML/JS bandeau cookies · prêt à intégrer sur le site</small></div>
+        <span class="api-tag ai">S@FE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🔓</span>
+        <div class="sc"><strong>Scan violations · HaveIBeenPwned</strong><small>Scan mensuel des emails pro · alerte si données compromises détectées</small></div>
+        <span class="api-tag free">FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🗃️</span>
+        <div class="sc"><strong>Archivage preuves consentement</strong><small>Horodatage + stockage automatique des preuves · Supabase Storage</small></div>
+        <span class="api-tag free">Supabase FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">✍️</span>
+        <div class="sc"><strong>E-signature DPO · YouSign</strong><small>Désignation DPO signée électroniquement · eIDAS qualifié · 100% légal</small></div>
+        <span class="api-tag paid">€0.15 / sign.</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+
+  </div>
+
 </section>
 
 <!-- ═══════════════════════════════════════
@@ -635,7 +790,8 @@
     <h2 style="color:var(--c-cyber)">Module Cybersécurité</h2>
     <p>Audit complet · Score de sécurité · Remédiation guidée · Surveillance continue</p>
     <div class="mod-stats">
-      <div class="stat-chip auto">🤖 80% automatisé</div>
+      <div class="stat-chip auto">🤖 80% actuel</div>
+      <div class="stat-chip target">🎯 95% visé</div>
       <div class="stat-chip human">👤 2 actions client</div>
       <div class="stat-chip ai"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> 5 analyses S@FE</div>
     </div>
@@ -788,6 +944,76 @@
     </div>
 
   </div>
+
+  <div class="flow">
+    <div class="activation-gate">🔒 En attente d'activation — Console Admin</div>
+
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🔒</span>
+        <div class="sc"><strong>Scan SSL automatique · SSL Labs</strong><small>Vérification config SSL + alerte 30j avant expiration · rapport hebdo</small></div>
+        <span class="api-tag free">SSL Labs FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🔓</span>
+        <div class="sc"><strong>Emails pro compromis · HaveIBeenPwned</strong><small>Scan des domaines pro · alerte si emails dans une fuite connue</small></div>
+        <span class="api-tag free">FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🦠</span>
+        <div class="sc"><strong>Réputation domaine / IP</strong><small>VirusTotal + Google Safe Browsing · vérifie si le domaine est blacklisté</small></div>
+        <span class="api-tag free">VirusTotal FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">📑</span>
+        <div class="sc"><strong>Génération PSSI personnalisée</strong><small>S@FE génère la Politique de Sécurité des SI adaptée au secteur client</small></div>
+        <span class="api-tag ai">S@FE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🚨</span>
+        <div class="sc"><strong>Alertes CVE en temps réel</strong><small>NIST NVD RSS · surveillance CVE sur les logiciels utilisés · alerte si critique</small></div>
+        <span class="api-tag free">NIST FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🔁</span>
+        <div class="sc"><strong>Monitoring continu hebdomadaire</strong><small>Rescan auto chaque semaine · score mis à jour · alerte si régression</small></div>
+        <span class="api-tag free">Cron FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🎣</span>
+        <div class="sc"><strong>Test phishing simulé</strong><small>Email test envoyé aux employés (accord préalable requis) · mesure la vigilance</small></div>
+        <span class="api-tag free">Brevo FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+
+  </div>
+
 </section>
 
 <!-- ═══════════════════════════════════════
@@ -800,7 +1026,8 @@
     <h2 style="color:var(--c-seo)">Module SEO</h2>
     <p>Audit technique · Stratégie mots-clés · Positionnement Google automatique</p>
     <div class="mod-stats">
-      <div class="stat-chip auto">🤖 80% automatisé</div>
+      <div class="stat-chip auto">🤖 80% actuel</div>
+      <div class="stat-chip target">🎯 92% visé</div>
       <div class="stat-chip human">👤 2 actions client</div>
       <div class="stat-chip ai"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> 5 analyses S@FE</div>
     </div>
@@ -950,6 +1177,76 @@
     </div>
 
   </div>
+
+  <div class="flow">
+    <div class="activation-gate">🔒 En attente d'activation — Console Admin</div>
+
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">📈</span>
+        <div class="sc"><strong>Suivi positions Google · GSC API</strong><small>Google Search Console API · positions + impressions + CTR chaque semaine</small></div>
+        <span class="api-tag free">GSC FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">⚡</span>
+        <div class="sc"><strong>Audit performance · PageSpeed API</strong><small>PageSpeed Insights API · rapport hebdo auto · alerte si Core Web Vitals chute</small></div>
+        <span class="api-tag free">FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">✍️</span>
+        <div class="sc"><strong>Rédaction articles SEO + publication</strong><small>S@FE rédige 2 articles/mois · push WordPress REST API ou livraison Markdown</small></div>
+        <span class="api-tag ai">S@FE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🏷️</span>
+        <div class="sc"><strong>Balises meta + Schema.org JSON-LD</strong><small>S@FE génère title/description + JSON-LD · push API ou package prêt à coller</small></div>
+        <span class="api-tag ai">S@FE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">📍</span>
+        <div class="sc"><strong>Publications Google Business Profile</strong><small>GBP API · 1 post auto/semaine · mise à jour horaires et offres</small></div>
+        <span class="api-tag free">GBP FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🏆</span>
+        <div class="sc"><strong>Veille concurrentielle · Serper.dev</strong><small>Positions des 5 concurrents · alerte si un concurrent passe devant le client</small></div>
+        <span class="api-tag paid">~€40 / mois</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🔗</span>
+        <div class="sc"><strong>Opportunités netlinking · Google Alerts</strong><small>RSS Google Alerts secteur client · détecte les opportunités de backlinks</small></div>
+        <span class="api-tag free">FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+
+  </div>
+
 </section>
 
 <!-- ═══════════════════════════════════════
@@ -962,7 +1259,8 @@
     <h2 style="color:var(--c-social)">Module Social Media</h2>
     <p>Audit réseaux · Stratégie de contenu · Calendrier éditorial automatique</p>
     <div class="mod-stats">
-      <div class="stat-chip auto">🤖 75% automatisé</div>
+      <div class="stat-chip auto">🤖 75% actuel</div>
+      <div class="stat-chip target">🎯 88% visé</div>
       <div class="stat-chip human">👤 3 actions client</div>
       <div class="stat-chip ai"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> 5 analyses S@FE</div>
     </div>
@@ -1113,6 +1411,76 @@
     </div>
 
   </div>
+
+  <div class="flow">
+    <div class="activation-gate">🔒 En attente d'activation — Console Admin</div>
+
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">📘</span>
+        <div class="sc"><strong>Publication Facebook / Instagram</strong><small>Meta Graph API · publication auto des posts · Reels inclus</small></div>
+        <span class="api-tag free">Meta API FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">💼</span>
+        <div class="sc"><strong>Publication LinkedIn</strong><small>LinkedIn API · posts auto profil pro et page entreprise du client</small></div>
+        <span class="api-tag free">LinkedIn FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🎨</span>
+        <div class="sc"><strong>Génération visuels · DALL-E API</strong><small>DALL-E API · 1 visuel par post selon le brief de marque client</small></div>
+        <span class="api-tag paid">~€0.04 / img</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">⏰</span>
+        <div class="sc"><strong>Scheduling aux heures optimales</strong><small>Meta Insights API · publication aux pics d'activité de l'audience</small></div>
+        <span class="api-tag free">Meta Insights FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">👁️</span>
+        <div class="sc"><strong>Monitoring e-réputation</strong><small>Google Alerts RSS · alerte email immédiate si mention négative de la marque</small></div>
+        <span class="api-tag free">FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">💬</span>
+        <div class="sc"><strong>Bot FAQ · Meta Messenger API</strong><small>Réponses auto aux questions fréquentes : horaires, prix, contact</small></div>
+        <span class="api-tag free">Meta API FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">📊</span>
+        <div class="sc"><strong>Rapport performance multiréseaux</strong><small>Stats Facebook / Instagram / LinkedIn via API · rapport mensuel consolidé</small></div>
+        <span class="api-tag free">APIs FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+
+  </div>
+
 </section>
 
 <!-- ═══════════════════════════════════════
@@ -1125,7 +1493,8 @@
     <h2 style="color:var(--c-collect)">Module Click &amp; Collect</h2>
     <p>Configuration boutique · Emails automatiques · Conformité e-commerce</p>
     <div class="mod-stats">
-      <div class="stat-chip auto">🤖 70% automatisé</div>
+      <div class="stat-chip auto">🤖 70% actuel</div>
+      <div class="stat-chip target">🎯 92% visé</div>
       <div class="stat-chip human">👤 3 actions client</div>
       <div class="stat-chip ai"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> 3 analyses S@FE</div>
     </div>
@@ -1311,6 +1680,85 @@
     </div>
 
   </div>
+
+  <div class="flow">
+    <div class="activation-gate">🔒 En attente d'activation — Console Admin</div>
+
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">📦</span>
+        <div class="sc"><strong>Sync stock · Webhook universel + CSV</strong><small>Webhook générique configurable côté POS + import CSV · compatible tous outils</small></div>
+        <span class="api-tag free">Webhook FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🛍️</span>
+        <div class="sc"><strong>Intégration Shopify / WooCommerce</strong><small>Shopify API + WooCommerce REST · catalogue synchronisé en temps réel</small></div>
+        <span class="api-tag free">FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">📱</span>
+        <div class="sc"><strong>QR code retrait · qrcode.js</strong><small>QR code unique par commande · intégré dans l'email "Prêt à retirer"</small></div>
+        <span class="api-tag free">qrcode.js FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🧾</span>
+        <div class="sc"><strong>Facturation automatique · Stripe Invoice</strong><small>Stripe Invoice API · facture PDF envoyée à chaque commande payée</small></div>
+        <span class="api-tag free">Stripe FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">↩️</span>
+        <div class="sc"><strong>Remboursements auto · Stripe Refunds</strong><small>Stripe Refunds API · remboursement déclenché si annulation avant préparation</small></div>
+        <span class="api-tag free">Stripe FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🔮</span>
+        <div class="sc"><strong>Prévision de la demande</strong><small>S@FE analyse l'historique commandes → recommande les stocks à anticiper</small></div>
+        <span class="api-tag ai">S@FE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🧩</span>
+        <div class="sc"><strong>Widget commande HTML/JS</strong><small>S@FE génère le module de commande · intégrable sur n'importe quel site</small></div>
+        <span class="api-tag ai">S@FE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+    <div class="conn off"><div class="flow-light"></div></div>
+    <div class="step">
+      <div class="step-card inactive">
+        <span class="si">🗺️</span>
+        <div class="sc"><strong>Google Maps · localisation retrait</strong><small>Maps Embed API · carte du point de retrait dans les emails et le widget</small></div>
+        <span class="api-tag free">Maps FREE</span>
+        <span class="badge lock">🔒 Inactif</span>
+      </div>
+    </div>
+
+  </div>
+
 </section>
 
 <script>
