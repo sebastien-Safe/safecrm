@@ -467,6 +467,7 @@ function switchView(view) {
   $all('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
   if (view === 'admin') renderAdmin();
   if (view === 'resultats') renderResultats();
+  if (view === 'agenda') renderAgenda();
 }
 
 // ---------------------------------------------------------
@@ -4637,5 +4638,121 @@ function toggleLoginPasswordVisibility() {
   btn.title = isHidden ? 'Masquer le mot de passe' : 'Afficher le mot de passe';
 }
 window.toggleLoginPasswordVisibility = toggleLoginPasswordVisibility;
+
+// ─────────────────────────────────────────────
+// AGENDA
+// ─────────────────────────────────────────────
+const agendaState = { year: 0, month: 0, selectedDay: null };
+
+function renderAgenda() {
+  const now = new Date();
+  if (!agendaState.year) { agendaState.year = now.getFullYear(); agendaState.month = now.getMonth(); }
+  _drawAgendaCalendar();
+}
+
+function agendaPrevMonth() {
+  if (--agendaState.month < 0) { agendaState.month = 11; agendaState.year--; }
+  _drawAgendaCalendar();
+}
+
+function agendaNextMonth() {
+  if (++agendaState.month > 11) { agendaState.month = 0; agendaState.year++; }
+  _drawAgendaCalendar();
+}
+
+function _drawAgendaCalendar() {
+  const { year, month } = agendaState;
+  const todayStr = todayISO();
+  const label = new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  $('#agenda-month-label').textContent = capitalize(label);
+
+  // Premier lundi avant le 1er du mois
+  const firstDay = new Date(year, month, 1);
+  const startDay = new Date(firstDay);
+  const dow = (firstDay.getDay() + 6) % 7; // 0=lundi
+  startDay.setDate(firstDay.getDate() - dow);
+
+  // Index des tâches par date
+  const byDate = {};
+  (state.tasks || []).forEach(t => {
+    const dates = [];
+    if (t.rdv_date) dates.push(t.rdv_date);
+    else if (t.echeance) dates.push(t.echeance);
+    dates.forEach(d => { if (d) { byDate[d] = byDate[d] || []; byDate[d].push(t); } });
+  });
+
+  const cells = $('#agenda-cells');
+  cells.innerHTML = '';
+
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(startDay);
+    d.setDate(startDay.getDate() + i);
+    const iso = d.toISOString().slice(0, 10);
+    const isCurrentMonth = d.getMonth() === month;
+    const isToday = iso === todayStr;
+    const isSelected = iso === agendaState.selectedDay;
+    const events = byDate[iso] || [];
+
+    const cell = document.createElement('div');
+    cell.className = ['agenda-cell', isToday ? 'today' : '', !isCurrentMonth ? 'other-month' : '', isSelected ? 'selected' : ''].filter(Boolean).join(' ');
+    cell.onclick = () => _selectAgendaDay(iso, events);
+
+    let html = `<div class="agenda-cell-num">${d.getDate()}</div>`;
+    events.slice(0, 3).forEach(t => {
+      const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
+      const late = isOverdue(t.echeance || t.rdv_date, t.statut);
+      const cls = late ? 'overdue' : isRdv ? 'rdv' : 'task';
+      html += `<div class="agenda-event ${cls}">${escapeHtml(t.titre)}</div>`;
+    });
+    if (events.length > 3) html += `<div style="font-size:.6rem;color:var(--mut)">+${events.length - 3}</div>`;
+    cell.innerHTML = html;
+    cells.appendChild(cell);
+  }
+
+  // Rouvrir le panneau jour si un jour était sélectionné
+  if (agendaState.selectedDay && byDate[agendaState.selectedDay] !== undefined) {
+    _selectAgendaDay(agendaState.selectedDay, byDate[agendaState.selectedDay] || []);
+  }
+}
+
+function _selectAgendaDay(iso, events) {
+  agendaState.selectedDay = iso;
+  _drawAgendaCalendar();
+
+  const panel = $('#agenda-day-panel');
+  const title = $('#agenda-day-title');
+  const list  = $('#agenda-day-list');
+
+  const label = new Date(iso + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  title.textContent = capitalize(label);
+
+  if (!events.length) {
+    list.innerHTML = '<p style="color:var(--mut);font-size:.85rem">Aucun événement ce jour.</p>';
+  } else {
+    list.innerHTML = events.map(t => {
+      const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
+      const late  = isOverdue(t.echeance || t.rdv_date, t.statut);
+      const cls   = late ? 'overdue' : isRdv ? 'rdv' : 'task';
+      const meta  = [t.type_tache, t.rdv_heure ? t.rdv_heure.slice(0,5) : null, t.rdv_lieu].filter(Boolean).join(' · ');
+      return `<div class="agenda-ev-item" onclick="openTaskModal('${t.id}')">
+        <div class="agenda-ev-dot ${cls}"></div>
+        <div><div class="agenda-ev-title">${escapeHtml(t.titre)}</div>${meta ? `<div class="agenda-ev-meta">${escapeHtml(meta)}</div>` : ''}</div>
+      </div>`;
+    }).join('');
+  }
+  panel.style.display = 'block';
+}
+
+function copyIcalUrl() {
+  const uid = state.user?.id;
+  if (!uid) return;
+  const url = `${SUPABASE_URL}/functions/v1/agenda-ics?uid=${uid}`;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = $('#btn-ical-subscribe');
+    const orig = btn.textContent;
+    btn.textContent = '✅ URL copiée !';
+    setTimeout(() => btn.textContent = orig, 2500);
+  });
+}
 
 init()

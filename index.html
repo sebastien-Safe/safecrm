@@ -240,56 +240,35 @@
 
       <div class="nav-sep"></div>
 
-      <!-- Section déroulante Mon activité -->
-      <div class="sidebar-collapsible-head open" onclick="toggleSection('activite')">
-        <span class="sidebar-section-label">Mon activité</span>
-        <span class="sidebar-section-arrow" id="arrow-activite">▴</span>
-      </div>
-      <div class="sidebar-collapsible-body open" id="section-activite">
-        <button data-view="contacts" class="navlink">👥 Contacts</button>
-        <button data-view="contracts" class="navlink">📄 Contrats</button>
-        <button data-view="resultats" class="navlink" id="nav-resultats">📊 Résultats</button>
-        <button class="navlink dci-only" style="display:none" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
-      </div>
+      <!-- Mon activité -->
+      <div class="nav-section-lbl">Mon activité</div>
+      <button data-view="contacts" class="navlink">👥 Contacts</button>
+      <button data-view="contracts" class="navlink">📄 Contrats</button>
+      <button data-view="resultats" class="navlink" id="nav-resultats">📊 Résultats</button>
+      <button data-view="agenda" class="navlink" id="nav-agenda">📅 Agenda</button>
+      <button class="navlink dci-only" style="display:none" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
 
       <div class="nav-sep"></div>
 
-      <!-- Section Modules (repliable, ouverte par défaut) -->
-      <div class="sidebar-collapsible-head open" onclick="toggleSection('modules')">
-        <span class="sidebar-section-label">Modules</span>
-        <span class="sidebar-section-arrow" id="arrow-modules">▴</span>
-      </div>
-      <div class="sidebar-collapsible-body open" id="section-modules">
-        <a class="sidebar-item sidebar-sub" href="/work/SEO/module-seo-clients.html"><span class="ico">🚀</span> SEO</a>
-        <a class="sidebar-item sidebar-sub" href="/work/Cyber/module-cyber-clients.html"><span class="ico">💻</span> Cybersec</a>
-        <a class="sidebar-item sidebar-sub" href="/work/DPO/module-dpo-clients.html"><span class="ico">⚖️</span> DPO</a>
-        <a class="sidebar-item sidebar-sub" href="/work/Social/module-social-clients.html"><span class="ico">📱</span> Social</a>
-        <a class="sidebar-item sidebar-sub" href="/work/ClickCollect/module-clickcollect-clients.html"><span class="ico">🛒</span> Click &amp; Collect</a>
-      </div>
+      <!-- Modules -->
+      <div class="nav-section-lbl">Modules</div>
+      <a class="sidebar-item sidebar-sub" href="/work/SEO/module-seo-clients.html"><span class="ico">🚀</span> SEO</a>
+      <a class="sidebar-item sidebar-sub" href="/work/Cyber/module-cyber-clients.html"><span class="ico">💻</span> Cybersec</a>
+      <a class="sidebar-item sidebar-sub" href="/work/DPO/module-dpo-clients.html"><span class="ico">⚖️</span> DPO</a>
+      <a class="sidebar-item sidebar-sub" href="/work/Social/module-social-clients.html"><span class="ico">📱</span> Social</a>
+      <a class="sidebar-item sidebar-sub" href="/work/ClickCollect/module-clickcollect-clients.html"><span class="ico">🛒</span> Click &amp; Collect</a>
 
       <div class="nav-sep"></div>
 
-      <!-- Section Réglages (repliable, fermée par défaut) -->
-      <div class="sidebar-collapsible-head" onclick="toggleSection('reglages')">
-        <span class="sidebar-section-label">Réglages</span>
-        <span class="sidebar-section-arrow" id="arrow-reglages">▾</span>
-      </div>
-      <div class="sidebar-collapsible-body" id="section-reglages">
-        <a class="sidebar-item sidebar-sub" href="/work/connecteurs.html"><span class="ico">🔌</span> Connecteurs</a>
-        <a class="sidebar-item sidebar-sub" href="https://github.com/sebastien-Safe/" target="_blank" rel="noopener">
-          <img src="/icons/tiers/github.svg" class="ico-img" alt="GitHub"> GitHub
-        </a>
-        <a class="sidebar-item sidebar-sub" href="https://supabase.com/dashboard/" target="_blank" rel="noopener">
-          <img src="/icons/tiers/supabase.svg" class="ico-img" alt="Supabase"> Supabase
-        </a>
-        <a class="sidebar-item sidebar-sub" href="vscode://">
-          <img src="/icons/tiers/vscode.svg" class="ico-img" alt="VSCode"> VSCode
-        </a>
-      </div>
+      <!-- Réglages -->
+      <div class="nav-section-lbl">Réglages</div>
+      <a class="sidebar-item sidebar-sub" href="/work/connecteurs.html"><span class="ico">🔌</span> Connecteurs</a>
+      <a class="sidebar-item sidebar-sub" href="https://github.com/sebastien-Safe/" target="_blank" rel="noopener"><img src="/icons/tiers/github.svg" class="ico-img" alt="GitHub"> GitHub</a>
+      <a class="sidebar-item sidebar-sub" href="https://supabase.com/dashboard/" target="_blank" rel="noopener"><img src="/icons/tiers/supabase.svg" class="ico-img" alt="Supabase"> Supabase</a>
+      <a class="sidebar-item sidebar-sub" href="vscode://"><img src="/icons/tiers/vscode.svg" class="ico-img" alt="VSCode"> VSCode</a>
 
       <div class="nav-sep"></div>
 
-      <!-- Section OUTILS (Admin uniquement) -->
       <button class="navlink" id="lk-tasks" onclick="switchView('tasks')">✅ Tâches</button>
       <a class="navlink" href="/work/?view=journal">📋 Journal</a>
       <a href="/work/" class="navlink admin-only" style="display:none;text-decoration:none">🛡️ S@FE WORK</a>
@@ -468,6 +447,39 @@
         <div class="kanban-col"><h4>À faire</h4><div id="kanban-todo"></div></div>
         <div class="kanban-col"><h4>En cours</h4><div id="kanban-inprogress"></div></div>
         <div class="kanban-col"><h4>Terminé</h4><div id="kanban-done"></div></div>
+      </div>
+    </section>
+
+    <!-- ---------- AGENDA ---------- -->
+    <section id="view-agenda" class="view">
+      <div class="view-head">
+        <div>
+          <h2>Agenda</h2>
+          <p>Tâches et RDV en cours — synchronisable avec Google / Apple Calendar</p>
+        </div>
+        <button class="btn btn-out btn-sm" id="btn-ical-subscribe" onclick="copyIcalUrl()">📋 Copier l'URL d'abonnement</button>
+      </div>
+      <!-- Navigation mois -->
+      <div class="agenda-nav">
+        <button class="btn btn-out btn-sm" onclick="agendaPrevMonth()">‹</button>
+        <span id="agenda-month-label"></span>
+        <button class="btn btn-out btn-sm" onclick="agendaNextMonth()">›</button>
+      </div>
+      <!-- Grille calendrier -->
+      <div class="agenda-grid">
+        <div class="agenda-day-header">Lun</div>
+        <div class="agenda-day-header">Mar</div>
+        <div class="agenda-day-header">Mer</div>
+        <div class="agenda-day-header">Jeu</div>
+        <div class="agenda-day-header">Ven</div>
+        <div class="agenda-day-header">Sam</div>
+        <div class="agenda-day-header">Dim</div>
+      </div>
+      <div id="agenda-cells" class="agenda-grid"></div>
+      <!-- Liste des événements du jour sélectionné -->
+      <div id="agenda-day-panel" class="agenda-day-panel" style="display:none">
+        <h4 id="agenda-day-title"></h4>
+        <div id="agenda-day-list"></div>
       </div>
     </section>
 

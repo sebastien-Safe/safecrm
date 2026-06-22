@@ -449,3 +449,30 @@ a.sidebar-item{text-decoration:none}
   align-items: center;
   gap: 6px;
 }
+
+/* ── AGENDA ── */
+.agenda-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.agenda-nav span{font-weight:700;font-size:1rem;min-width:160px;text-align:center}
+.agenda-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
+.agenda-day-header{text-align:center;font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:4px 0}
+.agenda-cell{min-height:72px;background:var(--navy-mid);border:1px solid var(--line);border-radius:8px;padding:6px;cursor:pointer;transition:.12s;position:relative}
+.agenda-cell:hover{border-color:var(--accent-2)}
+.agenda-cell.today{border-color:var(--accent-2);background:rgba(59,130,246,.08)}
+.agenda-cell.other-month{opacity:.35}
+.agenda-cell.selected{border-color:var(--gold);background:rgba(245,158,11,.08)}
+.agenda-cell-num{font-size:.72rem;font-weight:700;color:var(--mut-2);margin-bottom:4px}
+.agenda-cell.today .agenda-cell-num{color:var(--accent-2)}
+.agenda-event{font-size:.65rem;padding:2px 5px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.agenda-event.rdv{background:var(--gold)}
+.agenda-event.task{background:var(--accent-2)}
+.agenda-event.overdue{background:var(--alert)}
+.agenda-day-panel{background:var(--navy-mid);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:12px}
+.agenda-day-panel h4{margin:0 0 12px;font-size:.95rem}
+.agenda-ev-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.04);margin-bottom:8px;cursor:pointer}
+.agenda-ev-item:hover{background:rgba(255,255,255,.08)}
+.agenda-ev-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.agenda-ev-dot.rdv{background:var(--gold)}
+.agenda-ev-dot.task{background:var(--accent-2)}
+.agenda-ev-dot.overdue{background:var(--alert)}
+.agenda-ev-title{font-size:.88rem;font-weight:600}
+.agenda-ev-meta{font-size:.75rem;color:var(--mut)}
