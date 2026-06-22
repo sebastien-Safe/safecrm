@@ -436,6 +436,8 @@
     <section id="view-pipeline" class="view">
       <div class="pipeline-toolbar">
         <h2>🗂️ Pipeline</h2>
+        <div class="pipeline-total" id="pl-total"><span>Pipeline actif</span> —</div>
+        <input class="pipeline-search" id="pl-search" type="text" placeholder="Rechercher…" oninput="_plApplySearch()">
         <select class="pipeline-filter" id="pl-filter-user" onchange="_plApplyFilter()">
           <option value="">Tous les commerciaux</option>
         </select>

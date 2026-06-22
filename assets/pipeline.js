@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   PIPELINE KANBAN — S@FE CRM  (Itération 1)
+   PIPELINE KANBAN — S@FE CRM  (Itération 2)
    ═══════════════════════════════════════════ */
 
 const PIPELINE_COLS = [
@@ -23,11 +23,15 @@ const TYPE_ICONS = {
   'Social':'📱', 'Click & Collect':'🛒', 'Assurances':'🛡',
 };
 
+const PJ_BUCKET = 'contrats-pdf';
+
 // ── State local du pipeline ──
-let _plContacts  = [];   // contacts chargés
-let _plContracts = {};   // { contact_id: [contracts] }
-let _plFilter    = '';   // filtre commercial id
-let _plDragging  = null; // id contact en cours de drag
+let _plContacts  = [];
+let _plContracts = {};
+let _plFilter    = '';
+let _plSearch    = '';
+let _plDragging  = null;
+let _plPJCache   = {}; // { contact_id: [{name, url}] }
 
 // ── Init principale ──
 async function initPipeline() {
@@ -37,6 +41,8 @@ async function initPipeline() {
   try {
     await _plLoadData();
     _plRenderBoard();
+    _plBuildFilterSelect();
+    _plUpdateTotal();
   } catch(e) {
     board.innerHTML = `<div class="pipeline-loading" style="color:#ef4444">Erreur chargement : ${escapeHtml(e.message)}</div>`;
     console.error('[pipeline]', e);
@@ -45,37 +51,36 @@ async function initPipeline() {
 
 // ── Chargement données ──
 async function _plLoadData() {
-  const myId   = state.user.id;
-  const role   = getRole();
-  const isAdm  = state.profile?.is_admin;
+  const myId  = state.user.id;
+  const role  = getRole();
+  const isAdm = state.profile?.is_admin;
 
-  // Construire filtre selon rôle
   let contactsQuery = sb.from('contacts')
-    .select('id, nom, prenom, entreprise, kanban_col, priority, date_relance, created_by, notes')
+    .select('id, nom, prenom, entreprise, kanban_col, priority, date_relance, created_by, notes, kanban_checklist')
     .order('entreprise', { ascending: true });
 
   if (!isAdm && role !== 'admin_candy' && role !== 'super_admin') {
     if (role === 'dci') {
-      // niv2 : soi + ses niv1
       const { data: equipe } = await sb.from('profiles')
         .select('id').eq('dci_parent_id', myId).eq('role', 'user');
       const ids = [myId, ...(equipe || []).map(p => p.id)];
       contactsQuery = contactsQuery.in('created_by', ids);
     } else {
-      // niv1 : soi uniquement
       contactsQuery = contactsQuery.eq('created_by', myId);
     }
   }
 
   const { data: contacts, error: cErr } = await contactsQuery;
   if (cErr) throw cErr;
-  _plContacts = contacts || [];
+  _plContacts = (contacts || []).map(c => ({
+    ...c,
+    kanban_checklist: Array.isArray(c.kanban_checklist) ? c.kanban_checklist : [],
+  }));
 
-  // Charger les contrats pour ces contacts
   if (_plContacts.length) {
     const contactIds = _plContacts.map(c => c.id);
     const { data: contracts, error: ctErr } = await sb.from('contracts')
-      .select('id, contact_id, type, formule, montant, statut, date_echeance, notes, recurrence')
+      .select('id, contact_id, type, formule, montant, statut, date_echeance, notes, recurrence, signed_pdf_contrat_url')
       .in('contact_id', contactIds)
       .neq('statut', 'résilié');
     if (ctErr) throw ctErr;
@@ -86,7 +91,6 @@ async function _plLoadData() {
     });
   }
 
-  // Charger profils pour afficher les commerciaux
   if (!state.profilesById || !Object.keys(state.profilesById).length) {
     const { data: profs } = await sb.from('profiles').select('id, prenom, nom');
     state.profilesById = {};
@@ -97,12 +101,18 @@ async function _plLoadData() {
 // ── Rendu du board ──
 function _plRenderBoard() {
   const board = document.getElementById('pl-board');
-
-  // Filtrage commercial
   let contacts = _plContacts;
-  if (_plFilter) contacts = contacts.filter(c => c.created_by === _plFilter);
 
-  // Grouper par colonne
+  if (_plFilter) contacts = contacts.filter(c => c.created_by === _plFilter);
+  if (_plSearch) {
+    const q = _plSearch.toLowerCase();
+    contacts = contacts.filter(c =>
+      (c.entreprise || '').toLowerCase().includes(q) ||
+      (c.nom || '').toLowerCase().includes(q) ||
+      (c.prenom || '').toLowerCase().includes(q)
+    );
+  }
+
   const byCol = {};
   PIPELINE_COLS.forEach(col => { byCol[col.id] = []; });
   contacts.forEach(c => {
@@ -133,29 +143,23 @@ function _plRenderBoard() {
 
 // ── HTML d'une carte ──
 function _plCardHTML(contact) {
-  const contracts = _plContracts[contact.id] || [];
-  const prio      = PRIORITIES[contact.priority] || PRIORITIES.normale;
-  const commercial = state.profilesById?.[contact.created_by];
-  const commercialName = commercial
-    ? (commercial.prenom || commercial.nom || '—')
-    : '—';
+  const contracts      = _plContracts[contact.id] || [];
+  const prio           = PRIORITIES[contact.priority] || PRIORITIES.normale;
+  const commercial     = state.profilesById?.[contact.created_by];
+  const commercialName = commercial ? (commercial.prenom || commercial.nom || '—') : '—';
 
-  // Montant total des contrats
   const totalMontant = contracts.reduce((s, ct) => s + (parseFloat(ct.montant) || 0), 0);
   const montantStr   = totalMontant > 0
     ? totalMontant.toLocaleString('fr-FR', { style:'currency', currency:'EUR', maximumFractionDigits:0 })
     : '—';
 
-  // Date de relance
-  const today      = new Date(); today.setHours(0,0,0,0);
-  let relanceHTML  = '';
+  // Date relance
+  const today = new Date(); today.setHours(0,0,0,0);
+  let relanceHTML = '';
   if (contact.date_relance) {
-    const dr      = new Date(contact.date_relance);
-    const overdue = dr < today;
-    const fmtDate = dr.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
-    relanceHTML = `<input class="pcard-date-input ${overdue ? 'overdue' : ''}"
-      type="date" value="${contact.date_relance}"
-      title="Date de relance"
+    const dr = new Date(contact.date_relance);
+    relanceHTML = `<input class="pcard-date-input${dr < today ? ' overdue' : ''}"
+      type="date" value="${contact.date_relance}" title="Date de relance"
       onchange="_plUpdateRelance('${contact.id}', this.value)"
       onclick="event.stopPropagation()">`;
   } else {
@@ -165,14 +169,21 @@ function _plCardHTML(contact) {
       onclick="event.stopPropagation()">`;
   }
 
+  // Checklist badge
+  const cl      = contact.kanban_checklist || [];
+  const clDone  = cl.filter(i => i.done).length;
+  const clTotal = cl.length;
+  const clBadge = clTotal > 0
+    ? `<div class="pcard-meta-item"><span class="pcard-checklist-progress${clDone===clTotal?' done':''}">☑ ${clDone}/${clTotal}</span></div>`
+    : '';
+
   // Onglets contrats
   const tabsHTML = contracts.length ? `
     <div class="pcard-tabs" id="pcard-tabs-${contact.id}">
       ${contracts.map((ct, i) => {
         const icon = TYPE_ICONS[ct.type] || '📄';
         return `<button class="pcard-tab ${i===0?'active':''}"
-          onclick="_plSelectTab('${contact.id}', ${i}, event)"
-          data-tab-idx="${i}">${icon} ${escapeHtml(ct.type||'Contrat')}</button>`;
+          onclick="_plSelectTab('${contact.id}', ${i}, event)">${icon} ${escapeHtml(ct.type||'Contrat')}</button>`;
       }).join('')}
     </div>
     ${contracts.map((ct, i) => _plContractDetailHTML(ct, i, contact.id)).join('')}
@@ -194,7 +205,6 @@ function _plCardHTML(contact) {
       ${relanceHTML}
     </div>
 
-    <!-- Priority menu -->
     <div class="pcard-priority-menu" id="ppm-${contact.id}">
       ${Object.entries(PRIORITIES).map(([k,p]) => `
         <div class="ppm-item" onclick="_plSetPriority('${contact.id}','${k}')">
@@ -208,10 +218,13 @@ function _plCardHTML(contact) {
       <div class="pcard-meta">
         <div class="pcard-meta-item">👤 ${escapeHtml(commercialName)}</div>
         ${totalMontant > 0 ? `<div class="pcard-meta-item pcard-amount">💰 ${montantStr}</div>` : ''}
+        ${clBadge}
       </div>
     </div>
 
     ${tabsHTML}
+    ${_plChecklistHTML(contact)}
+    ${_plPJHTML(contact, contracts)}
 
     <div class="pcard-actions">
       <button class="pcard-edit-btn" onclick="switchView('contacts');setTimeout(()=>openContactModal('${contact.id}'),80)">
@@ -224,57 +237,240 @@ function _plCardHTML(contact) {
 // ── Détail d'un contrat ──
 function _plContractDetailHTML(ct, idx, contactId) {
   const echeance = ct.date_echeance
-    ? new Date(ct.date_echeance).toLocaleDateString('fr-FR')
-    : '—';
+    ? new Date(ct.date_echeance).toLocaleDateString('fr-FR') : '—';
   const montant = ct.montant
-    ? parseFloat(ct.montant).toLocaleString('fr-FR', { style:'currency', currency:'EUR' })
-    : '—';
+    ? parseFloat(ct.montant).toLocaleString('fr-FR', { style:'currency', currency:'EUR' }) : '—';
 
-  return `<div class="pcard-contract-detail ${idx===0?'open':''}"
-              id="pcard-ct-${contactId}-${idx}">
-    <div class="pcard-contract-detail-row">
-      <span>Formule</span><span>${escapeHtml(ct.formule || ct.type || '—')}</span>
-    </div>
-    <div class="pcard-contract-detail-row">
-      <span>Montant</span><span>${montant}</span>
-    </div>
-    <div class="pcard-contract-detail-row">
-      <span>Récurrence</span><span>${escapeHtml(ct.recurrence || '—')}</span>
-    </div>
-    <div class="pcard-contract-detail-row">
-      <span>Statut</span><span>${escapeHtml(ct.statut || '—')}</span>
-    </div>
-    <div class="pcard-contract-detail-row">
-      <span>Échéance</span><span>${echeance}</span>
-    </div>
+  return `<div class="pcard-contract-detail ${idx===0?'open':''}" id="pcard-ct-${contactId}-${idx}">
+    <div class="pcard-contract-detail-row"><span>Formule</span><span>${escapeHtml(ct.formule || ct.type || '—')}</span></div>
+    <div class="pcard-contract-detail-row"><span>Montant</span><span>${montant}</span></div>
+    <div class="pcard-contract-detail-row"><span>Récurrence</span><span>${escapeHtml(ct.recurrence || '—')}</span></div>
+    <div class="pcard-contract-detail-row"><span>Statut</span><span>${escapeHtml(ct.statut || '—')}</span></div>
+    <div class="pcard-contract-detail-row"><span>Échéance</span><span>${echeance}</span></div>
     ${ct.notes ? `<div class="pcard-contract-notes">📝 ${escapeHtml(ct.notes)}</div>` : ''}
   </div>`;
 }
 
-// ── Sélection d'un onglet contrat ──
+// ── HTML Checklist ──
+function _plChecklistHTML(contact) {
+  const cl = contact.kanban_checklist || [];
+  const itemsHTML = cl.map((item, idx) => `
+    <div class="pcard-cl-item">
+      <input class="pcard-cl-cb" type="checkbox" ${item.done?'checked':''}
+        onclick="_plChecklistToggle('${contact.id}',${idx},event)">
+      <span class="pcard-cl-label${item.done?' checked':''}"
+        onclick="_plChecklistToggle('${contact.id}',${idx},event)">${escapeHtml(item.label)}</span>
+      <button class="pcard-cl-del" onclick="_plChecklistDelete('${contact.id}',${idx},event)">×</button>
+    </div>`).join('');
+
+  return `
+  <div class="pcard-checklist">
+    <div class="pcard-checklist-head">
+      <span class="pcard-checklist-lbl">☑ Checklist</span>
+    </div>
+    <div class="pcard-checklist-items" id="cl-items-${contact.id}">${itemsHTML}</div>
+    <div class="pcard-cl-add">
+      <input class="pcard-cl-input" id="cl-input-${contact.id}" type="text"
+        placeholder="Ajouter un élément…" maxlength="120"
+        onclick="event.stopPropagation()"
+        onkeydown="_plChecklistKeydown('${contact.id}',event)">
+      <button class="pcard-cl-submit" onclick="_plChecklistAdd('${contact.id}',event)">+</button>
+    </div>
+  </div>`;
+}
+
+// ── HTML Pièces jointes ──
+function _plPJHTML(contact, contracts) {
+  const contractPDFs = contracts.map(ct => `
+    <div class="pcard-pj-contract">
+      <span class="pcard-pj-contract-name">📄 ${escapeHtml(ct.type||'Contrat')}${ct.formule?' — '+escapeHtml(ct.formule):''}</span>
+      ${ct.signed_pdf_contrat_url
+        ? `<a href="${ct.signed_pdf_contrat_url}" target="_blank" class="pcard-pj-contract-btn">⬇ Signé</a>`
+        : `<button class="pcard-pj-contract-btn" onclick="_plGenerateContractPDF('${ct.id}',event)">⬇ Générer</button>`}
+    </div>`).join('');
+
+  return `
+  <div class="pcard-pj">
+    <div class="pcard-pj-head">
+      <span class="pcard-pj-lbl">📎 Pièces jointes</span>
+      <button class="pcard-pj-toggle" onclick="_plTogglePJ('${contact.id}',event)">Voir ▾</button>
+    </div>
+    <div class="pcard-pj-body" id="pj-body-${contact.id}">
+      ${contractPDFs ? `<div class="pcard-pj-list">${contractPDFs}</div>` : ''}
+      <div class="pcard-pj-list" id="pj-list-${contact.id}">
+        <div class="pcard-pj-empty" id="pj-empty-${contact.id}">Chargement…</div>
+      </div>
+      <div class="pcard-pj-upload">
+        <label class="pcard-pj-upload-btn" for="pj-file-${contact.id}">⬆ Ajouter un fichier</label>
+        <input type="file" id="pj-file-${contact.id}" style="display:none" multiple
+          onchange="_plUploadPJ('${contact.id}',this)">
+        <span class="pcard-pj-uploading" id="pj-uploading-${contact.id}" style="display:none">Envoi…</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════
+// CHECKLIST ACTIONS
+// ═══════════════════════════════════════
+
+function _plChecklistKeydown(contactId, event) {
+  event.stopPropagation();
+  if (event.key === 'Enter') _plChecklistAdd(contactId, event);
+}
+
+async function _plChecklistAdd(contactId, event) {
+  event.stopPropagation();
+  const input = document.getElementById(`cl-input-${contactId}`);
+  if (!input) return;
+  const label = input.value.trim();
+  if (!label) return;
+  const contact = _plContacts.find(c => c.id === contactId);
+  if (!contact) return;
+  contact.kanban_checklist = [...(contact.kanban_checklist || []), { id: crypto.randomUUID(), label, done: false }];
+  input.value = '';
+  await _plSaveChecklist(contactId);
+  _plRefreshCard(contactId);
+}
+
+async function _plChecklistToggle(contactId, idx, event) {
+  event.stopPropagation();
+  const contact = _plContacts.find(c => c.id === contactId);
+  if (!contact || !contact.kanban_checklist[idx]) return;
+  contact.kanban_checklist[idx].done = !contact.kanban_checklist[idx].done;
+  await _plSaveChecklist(contactId);
+  _plRefreshCard(contactId);
+}
+
+async function _plChecklistDelete(contactId, idx, event) {
+  event.stopPropagation();
+  const contact = _plContacts.find(c => c.id === contactId);
+  if (!contact) return;
+  contact.kanban_checklist = contact.kanban_checklist.filter((_, i) => i !== idx);
+  await _plSaveChecklist(contactId);
+  _plRefreshCard(contactId);
+}
+
+async function _plSaveChecklist(contactId) {
+  const contact = _plContacts.find(c => c.id === contactId);
+  if (!contact) return;
+  const { error } = await sb.from('contacts')
+    .update({ kanban_checklist: contact.kanban_checklist })
+    .eq('id', contactId);
+  if (error) console.error('[pipeline] checklist save', error);
+}
+
+// ═══════════════════════════════════════
+// PIÈCES JOINTES
+// ═══════════════════════════════════════
+
+async function _plTogglePJ(contactId, event) {
+  event.stopPropagation();
+  const body = document.getElementById(`pj-body-${contactId}`);
+  const btn  = event.currentTarget;
+  if (!body) return;
+  const isOpen = body.classList.toggle('open');
+  btn.textContent = isOpen ? 'Masquer ▴' : 'Voir ▾';
+  if (isOpen) await _plLoadPJ(contactId);
+}
+
+async function _plLoadPJ(contactId) {
+  const listEl  = document.getElementById(`pj-list-${contactId}`);
+  const emptyEl = document.getElementById(`pj-empty-${contactId}`);
+  if (!listEl) return;
+
+  if (_plPJCache[contactId]) { _plRenderPJList(contactId, _plPJCache[contactId]); return; }
+  if (emptyEl) emptyEl.textContent = 'Chargement…';
+
+  const { data, error } = await sb.storage.from(PJ_BUCKET).list(`pj/${contactId}`, { limit: 50 });
+  if (error) { if (emptyEl) emptyEl.textContent = 'Erreur chargement'; return; }
+
+  const files = (data || [])
+    .filter(f => f.name !== '.emptyFolderPlaceholder')
+    .map(f => ({
+      name: f.name,
+      url:  sb.storage.from(PJ_BUCKET).getPublicUrl(`pj/${contactId}/${f.name}`).data.publicUrl,
+    }));
+
+  _plPJCache[contactId] = files;
+  _plRenderPJList(contactId, files);
+}
+
+function _plRenderPJList(contactId, files) {
+  const listEl  = document.getElementById(`pj-list-${contactId}`);
+  const emptyEl = document.getElementById(`pj-empty-${contactId}`);
+  if (!listEl) return;
+  if (!files.length) {
+    if (emptyEl) { emptyEl.style.display=''; emptyEl.textContent='Aucun fichier joint'; }
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+  const EXT_ICON = { pdf:'📄', jpg:'🖼', jpeg:'🖼', png:'🖼', gif:'🖼', webp:'🖼', xlsx:'📊', csv:'📊', docx:'📝' };
+  listEl.innerHTML = files.map(f => {
+    const ext  = f.name.split('.').pop().toLowerCase();
+    const icon = EXT_ICON[ext] || '📎';
+    return `<div class="pcard-pj-item">
+      <span class="pcard-pj-icon">${icon}</span>
+      <a class="pcard-pj-name" href="${f.url}" target="_blank" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</a>
+      <button class="pcard-pj-del" onclick="_plDeletePJ('${contactId}','${escapeHtml(f.name)}',event)" title="Supprimer">×</button>
+    </div>`;
+  }).join('');
+}
+
+async function _plUploadPJ(contactId, input) {
+  const upEl = document.getElementById(`pj-uploading-${contactId}`);
+  if (upEl) upEl.style.display = '';
+  for (const file of input.files) {
+    const { error } = await sb.storage.from(PJ_BUCKET).upload(`pj/${contactId}/${file.name}`, file, { upsert: true });
+    if (error) console.error('[pipeline] upload PJ', error);
+  }
+  if (upEl) upEl.style.display = 'none';
+  input.value = '';
+  delete _plPJCache[contactId];
+  await _plLoadPJ(contactId);
+}
+
+async function _plDeletePJ(contactId, filename, event) {
+  event.stopPropagation();
+  if (!confirm(`Supprimer "${filename}" ?`)) return;
+  const { error } = await sb.storage.from(PJ_BUCKET).remove([`pj/${contactId}/${filename}`]);
+  if (error) { console.error('[pipeline] delete PJ', error); return; }
+  delete _plPJCache[contactId];
+  await _plLoadPJ(contactId);
+}
+
+async function _plGenerateContractPDF(contractId, event) {
+  event.stopPropagation();
+  // Redirige vers la vue contrats où la génération PDF est disponible
+  switchView('contracts');
+  // Tenter d'ouvrir le contrat directement si la fonction existe
+  if (typeof openContractModal === 'function') {
+    setTimeout(() => openContractModal(contractId), 80);
+  }
+}
+
+// ═══════════════════════════════════════
+// ONGLETS CONTRATS
+// ═══════════════════════════════════════
+
 function _plSelectTab(contactId, idx, event) {
   event.stopPropagation();
   const tabsEl = document.getElementById(`pcard-tabs-${contactId}`);
   if (!tabsEl) return;
-  tabsEl.querySelectorAll('.pcard-tab').forEach((t, i) => {
-    t.classList.toggle('active', i === idx);
-  });
-  const card = document.getElementById(`pcard-${contactId}`);
-  if (!card) return;
-  card.querySelectorAll('.pcard-contract-detail').forEach((d, i) => {
-    d.classList.toggle('open', i === idx);
-  });
+  tabsEl.querySelectorAll('.pcard-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  document.getElementById(`pcard-${contactId}`)?.querySelectorAll('.pcard-contract-detail')
+    .forEach((d, i) => d.classList.toggle('open', i === idx));
 }
 
-// ── Menu priorité ──
+// ═══════════════════════════════════════
+// PRIORITÉ
+// ═══════════════════════════════════════
+
 function _plTogglePriorityMenu(contactId, event) {
   event.stopPropagation();
   const menu = document.getElementById(`ppm-${contactId}`);
   if (!menu) return;
-  // Fermer les autres
-  document.querySelectorAll('.pcard-priority-menu.open').forEach(m => {
-    if (m !== menu) m.classList.remove('open');
-  });
+  document.querySelectorAll('.pcard-priority-menu.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
   menu.classList.toggle('open');
 }
 
@@ -283,15 +479,14 @@ async function _plSetPriority(contactId, priority) {
   const contact = _plContacts.find(c => c.id === contactId);
   if (!contact) return;
   contact.priority = priority;
-  const { error } = await sb.from('contacts').update({ priority }).eq('id', contactId);
-  if (error) { console.error('[pipeline] priority update', error); return; }
-  // Re-render uniquement la carte
-  const cardEl = document.getElementById(`pcard-${contactId}`);
-  if (cardEl) cardEl.outerHTML = _plCardHTML(contact);
-  _plInitCardEvents();
+  await sb.from('contacts').update({ priority }).eq('id', contactId);
+  _plRefreshCard(contactId);
 }
 
-// ── Mise à jour date de relance ──
+// ═══════════════════════════════════════
+// DATE RELANCE
+// ═══════════════════════════════════════
+
 async function _plUpdateRelance(contactId, value) {
   const contact = _plContacts.find(c => c.id === contactId);
   if (!contact) return;
@@ -299,22 +494,19 @@ async function _plUpdateRelance(contactId, value) {
   await sb.from('contacts').update({ date_relance: value || null }).eq('id', contactId);
 }
 
-// ── Drag & Drop ──
+// ═══════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════
+
 function _plDragStart(event, contactId) {
   _plDragging = contactId;
   event.dataTransfer.effectAllowed = 'move';
   event.dataTransfer.setData('text/plain', contactId);
-  setTimeout(() => {
-    const el = document.getElementById(`pcard-${contactId}`);
-    if (el) el.classList.add('dragging');
-  }, 0);
+  setTimeout(() => document.getElementById(`pcard-${contactId}`)?.classList.add('dragging'), 0);
 }
 
-function _plDragEnd(event) {
-  if (_plDragging) {
-    const el = document.getElementById(`pcard-${_plDragging}`);
-    if (el) el.classList.remove('dragging');
-  }
+function _plDragEnd() {
+  if (_plDragging) document.getElementById(`pcard-${_plDragging}`)?.classList.remove('dragging');
   document.querySelectorAll('.pcol-cards').forEach(c => c.classList.remove('drag-over'));
 }
 
@@ -333,80 +525,117 @@ async function _plDrop(event, colId) {
   document.querySelectorAll('.pcol-cards').forEach(c => c.classList.remove('drag-over'));
   const contactId = event.dataTransfer.getData('text/plain') || _plDragging;
   if (!contactId) return;
-
   const contact = _plContacts.find(c => c.id === contactId);
   if (!contact || contact.kanban_col === colId) return;
 
   const oldCol = contact.kanban_col;
   contact.kanban_col = colId;
-
-  // Mettre à jour Supabase
   const { error } = await sb.from('contacts').update({ kanban_col: colId }).eq('id', contactId);
-  if (error) {
-    console.error('[pipeline] drop update', error);
-    contact.kanban_col = oldCol; // rollback
-    return;
-  }
+  if (error) { console.error('[pipeline] drop', error); contact.kanban_col = oldCol; return; }
 
-  // Mise à jour DOM rapide (sans reload complet)
-  const cardEl = document.getElementById(`pcard-${contactId}`);
+  const cardEl   = document.getElementById(`pcard-${contactId}`);
   const oldCards = document.getElementById(`pcol-cards-${oldCol}`);
   const newCards = document.getElementById(`pcol-cards-${colId}`);
   if (cardEl && oldCards && newCards) {
-    // Retirer l'état "empty" si présent
     newCards.querySelectorAll('.pcol-empty').forEach(e => e.remove());
     newCards.appendChild(cardEl);
-    // Ajouter empty si oldCol est vide
-    if (!oldCards.querySelector('.pcard')) {
-      oldCards.innerHTML = '<div class="pcol-empty">Aucune fiche</div>';
-    }
-    // Mettre à jour les compteurs
+    if (!oldCards.querySelector('.pcard')) oldCards.innerHTML = '<div class="pcol-empty">Aucune fiche</div>';
     _plUpdateColCount(oldCol);
     _plUpdateColCount(colId);
   }
-
   _plDragging = null;
+  _plUpdateTotal();
 }
 
 function _plUpdateColCount(colId) {
-  const count = document.querySelectorAll(`#pcol-cards-${colId} .pcard`).length;
   const badge = document.getElementById(`pcol-count-${colId}`);
-  if (badge) badge.textContent = count;
+  if (badge) badge.textContent = document.querySelectorAll(`#pcol-cards-${colId} .pcard`).length;
 }
 
-// ── Initialiser events cards (après rendu) ──
-function _plInitCardEvents() {
-  // Fermer menus priorité au clic extérieur
-  document.addEventListener('click', _plCloseMenus, { once: false });
-}
+// ═══════════════════════════════════════
+// COMPTEUR GLOBAL
+// ═══════════════════════════════════════
 
-function _plCloseMenus(event) {
-  if (!event.target.closest('.pcard-priority-badge')) {
-    document.querySelectorAll('.pcard-priority-menu.open')
-      .forEach(m => m.classList.remove('open'));
+function _plUpdateTotal() {
+  const el = document.getElementById('pl-total');
+  if (!el) return;
+
+  let contacts = _plContacts;
+  if (_plFilter) contacts = contacts.filter(c => c.created_by === _plFilter);
+  if (_plSearch) {
+    const q = _plSearch.toLowerCase();
+    contacts = contacts.filter(c =>
+      (c.entreprise||'').toLowerCase().includes(q) ||
+      (c.nom||'').toLowerCase().includes(q) ||
+      (c.prenom||'').toLowerCase().includes(q)
+    );
   }
+
+  let total = 0;
+  contacts.filter(c => c.kanban_col !== 'resilie').forEach(c => {
+    (_plContracts[c.id] || []).forEach(ct => { total += parseFloat(ct.montant) || 0; });
+  });
+
+  const fmt = total.toLocaleString('fr-FR', { style:'currency', currency:'EUR', maximumFractionDigits:0 });
+  el.innerHTML = `<span>Pipeline actif</span> ${fmt}`;
 }
 
-// ── Filtre commercial ──
+// ═══════════════════════════════════════
+// RECHERCHE & FILTRE
+// ═══════════════════════════════════════
+
+function _plApplySearch() {
+  _plSearch = document.getElementById('pl-search')?.value?.trim() || '';
+  _plRenderBoard();
+  _plUpdateTotal();
+}
+
 function _plApplyFilter() {
   _plFilter = document.getElementById('pl-filter-user')?.value || '';
   _plRenderBoard();
+  _plUpdateTotal();
 }
 
-// ── Construire le select filtre commercial ──
 function _plBuildFilterSelect() {
   const sel = document.getElementById('pl-filter-user');
   if (!sel || !state.profilesById) return;
-  const profiles = Object.values(state.profilesById);
-  // N'afficher que les commerciaux présents dans les contacts chargés
-  const usedIds = new Set(_plContacts.map(c => c.created_by));
-  const relevant = profiles.filter(p => usedIds.has(p.id));
+  const usedIds  = new Set(_plContacts.map(c => c.created_by));
+  const relevant = Object.values(state.profilesById).filter(p => usedIds.has(p.id));
+  if (relevant.length <= 1) { sel.style.display = 'none'; return; }
   sel.innerHTML = '<option value="">Tous les commerciaux</option>'
     + relevant.map(p => `<option value="${p.id}">${escapeHtml(p.prenom || p.nom || p.id)}</option>`).join('');
 }
 
-// ── Point d'entrée appelé par switchView ──
+// ═══════════════════════════════════════
+// REFRESH PARTIEL
+// ═══════════════════════════════════════
+
+function _plRefreshCard(contactId) {
+  const contact = _plContacts.find(c => c.id === contactId);
+  if (!contact) return;
+  const cardEl = document.getElementById(`pcard-${contactId}`);
+  if (!cardEl) return;
+  cardEl.outerHTML = _plCardHTML(contact);
+  _plInitCardEvents();
+}
+
+function _plInitCardEvents() {
+  document.removeEventListener('click', _plCloseMenus);
+  document.addEventListener('click', _plCloseMenus);
+}
+
+function _plCloseMenus(event) {
+  if (!event.target.closest('.pcard-priority-badge')) {
+    document.querySelectorAll('.pcard-priority-menu.open').forEach(m => m.classList.remove('open'));
+  }
+}
+
+// ═══════════════════════════════════════
+// POINT D'ENTRÉE
+// ═══════════════════════════════════════
+
 window.loadPipeline = async function() {
   await initPipeline();
-  _plBuildFilterSelect();
+  const searchEl = document.getElementById('pl-search');
+  if (searchEl) { searchEl.value = _plSearch; searchEl.oninput = _plApplySearch; }
 };
