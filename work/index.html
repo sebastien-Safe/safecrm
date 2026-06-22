@@ -764,7 +764,8 @@ async function initApp(token, user){
   await Promise.all([loadStats(), loadContacts(), loadJournal()]);
   loadNouveauxContrats();
   renderQuickAutomations();
-  showView('dashboard');
+  const urlView = new URLSearchParams(location.search).get('view');
+  showView(urlView && VIEWS.includes(urlView) ? urlView : 'dashboard');
   loadNouveauxContrats();
   loadModulesStatus();
 }
