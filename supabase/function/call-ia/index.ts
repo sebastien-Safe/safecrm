@@ -8,13 +8,14 @@ const CORS = {
 
 // Fournisseurs IA supportés — tous compatibles OpenAI sauf Anthropic
 const PROVIDERS: Record<string, { url: string; model: string; keyEnv: string; format: "openai" | "anthropic" }> = {
-  grok:      { url: "https://api.x.ai/v1/chat/completions",        model: "grok-3-mini",           keyEnv: "GROK_API_KEY",      format: "openai"    },
-  anthropic: { url: "https://api.anthropic.com/v1/messages",        model: "claude-haiku-4-5-20251001", keyEnv: "ANTHROPIC_API_KEY", format: "anthropic" },
-  mistral:   { url: "https://api.mistral.ai/v1/chat/completions",   model: "mistral-small-latest",  keyEnv: "MISTRAL_API_KEY",   format: "openai"    },
+  groq:      { url: "https://api.groq.com/openai/v1/chat/completions", model: "llama-3.3-70b-versatile", keyEnv: "GROQ_API_KEY",      format: "openai"    },
+  grok:      { url: "https://api.x.ai/v1/chat/completions",            model: "grok-3-mini",             keyEnv: "GROK_API_KEY",      format: "openai"    },
+  anthropic: { url: "https://api.anthropic.com/v1/messages",           model: "claude-haiku-4-5-20251001", keyEnv: "ANTHROPIC_API_KEY", format: "anthropic" },
+  mistral:   { url: "https://api.mistral.ai/v1/chat/completions",      model: "mistral-small-latest",    keyEnv: "MISTRAL_API_KEY",   format: "openai"    },
 };
 
 // Ordre de priorité si plusieurs connecteurs actifs
-const PRIORITY = ["grok", "anthropic", "mistral"];
+const PRIORITY = ["groq", "grok", "anthropic", "mistral"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });

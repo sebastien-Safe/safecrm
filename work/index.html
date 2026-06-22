@@ -831,8 +831,8 @@ async function loadModulesStatus() {
       sbGet('safe_connectors',       'select=service_key,statut&statut=in.(actif,simule)').catch(()=>[]),
     ]);
 
-    // Déterminer le connecteur IA actif (priorité grok > anthropic > mistral)
-    const IA_KEYS = ['grok', 'anthropic', 'mistral'];
+    // Déterminer le connecteur IA actif (priorité groq > grok > anthropic > mistral)
+    const IA_KEYS = ['groq', 'grok', 'anthropic', 'mistral'];
     const activeIA = IA_KEYS.map(k => conn.find(c => c.service_key === k)).find(Boolean);
     const iaLabel  = activeIA ? `🤖 ${activeIA.service_key.charAt(0).toUpperCase() + activeIA.service_key.slice(1)}` : null;
 

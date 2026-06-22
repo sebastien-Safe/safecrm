@@ -104,7 +104,7 @@
   }
 
   // ── Ordre de priorité IA ─────────────────────────────────────────────────
-  const IA_PRIORITY = ["grok", "anthropic", "mistral"];
+  const IA_PRIORITY = ["groq", "grok", "anthropic", "mistral"];
 
   /**
    * Retourne la service_key du premier connecteur IA actif (ou simulé).

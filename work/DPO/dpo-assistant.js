@@ -14,12 +14,13 @@ async function loadAssistant() {
   el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
 
   const db = window.supa || supa;
+  const { data: groqConn }  = await db.from('safe_connectors').select('statut,label').eq('service_key', 'groq').maybeSingle();
   const { data: grokConn }  = await db.from('safe_connectors').select('statut,label').eq('service_key', 'grok').maybeSingle();
   const { data: mistral }   = await db.from('safe_connectors').select('statut,label').eq('service_key', 'mistral').maybeSingle();
   const { data: anthropic } = await db.from('safe_connectors').select('statut,label').eq('service_key', 'anthropic').maybeSingle();
 
-  const anyActive  = [grokConn, mistral, anthropic].some(c => c?.statut === 'actif' || c?.statut === 'simule');
-  const activeConn = [grokConn, mistral, anthropic].find(c => c?.statut === 'actif' || c?.statut === 'simule');
+  const anyActive  = [groqConn, grokConn, mistral, anthropic].some(c => c?.statut === 'actif' || c?.statut === 'simule');
+  const activeConn = [groqConn, grokConn, mistral, anthropic].find(c => c?.statut === 'actif' || c?.statut === 'simule');
   const isDemo     = anyActive && activeConn?.statut === 'simule';
 
   el.innerHTML = `
