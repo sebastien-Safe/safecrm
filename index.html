@@ -252,9 +252,44 @@
         <button class="navlink dci-only" style="display:none" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
       </div>
 
+      <div class="nav-sep"></div>
+
+      <!-- Section Modules (repliable, ouverte par défaut) -->
+      <div class="sidebar-collapsible-head open" onclick="toggleSection('modules')">
+        <span class="sidebar-section-label">Modules</span>
+        <span class="sidebar-section-arrow" id="arrow-modules">▴</span>
+      </div>
+      <div class="sidebar-collapsible-body open" id="section-modules">
+        <a class="sidebar-item sidebar-sub" href="/work/SEO/module-seo-clients.html"><span class="ico">🚀</span> SEO</a>
+        <a class="sidebar-item sidebar-sub" href="/work/Cyber/module-cyber-clients.html"><span class="ico">💻</span> Cybersec</a>
+        <a class="sidebar-item sidebar-sub" href="/work/DPO/module-dpo-clients.html"><span class="ico">⚖️</span> DPO</a>
+        <a class="sidebar-item sidebar-sub" href="/work/Social/module-social-clients.html"><span class="ico">📱</span> Social</a>
+        <a class="sidebar-item sidebar-sub" href="/work/ClickCollect/module-clickcollect-clients.html"><span class="ico">🛒</span> Click &amp; Collect</a>
+      </div>
+
+      <div class="nav-sep"></div>
+
+      <!-- Section Réglages (repliable, fermée par défaut) -->
+      <div class="sidebar-collapsible-head" onclick="toggleSection('reglages')">
+        <span class="sidebar-section-label">Réglages</span>
+        <span class="sidebar-section-arrow" id="arrow-reglages">▾</span>
+      </div>
+      <div class="sidebar-collapsible-body" id="section-reglages">
+        <a class="sidebar-item sidebar-sub" href="/work/connecteurs.html"><span class="ico">🔌</span> Connecteurs</a>
+        <a class="sidebar-item sidebar-sub" href="https://github.com/sebastien-Safe/" target="_blank" rel="noopener">
+          <img src="/icons/tiers/github.svg" class="ico-img" alt="GitHub"> GitHub
+        </a>
+        <a class="sidebar-item sidebar-sub" href="https://supabase.com/dashboard/" target="_blank" rel="noopener">
+          <img src="/icons/tiers/supabase.svg" class="ico-img" alt="Supabase"> Supabase
+        </a>
+        <a class="sidebar-item sidebar-sub" href="vscode://">
+          <img src="/icons/tiers/vscode.svg" class="ico-img" alt="VSCode"> VSCode
+        </a>
+      </div>
+
+      <div class="nav-sep"></div>
+
       <!-- Section OUTILS (Admin uniquement) -->
-      <div class="nav-sep admin-only" style="display:none"></div>
-      <div class="nav-section-lbl admin-only" style="display:none">🛠️ OUTILS</div>
       <button class="navlink" id="lk-tasks" onclick="switchView('tasks')">✅ Tâches</button>
       <a href="/work/" class="navlink admin-only" style="display:none;text-decoration:none">🛡️ S@FE WORK</a>
       <button class="navlink admin-only" data-view="admin" style="display:none">⚙️ Administration</button>

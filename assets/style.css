@@ -106,6 +106,15 @@ button{font-family:var(--ff-body)}
 .sidebar-section-arrow{font-size:.6rem;color:#475569;transition:transform .2s;line-height:1}
 .sidebar-collapsible-body{overflow:hidden;max-height:0;transition:max-height .28s ease;display:flex;flex-direction:column;gap:4px}
 .sidebar-collapsible-body.open{max-height:500px}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;cursor:pointer;transition:.15s;font-size:.87rem;color:var(--mut-2);border:none;background:none;width:100%;text-align:left;text-decoration:none}
+.sidebar-item:hover{background:rgba(255,255,255,.05);color:#fff}
+.sidebar-item.active{background:rgba(59,130,246,.15);color:#fff;font-weight:600}
+.sidebar-item .ico{width:20px;text-align:center;font-size:1rem;flex-shrink:0}
+.sidebar-item .ico-img{width:16px;height:16px;object-fit:contain;flex-shrink:0;opacity:.7}
+.sidebar-item:hover .ico-img{opacity:1}
+.sidebar-divider{border:none;border-top:1px solid var(--line);margin:8px 0}
+.sidebar-sub{padding-left:22px!important;font-size:.84rem}
+a.sidebar-item{text-decoration:none}
 /* Carte secteur cockpit Résultats */
 .secteur-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;cursor:pointer;transition:border-color .15s,transform .15s;position:relative}
 .secteur-card:hover{border-color:var(--accent);transform:translateY(-2px)}
