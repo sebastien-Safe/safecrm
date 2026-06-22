@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S@FE CRM — Automatisation des Modules</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #060c1a;
+      --surface:  #0d1627;
+      --surface2: #162035;
+      --border:   #1e3356;
+      --text:     #e8f0fe;
+      --muted:    #7b93bc;
+      --gold:     #d4a843;
+
+      --c-stripe:  #635bff;
+      --c-auto:    #6366f1;
+      --c-claude:  #a855f7;
+      --c-client:  #f59e0b;
+      --c-safe:    #0ea5e9;
+      --c-brevo:   #10b981;
+      --c-pdf:     #f43f5e;
+
+      --c-dpo:     #3b82f6;
+      --c-cyber:   #ef4444;
+      --c-seo:     #22c55e;
+      --c-social:  #ec4899;
+      --c-collect: #f97316;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .site-header {
+      text-align: center;
+      padding: 56px 24px 40px;
+      background: radial-gradient(ellipse at 50% 0%,rgba(59,130,246,.18) 0%,transparent 65%);
+      position: relative;
+      overflow: hidden;
+    }
+    .site-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e3356' fill-opacity='0.3'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+      pointer-events: none;
+    }
+    .logo {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: var(--text);
+      position: relative;
+    }
+    .logo span { color: var(--gold); }
+    .site-header h1 {
+      font-size: clamp(18px,3.5vw,28px);
+      font-weight: 700;
+      margin: 8px 0 6px;
+      position: relative;
+    }
+    .site-header p { color: var(--muted); font-size: 15px; position: relative; }
+
+    /* ── NAV TABS ── */
+    .module-nav {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 14px 20px;
+      position: sticky;
+      top: 0;
+      background: rgba(6,12,26,.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      z-index: 200;
+    }
+    .module-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: 50px;
+      border: 2px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .22s ease;
+      user-select: none;
+    }
+    .module-tab:hover { color: var(--text); transform: translateY(-1px); }
+    .module-tab .ti { font-size: 16px; }
+
+    .module-tab[data-m="dpo"].active    { border-color:var(--c-dpo);    color:var(--c-dpo);    background:rgba(59,130,246,.12); }
+    .module-tab[data-m="cyber"].active  { border-color:var(--c-cyber);  color:var(--c-cyber);  background:rgba(239,68,68,.12); }
+    .module-tab[data-m="seo"].active    { border-color:var(--c-seo);    color:var(--c-seo);    background:rgba(34,197,94,.12); }
+    .module-tab[data-m="social"].active { border-color:var(--c-social); color:var(--c-social); background:rgba(236,72,153,.12); }
+    .module-tab[data-m="collect"].active{ border-color:var(--c-collect);color:var(--c-collect);background:rgba(249,115,22,.12); }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 11px;
+      border-radius: 50px;
+      font-size: 11.5px;
+      font-weight: 600;
+      border: 1px solid;
+      opacity: .85;
+    }
+    .legend-item.stripe  { color:var(--c-stripe);  border-color:rgba(99,91,255,.4); }
+    .legend-item.auto    { color:var(--c-auto);    border-color:rgba(99,102,241,.4); }
+    .legend-item.claude  { color:var(--c-claude);  border-color:rgba(168,85,247,.4); }
+    .legend-item.client  { color:var(--c-client);  border-color:rgba(245,158,11,.5); }
+    .legend-item.safe    { color:var(--c-safe);    border-color:rgba(14,165,233,.4); }
+    .legend-item.brevo   { color:var(--c-brevo);   border-color:rgba(16,185,129,.4); }
+    .legend-item.pdf     { color:var(--c-pdf);     border-color:rgba(244,63,94,.4); }
+
+    .filter-btn {
+      margin-left: 8px;
+      padding: 5px 14px;
+      border-radius: 50px;
+      border: 2px solid var(--c-client);
+      background: transparent;
+      color: var(--c-client);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .filter-btn:hover, .filter-btn.on {
+      background: rgba(245,158,11,.15);
+    }
+    .filter-btn.on { box-shadow: 0 0 12px rgba(245,158,11,.35); }
+
+    /* ── MODULE SECTIONS ── */
+    .module-section { display: none; padding: 28px 16px 72px; animation: fadeIn .35s ease; }
+    .module-section.active { display: block; }
+    @keyframes fadeIn { from {opacity:0;transform:translateY(8px);} to {opacity:1;transform:none;} }
+
+    /* Module header */
+    .mod-header {
+      text-align: center;
+      padding: 36px 24px 28px;
+      margin: 0 auto 36px;
+      max-width: 640px;
+      border-radius: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .mod-header::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%,var(--mc) 0%,transparent 70%);
+      opacity: .07;
+      pointer-events: none;
+    }
+    .mod-header .big-icon { font-size: 52px; display: block; margin-bottom: 10px; }
+    .mod-header h2 { font-size: 24px; font-weight: 800; margin-bottom: 5px; }
+    .mod-header p  { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+
+    .mod-stats {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .stat-chip {
+      padding: 5px 13px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid;
+    }
+    .stat-chip.auto   { color:var(--c-auto);   border-color:rgba(99,102,241,.5);  background:rgba(99,102,241,.08); }
+    .stat-chip.human  { color:var(--c-client); border-color:rgba(245,158,11,.5);  background:rgba(245,158,11,.08); }
+    .stat-chip.ai     { color:var(--c-claude); border-color:rgba(168,85,247,.5);  background:rgba(168,85,247,.08); }
+
+    /* ── FLOW ── */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    /* Trigger pill */
+    .trigger-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 24px;
+      border-radius: 50px;
+      background: rgba(99,91,255,.1);
+      border: 2px solid var(--c-stripe);
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 0 20px rgba(99,91,255,.2);
+      animation: triggerPulse 3s ease-in-out infinite;
+    }
+    @keyframes triggerPulse {
+      0%,100% { box-shadow:0 0 20px rgba(99,91,255,.2); }
+      50%     { box-shadow:0 0 32px rgba(99,91,255,.45); }
+    }
+    .trigger-pill .ti { font-size: 26px; }
+    .trigger-pill strong { display:block; font-size:14px; font-weight:700; }
+    .trigger-pill small  { font-size:11px; color:var(--muted); }
+
+    /* Connector */
+    .conn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 40px;
+      width: 3px;
+      position: relative;
+      margin: 2px 0;
+    }
+    .conn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 8px;
+      background: linear-gradient(to bottom,var(--mc,#6366f1),rgba(99,102,241,.2));
+    }
+    .conn::after {
+      content: '▼';
+      position: absolute;
+      bottom: -2px;
+      font-size: 11px;
+      color: var(--mc,#6366f1);
+      width: 20px;
+      text-align: center;
+      left: -8px;
+    }
+    .conn .flow-light {
+      position: absolute;
+      top: -100%;
+      left: 0; right: 0;
+      height: 50%;
+      background: linear-gradient(to bottom,transparent,rgba(255,255,255,.5),transparent);
+      animation: flowDown 2s linear infinite;
+    }
+    @keyframes flowDown { to { top: 200%; } }
+
+    /* Step card */
+    .step {
+      width: 100%;
+      max-width: 540px;
+      position: relative;
+    }
+    .step-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 16px;
+      border-radius: 14px;
+      border: 2px solid;
+      background: var(--surface);
+      transition: transform .18s, box-shadow .18s;
+      cursor: default;
+      position: relative;
+    }
+    .step-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+
+    .step-card[data-a="stripe"]{ border-color:var(--c-stripe); background:rgba(99,91,255,.06); }
+    .step-card[data-a="auto"]  { border-color:var(--c-auto);   background:rgba(99,102,241,.05); }
+    .step-card[data-a="claude"]{ border-color:var(--c-claude); background:rgba(168,85,247,.05); }
+    .step-card[data-a="brevo"] { border-color:var(--c-brevo);  background:rgba(16,185,129,.05); }
+    .step-card[data-a="pdf"]   { border-color:var(--c-pdf);    background:rgba(244,63,94,.05); }
+    .step-card[data-a="safe"]  { border-color:var(--c-safe);   background:rgba(14,165,233,.05); }
+
+    .step-card[data-a="client"] {
+      border-color: var(--c-client);
+      background: rgba(245,158,11,.07);
+      animation: humanGlow 2.5s ease-in-out infinite;
+    }
+    @keyframes humanGlow {
+      0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,.3); }
+      50%     { box-shadow: 0 0 0 8px rgba(245,158,11,0); }
+    }
+
+    /* Filter mode: hide non-client */
+    .filter-on .step-card:not([data-a="client"]) {
+      opacity: .15;
+      animation: none;
+      transform: none;
+      pointer-events: none;
+    }
+    .filter-on .step-card[data-a="client"] {
+      transform: scale(1.03);
+      box-shadow: 0 0 24px rgba(245,158,11,.4);
+    }
+    .filter-on .conn, .filter-on .parallel-block { opacity: .1; }
+
+    .si { font-size: 22px; flex-shrink: 0; }
+    .sc { flex: 1; min-width: 0; }
+    .sc strong { display:block; font-size:13.5px; font-weight:600; }
+    .sc small  { display:block; font-size:11.5px; color:var(--muted); margin-top:2px; }
+
+    .badge {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 50px;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+    }
+    [data-a="stripe"] .badge { background:rgba(99,91,255,.2);  color:var(--c-stripe); }
+    [data-a="auto"]   .badge { background:rgba(99,102,241,.2); color:var(--c-auto); }
+    [data-a="claude"] .badge { background:rgba(168,85,247,.2); color:var(--c-claude); }
+    [data-a="brevo"]  .badge { background:rgba(16,185,129,.2); color:var(--c-brevo); }
+    [data-a="pdf"]    .badge { background:rgba(244,63,94,.2);  color:var(--c-pdf); }
+    [data-a="safe"]   .badge { background:rgba(14,165,233,.2); color:var(--c-safe); }
+    [data-a="client"] .badge { background:rgba(245,158,11,.25);color:var(--c-client); }
+
+    /* Human badge flag */
+    .human-flag {
+      position: absolute;
+      top: -10px; right: 12px;
+      background: var(--c-client);
+      color: #000;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 9px;
+      border-radius: 50px;
+      letter-spacing: .3px;
+      white-space: nowrap;
+    }
+
+    /* ── PARALLEL BLOCK ── */
+    .parallel-block {
+      width: 100%;
+      max-width: 580px;
+      display: flex;
+      gap: 10px;
+    }
+    .pb { flex: 1; }
+    .pb .step-card { border-radius: 12px; padding: 10px 12px; }
+    .pb .si { font-size: 18px; }
+    .pb .sc strong { font-size: 12px; }
+    .pb .sc small  { font-size: 10.5px; }
+
+    /* ── SECTION DIVIDER ── */
+    .section-div {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 540px;
+      margin: 28px 0 12px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .section-div::before, .section-div::after {
+      content:''; flex:1; height:1px; background:var(--border);
+    }
+
+    /* ── RECURRING GRID ── */
+    .rec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+      gap: 10px;
+      width: 100%;
+      max-width: 540px;
+    }
+    .rec-card {
+      padding: 14px;
+      border-radius: 12px;
+      border: 1.5px dashed var(--border);
+      background: var(--surface);
+    }
+    .rec-head {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      margin-bottom: 6px;
+    }
+    .rec-card strong { font-size: 13px; display:block; margin-bottom: 3px; }
+    .rec-card small  { font-size: 11.5px; color: var(--muted); }
+
+    /* ── MODULE COLORS via CSS vars ── */
+    #mod-dpo    { --mc: var(--c-dpo); }
+    #mod-cyber  { --mc: var(--c-cyber); }
+    #mod-seo    { --mc: var(--c-seo); }
+    #mod-social { --mc: var(--c-social); }
+    #mod-collect{ --mc: var(--c-collect); }
+
+    /* Step-in animation with stagger */
+    .step, .trigger-pill, .parallel-block, .rec-grid {
+      animation: stepIn .4s ease both;
+    }
+    @keyframes stepIn {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:none; }
+    }
+
+    /* Responsive */
+    @media (max-width:520px) {
+      .parallel-block { flex-direction:column; }
+      .legend-item { font-size: 10px; padding: 3px 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">S<span>@</span>FE</div>
+  <h1>Automatisation des Modules CRM 🚀</h1>
+  <p>Du paiement Stripe au rapport client — zéro friction</p>
+</header>
+
+<!-- NAV -->
+<nav class="module-nav">
+  <button class="module-tab active" data-m="dpo">    <span class="ti">📋</span> RGPD · DPO</button>
+  <button class="module-tab"        data-m="cyber">  <span class="ti">🛡️</span> Cybersécurité</button>
+  <button class="module-tab"        data-m="seo">    <span class="ti">🔍</span> SEO</button>
+  <button class="module-tab"        data-m="social"> <span class="ti">📱</span> Social Media</button>
+  <button class="module-tab"        data-m="collect"><span class="ti">🛒</span> Click &amp; Collect</button>
+</nav>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="legend-item stripe">💳 Stripe</div>
+  <div class="legend-item auto">🤖 Auto</div>
+  <div class="legend-item claude"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</div>
+  <div class="legend-item client">👤 Client</div>
+  <div class="legend-item safe">👥 S@FE</div>
+  <div class="legend-item brevo">📧 Brevo</div>
+  <div class="legend-item pdf">📄 PDF</div>
+  <button class="filter-btn" id="filterBtn">⚡ Voir actions humaines</button>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MODULE : RGPD · DPO
+════════════════════════════════════════ -->
+<section class="module-section active" id="mod-dpo">
+
+  <div class="mod-header" style="--mc:var(--c-dpo)">
+    <span class="big-icon">📋</span>
+    <h2 style="color:var(--c-dpo)">Module RGPD · DPO</h2>
+    <p>Registre Art.30 · Analyse de risque · Mentions légales · Conformité totale</p>
+    <div class="mod-stats">
+      <div class="stat-chip auto">🤖 85% automatisé</div>
+      <div class="stat-chip human">👤 2 actions client</div>
+      <div class="stat-chip ai"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> 6 analyses S@FE</div>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <div class="trigger-pill">
+      <span class="ti">💳</span>
+      <div><strong>Paiement Stripe confirmé</strong><small>payment_intent.succeeded → Edge Function webhook</small></div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="auto">
+        <span class="si">🗄️</span>
+        <div class="sc"><strong>Création fiche client</strong><small>Supabase · profiles + modules_actifs · J+0</small></div>
+        <span class="badge">🤖 Auto</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="brevo">
+        <span class="si">📧</span>
+        <div class="sc"><strong>Email bienvenue DPO</strong><small>Brevo API · template onboarding · lien vers espace client</small></div>
+        <span class="badge">📧 Brevo</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <!-- PARALLEL -->
+    <div class="parallel-block">
+      <div class="pb">
+        <div class="step-card" data-a="claude">
+          <span class="si"><img src="favicon.png" alt="S@FE" style="height:20px;vertical-align:middle;border-radius:3px"></span>
+          <div class="sc"><strong>Créer registre Art.30</strong><small>S@FE génère le registre des traitements</small></div>
+          <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="client">
+          <div class="human-flag">⚡ Action client</div>
+          <span class="si">👤</span>
+          <div class="sc"><strong>Désigner DPO → CNIL</strong><small>Le client signe et valide la désignation officielle</small></div>
+          <span class="badge">👤 Client</span>
+        </div>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">📂</span>
+        <div class="sc"><strong>Créer fiche de traitement</strong><small>S@FE structure les données client par catégorie</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="auto">
+        <span class="si">✅</span>
+        <div class="sc"><strong>Créer tâches obligatoires</strong><small>Priorités P1 · P2 · P3 · échéances RGPD automatiques</small></div>
+        <span class="badge">🤖 Auto</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">⚖️</span>
+        <div class="sc"><strong>Générer analyse de risque</strong><small>S@FE évalue les risques sur les données personnelles · DPIA si requis</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">📜</span>
+        <div class="sc"><strong>Proposer bases légales</strong><small>Consentement · Intérêt légitime · Obligation légale · Contrat</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">🗂️</span>
+        <div class="sc"><strong>Classifier les traitements</strong><small>Catégories de données · sensibles ou non · durées de conservation</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">🔎</span>
+        <div class="sc"><strong>Vérifier conformité RGPD</strong><small>Checklist 72 points · Art. 13, 14, 30, 35 · score de conformité</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">📝</span>
+        <div class="sc"><strong>Générer mentions RGPD</strong><small>Politique de confidentialité · CGU · bandeau cookies · mentions légales</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="pdf">
+        <span class="si">📄</span>
+        <div class="sc"><strong>Générer rapport audit PDF</strong><small>jsPDF · rapport complet DPO · stocké dans Supabase Storage</small></div>
+        <span class="badge">📄 jsPDF</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="brevo">
+        <span class="si">📬</span>
+        <div class="sc"><strong>Envoyer rapport au client</strong><small>Brevo · Edge Function send-crm-email · lien PDF sécurisé</small></div>
+        <span class="badge">📧 Brevo</span>
+      </div>
+    </div>
+
+    <div class="section-div">🔄 Récurrent</div>
+
+    <div class="rec-grid">
+      <div class="rec-card">
+        <div class="rec-head">🤖 <span>Mensuel · J+30</span></div>
+        <strong>Rapport conformité RGPD</strong>
+        <small>Score · évolutions réglementaires · nouvelles obligations</small>
+      </div>
+      <div class="rec-card">
+        <div class="rec-head">👥 <span>Annuel</span></div>
+        <strong>Rappel renouvellement DPO</strong>
+        <small>S@FE envoie un rappel pour mise à jour du registre Art.30</small>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     MODULE : CYBERSÉCURITÉ
+════════════════════════════════════════ -->
+<section class="module-section" id="mod-cyber">
+
+  <div class="mod-header" style="--mc:var(--c-cyber)">
+    <span class="big-icon">🛡️</span>
+    <h2 style="color:var(--c-cyber)">Module Cybersécurité</h2>
+    <p>Audit complet · Score de sécurité · Remédiation guidée · Surveillance continue</p>
+    <div class="mod-stats">
+      <div class="stat-chip auto">🤖 80% automatisé</div>
+      <div class="stat-chip human">👤 2 actions client</div>
+      <div class="stat-chip ai"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> 5 analyses S@FE</div>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <div class="trigger-pill">
+      <span class="ti">💳</span>
+      <div><strong>Paiement Stripe confirmé</strong><small>payment_intent.succeeded → Edge Function webhook</small></div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="auto">
+        <span class="si">⚡</span>
+        <div class="sc"><strong>Activation module Cyber</strong><small>Supabase · profil sécurité créé · module actif</small></div>
+        <span class="badge">🤖 Auto</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="brevo">
+        <span class="si">📧</span>
+        <div class="sc"><strong>Email bienvenue Cybersécurité</strong><small>Brevo · instructions questionnaire initial · lien formulaire</small></div>
+        <span class="badge">📧 Brevo</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="client">
+        <div class="human-flag">⚡ Action client</div>
+        <span class="si">📝</span>
+        <div class="sc"><strong>Remplir questionnaire système</strong><small>Infrastructure réseau · outils · politique de sécurité actuelle · équipe IT</small></div>
+        <span class="badge">👤 Client</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si"><img src="favicon.png" alt="S@FE" style="height:20px;vertical-align:middle;border-radius:3px"></span>
+        <div class="sc"><strong>Audit initial automatique</strong><small>Réseau &amp; ports · mots de passe · apps web &amp; API · sauvegardes · droits d'accès</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">📊</span>
+        <div class="sc"><strong>Score de sécurité initial (0–100)</strong><small>Score global + note par domaine · tendance vs. secteur d'activité</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">🔴</span>
+        <div class="sc"><strong>Identifier vulnérabilités critiques</strong><small>CVE · mauvaises configs · expositions publiques · mots de passe faibles</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">🗺️</span>
+        <div class="sc"><strong>Créer plan de remédiation</strong><small>Étapes correctives classées · ordre de priorité · délais recommandés</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <!-- Tâches P1/P2/P3 -->
+    <div class="parallel-block">
+      <div class="pb">
+        <div class="step-card" data-a="auto" style="border-color:#ef4444">
+          <span class="si">🔴</span>
+          <div class="sc"><strong>P1 — Urgences</strong><small>À corriger en moins de 48h</small></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="auto" style="border-color:#f59e0b">
+          <span class="si">🟠</span>
+          <div class="sc"><strong>P2 — Important</strong><small>À corriger en moins de 30j</small></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="auto" style="border-color:#22c55e">
+          <span class="si">🟢</span>
+          <div class="sc"><strong>P3 — À planifier</strong><small>Amélioration continue</small></div>
+        </div>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="client">
+        <div class="human-flag">⚡ Action client</div>
+        <span class="si">🔧</span>
+        <div class="sc"><strong>Appliquer les correctifs P1</strong><small>Le client agit sur les urgences guidé pas à pas par S@FE</small></div>
+        <span class="badge">👤 Client</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">✅</span>
+        <div class="sc"><strong>Vérifier conformité ANSSI / ISO 27001</strong><small>Référentiels · gap analysis · recommandations certifications</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="pdf">
+        <span class="si">📄</span>
+        <div class="sc"><strong>Générer rapport audit Cyber PDF</strong><small>jsPDF · score + détail vulnérabilités + plan d'action classé</small></div>
+        <span class="badge">📄 jsPDF</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="brevo">
+        <span class="si">📬</span>
+        <div class="sc"><strong>Envoyer rapport au client</strong><small>Brevo · Edge Function send-crm-email · PDF sécurisé</small></div>
+        <span class="badge">📧 Brevo</span>
+      </div>
+    </div>
+
+    <div class="section-div">🔄 Récurrent</div>
+
+    <div class="rec-grid">
+      <div class="rec-card">
+        <div class="rec-head">🤖 <span>Mensuel · J+30</span></div>
+        <strong>Rapport Cyber mensuel</strong>
+        <small>Score · évolution · nouvelles vulnérabilités détectées</small>
+      </div>
+      <div class="rec-card">
+        <div class="rec-head">🚨 <span>Temps réel</span></div>
+        <strong>Alertes incidents</strong>
+        <small>S@FE alerte immédiatement si incident critique détecté</small>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     MODULE : SEO
+════════════════════════════════════════ -->
+<section class="module-section" id="mod-seo">
+
+  <div class="mod-header" style="--mc:var(--c-seo)">
+    <span class="big-icon">🔍</span>
+    <h2 style="color:var(--c-seo)">Module SEO</h2>
+    <p>Audit technique · Stratégie mots-clés · Positionnement Google automatique</p>
+    <div class="mod-stats">
+      <div class="stat-chip auto">🤖 80% automatisé</div>
+      <div class="stat-chip human">👤 2 actions client</div>
+      <div class="stat-chip ai"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> 5 analyses S@FE</div>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <div class="trigger-pill">
+      <span class="ti">💳</span>
+      <div><strong>Paiement Stripe confirmé</strong><small>payment_intent.succeeded → Edge Function webhook</small></div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="client">
+        <div class="human-flag">⚡ Action client</div>
+        <span class="si">🌐</span>
+        <div class="sc"><strong>Fournir URL site web + accès GSC</strong><small>URL du site · Google Search Console · Google Analytics · CMS utilisé</small></div>
+        <span class="badge">👤 Client</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="brevo">
+        <span class="si">📧</span>
+        <div class="sc"><strong>Email bienvenue SEO</strong><small>Brevo · guide démarrage + accès formulaire technique</small></div>
+        <span class="badge">📧 Brevo</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si"><img src="favicon.png" alt="S@FE" style="height:20px;vertical-align:middle;border-radius:3px"></span>
+        <div class="sc"><strong>Audit SEO initial complet</strong><small>Core Web Vitals · mots-clés · backlinks · structure · balises · concurrence</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <!-- Audit parallel categories -->
+    <div class="parallel-block">
+      <div class="pb">
+        <div class="step-card" data-a="claude" style="flex-direction:column;align-items:center;text-align:center;gap:4px">
+          <span class="si">⚡</span>
+          <div class="sc"><strong>Perf. technique</strong><small>Core Web Vitals</small></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="claude" style="flex-direction:column;align-items:center;text-align:center;gap:4px">
+          <span class="si">🎯</span>
+          <div class="sc"><strong>Mots-clés</strong><small>Volume · intent</small></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="claude" style="flex-direction:column;align-items:center;text-align:center;gap:4px">
+          <span class="si">🔗</span>
+          <div class="sc"><strong>Backlinks</strong><small>Qualité · DA</small></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="claude" style="flex-direction:column;align-items:center;text-align:center;gap:4px">
+          <span class="si">🏆</span>
+          <div class="sc"><strong>Concurrence</strong><small>Top 5 locaux</small></div>
+        </div>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">📊</span>
+        <div class="sc"><strong>Score SEO initial (0–100)</strong><small>Score global + note par catégorie · benchmark sectoriel</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">🎯</span>
+        <div class="sc"><strong>Proposer stratégie mots-clés</strong><small>Primaires · longue traîne · intention de recherche · clustering</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">🔧</span>
+        <div class="sc"><strong>Plan d'action technique SEO</strong><small>On-page · correctifs techniques · stratégie backlinks · maillage interne</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">📍</span>
+        <div class="sc"><strong>Recommandations Google Business Profile</strong><small>Fiche GMB · avis clients · photos · horaires · publications</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="pdf">
+        <span class="si">📄</span>
+        <div class="sc"><strong>Générer rapport audit SEO PDF</strong><small>jsPDF · rapport complet score + actions + calendrier</small></div>
+        <span class="badge">📄 jsPDF</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="brevo">
+        <span class="si">📬</span>
+        <div class="sc"><strong>Envoyer rapport au client</strong><small>Brevo · Edge Function send-crm-email · PDF sécurisé</small></div>
+        <span class="badge">📧 Brevo</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="client">
+        <div class="human-flag">⚡ Action client</div>
+        <span class="si">💻</span>
+        <div class="sc"><strong>Appliquer les recommandations</strong><small>Le client (ou son développeur) applique les correctifs techniques</small></div>
+        <span class="badge">👤 Client</span>
+      </div>
+    </div>
+
+    <div class="section-div">🔄 Récurrent</div>
+
+    <div class="rec-grid">
+      <div class="rec-card">
+        <div class="rec-head">🤖 <span>Mensuel · J+30</span></div>
+        <strong>Rapport SEO mensuel</strong>
+        <small>Positions · trafic organique · évolution du score</small>
+      </div>
+      <div class="rec-card">
+        <div class="rec-head">🚨 <span>Temps réel</span></div>
+        <strong>Alerte chute ranking</strong>
+        <small>S@FE notifie si chute &gt; 10 positions sur un mot-clé cible</small>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     MODULE : SOCIAL MEDIA
+════════════════════════════════════════ -->
+<section class="module-section" id="mod-social">
+
+  <div class="mod-header" style="--mc:var(--c-social)">
+    <span class="big-icon">📱</span>
+    <h2 style="color:var(--c-social)">Module Social Media</h2>
+    <p>Audit réseaux · Stratégie de contenu · Calendrier éditorial automatique</p>
+    <div class="mod-stats">
+      <div class="stat-chip auto">🤖 75% automatisé</div>
+      <div class="stat-chip human">👤 3 actions client</div>
+      <div class="stat-chip ai"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> 5 analyses S@FE</div>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <div class="trigger-pill">
+      <span class="ti">💳</span>
+      <div><strong>Paiement Stripe confirmé</strong><small>payment_intent.succeeded → Edge Function webhook</small></div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="client">
+        <div class="human-flag">⚡ Action client</div>
+        <span class="si">🔗</span>
+        <div class="sc"><strong>Fournir handles + accès réseaux sociaux</strong><small>Meta · Instagram · LinkedIn Pro · Google Business · TikTok</small></div>
+        <span class="badge">👤 Client</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="brevo">
+        <span class="si">📧</span>
+        <div class="sc"><strong>Email bienvenue Social Media</strong><small>Brevo · onboarding + formulaire audience cible</small></div>
+        <span class="badge">📧 Brevo</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <!-- Audit réseaux parallel -->
+    <div class="parallel-block">
+      <div class="pb">
+        <div class="step-card" data-a="claude" style="flex-direction:column;align-items:center;text-align:center;gap:4px">
+          <span class="si">📘</span>
+          <div class="sc"><strong>Meta / Facebook</strong><small>Audit complet</small></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="claude" style="flex-direction:column;align-items:center;text-align:center;gap:4px">
+          <span class="si">📸</span>
+          <div class="sc"><strong>Instagram</strong><small>Reels + feed</small></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="claude" style="flex-direction:column;align-items:center;text-align:center;gap:4px">
+          <span class="si">💼</span>
+          <div class="sc"><strong>LinkedIn Pro</strong><small>B2B · réseau</small></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="claude" style="flex-direction:column;align-items:center;text-align:center;gap:4px">
+          <span class="si">📍</span>
+          <div class="sc"><strong>Google Business</strong><small>Fiche + avis</small></div>
+        </div>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">🎯</span>
+        <div class="sc"><strong>Analyser audience cible</strong><small>Démographie · intérêts · comportements · heures de pic d'engagement</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">📣</span>
+        <div class="sc"><strong>Générer stratégie de contenu</strong><small>Piliers de contenu · ton éditorial · fréquence · formats par réseau</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">📅</span>
+        <div class="sc"><strong>Créer calendrier éditorial 30 jours</strong><small>Posts · Stories · Reels · Vidéos planifiés avec hashtags</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="client">
+        <div class="human-flag">⚡ Action client</div>
+        <span class="si">✍️</span>
+        <div class="sc"><strong>Valider la stratégie + le calendrier</strong><small>Le client valide ou ajuste les thématiques avant publication</small></div>
+        <span class="badge">👤 Client</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">📝</span>
+        <div class="sc"><strong>Proposer templates de posts</strong><small>10 templates réutilisables par réseau · visuels + textes + CTA</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="pdf">
+        <span class="si">📄</span>
+        <div class="sc"><strong>Générer rapport audit Social PDF</strong><small>jsPDF · stratégie + calendrier + templates + KPIs</small></div>
+        <span class="badge">📄 jsPDF</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="brevo">
+        <span class="si">📬</span>
+        <div class="sc"><strong>Envoyer rapport au client</strong><small>Brevo · Edge Function send-crm-email</small></div>
+        <span class="badge">📧 Brevo</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="client">
+        <div class="human-flag">⚡ Action client</div>
+        <span class="si">🚀</span>
+        <div class="sc"><strong>Publier le contenu selon le calendrier</strong><small>Le client publie ou délègue à S@FE (option Community Management)</small></div>
+        <span class="badge">👤 Client</span>
+      </div>
+    </div>
+
+    <div class="section-div">🔄 Récurrent</div>
+
+    <div class="rec-grid">
+      <div class="rec-card">
+        <div class="rec-head">🤖 <span>Mensuel · J+30</span></div>
+        <strong>Rapport Social mensuel</strong>
+        <small>Engagement · portée · croissance abonnés · meilleurs posts</small>
+      </div>
+      <div class="rec-card">
+        <div class="rec-head"><img src="favicon.png" alt="S@FE" style="height:11px;vertical-align:middle;border-radius:2px"> <span>Mensuel</span></div>
+        <strong>Calendrier contenu nouveau mois</strong>
+        <small>S@FE génère automatiquement le calendrier du mois suivant</small>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     MODULE : CLICK & COLLECT
+════════════════════════════════════════ -->
+<section class="module-section" id="mod-collect">
+
+  <div class="mod-header" style="--mc:var(--c-collect)">
+    <span class="big-icon">🛒</span>
+    <h2 style="color:var(--c-collect)">Module Click &amp; Collect</h2>
+    <p>Configuration boutique · Emails automatiques · Conformité e-commerce</p>
+    <div class="mod-stats">
+      <div class="stat-chip auto">🤖 70% automatisé</div>
+      <div class="stat-chip human">👤 3 actions client</div>
+      <div class="stat-chip ai"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> 3 analyses S@FE</div>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <div class="trigger-pill">
+      <span class="ti">💳</span>
+      <div><strong>Paiement Stripe confirmé</strong><small>payment_intent.succeeded → Edge Function webhook</small></div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="client">
+        <div class="human-flag">⚡ Action client</div>
+        <span class="si">🏪</span>
+        <div class="sc"><strong>Fournir infos boutique</strong><small>Horaires · zones de retrait · délais de préparation · stock minimum</small></div>
+        <span class="badge">👤 Client</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="brevo">
+        <span class="si">📧</span>
+        <div class="sc"><strong>Email bienvenue Click &amp; Collect</strong><small>Brevo · guide configuration + formulaire paramétrage boutique</small></div>
+        <span class="badge">📧 Brevo</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">⚙️</span>
+        <div class="sc"><strong>Configurer paramètres boutique</strong><small>Horaires · zones géo · délais · stocks minimum · moyens de paiement</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <!-- Config parallel -->
+    <div class="parallel-block">
+      <div class="pb">
+        <div class="step-card" data-a="auto" style="flex-direction:column;align-items:center;text-align:center;gap:4px">
+          <span class="si">🕐</span>
+          <div class="sc"><strong>Horaires retrait</strong></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="auto" style="flex-direction:column;align-items:center;text-align:center;gap:4px">
+          <span class="si">📍</span>
+          <div class="sc"><strong>Zones géo</strong></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="auto" style="flex-direction:column;align-items:center;text-align:center;gap:4px">
+          <span class="si">⏱️</span>
+          <div class="sc"><strong>Délais prépa</strong></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="auto" style="flex-direction:column;align-items:center;text-align:center;gap:4px">
+          <span class="si">📦</span>
+          <div class="sc"><strong>Stocks mini</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">📜</span>
+        <div class="sc"><strong>Générer mentions légales e-commerce</strong><small>CGV · politique de retrait · mentions obligatoires · droit de rétractation</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="auto">
+        <span class="si">📨</span>
+        <div class="sc"><strong>Créer 5 emails automatiques clients</strong><small>Templates Brevo configurés et opérationnels dès l'activation</small></div>
+        <span class="badge">🤖 Auto</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <!-- Emails auto parallel -->
+    <div class="parallel-block">
+      <div class="pb">
+        <div class="step-card" data-a="auto" style="flex-direction:column;align-items:center;text-align:center;gap:3px;padding:10px 8px">
+          <span class="si">✅</span>
+          <div class="sc"><strong style="font-size:11px">Confirmation</strong></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="auto" style="flex-direction:column;align-items:center;text-align:center;gap:3px;padding:10px 8px">
+          <span class="si">👨‍🍳</span>
+          <div class="sc"><strong style="font-size:11px">En prépa</strong></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="auto" style="flex-direction:column;align-items:center;text-align:center;gap:3px;padding:10px 8px">
+          <span class="si">👜</span>
+          <div class="sc"><strong style="font-size:11px">Prêt !</strong></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="auto" style="flex-direction:column;align-items:center;text-align:center;gap:3px;padding:10px 8px">
+          <span class="si">⏰</span>
+          <div class="sc"><strong style="font-size:11px">Rappel J+2</strong></div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="step-card" data-a="auto" style="flex-direction:column;align-items:center;text-align:center;gap:3px;padding:10px 8px">
+          <span class="si">❌</span>
+          <div class="sc"><strong style="font-size:11px">Annulation</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="claude">
+        <span class="si">✅</span>
+        <div class="sc"><strong>Vérifier conformité CGV / RGPD e-commerce</strong><small>Directive e-commerce · rétractation · mentions obligatoires · cookies</small></div>
+        <span class="badge"><img src="favicon.png" alt="S@FE" style="height:13px;vertical-align:middle;border-radius:2px;margin-right:2px"> S@FE</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="client">
+        <div class="human-flag">⚡ Action client</div>
+        <span class="si">👁️</span>
+        <div class="sc"><strong>Valider la configuration boutique</strong><small>Le client vérifie les paramètres avant la mise en ligne officielle</small></div>
+        <span class="badge">👤 Client</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="pdf">
+        <span class="si">📄</span>
+        <div class="sc"><strong>Générer rapport mise en service PDF</strong><small>jsPDF · config complète + CGV + guide utilisateur client</small></div>
+        <span class="badge">📄 jsPDF</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="brevo">
+        <span class="si">📬</span>
+        <div class="sc"><strong>Envoyer rapport au client</strong><small>Brevo · Edge Function send-crm-email</small></div>
+        <span class="badge">📧 Brevo</span>
+      </div>
+    </div>
+    <div class="conn"><div class="flow-light"></div></div>
+
+    <div class="step">
+      <div class="step-card" data-a="client">
+        <div class="human-flag">⚡ Action continue</div>
+        <span class="si">📦</span>
+        <div class="sc"><strong>Gérer commandes physiques + stocks</strong><small>Le client gère les préparations et les stocks au quotidien</small></div>
+        <span class="badge">👤 Client</span>
+      </div>
+    </div>
+
+    <div class="section-div">🔄 Récurrent</div>
+
+    <div class="rec-grid">
+      <div class="rec-card">
+        <div class="rec-head">🤖 <span>Mensuel · J+30</span></div>
+        <strong>Rapport C&amp;C mensuel</strong>
+        <small>Commandes · CA · taux de retrait · panier moyen</small>
+      </div>
+      <div class="rec-card">
+        <div class="rec-head">🚨 <span>Temps réel</span></div>
+        <strong>Alertes stock / erreurs</strong>
+        <small>S@FE alerte si stock bas ou erreur commande détectée</small>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  // ── TAB SWITCHING ──
+  const tabs = document.querySelectorAll('.module-tab');
+  const sections = document.querySelectorAll('.module-section');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const m = tab.dataset.m;
+      tabs.forEach(t => t.classList.remove('active'));
+      sections.forEach(s => s.classList.remove('active'));
+      tab.classList.add('active');
+      const sec = document.getElementById('mod-' + m);
+      sec.classList.add('active');
+      // Stagger cards
+      staggerCards(sec);
+      sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  function staggerCards(sec) {
+    const cards = sec.querySelectorAll('.step, .trigger-pill, .parallel-block, .rec-grid');
+    cards.forEach((el, i) => {
+      el.style.animation = 'none';
+      el.offsetHeight; // reflow
+      el.style.animation = `stepIn .4s ease ${i * 0.04}s both`;
+    });
+  }
+
+  // ── FILTER TOGGLE ──
+  const filterBtn = document.getElementById('filterBtn');
+  let filterOn = false;
+
+  filterBtn.addEventListener('click', () => {
+    filterOn = !filterOn;
+    filterBtn.classList.toggle('on', filterOn);
+    filterBtn.textContent = filterOn ? '✅ Toutes les étapes' : '⚡ Voir actions humaines';
+    sections.forEach(s => s.classList.toggle('filter-on', filterOn));
+  });
+
+  // Init stagger on load
+  staggerCards(document.querySelector('.module-section.active'));
+</script>
+</body>
+</html>
