@@ -246,21 +246,81 @@ function sendRapportSeo() {
    <button class="btn btn-pri" id="seo-rap-send-btn" onclick="_envoyerRapportSeo()">✉️ Envoyer</button>`);
 }
 
+function _genSeoRapportPDF(objet, contenu, clientNom, dateRapport) {
+  const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+  if (!jsPDF) return null;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, mg = 18, cW = W - 2 * mg;
+
+  // En-tête vert SEO
+  doc.setFillColor(6, 78, 59);
+  doc.rect(0, 0, W, 34, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20); doc.setFont('helvetica', 'bold');
+  doc.text('S@FE', mg, 16);
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+  doc.setTextColor(167, 243, 208);
+  doc.text('Rapport SEO — Référencement local', mg, 25);
+
+  // Client + date
+  let y = 44;
+  doc.setTextColor(100, 116, 139); doc.setFontSize(8);
+  doc.text(`CLIENT : ${clientNom.toUpperCase()}`, mg, y);
+  doc.text(`DATE : ${dateRapport}`, W - mg, y, { align: 'right' });
+  doc.setDrawColor(6, 78, 59); doc.setLineWidth(0.4);
+  doc.line(mg, y + 3, W - mg, y + 3);
+
+  // Objet
+  y = 56;
+  doc.setTextColor(6, 78, 59); doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+  const objetL = doc.splitTextToSize(objet, cW);
+  doc.text(objetL, mg, y);
+  y += objetL.length * 6 + 6;
+
+  // Contenu
+  const plain = contenu.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/#{1,4}\s/g, '').replace(/`([^`]+)`/g, '$1');
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(51, 65, 85);
+  const lines = doc.splitTextToSize(plain, cW);
+  for (const line of lines) {
+    if (y > H - 20) { doc.addPage(); y = 20; }
+    doc.text(line, mg, y); y += 5;
+  }
+
+  // Pied de page
+  const total = doc.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
+    doc.setPage(i);
+    doc.setFillColor(6, 78, 59); doc.rect(0, H - 11, W, 11, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFontSize(7);
+    doc.text('S@FE Digitalisation — Document confidentiel', mg, H - 4);
+    doc.text(`Page ${i}/${total}`, W - mg, H - 4, { align: 'right' });
+  }
+
+  return doc.output('datauristring').split(',')[1];
+}
+
 async function _envoyerRapportSeo() {
   const objet   = document.getElementById('seo-rap-objet')?.value?.trim();
   const contenu = document.getElementById('seo-rap-contenu')?.value?.trim();
   if (!objet || !contenu) { toast('Complétez l\'objet et le contenu', 'warn'); return; }
 
   const btn = document.getElementById('seo-rap-send-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Envoi…'; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Génération PDF…'; }
 
   try {
+    const clientNom = currentContact.entreprise || `${currentContact.prenom || ''} ${currentContact.nom || ''}`.trim() || 'Client';
+    const dateRapport = new Date().toLocaleDateString('fr-FR');
+    const pdf_base64 = _genSeoRapportPDF(objet, contenu, clientNom, dateRapport);
+
+    if (btn) btn.textContent = '⏳ Envoi…';
+
     const { error } = await (window.supa || supa).functions.invoke('send-crm-email', {
       body: {
         type:       'rapport_seo',
         contact_id: currentContact.id,
         objet,
         contenu,
+        pdf_base64,
       },
     });
 

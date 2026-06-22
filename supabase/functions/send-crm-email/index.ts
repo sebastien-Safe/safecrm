@@ -74,6 +74,7 @@ serve(async (req) => {
     to:          { email: string; name: string },
     htmlContent: string,
     replyTo?:    { email: string; name: string },
+    attachment?: { name: string; content: string },
   ) {
     const payload: Record<string, unknown> = {
       sender:      { name: "S@FE", email: "noreply@safe-digitalisation.fr" },
@@ -81,7 +82,8 @@ serve(async (req) => {
       subject,
       htmlContent,
     };
-    if (replyTo) payload.replyTo = replyTo;
+    if (replyTo)    payload.replyTo    = replyTo;
+    if (attachment) payload.attachment = [attachment];
     const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method:  "POST",
       headers: { "api-key": BREVO!, "Content-Type": "application/json" },
@@ -262,7 +264,7 @@ serve(async (req) => {
 
   // ── RAPPORT DPO PAR EMAIL ─────────────────────────────────────────────
   if (type === "rapport_dpo") {
-    const { contact_id, objet, contenu } = body;
+    const { contact_id, objet, contenu, pdf_base64 } = body;
 
     const [{ data: contact }, commercial] = await Promise.all([
       sb.from("contacts").select("nom, prenom, email, entreprise").eq("id", contact_id).maybeSingle(),
@@ -353,11 +355,150 @@ serve(async (req) => {
 </body>
 </html>`;
 
+    const dpoAttachment = pdf_base64
+      ? { name: `Rapport-RGPD-${clientNom.replace(/[^a-z0-9]/gi, "_")}-${dateRapport.replace(/\//g, "-")}.pdf`, content: String(pdf_base64) }
+      : undefined;
+
     await sendBrevoHtml(
       sujet,
       { email: contact.email, name: clientNom },
       html,
       { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}` },
+      dpoAttachment,
+    );
+
+    return json({ ok: true });
+  }
+
+  // ── RAPPORT SEO PAR EMAIL ─────────────────────────────────────────────
+  if (type === "rapport_seo") {
+    const { contact_id, objet, contenu, pdf_base64 } = body;
+
+    const [{ data: contact }, commercial] = await Promise.all([
+      sb.from("contacts").select("nom, prenom, email, entreprise").eq("id", contact_id).maybeSingle(),
+      getCommercial(user.id),
+    ]);
+
+    if (!contact?.email) return json({ ok: true, skipped: "no contact email" });
+
+    const clientNom   = contact.entreprise || `${contact.prenom || ""} ${contact.nom || ""}`.trim();
+    const firstName   = contact.prenom || contact.nom || "Client";
+    const dateRapport = new Date().toLocaleDateString("fr-FR");
+    const sujet       = String(objet || `Rapport SEO — ${dateRapport}`);
+
+    const htmlContenu = escTs(contenu || "")
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\n/g, "<br>");
+
+    const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escTs(sujet)}</title>
+</head>
+<body style="margin:0;padding:0;background:#f0faf5;font-family:Arial,Helvetica,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0faf5;padding:32px 16px">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;max-width:600px;width:100%">
+
+  <!-- EN-TÊTE -->
+  <tr><td style="background:#064e3b;padding:28px 32px;text-align:center">
+    <div style="font-family:Arial,sans-serif;font-size:26px;font-weight:800;color:#6ee7b7;letter-spacing:.02em">
+      S<span style="color:#ffffff">@</span>FE
+    </div>
+    <div style="color:#a7f3d0;font-size:12px;margin-top:6px;letter-spacing:.08em;text-transform:uppercase">
+      Rapport SEO — Référencement local
+    </div>
+  </td></tr>
+
+  <!-- BANDEAU DATE -->
+  <tr><td style="background:#ecfdf5;border-bottom:2px solid #d1fae5;padding:12px 36px">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="font-size:13px;color:#065f46;font-weight:600">🔍 Analyse SEO locale</td>
+        <td style="text-align:right;font-size:12px;color:#6b7280">Rapport du ${dateRapport}</td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <!-- CORPS -->
+  <tr><td style="padding:36px 36px 28px">
+    <p style="color:#1e293b;font-size:15px;margin:0 0 18px">
+      Bonjour <strong>${escTs(firstName)}</strong>,
+    </p>
+    <p style="color:#475569;font-size:14px;margin:0 0 20px;line-height:1.6">
+      Voici votre rapport de suivi SEO du <strong>${dateRapport}</strong>.
+      Ce document synthétise nos recommandations pour améliorer votre visibilité en ligne.
+    </p>
+
+    <!-- Objet du rapport -->
+    <div style="border-left:3px solid #10b981;padding:10px 16px;background:#f0fdf4;
+      border-radius:2px;margin-bottom:22px">
+      <span style="font-size:13px;font-weight:700;color:#065f46">${escTs(sujet)}</span>
+    </div>
+
+    <!-- Contenu du rapport -->
+    <div style="background:#f8fafc;border:1px solid #d1fae5;border-radius:8px;
+      padding:24px 28px;font-size:14px;color:#334155;line-height:1.75">
+      ${htmlContenu}
+    </div>
+
+    <!-- Rappel services -->
+    <div style="margin-top:24px;background:#ecfdf5;border-radius:8px;padding:16px 20px">
+      <p style="font-size:12px;color:#065f46;font-weight:700;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em">
+        🌐 Nos services SEO local
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="font-size:12px;color:#374151;padding:3px 0">📍 Google Business Profile</td>
+          <td style="font-size:12px;color:#374151;padding:3px 0">🔑 Mots-clés locaux</td>
+        </tr>
+        <tr>
+          <td style="font-size:12px;color:#374151;padding:3px 0">✍️ Rédaction SEO</td>
+          <td style="font-size:12px;color:#374151;padding:3px 0">🔗 Netlinking local</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Signature -->
+    <div style="margin-top:32px;padding-top:22px;border-top:1px solid #e2e8f0">
+      <p style="color:#475569;font-size:14px;margin:0 0 6px">Cordialement,</p>
+      <p style="color:#1e293b;font-size:14px;font-weight:700;margin:0">
+        ${escTs(commercial.prenom)} ${escTs(commercial.nom)}
+      </p>
+      <p style="color:#64748b;font-size:12px;margin:4px 0 0">
+        ${escTs(commercial.titre)} — S@FE Digitalisation
+      </p>
+    </div>
+  </td></tr>
+
+  <!-- PIED DE PAGE -->
+  <tr><td style="background:#ecfdf5;border-top:1px solid #d1fae5;padding:18px 36px;text-align:center">
+    <p style="color:#6b7280;font-size:11px;margin:0 0 4px">
+      Ce rapport est confidentiel et destiné uniquement à ${escTs(clientNom)}.
+    </p>
+    <p style="color:#6b7280;font-size:11px;margin:0">
+      S@FE Digitalisation — Référencement local pour TPE/PME
+    </p>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+
+    const seoAttachment = pdf_base64
+      ? { name: `Rapport-SEO-${clientNom.replace(/[^a-z0-9]/gi, "_")}-${dateRapport.replace(/\//g, "-")}.pdf`, content: String(pdf_base64) }
+      : undefined;
+
+    await sendBrevoHtml(
+      sujet,
+      { email: contact.email, name: clientNom },
+      html,
+      { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}` },
+      seoAttachment,
     );
 
     return json({ ok: true });

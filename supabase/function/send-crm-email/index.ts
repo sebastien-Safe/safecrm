@@ -74,6 +74,7 @@ serve(async (req) => {
     to:          { email: string; name: string },
     htmlContent: string,
     replyTo?:    { email: string; name: string },
+    attachment?: { name: string; content: string },
   ) {
     const payload: Record<string, unknown> = {
       sender:      { name: "S@FE", email: "noreply@safe-digitalisation.fr" },
@@ -81,7 +82,8 @@ serve(async (req) => {
       subject,
       htmlContent,
     };
-    if (replyTo) payload.replyTo = replyTo;
+    if (replyTo)    payload.replyTo    = replyTo;
+    if (attachment) payload.attachment = [attachment];
     const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method:  "POST",
       headers: { "api-key": BREVO!, "Content-Type": "application/json" },
@@ -262,7 +264,7 @@ serve(async (req) => {
 
   // ── RAPPORT DPO PAR EMAIL ─────────────────────────────────────────────
   if (type === "rapport_dpo") {
-    const { contact_id, objet, contenu } = body;
+    const { contact_id, objet, contenu, pdf_base64 } = body;
 
     const [{ data: contact }, commercial] = await Promise.all([
       sb.from("contacts").select("nom, prenom, email, entreprise").eq("id", contact_id).maybeSingle(),
@@ -353,11 +355,16 @@ serve(async (req) => {
 </body>
 </html>`;
 
+    const dpoAttachment = pdf_base64
+      ? { name: `Rapport-RGPD-${clientNom.replace(/[^a-z0-9]/gi, "_")}-${dateRapport.replace(/\//g, "-")}.pdf`, content: String(pdf_base64) }
+      : undefined;
+
     await sendBrevoHtml(
       sujet,
       { email: contact.email, name: clientNom },
       html,
       { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}` },
+      dpoAttachment,
     );
 
     return json({ ok: true });
@@ -365,7 +372,7 @@ serve(async (req) => {
 
   // ── RAPPORT SEO PAR EMAIL ─────────────────────────────────────────────
   if (type === "rapport_seo") {
-    const { contact_id, objet, contenu } = body;
+    const { contact_id, objet, contenu, pdf_base64 } = body;
 
     const [{ data: contact }, commercial] = await Promise.all([
       sb.from("contacts").select("nom, prenom, email, entreprise").eq("id", contact_id).maybeSingle(),
@@ -482,11 +489,16 @@ serve(async (req) => {
 </body>
 </html>`;
 
+    const seoAttachment = pdf_base64
+      ? { name: `Rapport-SEO-${clientNom.replace(/[^a-z0-9]/gi, "_")}-${dateRapport.replace(/\//g, "-")}.pdf`, content: String(pdf_base64) }
+      : undefined;
+
     await sendBrevoHtml(
       sujet,
       { email: contact.email, name: clientNom },
       html,
       { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}` },
+      seoAttachment,
     );
 
     return json({ ok: true });
