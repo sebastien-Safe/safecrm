@@ -17,7 +17,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return new Response("not allowed", { status: 405 });
 
-  const BREVO = Deno.env.get("BREBO");
+  const BREVO = Deno.env.get("BREVO");
   if (!BREVO) {
     return new Response(JSON.stringify({ error: "BREVO non configuré" }), {
       status: 500, headers: { ...CORS, "Content-Type": "application/json" },

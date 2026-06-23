@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST')    return json({ error: 'bad_method' }, 405);
 
-  const BREVO        = Deno.env.get('BREBO');
+  const BREVO        = Deno.env.get('BREVO');
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
   const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 

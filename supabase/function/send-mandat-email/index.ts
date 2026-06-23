@@ -27,7 +27,7 @@ serve(async (req) => {
 
   const SB_URL  = Deno.env.get("SUPABASE_URL")!;
   const SB_ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
-  const BREVO   = Deno.env.get("BREBO");
+  const BREVO   = Deno.env.get("BREVO");
 
   if (!BREVO) {
     return new Response(JSON.stringify({ error: "BREVO non configuré" }), {

@@ -204,7 +204,7 @@ async function envoyerFacture(sb: ReturnType<typeof createClient>, opts: {
   });
 
   // Envoi Brevo
-  const BREVO = Deno.env.get("BREBO");
+  const BREVO = Deno.env.get("BREVO");
   if (!BREVO) return;
 
   const clientNom    = contact.entreprise || `${contact.prenom || ""} ${contact.nom || ""}`.trim();
@@ -261,18 +261,18 @@ serve(async (req) => {
   const body   = await req.text();
   const now    = new Date().toISOString();
 
+  if (!WEBHOOK_SECRET) {
+    console.error("STRIPE_WEBHOOK_SECRET manquant — webhook rejeté");
+    return new Response("webhook not configured", { status: 500 });
+  }
+  const sig = req.headers.get("stripe-signature");
+  if (!sig) return new Response("missing sig", { status: 400 });
   let event: Stripe.Event;
-  if (WEBHOOK_SECRET) {
-    const sig = req.headers.get("stripe-signature");
-    if (!sig) return new Response("missing sig", { status: 400 });
-    try {
-      event = stripe.webhooks.constructEvent(body, sig, WEBHOOK_SECRET);
-    } catch (e) {
-      console.error("Webhook signature error:", e);
-      return new Response("bad sig", { status: 400 });
-    }
-  } else {
-    event = JSON.parse(body);
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, WEBHOOK_SECRET);
+  } catch (e) {
+    console.error("Webhook signature error:", e);
+    return new Response("bad sig", { status: 400 });
   }
 
   async function contractBySubId(subId: string) {
@@ -380,7 +380,7 @@ serve(async (req) => {
           next_payment_attempt: invoice.next_payment_attempt,
         });
         // Email client : paiement refusé
-        const BREVO = Deno.env.get("BREBO");
+        const BREVO = Deno.env.get("BREVO");
         if (BREVO && ct.contact_id) {
           const [{ data: contact }, commercial] = await Promise.all([
             sb.from("contacts").select("nom, prenom, entreprise, email").eq("id", ct.contact_id).maybeSingle(),
