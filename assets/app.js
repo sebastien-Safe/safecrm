@@ -461,10 +461,6 @@ async function loadUnreadMessages() {
   state.unreadMessages = data || [];
 }
 
-function isAdmin() {
-  return !!state.profile?.is_admin;
-}
-
 function creatorName(userId) {
   if (!userId) return '—';
   const p = state.profilesById?.[userId];
