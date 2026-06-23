@@ -87,6 +87,15 @@ function gaugeSvg(pct) {
 // → déplacé dans contacts/contacts.js : CONTACT_STATUT_BADGE, ACTIVITE_BADGE, CONTACT_FIELD_IDS, CONTACT_CONSENT_IDS, contactName
 // → déplacé dans contracts/contracts.js : CONTRACT_STATUT_BADGE
 const PRIORITY_BADGE = { 'Basse': 'badge-gray', 'Normale': 'badge-blue', 'Haute': 'badge-red' };
+
+function showCrmToast(html, duration = 8000) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:28px;right:28px;z-index:9999;background:#1e293b;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 18px;color:#f1f5f9;font-size:.88rem;box-shadow:0 8px 24px rgba(0,0,0,.5);display:flex;align-items:center;gap:12px;max-width:380px;animation:fadeInUp .25s ease';
+  t.innerHTML = html;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, duration);
+  return t;
+}
 const TASK_TYPE_BADGE = { 'Premier contact': 'badge-blue', 'RDV visio': 'badge-gold', 'RDV terrain': 'badge-green', 'Autre': 'badge-gray' };
 
 // → déplacé dans contracts/contracts.js : CONTRACT_ICONS, getContractIcon, FORMULE_PRESETS, FORMULE_CUSTOM, COMMISSION_FALLBACK

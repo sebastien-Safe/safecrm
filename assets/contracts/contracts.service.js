@@ -9,6 +9,28 @@ async function loadContracts() {
   state.contracts = data || [];
 }
 
+// Mapping statut contrat → colonne kanban (ordre croissant du funnel)
+const _KANBAN_COL_ORDER = ['prospect','devis_envoye','signe','en_cours','livre','resilie'];
+const _STATUT_TO_KANBAN = {
+  'En attente de signature': 'devis_envoye',
+  'Envoyé':                  'devis_envoye',
+  'Contrat en cours':        'en_cours',
+  'Terminé':                 'livre',
+  'Résilié':                 'resilie',
+  'Demande de résiliation':  'resilie',
+};
+
+async function _advanceKanban(contact_id, targetCol) {
+  const contact = state.contacts.find(c => c.id === contact_id);
+  if (!contact) return;
+  const currentIdx = _KANBAN_COL_ORDER.indexOf(contact.kanban_col || 'prospect');
+  const targetIdx  = _KANBAN_COL_ORDER.indexOf(targetCol);
+  // Avancer uniquement (jamais reculer), sauf pour la résiliation qui est toujours prioritaire
+  if (targetCol !== 'resilie' && targetIdx <= currentIdx) return;
+  await sb.from('contacts').update({ kanban_col: targetCol }).eq('id', contact_id);
+  contact.kanban_col = targetCol;
+}
+
 async function saveContract() {
   const id = $('#ct-id').value;
   const contact_id = $('#ct-contact').value;
@@ -46,11 +68,14 @@ async function saveContract() {
     return;
   }
 
+  let savedId = id;
   let error;
   if (id) {
     ({ error } = await sb.from('contracts').update(payload).eq('id', id));
   } else {
-    ({ error } = await sb.from('contracts').insert({ ...payload, created_by: state.user.id }));
+    let data;
+    ({ data, error } = await sb.from('contracts').insert({ ...payload, created_by: state.user.id }).select('id').single());
+    if (data) savedId = data.id;
   }
   if (error) {
     if (typeof logRgpd === 'function') await logRgpd(id ? 'contrat_modifie' : 'contrat_cree', 'Contrats', {
@@ -62,7 +87,7 @@ async function saveContract() {
     return alert('Erreur : ' + error.message);
   }
   if (typeof logRgpd === 'function') await logRgpd(id ? 'contrat_modifie' : 'contrat_cree', 'Contrats', {
-    entityType: 'contract', entityId: id || null,
+    entityType: 'contract', entityId: savedId || null,
     donnees: 'type prestation, formule, montant, récurrence, échéances',
     criticite: id ? 'Attention' : 'Info',
     details: { type, formule: payload.formule || null, montant: payload.montant, contact_id },
@@ -70,6 +95,26 @@ async function saveContract() {
 
   closeContractModal();
   await loadAll();
+
+  // Auto-avancement kanban selon le statut du contrat
+  const targetCol = _STATUT_TO_KANBAN[payload.statut];
+  if (targetCol) await _advanceKanban(contact_id, targetCol);
+
+  // Recharger le pipeline si la vue est active
+  if (typeof initPipeline === 'function' && document.getElementById('view-pipeline')?.classList.contains('active')) {
+    await initPipeline();
+  }
+
+  // Toast avec accès direct "Envoyer au client"
+  if (typeof showCrmToast === 'function' && savedId) {
+    const canSend = !['Résilié','Terminé'].includes(payload.statut);
+    showCrmToast(
+      `<span>✅ Contrat enregistré</span>` +
+      (canSend
+        ? `<button onclick="openContractModal('${savedId}');this.closest('div[style]').remove()" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;white-space:nowrap;font-size:.82rem">📧 Envoyer au client</button>`
+        : '')
+    );
+  }
 }
 
 async function deleteContract() {

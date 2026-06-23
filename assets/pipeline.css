@@ -6,6 +6,16 @@
 #view-pipeline { flex-direction:column; height:100%; min-height:0; }
 #view-pipeline.active { display:flex; }
 
+/* ── LÉGENDE TUNNEL DE VENTE ── */
+.pipeline-funnel-legend {
+  display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  padding:6px 20px 10px;
+  flex-shrink:0;
+}
+.pfl-step { font-size:.78rem; font-weight:600; letter-spacing:.02em; }
+.pfl-arrow { color:#334155; font-size:.9rem; font-weight:300; }
+.pfl-tip { font-size:.73rem; color:#475569; margin-left:4px; }
+
 .pipeline-toolbar {
   display:flex; align-items:center; gap:12px;
   padding:14px 20px 10px;
