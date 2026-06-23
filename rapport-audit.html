@@ -128,6 +128,17 @@
   .action-table tr:hover td { background: var(--safe-grey); }
   .action-table .effort { font-weight: 700; color: var(--safe-blue); }
   .action-ref { font-size: 10px; color: var(--text-light); font-style: italic; }
+  .badge-ok { display:inline-flex; align-items:center; gap:4px; background:#e8f5e9; color:#2e7d32;
+    border:1px solid #a5d6a7; border-radius:12px; font-size:11px; font-weight:700; padding:2px 9px; }
+  .badge-partial { display:inline-flex; align-items:center; gap:4px; background:#fff8e1; color:#f57f17;
+    border:1px solid #ffe082; border-radius:12px; font-size:11px; font-weight:700; padding:2px 9px; }
+  .badge-pending { display:inline-flex; align-items:center; gap:4px; background:#f3f4f6; color:#6b7280;
+    border:1px solid #d1d5db; border-radius:12px; font-size:11px; font-weight:700; padding:2px 9px; }
+  .fix-log { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:20px 24px; margin-bottom:24px; }
+  .fix-log h3 { color:#166534; margin-bottom:14px; font-size:15px; }
+  .fix-entry { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #d1fae5; }
+  .fix-entry:last-child { border-bottom:none; }
+  .fix-commit { font-family:'Fira Code',monospace; font-size:11px; background:#dcfce7; color:#166534; padding:2px 7px; border-radius:4px; white-space:nowrap; }
 
   /* ── CHECKLIST ── */
   .check-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
@@ -177,7 +188,7 @@
   <h1>Audit de sécurité &amp; conformité<br><span>S@FE CRM</span></h1>
   <p class="subtitle">Analyse exhaustive — 16 domaines — Architecture, Cybersécurité, RGPD, ANSSI, NIS2, WCAG</p>
   <div class="cover-meta">
-    <div><span class="label">Date d'audit</span><span class="value">22 juin 2026</span></div>
+    <div><span class="label">Date d'audit</span><span class="value">22 juin 2026 — MàJ : 23 juin 2026</span></div>
     <div><span class="label">Version analysée</span><span class="value">Schema v27 — app.js 5 473 lignes</span></div>
     <div><span class="label">Référentiel</span><span class="value">OWASP Top 10 · RGPD · ANSSI · NIS2 · WCAG 2.1</span></div>
     <div><span class="label">Auditeur</span><span class="value">S@FE AUDITOR AI — Claude Sonnet 4.6</span></div>
@@ -230,8 +241,8 @@
       <div class="label">Score global /100</div>
     </div>
     <div class="score-card danger">
-      <div class="num">5</div>
-      <div class="label">Anomalies P0 critiques</div>
+      <div class="num" style="color:#43a047">4/5</div>
+      <div class="label">P0 corrigés (4a+4b en cours)</div>
     </div>
     <div class="score-card warn">
       <div class="num">9</div>
@@ -1019,45 +1030,79 @@
 <section id="plan">
   <h2>🗺️ Plan d'actions — P0 à P3</h2>
 
-  <h3>🚨 P0 — Critiques (à corriger immédiatement)</h3>
+  <h3>🚨 P0 — Critiques</h3>
+
+  <div class="fix-log">
+    <h3>✅ Journal des corrections appliquées — 23 juin 2026</h3>
+    <div class="fix-entry">
+      <span class="fix-commit">ad8f136</span>
+      <div><strong>P0-1 — .gitignore créé</strong> — Protection contre commit accidentel de secrets. Retrait du tracking de <code>.DS_Store</code> et <code>.claude/settings.json</code>.</div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">ac50d83</span>
+      <div><strong>P0-2 — BREBO → BREVO corrigé</strong> — Emails de facturation et d'échec de paiement désormais fonctionnels. Secret <code>BREVO</code> configuré dans Supabase. <em>Déployé : stripe-webhook v26.</em></div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">867c4f9</span>
+      <div><strong>P0-3 — Signature Stripe webhook obligatoire</strong> — Fallback sans vérification supprimé. Secret <code>STRIPE_WEBHOOK_SECRET</code> configuré dans Supabase. <em>Déployé : stripe-webhook v26.</em></div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">65cb0c3</span>
+      <div><strong>P0-4a — Scripts inline externalisés</strong> — 3 blocs <code>&lt;script&gt;</code> inline déplacés vers <code>assets/app-init.js</code>. <em>Phase 4b (79 handlers onclick) reportée en P1 — trop risquée sans refactor progressif.</em></div>
+    </div>
+  </div>
+
   <table class="action-table" style="margin-bottom:24px">
     <thead>
-      <tr><th>#</th><th>Action</th><th>Fichier(s)</th><th>Effort</th><th>Référence</th></tr>
+      <tr><th>#</th><th>Action</th><th>Fichier(s)</th><th>Effort</th><th>Statut</th><th>Référence</th></tr>
     </thead>
     <tbody>
       <tr>
         <td>P0-1</td>
-        <td><strong>Créer <code>.gitignore</code></strong> — exclure au minimum <code>assets/config.js</code> si la clé doit rester privée, et tous les fichiers <code>.env</code>, scripts temporaires</td>
-        <td><code>.gitignore</code> (à créer)</td>
+        <td><strong>Créer <code>.gitignore</code></strong> — exclure <code>.env*</code>, <code>.DS_Store</code>, <code>.claude/</code>, scripts temporaires</td>
+        <td><code>.gitignore</code></td>
         <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">OWASP A02, ANSSI R14</span></td>
       </tr>
       <tr>
         <td>P0-2</td>
-        <td><strong>Corriger la typo <code>BREBO</code> → <code>BREVO</code></strong> dans <code>stripe-webhook/index.ts</code> lignes 207 et 383. Tester en envoyant un événement test depuis le dashboard Stripe.</td>
+        <td><strong>Corriger la typo <code>BREBO</code> → <code>BREVO</code></strong> + configurer secret Supabase + redéployer</td>
         <td><code>supabase/function/stripe-webhook/index.ts</code></td>
         <td class="effort">15 min</td>
+        <td><span class="badge-ok">✅ Corrigé + déployé</span></td>
         <td><span class="action-ref">Brevo API, NIS2 Art.21</span></td>
       </tr>
       <tr>
         <td>P0-3</td>
-        <td><strong>Rendre la vérification de signature Stripe obligatoire</strong> — retourner une 400 si <code>STRIPE_WEBHOOK_SECRET</code> est absent plutôt que continuer sans vérification</td>
+        <td><strong>Signature Stripe webhook obligatoire</strong> — suppression du fallback sans vérification + secret configuré</td>
         <td><code>supabase/function/stripe-webhook/index.ts</code></td>
         <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé + déployé</span></td>
         <td><span class="action-ref">Stripe Webhook Security, OWASP A01</span></td>
       </tr>
       <tr>
-        <td>P0-4</td>
-        <td><strong>Supprimer <code>'unsafe-inline'</code> de la CSP</strong> — migrer vers des nonces ou des hashes pour les scripts inline. Ou externaliser tous les scripts inline en fichiers séparés.</td>
-        <td><code>index.html</code> (meta CSP)</td>
-        <td class="effort">2-4 h</td>
-        <td><span class="action-ref">OWASP A03, ANSSI R20, CSP Level 3</span></td>
+        <td>P0-4a</td>
+        <td><strong>Scripts inline externalisés</strong> — 3 blocs <code>&lt;script&gt;</code> déplacés vers <code>assets/app-init.js</code></td>
+        <td><code>index.html</code>, <code>assets/app-init.js</code></td>
+        <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">OWASP A03, CSP Level 3</span></td>
+      </tr>
+      <tr>
+        <td>P0-4b</td>
+        <td><strong>Supprimer <code>'unsafe-inline'</code> de la CSP</strong> — 79 handlers <code>onclick=</code> à migrer vers <code>addEventListener()</code> par batches</td>
+        <td><code>index.html</code> (79 éléments)</td>
+        <td class="effort">3-4 sessions</td>
+        <td><span class="badge-partial">⚠️ Reporté P1</span></td>
+        <td><span class="action-ref">OWASP A03, ANSSI R20</span></td>
       </tr>
       <tr>
         <td>P0-5</td>
         <td><strong>Corriger la policy RLS <code>safe_connectors</code></strong> — remplacer <code>WITH CHECK (true)</code> par <code>WITH CHECK (user_id = auth.uid())</code></td>
         <td><code>supabase/-schema-v26.sql</code> + migration v28</td>
         <td class="effort">20 min</td>
+        <td><span class="badge-pending">🔜 En cours</span></td>
         <td><span class="action-ref">RGPD Art.25, ANSSI RLS</span></td>
       </tr>
     </tbody>
