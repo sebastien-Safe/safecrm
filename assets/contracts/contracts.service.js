@@ -12,8 +12,8 @@ async function loadContracts() {
 async function saveContract() {
   const id = $('#ct-id').value;
   const contact_id = $('#ct-contact').value;
-  const type = $('#ct-type').value.trim();
-  if (!contact_id || !type) { alert('Le contact et le type de prestation sont obligatoires.'); return; }
+  const type = getEffectiveContractType();
+  if (!contact_id || !type) { alert('Le contact et le produit sont obligatoires.'); return; }
   const montant = $('#ct-montant').value;
   const formuleSel = $('#ct-formule-select').value;
   const formule = formuleSel === FORMULE_CUSTOM

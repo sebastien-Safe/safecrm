@@ -61,17 +61,30 @@ function populateContractSelects() {
   $('#t-contract').innerHTML = '<option value="">— Aucun —</option>' + opts;
 }
 
-function openContractModal(id = null) {
-  // Toujours rafraîchir les selects avant ouverture (les contacts peuvent
-  // avoir été ajoutés/modifiés depuis le dernier rendu)
+function openContractModal(id = null, prefillContactId = null) {
   populateContactSelects();
 
   const ct = id ? state.contracts.find(x => x.id === id) : null;
   $('#contract-modal-title').textContent = ct ? 'Modifier le contrat' : 'Nouveau contrat';
   $('#ct-id').value = ct?.id || '';
-  $('#ct-contact').value = ct?.contact_id || '';
-  $('#ct-type').value = ct?.type || '';
-  updateContractTypeIcon({ value: ct?.type || '' });
+  $('#ct-contact').value = ct?.contact_id || prefillContactId || '';
+
+  // Sélecteur de produit : correspondance directe ou repli sur "Autre"
+  const typeSel    = $('#ct-type');
+  const typeCustom = $('#ct-type-custom');
+  const typeVal    = ct?.type || '';
+  const knownTypes = Array.from(typeSel?.options || []).map(o => o.value);
+  if (!typeVal) {
+    if (typeSel) typeSel.value = '';
+    if (typeCustom) { typeCustom.style.display = 'none'; typeCustom.value = ''; }
+  } else if (knownTypes.includes(typeVal)) {
+    if (typeSel) typeSel.value = typeVal;
+    if (typeCustom) { typeCustom.style.display = 'none'; typeCustom.value = ''; }
+  } else {
+    if (typeSel) typeSel.value = '__autre__';
+    if (typeCustom) { typeCustom.style.display = ''; typeCustom.value = typeVal; }
+  }
+  updateContractTypeIcon({ value: typeVal });
   $('#ct-montant').value = ct?.montant ?? '';
   $('#ct-recurrence').value = ct?.recurrence || 'Ponctuel';
   const mepField = $('#ct-frais-mise-en-place');

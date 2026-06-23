@@ -913,22 +913,33 @@
     <div class="modal-group">
       <div class="modal-group-title">📋 Type de prestations</div>
       <div class="field-row">
-        <div class="field"><label>Type de prestation *</label>
+        <div class="field"><label>Produit / Prestation *</label>
           <div style="display:flex;align-items:center;gap:8px">
             <span id="ct-type-icon" style="font-size:1.5rem;line-height:1;flex-shrink:0">📋</span>
-            <input id="ct-type" list="contract-types" placeholder="Ex : Référencement Local" oninput="updateContractTypeIcon(this)" style="flex:1">
+            <select id="ct-type" onchange="onContractTypeChange();updateContractTypeIcon(this)" style="flex:1">
+              <option value="">— Choisir un produit —</option>
+              <optgroup label="Référencement &amp; Visibilité">
+                <option value="Référencement Local">🗺️ Référencement Local</option>
+                <option value="Gestion Fiche Google Business">📍 Gestion Fiche Google Business</option>
+              </optgroup>
+              <optgroup label="RGPD &amp; Conformité">
+                <option value="Mise en conformité RGPD">🛡️ Mise en conformité RGPD</option>
+                <option value="DPO externalisé">⚖️ DPO externalisé</option>
+              </optgroup>
+              <optgroup label="Cybersécurité">
+                <option value="Cybersécurité">💻 Cybersécurité</option>
+              </optgroup>
+              <optgroup label="E-commerce">
+                <option value="Click &amp; Collect">🛒 Click &amp; Collect</option>
+              </optgroup>
+              <optgroup label="Options">
+                <option value="Options à la carte">✨ Options à la carte</option>
+                <option value="Courtage Assurance">🛡 Courtage Assurance</option>
+              </optgroup>
+              <option value="__autre__">✏️ Autre / Personnalisé</option>
+            </select>
           </div>
-          <datalist id="contract-types">
-            <option value="Référencement Local">
-            <option value="Mise en conformité RGPD">
-            <option value="DPO externalisé">
-            <option value="Audit RGPD">
-            <option value="Cybersécurité">
-            <option value="Click &amp; Collect">
-            <option value="Gestion Fiche Google Business">
-            <option value="Courtage Assurance">
-            <option value="Autre">
-          </datalist>
+          <input id="ct-type-custom" type="text" placeholder="Saisir le type de prestation…" style="display:none;margin-top:6px;width:100%" oninput="updateContractTypeIcon(this)">
         </div>
         <div class="field"><label>Formule</label>
           <select id="ct-formule-select"></select>

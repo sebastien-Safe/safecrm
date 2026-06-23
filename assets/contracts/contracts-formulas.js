@@ -100,14 +100,24 @@ function autoCalcEcheance() {
   $('#ct-date-echeance').value = d.toISOString().slice(0, 10);
 }
 
+function getEffectiveContractType() {
+  const sel = $('#ct-type');
+  if (!sel) return '';
+  if (sel.value === '__autre__') return ($('#ct-type-custom')?.value || '').trim();
+  return sel.value.trim();
+}
+
 function onContractTypeChange() {
-  populateFormuleSelect($('#ct-type').value.trim(), null);
+  const sel = $('#ct-type');
+  const custom = $('#ct-type-custom');
+  if (sel && custom) custom.style.display = sel.value === '__autre__' ? '' : 'none';
+  populateFormuleSelect(getEffectiveContractType(), null);
   onFormuleChange(true);
 }
 
 function updateContractTypeIcon(input) {
   const icon = document.getElementById('ct-type-icon');
-  if (icon) icon.textContent = getContractIcon(input.value.trim());
+  if (icon) icon.textContent = getContractIcon(getEffectiveContractType() || input.value.trim());
 }
 
 function toggleRemise() {

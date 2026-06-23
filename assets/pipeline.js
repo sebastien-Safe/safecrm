@@ -230,6 +230,9 @@ function _plCardHTML(contact) {
       <button class="pcard-edit-btn" onclick="switchView('contacts');setTimeout(()=>openContactModal('${contact.id}'),80)">
         ✏️ Modifier la fiche
       </button>
+      <button class="pcard-edit-btn" style="background:rgba(37,99,235,.15);color:#93c5fd;border-color:rgba(37,99,235,.3)" onclick="openContractForContact('${contact.id}')">
+        ➕ Nouveau contrat
+      </button>
     </div>
   </div>`;
 }
@@ -638,6 +641,17 @@ function _plCloseMenus(event) {
   if (!event.target.closest('.pcard-priority-badge')) {
     document.querySelectorAll('.pcard-priority-menu.open').forEach(m => m.classList.remove('open'));
   }
+}
+
+function openContractForContact(contactId) {
+  if (typeof openContractModal !== 'function') {
+    switchView('contracts');
+    setTimeout(() => openContractModal(null, contactId), 80);
+    return;
+  }
+  openContractModal(null, contactId);
+  const modal = document.getElementById('contract-modal');
+  if (modal) modal.classList.add('show');
 }
 
 // ═══════════════════════════════════════
