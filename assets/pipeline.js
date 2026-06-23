@@ -251,6 +251,12 @@ function _plContractDetailHTML(ct, idx, contactId) {
     <div class="pcard-contract-detail-row"><span>Statut</span><span>${escapeHtml(ct.statut || '—')}</span></div>
     <div class="pcard-contract-detail-row"><span>Échéance</span><span>${echeance}</span></div>
     ${ct.notes ? `<div class="pcard-contract-notes">📝 ${escapeHtml(ct.notes)}</div>` : ''}
+    <div style="margin-top:8px;display:flex;gap:6px">
+      <button class="pcard-edit-btn" style="flex:1;justify-content:center"
+        onclick="openContractModal('${ct.id}');event.stopPropagation()">
+        ✏️ Modifier / Envoyer
+      </button>
+    </div>
   </div>`;
 }
 
