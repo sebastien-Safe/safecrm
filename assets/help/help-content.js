@@ -252,6 +252,16 @@ const HELP_VIEWS_DATA = {
         ],
       },
       {
+        title: 'Gestion du mot de passe',
+        items: [
+          'Renouvellement obligatoire tous les 45 jours — une bannière apparaît à l\'approche de l\'échéance',
+          'Changement depuis le profil : cliquez sur votre prénom en haut à droite → Profil → section "Mot de passe"',
+          'Mot de passe oublié : cliquez sur "Mot de passe oublié ?" depuis l\'écran de connexion → saisissez votre e-mail → un lien sécurisé vous est envoyé par e-mail (valable 24 heures)',
+          'Une confirmation par e-mail est automatiquement envoyée après chaque changement réussi',
+          'Si vous ne recevez pas l\'e-mail, vérifiez vos courriers indésirables (expéditeur : noreply@safe-digitalisation.fr)',
+        ],
+      },
+      {
         title: 'Sessions et verrouillage',
         items: [
           'Durée maximale de session : 4 heures (RGPD Art. 42)',
@@ -271,12 +281,17 @@ const HELP_VIEWS_DATA = {
       },
     ],
     steps: [
+      { title: 'Changer mon mot de passe', content: 'Cliquez sur votre prénom en haut à droite → Profil → section "Mot de passe" → saisissez votre nouveau mot de passe deux fois → "Enregistrer". Un e-mail de confirmation vous est envoyé automatiquement.' },
+      { title: 'Mot de passe oublié', content: 'Depuis l\'écran de connexion, cliquez sur "Mot de passe oublié ?" → saisissez votre adresse e-mail → cliquez sur le lien reçu par e-mail (valable 24h) → choisissez un nouveau mot de passe.' },
       { title: 'Activer le MFA TOTP', content: 'Cliquez sur votre prénom en haut à droite → Profil → section "Double authentification" → "Configurer". Scannez le QR code, saisissez le code à 6 chiffres pour confirmer l\'activation.' },
       { title: 'Voir le journal de sécurité', content: 'Administration → onglet "🔒 Sécurité". Liste des 50 dernières tentatives de connexion avec résultat, IP et indicateur de verrouillage.' },
       { title: 'Débloquer un utilisateur verrouillé', content: 'Administration → Sécurité → liste des comptes verrouillés → bouton "Débloquer". Le compteur d\'échecs est réinitialisé.' },
       { title: 'Déclarer un incident NIS2', content: 'Depuis WORK → menu "Incidents NIS2" ou directement via /work/incidents-nis2.html. Réservé aux administrateurs.' },
     ],
     errors: [
+      { q: 'Je n\'ai pas reçu l\'e-mail de réinitialisation', a: 'Vérifiez vos courriers indésirables (spam). L\'expéditeur est noreply@safe-digitalisation.fr. Si l\'e-mail n\'arrive pas après 5 minutes, refaites la demande. En cas de persistance, contactez votre administrateur.' },
+      { q: 'Mon lien de réinitialisation ne fonctionne plus', a: 'Le lien est valable 24 heures et ne peut être utilisé qu\'une seule fois. Si expiré, retournez sur l\'écran de connexion et faites une nouvelle demande "Mot de passe oublié ?".' },
+      { q: 'Je n\'ai pas reçu l\'e-mail de confirmation de changement', a: 'La confirmation est envoyée automatiquement après un changement réussi. Si vous ne la recevez pas, vérifiez vos spams. L\'absence de cet e-mail alors que votre mot de passe a bien changé ne bloque pas l\'accès.' },
       { q: 'Je n\'ai plus accès à mon application TOTP', a: 'Contactez immédiatement votre administrateur S@FE. Il peut désactiver temporairement le MFA depuis la gestion des utilisateurs.' },
       { q: 'Ma session expire trop vite', a: 'La limite de 4h est fixée par la politique RGPD interne. Elle ne peut pas être modifiée. Sauvegardez votre travail régulièrement.' },
       { q: 'Mon compte est verrouillé', a: 'Après 5 tentatives échouées, seul un administrateur peut débloquer votre compte. Contactez votre responsable S@FE.' },
