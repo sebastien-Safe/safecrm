@@ -520,6 +520,7 @@ function switchView(view) {
   if (view === 'resultats') renderResultats();
   if (view === 'agenda') renderAgenda();
   if (view === 'pipeline' && typeof loadPipeline === 'function') loadPipeline();
+  if (view === 'journal') loadJournalView();
 }
 
 // ---------------------------------------------------------
@@ -880,87 +881,7 @@ function openProfileModal() {
   $('#password-success').style.display = 'none';
   setAvatar($('#profile-avatar-preview'), state.profile?.photo_url, state.profile?.prenom || state.user?.email);
   $('#profile-modal').classList.add('show');
-  _loadMyJournal();
 }
-
-async function _loadMyJournal() {
-  const container = document.getElementById('my-journal-container');
-  if (!container) return;
-  container.innerHTML = '<p class="mut" style="font-size:.82rem;text-align:center;padding:12px">Chargement…</p>';
-
-  const { data, error } = await sb.from('audit_logs')
-    .select('action, module, details, created_at')
-    .eq('user_id', state.user.id)
-    .order('created_at', { ascending: false })
-    .limit(50);
-
-  if (error || !data?.length) {
-    container.innerHTML = '<p class="mut" style="font-size:.82rem;text-align:center;padding:12px">Aucune action enregistrée.</p>';
-    return;
-  }
-
-  const ACTION_LABELS = {
-    contact_cree:        'Contact créé',
-    contact_modifie:     'Contact modifié',
-    contact_supprime:    'Contact supprimé',
-    contrat_cree:        'Contrat créé',
-    contrat_modifie:     'Contrat modifié',
-    contrat_supprime:    'Contrat supprimé',
-    interaction_creee:   'Interaction créée',
-    tache_creee:         'Tâche créée',
-    tache_completee:     'Tâche terminée',
-    profil_modifie:      'Profil modifié',
-    utilisateur_cree:    'Utilisateur créé',
-    utilisateur_supprime:'Utilisateur supprimé',
-    utilisateur_bloque:  'Utilisateur bloqué',
-    utilisateur_debloque:'Utilisateur débloqué',
-    paiement_confirme:   'Paiement confirmé',
-    export_effectue:     'Export effectué',
-    purge_effectuee:     'Purge RGPD',
-  };
-
-  const MODULE_COLORS = {
-    Contacts:       '#3b82f6',
-    Contrats:       '#8b5cf6',
-    Profil:         '#f59e0b',
-    Administration: '#ef4444',
-    Tâches:         '#22c55e',
-    RGPD:           '#06b6d4',
-  };
-
-  const rows = data.map(e => {
-    const d = e.details || {};
-    const detail = d.entreprise || d.nom || d.type || d.objet || d.email || '—';
-    const date = new Date(e.created_at).toLocaleString('fr-FR', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
-    const label  = ACTION_LABELS[e.action] || e.action || '—';
-    const module = e.module || '—';
-    const color  = MODULE_COLORS[module] || '#64748b';
-    return `<tr>
-      <td style="font-size:.75rem;color:#64748b;white-space:nowrap">${date}</td>
-      <td style="font-size:.8rem">${escapeHtml(label)}</td>
-      <td><span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;background:${color}22;color:${color}">${escapeHtml(module)}</span></td>
-      <td style="font-size:.78rem;color:#94a3b8;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeHtml(String(detail))}">${escapeHtml(String(detail))}</td>
-    </tr>`;
-  }).join('');
-
-  container.innerHTML = `
-    <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
-        <thead>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.07)">
-            <th style="text-align:left;padding:6px 8px;font-size:.7rem;color:#64748b;font-weight:600">Date</th>
-            <th style="text-align:left;padding:6px 8px;font-size:.7rem;color:#64748b;font-weight:600">Action</th>
-            <th style="text-align:left;padding:6px 8px;font-size:.7rem;color:#64748b;font-weight:600">Module</th>
-            <th style="text-align:left;padding:6px 8px;font-size:.7rem;color:#64748b;font-weight:600">Détail</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-    <p class="mut" style="font-size:.7rem;text-align:right;margin-top:8px">${data.length} action${data.length > 1 ? 's' : ''} · 50 dernières entrées</p>`;
 }
 
 function closeProfileModal() {
@@ -3858,6 +3779,140 @@ async function terminerHelpRequest(id) {
 // ==========================================================================
 // VÉRIFICATION MANDAT SIGNÉ (non-admin uniquement)
 // ==========================================================================
+// ==========================================================================
+// JOURNAL D'ACTIVITÉ
+// ==========================================================================
+
+const _JOURNAL_ACTION_LABELS = {
+  contact_cree:         'Contact créé',
+  contact_modifie:      'Contact modifié',
+  contact_supprime:     'Contact supprimé',
+  contrat_cree:         'Contrat créé',
+  contrat_modifie:      'Contrat modifié',
+  contrat_supprime:     'Contrat supprimé',
+  interaction_creee:    'Interaction créée',
+  tache_creee:          'Tâche créée',
+  tache_completee:      'Tâche terminée',
+  profil_modifie:       'Profil modifié',
+  utilisateur_cree:     'Utilisateur créé',
+  utilisateur_supprime: 'Utilisateur supprimé',
+  utilisateur_bloque:   'Utilisateur bloqué',
+  utilisateur_debloque: 'Utilisateur débloqué',
+  paiement_confirme:    'Paiement confirmé',
+  export_effectue:      'Export effectué',
+  purge_effectuee:      'Purge RGPD',
+};
+
+const _JOURNAL_MODULE_COLORS = {
+  Contacts:       '#3b82f6',
+  Contrats:       '#8b5cf6',
+  Profil:         '#f59e0b',
+  Administration: '#ef4444',
+  Tâches:         '#22c55e',
+  RGPD:           '#06b6d4',
+};
+
+async function loadJournalView() {
+  const container = document.getElementById('journal-view-container');
+  const subtitle  = document.getElementById('journal-view-subtitle');
+  const filterSel = document.getElementById('journal-filter-user');
+  if (!container) return;
+
+  container.innerHTML = '<p class="empty" style="padding:40px;text-align:center">Chargement…</p>';
+
+  // Filtre utilisateur (admin uniquement)
+  const admin = isAdmin();
+  if (filterSel) {
+    filterSel.style.display = admin ? '' : 'none';
+    if (admin && filterSel.options.length <= 1) {
+      // Peupler le filtre une seule fois
+      (state.adminUsers || []).forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = (u.prenom ? u.prenom + ' ' : '') + (u.nom || u.email || u.id);
+        filterSel.appendChild(opt);
+      });
+      filterSel.onchange = loadJournalView;
+    }
+  }
+
+  const selectedUserId = admin && filterSel?.value ? filterSel.value : null;
+
+  let query = sb.from('audit_logs')
+    .select('action, module, details, created_at, user_id')
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  if (!admin) {
+    // Utilisateur standard : ses entrées uniquement
+    query = query.eq('user_id', state.user.id);
+  } else if (selectedUserId) {
+    // Admin avec filtre actif
+    query = query.eq('user_id', selectedUserId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    container.innerHTML = `<p class="empty" style="padding:40px;text-align:center">Erreur : ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  if (!data?.length) {
+    container.innerHTML = '<p class="empty" style="padding:40px;text-align:center">Aucune action enregistrée.</p>';
+    return;
+  }
+
+  if (subtitle) subtitle.textContent = `${data.length} action${data.length > 1 ? 's' : ''} · 100 dernières entrées`;
+
+  // Construire un index prenom/nom par user_id pour la colonne "Utilisateur" (admin)
+  const userIndex = {};
+  if (admin) {
+    (state.adminUsers || []).forEach(u => {
+      userIndex[u.id] = (u.prenom ? u.prenom + ' ' : '') + (u.nom || u.email || u.id);
+    });
+  }
+
+  const adminCol = admin ? '<th style="text-align:left;padding:8px 10px;font-size:.72rem;color:#64748b;font-weight:600;white-space:nowrap">Utilisateur</th>' : '';
+
+  const rows = data.map(e => {
+    const d      = e.details || {};
+    const detail = d.entreprise || d.nom || d.type || d.objet || d.email || '—';
+    const date   = new Date(e.created_at).toLocaleString('fr-FR', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+    const label  = _JOURNAL_ACTION_LABELS[e.action] || e.action || '—';
+    const module = e.module || '—';
+    const color  = _JOURNAL_MODULE_COLORS[module] || '#64748b';
+    const userCell = admin
+      ? `<td style="font-size:.78rem;color:#cbd5e1;white-space:nowrap;padding:8px 10px">${escapeHtml(userIndex[e.user_id] || e.user_id?.slice(0,8) || '—')}</td>`
+      : '';
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,.04)">
+      <td style="font-size:.76rem;color:#64748b;white-space:nowrap;padding:8px 10px">${date}</td>
+      <td style="font-size:.82rem;color:#e2e8f0;padding:8px 10px">${escapeHtml(label)}</td>
+      <td style="padding:8px 10px"><span style="font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:20px;background:${color}22;color:${color}">${escapeHtml(module)}</span></td>
+      <td style="font-size:.78rem;color:#94a3b8;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:8px 10px" title="${escapeHtml(String(detail))}">${escapeHtml(String(detail))}</td>
+      ${userCell}
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="panel-block" style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.1)">
+            <th style="text-align:left;padding:8px 10px;font-size:.72rem;color:#64748b;font-weight:600;white-space:nowrap">Date / heure</th>
+            <th style="text-align:left;padding:8px 10px;font-size:.72rem;color:#64748b;font-weight:600">Action</th>
+            <th style="text-align:left;padding:8px 10px;font-size:.72rem;color:#64748b;font-weight:600">Module</th>
+            <th style="text-align:left;padding:8px 10px;font-size:.72rem;color:#64748b;font-weight:600">Détail</th>
+            ${adminCol}
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
 // ==========================================================================
 // MUR DE SIGNATURE — Clause de confidentialité + Charte d'usage du SI
 // ==========================================================================
