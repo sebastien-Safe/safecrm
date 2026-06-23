@@ -1227,10 +1227,10 @@
       </tr>
       <tr>
         <td>P2-2</td>
-        <td><strong>Accélérer l'extraction modulaire de <code>app.js</code></strong> — continuer vers <code>assets/app/journal.js</code>, <code>assets/app/kanban.js</code>, etc. Objectif &lt;1 500 lignes par module</td>
-        <td>—</td>
-        <td class="effort">3-5 j</td>
-        <td><span class="badge-partial">⏳ En attente</span></td>
+        <td><strong>Extraction modulaire de <code>app.js</code></strong> — Phase 1 : 2 modules extraits et branchés dans <code>index.html</code> : <code>assets/tasks/tasks.js</code> (9 fonctions, ~150 lignes) et <code>assets/totp/totp.js</code> (8 fonctions, ~330 lignes). <code>app.js</code> réduit de 5 777 → 5 298 lignes (−479 lignes, −8 %). Modules admin, profile et messaging restent dans <code>app.js</code> (travail continu).</td>
+        <td><code>assets/tasks/tasks.js</code><br><code>assets/totp/totp.js</code><br><code>assets/app.js</code>, <code>index.html</code>, <code>build.mjs</code></td>
+        <td class="effort">1 j (phase 1)</td>
+        <td><span class="badge-partial">⚠️ Partiel</span></td>
         <td><span class="action-ref">Maintenabilité, OWASP A04</span></td>
       </tr>
       <tr>

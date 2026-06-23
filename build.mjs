@@ -41,6 +41,8 @@ const JS_FILES = [
   'assets/contracts/contracts.js',
   'assets/contracts/contracts.service.js',
   'assets/contracts/index.js',
+  'assets/tasks/tasks.js',
+  'assets/totp/totp.js',
   'assets/dpo/connectors-guard.js',
   'assets/dpo/dpo-client-crm.js',
   'assets/help/help-content.js',
