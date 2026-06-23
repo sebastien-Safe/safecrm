@@ -255,9 +255,16 @@ async function submitNewPassword() {
 async function showApp() {
   $('#login-screen').style.display = 'none';
   $('#reset-screen').style.display = 'none';
+  // Charger le profil minimal pour le nom du signataire dans le mur
+  await loadProfile();
+  const wallShown = await _checkAndShowSignatureWall();
+  if (wallShown) return; // Le mur appellera _afterSignatures() une fois tout signé
+  await _afterSignatures();
+}
+
+async function _afterSignatures() {
   $('#app').style.display = 'flex';
   await loadAll();
-  // Redirection depuis WORK → onglet admin cible
   const workGoto = sessionStorage.getItem('safe_work_goto');
   if (workGoto && isAdmin()) {
     sessionStorage.removeItem('safe_work_goto');
@@ -404,7 +411,6 @@ async function loadAll() {
   await ensureUserObjectifs();
   renderAll();
   checkRgpdExpiry(); // Vérification RGPD automatique au login
-  if (!isAdmin()) await checkClauseSigne(); // Clause de confidentialité obligatoire à la 1ère connexion
   checkPasswordStatus();             // Vérification mot de passe + renouvellement 45j
   loadBordereaux();     // Bordereaux admin
   loadNotifContracts(); // Notifications nouveaux contrats (admin)
@@ -3742,6 +3748,153 @@ async function terminerHelpRequest(id) {
 // ==========================================================================
 // VÉRIFICATION MANDAT SIGNÉ (non-admin uniquement)
 // ==========================================================================
+// ==========================================================================
+// MUR DE SIGNATURE — Clause de confidentialité + Charte d'usage du SI
+// ==========================================================================
+
+async function _checkAndShowSignatureWall() {
+  const userId = state.user.id;
+
+  const { data: clause } = await sb.from('clauses_confidentialite')
+    .select('id').eq('user_id', userId).maybeSingle();
+
+  const oneYearAgo = new Date();
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  const { data: charte } = await sb.from('chartes_usage_si')
+    .select('id').eq('user_id', userId)
+    .gte('signed_at', oneYearAgo.toISOString())
+    .maybeSingle();
+
+  if (clause && charte) return false;
+
+  // Pré-remplir le nom du signataire
+  const nomAffiche = [state.profile?.prenom, state.profile?.nom].filter(Boolean).join(' ')
+    || state.user.email;
+  const el1 = document.getElementById('wall-clause-signataire');
+  const el2 = document.getElementById('wall-charte-signataire');
+  if (el1) el1.textContent = nomAffiche;
+  if (el2) el2.textContent = nomAffiche;
+
+  const wall = document.getElementById('onboarding-wall');
+  wall.style.display = 'flex';
+
+  if (!clause) {
+    wallSwitchTab('clause');
+    _wallInitScroll('wall-clause-doc', 'wall-check-row-clause', 'accept-clause-check', 'wall-sign-clause-btn', 'wall-hint-clause');
+  } else {
+    _wallMarkDone('clause');
+    wallSwitchTab('charte');
+    _wallInitScroll('wall-charte-doc', 'wall-check-row-charte', 'accept-charte-check', 'wall-sign-charte-btn', 'wall-hint-charte');
+  }
+  if (!charte) {
+    // init charte scroll uniquement si pas déjà affiché
+  }
+  return true;
+}
+
+function wallSwitchTab(tab) {
+  document.getElementById('wall-panel-clause').classList.toggle('active', tab === 'clause');
+  document.getElementById('wall-panel-charte').classList.toggle('active', tab === 'charte');
+  document.getElementById('wall-step-clause').classList.toggle('active',
+    tab === 'clause' && !document.getElementById('wall-step-clause').classList.contains('done'));
+  document.getElementById('wall-step-charte').classList.toggle('active',
+    tab === 'charte' && !document.getElementById('wall-step-charte').classList.contains('done'));
+}
+
+function _wallMarkDone(tab) {
+  const step = document.getElementById('wall-step-' + tab);
+  if (!step) return;
+  step.classList.remove('active');
+  step.classList.add('done');
+  const num = document.getElementById('wall-step-num-' + tab);
+  if (num) num.textContent = '✓';
+  const lbl = document.getElementById('wall-step-label-' + tab);
+  if (lbl) lbl.textContent = (tab === 'clause' ? 'Clause de confidentialité' : 'Charte d\'usage du SI');
+}
+
+function _wallInitScroll(docId, rowId, checkId, btnId, hintId) {
+  const doc = document.getElementById(docId);
+  const row = document.getElementById(rowId);
+  const cb  = document.getElementById(checkId);
+  const btn = document.getElementById(btnId);
+  if (!doc || !cb || !btn) return;
+
+  cb.disabled = true;
+  btn.disabled = true;
+  if (row) row.classList.remove('enabled');
+
+  const unlock = () => {
+    cb.disabled = false;
+    btn.disabled = false;
+    if (row) row.classList.add('enabled');
+    const hint = document.getElementById(hintId);
+    if (hint) hint.style.display = 'none';
+    doc.removeEventListener('scroll', onScroll);
+  };
+
+  const onScroll = () => {
+    if (doc.scrollTop + doc.clientHeight >= doc.scrollHeight - 20) unlock();
+  };
+
+  // Déjà tout visible (doc court) → déverrouiller immédiatement
+  if (doc.scrollHeight <= doc.clientHeight + 20) { unlock(); return; }
+  doc.addEventListener('scroll', onScroll);
+
+  cb.addEventListener('change', () => { btn.disabled = !cb.checked; });
+}
+
+async function wallSignClause() {
+  const cb  = document.getElementById('accept-clause-check');
+  const btn = document.getElementById('wall-sign-clause-btn');
+  if (!cb?.checked) return;
+  btn.disabled = true;
+  btn.textContent = 'Enregistrement…';
+
+  const { error } = await sb.from('clauses_confidentialite').insert({
+    user_id:         state.user.id,
+    nom_signataire:  [state.profile?.prenom, state.profile?.nom].filter(Boolean).join(' ') || '',
+    email_signataire: state.user.email || '',
+    user_agent:      navigator.userAgent,
+  });
+
+  if (error) {
+    btn.disabled = false;
+    btn.textContent = '✅ Signer la clause de confidentialité';
+    alert('Erreur lors de la signature : ' + error.message);
+    return;
+  }
+
+  _wallMarkDone('clause');
+  wallSwitchTab('charte');
+  _wallInitScroll('wall-charte-doc', 'wall-check-row-charte', 'accept-charte-check', 'wall-sign-charte-btn', 'wall-hint-charte');
+}
+
+async function wallSignCharteSI() {
+  const cb  = document.getElementById('accept-charte-check');
+  const btn = document.getElementById('wall-sign-charte-btn');
+  if (!cb?.checked) return;
+  btn.disabled = true;
+  btn.textContent = 'Enregistrement…';
+
+  const { error } = await sb.from('chartes_usage_si').insert({
+    user_id: state.user.id,
+    version: '1.0',
+  });
+
+  if (error) {
+    btn.disabled = false;
+    btn.textContent = '✅ Signer la charte d\'usage du SI';
+    alert('Erreur lors de la signature : ' + error.message);
+    return;
+  }
+
+  _wallMarkDone('charte');
+
+  // Les deux signatures sont en place → fermer le mur et charger le CRM
+  document.getElementById('onboarding-wall').style.display = 'none';
+  await _afterSignatures();
+}
+
 async function checkMandatSigne() {
   if (isAdmin()) return;
   try {
@@ -3757,15 +3910,6 @@ async function checkMandatSigne() {
   }
 }
 
-async function checkClauseSigne() {
-  try {
-    const { data } = await sb.from('clauses_confidentialite')
-      .select('id').eq('user_id', state.user.id).maybeSingle();
-    if (!data) window.location.href = '/clause-confidentialite.html?redirect=/';
-  } catch(e) {
-    console.warn('checkClauseSigne:', e);
-  }
-}
 
 
 // ==========================================================================

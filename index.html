@@ -140,6 +140,128 @@
 @media (min-width: 1025px) {
   #mob-menu-btn, #mob-overlay, #mob-drawer { display: none !important; }
 }
+
+/* ── MUR DE SIGNATURE ──────────────────────────────────────────────────── */
+#onboarding-wall {
+  display: none;
+  position: fixed; inset: 0; z-index: 10000;
+  background: #060e1c;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+}
+.wall-inner {
+  width: 100%; max-width: 720px;
+  padding: 32px 24px 64px;
+  display: flex; flex-direction: column; gap: 0;
+}
+.wall-brand {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 28px; padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.wall-brand-name {
+  font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 800; color: #fff;
+}
+.wall-brand-name span { color: #f59e0b; }
+.wall-brand-sub {
+  font-size: .65rem; letter-spacing: .18em; text-transform: uppercase;
+  color: #64748b; margin-top: 2px;
+}
+.wall-steps {
+  display: flex; gap: 8px; margin-bottom: 20px;
+}
+.wall-step {
+  flex: 1; padding: 10px 14px; border-radius: 10px;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  cursor: pointer; transition: all .2s;
+  display: flex; align-items: center; gap: 8px;
+  font-size: .82rem; font-weight: 600; color: #64748b;
+}
+.wall-step.active {
+  background: rgba(245,158,11,.08); border-color: rgba(245,158,11,.35); color: #f59e0b;
+}
+.wall-step.done {
+  background: rgba(34,197,94,.07); border-color: rgba(34,197,94,.3); color: #22c55e;
+  cursor: default;
+}
+.wall-step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(255,255,255,.07); font-size: .72rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.wall-step.active .wall-step-num { background: #f59e0b; color: #0a1628; }
+.wall-step.done .wall-step-num { background: #22c55e; color: #0a1628; }
+.wall-panel { display: none; flex-direction: column; gap: 16px; }
+.wall-panel.active { display: flex; }
+.wall-doc-header {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px; padding: 16px 20px;
+}
+.wall-doc-icon { font-size: 1.6rem; flex-shrink: 0; }
+.wall-doc-tag {
+  font-size: .62rem; font-weight: 700; letter-spacing: .15em;
+  text-transform: uppercase; color: #64748b; margin-bottom: 3px;
+}
+.wall-doc-title { font-size: 1rem; font-weight: 800; color: #f1f5f9; }
+.wall-scroll-hint {
+  text-align: center; font-size: .74rem; color: #475569;
+  padding: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.wall-doc-scroll {
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px; padding: 20px 24px;
+  max-height: 42vh; overflow-y: auto;
+  font-size: .84rem; line-height: 1.75; color: #94a3b8;
+}
+.wall-doc-scroll::-webkit-scrollbar { width: 4px; }
+.wall-doc-scroll::-webkit-scrollbar-track { background: transparent; }
+.wall-doc-scroll::-webkit-scrollbar-thumb { background: rgba(245,158,11,.3); border-radius: 2px; }
+.wall-doc-scroll h4 {
+  font-size: .82rem; font-weight: 700; color: #fff;
+  margin: 16px 0 6px; padding-left: 10px;
+  border-left: 3px solid #f59e0b;
+}
+.wall-doc-scroll h4:first-child { margin-top: 0; }
+.wall-doc-scroll p { margin-bottom: 8px; }
+.wall-doc-scroll strong { color: #cbd5e1; }
+.wall-accept-zone {
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px; padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.wall-check-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  opacity: .4; transition: opacity .3s; cursor: default;
+}
+.wall-check-row.enabled { opacity: 1; cursor: auto; }
+.wall-check-row input[type="checkbox"] {
+  width: 16px; height: 16px; accent-color: #f59e0b;
+  flex-shrink: 0; margin-top: 2px; cursor: pointer;
+}
+.wall-check-label {
+  font-size: .83rem; color: #94a3b8; line-height: 1.55;
+}
+.wall-check-label strong { color: #fff; }
+.wall-btn-sign {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg,#f59e0b,#e08f00);
+  color: #0a1628; font-weight: 800; font-size: .92rem;
+  border: none; border-radius: 10px; cursor: pointer;
+  transition: all .2s; font-family: 'Sora', sans-serif;
+}
+.wall-btn-sign:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,158,11,.35); }
+.wall-btn-sign:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+.wall-legal-footer {
+  margin-top: 24px; text-align: center;
+  font-size: .7rem; color: #334155; line-height: 1.7;
+}
+@media (max-width: 600px) {
+  .wall-inner { padding: 20px 14px 48px; }
+  .wall-doc-scroll { max-height: 38vh; padding: 16px; }
+  .wall-steps { flex-direction: column; }
+}
 </style>
 </head>
 <body>
@@ -1787,5 +1909,177 @@ window.addEventListener('appinstalled', () => {
   });
 })();
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MUR DE SIGNATURE OBLIGATOIRE
+     Bloque l'accès au CRM jusqu'à signature de la clause de confidentialité
+     et de la charte d'usage du SI (re-signature annuelle pour la charte).
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="onboarding-wall">
+  <div class="wall-inner">
+
+    <!-- EN-TÊTE BRAND -->
+    <div class="wall-brand">
+      <svg viewBox="0 0 64 72" fill="none" width="38" height="44" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 2L4 14v20c0 16 12 28 28 36 16-8 28-20 28-36V14L32 2z" fill="#142240" stroke="#f59e0b" stroke-width="2"/>
+        <text x="32" y="46" text-anchor="middle" font-family="system-ui" font-weight="800" font-size="18" fill="#f59e0b">S@FE</text>
+      </svg>
+      <div>
+        <div class="wall-brand-name">S<span>@</span>FE CRM</div>
+        <div class="wall-brand-sub">Documents obligatoires — Signature requise avant accès</div>
+      </div>
+    </div>
+
+    <!-- ÉTAPES -->
+    <div class="wall-steps">
+      <div class="wall-step active" id="wall-step-clause" onclick="wallSwitchTab('clause')">
+        <div class="wall-step-num" id="wall-step-num-clause">1</div>
+        <span id="wall-step-label-clause">Clause de confidentialité</span>
+      </div>
+      <div class="wall-step" id="wall-step-charte" onclick="wallSwitchTab('charte')">
+        <div class="wall-step-num" id="wall-step-num-charte">2</div>
+        <span id="wall-step-label-charte">Charte d'usage du SI</span>
+      </div>
+    </div>
+
+    <!-- ── PANNEAU 1 : CLAUSE DE CONFIDENTIALITÉ ── -->
+    <div class="wall-panel active" id="wall-panel-clause">
+      <div class="wall-doc-header">
+        <div class="wall-doc-icon">🔒</div>
+        <div>
+          <div class="wall-doc-tag">Engagement de conformité CRM — Signature unique</div>
+          <div class="wall-doc-title">Clause de Confidentialité et de Sécurité</div>
+        </div>
+      </div>
+
+      <div class="wall-scroll-hint" id="wall-hint-clause">
+        ↕ Faites défiler jusqu'en bas pour activer la signature
+      </div>
+
+      <div class="wall-doc-scroll" id="wall-clause-doc">
+        <h4>Engagement de Sécurité S@FE</h4>
+        <p>La protection des données est au cœur de l'architecture S@FE. Toutes les informations centralisées au sein du CRM sont sécurisées grâce au protocole <strong>S@FE</strong>, garantissant une protection robuste des flux d'informations associant chiffrement avancé et traçabilité complète.</p>
+
+        <h4>1. Protection et chiffrement des données</h4>
+        <p>L'ensemble des données clients, prospects et transactions fait l'objet d'un <strong>chiffrement de bout en bout</strong>, tant en transit qu'au repos. Seules les personnes explicitement habilitées disposent des droits d'accès, de modification ou d'export.</p>
+
+        <h4>2. Intégrité et résilience de l'infrastructure</h4>
+        <p>L'infrastructure intègre des mécanismes de <strong>redondance active</strong> et de surveillance proactive. Les sauvegardes sont fragmentées et distribuées sur des serveurs sécurisés, prévenant toute altération ou perte de données.</p>
+
+        <h4>3. Conformité réglementaire et confidentialité</h4>
+        <p>Aucune donnée stockée ou traitée dans le CRM ne sera <strong>vendue, partagée ou exposée</strong> à des tiers sans consentement explicite, hors obligations légales. Le protocole S@FE est aligné avec le <strong>RGPD</strong> et la réglementation européenne en vigueur.</p>
+
+        <h4>4. Obligation de confidentialité du collaborateur</h4>
+        <p>Le collaborateur s'engage à maintenir <strong>strictement confidentielle</strong> toute information à laquelle il accède via le CRM : données clients/prospects, informations commerciales, commissions, contrats et stratégies de S@FE SASU.</p>
+        <p>Cette obligation de confidentialité s'étend au-delà de la fin de toute relation contractuelle avec S@FE SASU, sans limitation de durée pour les secrets d'affaires.</p>
+
+        <h4>5. Interdiction d'export non autorisé</h4>
+        <p>Il est <strong>formellement interdit</strong> d'exporter, copier, photographier ou transmettre des données issues du CRM vers tout support externe (clé USB, messagerie personnelle, application tierce) sans autorisation écrite de l'administrateur S@FE.</p>
+
+        <h4>6. Violations et sanctions</h4>
+        <p>Tout manquement à la présente clause est susceptible d'engager la <strong>responsabilité civile et pénale</strong> du signataire, et entraîne la révocation immédiate des accès au SI de S@FE SASU, sans préjudice de dommages et intérêts.</p>
+
+        <h4>7. Durée</h4>
+        <p>La présente clause entre en vigueur à la date de signature électronique et demeure en vigueur sans limitation de durée, y compris après la fin de la relation avec S@FE SASU.</p>
+        <p style="margin-top:16px;font-size:.76rem;color:#475569">S@FE SASU — 66 av. des Champs-Élysées, 75008 Paris — SIRET : 104 699 558 00011 — contact@safe-digitalisation.fr</p>
+      </div>
+
+      <div class="wall-accept-zone">
+        <div class="wall-check-row" id="wall-check-row-clause">
+          <input type="checkbox" id="accept-clause-check" disabled>
+          <label class="wall-check-label" for="accept-clause-check">
+            Je soussigné(e) <strong id="wall-clause-signataire">—</strong>, déclare avoir lu et approuvé
+            l'intégralité de la Clause de Confidentialité et de Sécurité S@FE, et m'engage à en respecter
+            toutes les dispositions.
+          </label>
+        </div>
+        <button class="wall-btn-sign" id="wall-sign-clause-btn" disabled onclick="wallSignClause()">
+          ✅ Signer la clause de confidentialité
+        </button>
+      </div>
+    </div>
+
+    <!-- ── PANNEAU 2 : CHARTE D'USAGE DU SI ── -->
+    <div class="wall-panel" id="wall-panel-charte">
+      <div class="wall-doc-header">
+        <div class="wall-doc-icon">🖥️</div>
+        <div>
+          <div class="wall-doc-tag">Charte d'usage — Re-signature annuelle obligatoire</div>
+          <div class="wall-doc-title">Charte d'Usage des Systèmes d'Information</div>
+        </div>
+      </div>
+
+      <div class="wall-scroll-hint" id="wall-hint-charte">
+        ↕ Faites défiler jusqu'en bas pour activer la signature
+      </div>
+
+      <div class="wall-doc-scroll" id="wall-charte-doc">
+        <h4>Objet</h4>
+        <p>La présente Charte définit les règles d'utilisation des systèmes d'information de <strong>S@FE SASU</strong> : CRM S@FE, outils de communication (Brevo), système de paiement (Stripe) et infrastructures associées (Supabase). Elle s'applique à l'ensemble des utilisateurs, sans distinction de rôle.</p>
+        <p>Version 1.0 — Durée de validité : <strong>1 an</strong> à compter de la date de signature. Une re-signature sera requise à l'expiration.</p>
+
+        <h4>1. Accès et authentification</h4>
+        <p>L'accès au SI est <strong>strictement personnel et nominatif</strong>. Les identifiants de connexion (e-mail, mot de passe, code 2FA) ne peuvent en aucun cas être partagés, prêtés ou communiqués à un tiers.</p>
+        <p>L'authentification à deux facteurs (TOTP/2FA) est <strong>obligatoire</strong> pour tout accès au CRM. La session est limitée à <strong>4 heures</strong> conformément aux exigences de sécurité RGPD.</p>
+        <p>Tout départ, suspension ou absence prolongée doit être signalé à l'administrateur S@FE afin de procéder à la révocation rapide des accès.</p>
+
+        <h4>2. Protection des données personnelles</h4>
+        <p>Les données clients, prospects et partenaires stockées dans le CRM sont la <strong>propriété exclusive de S@FE SASU</strong>. Leur utilisation est strictement limitée aux missions professionnelles confiées par S@FE.</p>
+        <p>Conformément au <strong>RGPD</strong>, il est interdit de collecter des données non nécessaires, de les conserver au-delà des durées légales, ou de les transmettre sans base légale valide. Toute demande d'accès, rectification ou suppression émanant d'un client doit être immédiatement transmise à l'administrateur.</p>
+
+        <h4>3. Confidentialité commerciale</h4>
+        <p>Les informations commerciales accessibles via le SI — commissions, marges, contrats, objectifs, pipelines, stratégies — sont <strong>strictement confidentielles</strong>. Il est interdit de les communiquer à des tiers, concurrents, partenaires non autorisés ou à toute personne extérieure à S@FE SASU.</p>
+        <p>Cette obligation de confidentialité commerciale est <strong>perpétuelle</strong> et survit à la fin de la relation contractuelle avec S@FE SASU.</p>
+
+        <h4>4. Utilisation loyale des outils</h4>
+        <p>Le SI S@FE doit être utilisé <strong>exclusivement dans le cadre des activités professionnelles</strong> confiées par S@FE SASU. Toute utilisation à des fins personnelles, concurrentielles ou détournées est interdite.</p>
+        <p>Il est interdit d'installer des extensions, scripts ou logiciels non autorisés permettant d'interagir avec le CRM, ou d'accéder à des ressources système non destinées à l'utilisateur.</p>
+        <p>Les campagnes Brevo, les paiements Stripe et les données Supabase sont réservés aux usages opérationnels de S@FE. Toute utilisation non autorisée de ces ressources engage la responsabilité de l'utilisateur.</p>
+
+        <h4>5. Sécurité des accès</h4>
+        <p>Les mots de passe doivent respecter les critères de complexité imposés (8 caractères minimum, majuscule, chiffre, caractère spécial) et être <strong>renouvelés tous les 45 jours</strong>. Le CRM impose ce renouvellement automatiquement.</p>
+        <p>Il est fortement déconseillé d'accéder au CRM depuis des réseaux Wi-Fi publics non sécurisés (hôtels, cafés, aéroports). En cas de nécessité, l'utilisation d'un VPN est recommandée.</p>
+        <p>La déconnexion du CRM doit être effectuée en fin de session, en particulier sur tout poste partagé ou susceptible d'être accédé par des tiers.</p>
+
+        <h4>6. Traçabilité et journalisation</h4>
+        <p>Toutes les actions effectuées sur le SI sont <strong>journalisées</strong> à des fins de sécurité, d'audit et de conformité RGPD. Ces journaux incluent les connexions, modifications de données, exports et toute action sensible.</p>
+        <p>Ces journaux sont consultables par l'administration S@FE en cas d'incident, de contrôle réglementaire ou de contentieux. Ils sont conservés conformément aux durées légales applicables.</p>
+
+        <h4>7. Incidents de sécurité</h4>
+        <p>Tout incident de sécurité — accès non autorisé, perte ou vol d'identifiants, comportement suspect, fuite de données — doit être <strong>signalé immédiatement</strong> à l'administrateur S@FE, sans délai et sans tentative de résolution autonome.</p>
+        <p>Conformément à l'article 33 du RGPD, S@FE SASU dispose de <strong>72 heures</strong> pour notifier la CNIL en cas de violation de données. Le signalement rapide par les utilisateurs est donc une obligation légale.</p>
+
+        <h4>8. Sanctions</h4>
+        <p>Le non-respect de la présente Charte est susceptible d'engager la <strong>responsabilité civile et/ou pénale</strong> de l'utilisateur, et entraîne la révocation immédiate et sans préavis des accès au SI de S@FE SASU, sans préjudice de toute action en dommages et intérêts.</p>
+        <p>Les violations intentionnelles (export non autorisé, partage d'identifiants, utilisation concurrentielle) seront systématiquement portées à la connaissance des autorités compétentes.</p>
+
+        <h4>9. Durée et renouvellement</h4>
+        <p>La présente Charte entre en vigueur à la <strong>date de signature électronique</strong> et est valable pour une durée d'un an. À l'expiration, une nouvelle signature est requise pour maintenir l'accès au SI. S@FE SASU se réserve le droit de mettre à jour la Charte ; toute nouvelle version entraîne une obligation de re-signature.</p>
+        <p style="margin-top:16px;font-size:.76rem;color:#475569">S@FE SASU — 66 av. des Champs-Élysées, 75008 Paris — SIRET : 104 699 558 00011 — contact@safe-digitalisation.fr</p>
+      </div>
+
+      <div class="wall-accept-zone">
+        <div class="wall-check-row" id="wall-check-row-charte">
+          <input type="checkbox" id="accept-charte-check" disabled>
+          <label class="wall-check-label" for="accept-charte-check">
+            Je soussigné(e) <strong id="wall-charte-signataire">—</strong>, déclare avoir lu et approuvé
+            l'intégralité de la Charte d'Usage des Systèmes d'Information S@FE (v1.0), et m'engage à en
+            respecter toutes les dispositions pour la durée d'un an.
+          </label>
+        </div>
+        <button class="wall-btn-sign" id="wall-sign-charte-btn" disabled onclick="wallSignCharteSI()">
+          ✅ Signer la charte d'usage du SI
+        </button>
+      </div>
+    </div>
+
+    <div class="wall-legal-footer">
+      Signature électronique horodatée — Valeur juridique conforme à l'eIDAS (règlement UE 910/2014)<br>
+      S@FE SASU · SIRET 104 699 558 00011 · contact@safe-digitalisation.fr
+    </div>
+
+  </div>
+</div>
+
 </body>
 </html>
