@@ -414,7 +414,7 @@ const HELP_FAQ_DATA = [
       { q: 'Comment exporter le registre RGPD ?', a: 'Administration → Registre RGPD → onglet "Registre des traitements" → bouton "Exporter PDF".' },
       { q: 'Que faire face à une demande d\'effacement ?', a: 'Administration → Registre RGPD → onglet "Demandes de droits". Enregistrez la demande. Vous avez 1 mois pour y répondre (Art. 17 RGPD).' },
       { q: 'Le Journal RGPD peut-il être modifié ?', a: 'Non. Le journal est immuable par conception. Toute tentative de modification est bloquée au niveau de la base de données.' },
-      { q: 'Où signer la clause de confidentialité ?', a: 'À la première connexion, le CRM vous redirige automatiquement vers la page de signature. Vous pouvez aussi y accéder directement : /clause-confidentialite.html.' },
+      { q: 'Où signer la clause de confidentialité ?', a: 'À la première connexion, le CRM vous redirige automatiquement vers la page de signature. Vous pouvez aussi y accéder directement : /clause.html.' },
     ],
   },
   {

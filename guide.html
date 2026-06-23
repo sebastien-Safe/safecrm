@@ -138,10 +138,19 @@
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.href = '/'; return; }
 
-    // Vérifier clause
+    // Vérifier clause de confidentialité
     const { data: clause } = await sb.from('clauses_confidentialite')
       .select('id').eq('user_id', session.user.id).maybeSingle();
-    if (!clause) { window.location.href = '/clause-de-confidentialite.html'; return; }
+    if (!clause) { window.location.href = '/clause.html'; return; }
+
+    // Vérifier charte SI valide (signée dans les 12 derniers mois)
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    const { data: charte } = await sb.from('chartes_usage_si')
+      .select('id').eq('user_id', session.user.id)
+      .gte('signed_at', oneYearAgo.toISOString())
+      .maybeSingle();
+    if (!charte) { window.location.href = '/'; return; }
 
     // Charger le rôle
     const { data: profile } = await sb.from('profiles')
