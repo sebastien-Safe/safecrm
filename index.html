@@ -550,6 +550,7 @@
         <button class="navlink" data-admin-tab="users">Gestion des utilisateurs</button>
         <button class="navlink" data-admin-tab="securite" id="admin-tab-securite">🔒 Sécurité</button>
         <button class="navlink" data-admin-tab="registre">📒 Registre RGPD</button>
+        <button class="navlink" data-admin-tab="archives">🗄 Archives</button>
         <button class="navlink" data-admin-tab="reglages">⚙️ Réglages</button>
         <a href="admin-docs.html" target="_blank" class="navlink" style="margin-left:auto;text-decoration:none">📄 Documents DCI</a>
       </div>
@@ -684,6 +685,20 @@
       </div>
 
       <!-- ── PANEL RÉGLAGES ─────────────────────────────── -->
+      <div class="admin-panel" id="admin-panel-archives" style="display:none">
+        <div class="panel-block">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div>
+              <h3 style="margin:0">🗄 Archives utilisateurs</h3>
+              <p class="mut" style="margin:4px 0 0;font-size:.82rem">Données conservées 5 ans après suppression (Art. L123-22 C.com). Accès admin uniquement.</p>
+            </div>
+          </div>
+          <div id="archives-list">
+            <p class="empty">Chargement…</p>
+          </div>
+        </div>
+      </div>
+
       <div class="admin-panel" id="admin-panel-reglages" style="display:none">
         <div class="panel-block">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
@@ -1161,6 +1176,13 @@
     </p>
     <div class="field"><label>Prénom</label><input id="nu-prenom" type="text" placeholder="Prénom de l'utilisateur"></div>
     <div class="field"><label>Dénomination sociale</label><input id="nu-denomination" type="text" placeholder="Ex : SAFE Consulting"></div>
+    <div class="field"><label>N° de mandat</label><input id="nu-numero-mandat" type="text" placeholder="Ex : M-2024-001"></div>
+    <div class="field">
+      <label>Manager / NIV2 (DCI responsable)</label>
+      <select id="nu-manager-id" style="background:var(--navy-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--txt);font-family:var(--ff-body);font-size:.88rem;outline:none;width:100%">
+        <option value="">— Aucun (admin par défaut) —</option>
+      </select>
+    </div>
 <div class="field"><label>SIRET</label><input id="nu-siret" type="text" maxlength="20" placeholder="14 chiffres"></div>
 <div class="field"><label>Adresse</label><input id="nu-adresse" type="text" placeholder="Ex : 66 av. des Champs-Élysées, 75008 Paris"></div>
 <div class="field"><label>N° TVA intracommunautaire</label><input id="nu-tva" type="text" placeholder="Ex : FR76 104 699 558"></div>

@@ -109,6 +109,8 @@ Deno.serve(async (req) => {
       siret: body.siret || null,
       adresse_pro: body.adresse_pro || null,
       tva: body.tva || null,
+      numero_mandat: body.numero_mandat || null,
+      dci_parent_id: body.dci_parent_id || null,
     });
   }
 

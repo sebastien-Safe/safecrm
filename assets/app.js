@@ -967,7 +967,7 @@ function currentJoursTravailles() {
 function switchAdminTab(tab) {
   state.adminView = tab;
   $all('[data-admin-tab]').forEach(b => b.classList.toggle('active', b.dataset.adminTab === tab));
-  ['overview', 'per-user', 'users', 'registre', 'securite', 'reglages'].forEach(t => {
+  ['overview', 'per-user', 'users', 'registre', 'securite', 'archives', 'reglages'].forEach(t => {
     const el = $('#admin-panel-' + t);
     if (el) el.style.display = (t === tab) ? '' : 'none';
   });
@@ -976,6 +976,7 @@ function switchAdminTab(tab) {
   if (tab === 'per-user') renderAdminPerUser();
   if (tab === 'registre') renderRegistreRGPD();
   if (tab === 'securite') renderSecurityPanel();
+  if (tab === 'archives') loadArchivedUsers().then(renderArchivedUsers);
   if (tab === 'reglages') { loadFournisseurs(); loadPurgeInfo(); }
 }
 
@@ -1897,6 +1898,10 @@ function openEditUserModal(userId) {
         <div class="field"><label>Adresse</label><input id="eu-adresse" type="text" readonly style="opacity:.6;cursor:default"></div>
         <div class="field"><label>SIRET</label><input id="eu-siret" type="text" readonly style="opacity:.6;cursor:default"></div>
         <div class="field"><label>N° RC Pro</label><input id="eu-rcpro" type="text" readonly style="opacity:.6;cursor:default"></div>
+        <div class="field" style="border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;background:rgba(255,255,255,.03)">
+          <label>N° de mandat</label>
+          <input id="eu-numero-mandat" type="text" placeholder="Ex : M-2024-001">
+        </div>
         <div class="field" style="border:1px solid var(--accent);border-radius:8px;padding:10px 12px;background:rgba(59,130,246,.04)">
           <label style="color:var(--accent)">🎭 Rôle (modifiable)</label>
           <select id="eu-role" style="margin-top:4px">
@@ -1914,14 +1919,15 @@ function openEditUserModal(userId) {
     document.body.appendChild(modal);
   }
 
-  document.getElementById('eu-id').value       = u.id;
-  document.getElementById('eu-prenom').value   = u.prenom      || '—';
-  document.getElementById('eu-nom').value      = u.nom         || '—';
-  document.getElementById('eu-telephone').value= u.telephone   || '—';
-  document.getElementById('eu-adresse').value  = u.adresse     || '—';
-  document.getElementById('eu-siret').value    = u.siret       || '—';
-  document.getElementById('eu-rcpro').value    = u.rcpro_numero|| '—';
-  document.getElementById('eu-role').value     = u.role || 'user';
+  document.getElementById('eu-id').value            = u.id;
+  document.getElementById('eu-prenom').value        = u.prenom       || '—';
+  document.getElementById('eu-nom').value           = u.nom          || '—';
+  document.getElementById('eu-telephone').value     = u.telephone    || '—';
+  document.getElementById('eu-adresse').value       = u.adresse      || '—';
+  document.getElementById('eu-siret').value         = u.siret        || '—';
+  document.getElementById('eu-rcpro').value         = u.rcpro_numero || '—';
+  document.getElementById('eu-numero-mandat').value = u.numero_mandat || '';
+  document.getElementById('eu-role').value          = u.role || 'user';
   document.getElementById('eu-error').textContent = '';
   document.getElementById('edit-user-modal').classList.add('show');
 }
@@ -1934,10 +1940,11 @@ async function saveEditUser() {
   const errEl   = document.getElementById('eu-error');
   if (!prenom) { errEl.textContent = 'Le prénom est obligatoire.'; return; }
 
-  // Seul le rôle est modifiable depuis cette modale
+  const numeroMandat = document.getElementById('eu-numero-mandat')?.value?.trim() || null;
   const { error } = await sb.from('profiles').update({
     role,
     is_admin: ['admin_candy','super_admin'].includes(role),
+    numero_mandat: numeroMandat,
   }).eq('id', id);
 
   if (error) { errEl.textContent = 'Erreur : ' + error.message; return; }
@@ -1967,34 +1974,172 @@ async function adminToggleAdmin(userId) {
 async function adminDeleteUser(userId) {
   const u = state.adminUsers.find(x => x.id === userId);
   if (!u) return;
-  const label = u.prenom || u.email;
+  const label = u.prenom ? `${u.prenom} ${u.nom || ''}`.trim() : u.email;
+  const manager = u.dci_parent_id
+    ? (state.profilesById?.[u.dci_parent_id]?.prenom || 'le manager NIV2')
+    : 'un administrateur';
+
   if (!confirm(
-    `⚠️ SUPPRESSION DÉFINITIVE\n\n` +
-    `Vous êtes sur le point de supprimer définitivement le compte de ${label} (${u.email}).\n\n` +
-    `Cette action est IRRÉVERSIBLE :\n` +
-    `• Le compte et son profil seront supprimés\n` +
-    `• Les contacts, contrats et tâches qu'il/elle a créés seront conservés mais perdront leur auteur\n` +
-    `• Pour seulement bloquer la connexion (réversible), utilisez plutôt "Révoquer"\n\n` +
+    `⚠️ SUPPRESSION DÉFINITIVE — ${label}\n\n` +
+    `Actions qui seront effectuées :\n` +
+    `• Profil et accès supprimés définitivement\n` +
+    `• Données personnelles archivées 5 ans (RGPD) dans un fichier sécurisé\n` +
+    `• Contacts et contrats réassignés à : ${manager}\n\n` +
+    `Pour bloquer sans supprimer, utilisez "Révoquer" à la place.\n\n` +
     `Continuer ?`
   )) return;
+
   const typed = prompt(`Pour confirmer, tapez exactement : ${label}`);
-  if (typed !== label) {
-    alert("Suppression annulée (texte non identique).");
+  if (typed !== label) { alert('Suppression annulée (texte non identique).'); return; }
+
+  const { data: sessionData } = await sb.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if (!token) { alert('Session expirée — reconnectez-vous.'); return; }
+
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/delete-user`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ target_user_id: userId }),
+    });
+    const body = await resp.json().catch(() => ({}));
+    if (!resp.ok || !body.ok) {
+      alert('Erreur lors de la suppression : ' + (body.error || `HTTP ${resp.status}`));
+      return;
+    }
+  } catch (e) {
+    alert('Erreur réseau : ' + e.message);
     return;
   }
-  const { error } = await sb.rpc('admin_delete_user', { target_user_id: userId });
-  if (error) { alert("Erreur : " + error.message); return; }
+
   if (typeof logRgpd === 'function') logRgpd('utilisateur_supprime', 'Administration', {
     entityType: 'utilisateur', entityId: userId, criticite: 'Critique',
-    donnees: 'user_id, email, profil',
+    donnees: 'user_id, email, profil — archivé dans Storage (archives/)',
     details: { utilisateur: label, email: u.email },
   });
-  alert(`✅ Compte ${label} supprimé définitivement.`);
+
+  alert(`✅ Compte ${label} supprimé. Données archivées pour 5 ans (RGPD).`);
   await loadAdminUsers();
   renderAdminUsers();
   await loadAllProfiles();
   renderContacts();
   renderContracts();
+}
+
+// ═══════════════════════════════════════════
+// ARCHIVES UTILISATEURS (RGPD 5 ans)
+// ═══════════════════════════════════════════
+
+async function loadArchivedUsers() {
+  const { data, error } = await sb.from('archived_users').select('*').order('archived_at', { ascending: false });
+  if (error) { console.error('Erreur chargement archives:', error); return []; }
+  state.archivedUsers = data || [];
+  return state.archivedUsers;
+}
+
+function renderArchivedUsers() {
+  const el = document.getElementById('archives-list');
+  if (!el) return;
+  const list = state.archivedUsers || [];
+  if (!list.length) {
+    el.innerHTML = '<p class="empty">Aucun utilisateur archivé.</p>';
+    return;
+  }
+  el.innerHTML = `<table class="tbl">
+    <thead><tr>
+      <th>Nom</th><th>E-mail</th><th>N° mandat</th><th>Rôle</th>
+      <th>Archivé le</th><th>Suppression le</th><th>Actions</th>
+    </tr></thead>
+    <tbody>${list.map(a => {
+      const archiveDate  = new Date(a.archived_at).toLocaleDateString('fr-FR');
+      const deleteDate   = new Date(a.delete_after).toLocaleDateString('fr-FR');
+      const nom = [a.prenom, a.nom].filter(Boolean).join(' ') || '—';
+      return `<tr>
+        <td>${escapeHtml(nom)}</td>
+        <td class="mut">${escapeHtml(a.email)}</td>
+        <td>${escapeHtml(a.numero_mandat || '—')}</td>
+        <td><span class="badge badge-gray" style="font-size:.72rem">${escapeHtml(a.role || '—')}</span></td>
+        <td class="mut" style="font-size:.82rem">${archiveDate}</td>
+        <td class="mut" style="font-size:.82rem">${deleteDate}</td>
+        <td class="actions">
+          <button class="btn btn-out btn-sm" onclick="downloadUserArchive('${escapeHtml(a.storage_path)}','${escapeHtml(nom)}')">⬇ JSON</button>
+          <button class="btn btn-out btn-sm" onclick="exportArchivePdf('${a.id}')">📄 PDF</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+async function downloadUserArchive(storagePath, label) {
+  const { data, error } = await sb.storage.from('archives').createSignedUrl(storagePath, 60);
+  if (error || !data?.signedUrl) { alert('Erreur accès archive : ' + (error?.message || 'URL non disponible')); return; }
+  const a = document.createElement('a');
+  a.href = data.signedUrl;
+  a.download = storagePath.split('/').pop() || 'archive.json';
+  a.click();
+}
+
+async function exportArchivePdf(archiveId) {
+  const archive = (state.archivedUsers || []).find(a => a.id === archiveId);
+  if (!archive) return;
+
+  // Récupérer le JSON depuis Storage
+  const { data: urlData } = await sb.storage.from('archives').createSignedUrl(archive.storage_path, 60);
+  if (!urlData?.signedUrl) { alert('Archive introuvable.'); return; }
+
+  let archiveJson;
+  try {
+    const resp = await fetch(urlData.signedUrl);
+    archiveJson = await resp.json();
+  } catch { alert('Impossible de lire l\'archive.'); return; }
+
+  const nom = [archive.prenom, archive.nom].filter(Boolean).join(' ') || archive.email;
+  const archiveDate = new Date(archive.archived_at).toLocaleDateString('fr-FR');
+  const deleteDate  = new Date(archive.delete_after).toLocaleDateString('fr-FR');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+    <title>Archive RGPD — ${nom}</title>
+    <style>
+      body{font-family:Arial,sans-serif;font-size:13px;color:#1e293b;padding:32px;max-width:800px;margin:auto}
+      h1{font-size:20px;border-bottom:2px solid #2563eb;padding-bottom:8px;color:#2563eb}
+      h2{font-size:15px;margin-top:24px;color:#334155}
+      table{width:100%;border-collapse:collapse;margin-top:8px}
+      td,th{padding:7px 10px;border:1px solid #e2e8f0;font-size:12px}
+      th{background:#f1f5f9;font-weight:600}
+      .meta{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:14px;margin-bottom:20px}
+      .meta p{margin:4px 0;font-size:12px}
+      @media print{.no-print{display:none}}
+    </style>
+  </head><body>
+    <div class="no-print" style="margin-bottom:20px">
+      <button onclick="window.print()" style="padding:8px 16px;background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨 Imprimer / Enregistrer PDF</button>
+    </div>
+    <h1>🗄 Archive RGPD — ${nom}</h1>
+    <div class="meta">
+      <p><strong>Objet :</strong> Conservation légale 5 ans (Art. L123-22 C.com)</p>
+      <p><strong>Archivé le :</strong> ${archiveDate}</p>
+      <p><strong>Suppression prévue le :</strong> ${deleteDate}</p>
+      <p><strong>N° de mandat :</strong> ${archive.numero_mandat || '—'}</p>
+    </div>
+    <h2>Identité</h2>
+    <table>
+      <tr><th>Champ</th><th>Valeur</th></tr>
+      <tr><td>Nom complet</td><td>${nom}</td></tr>
+      <tr><td>E-mail</td><td>${archive.email}</td></tr>
+      <tr><td>Rôle</td><td>${archive.role || '—'}</td></tr>
+      <tr><td>ID utilisateur</td><td>${archive.original_user_id}</td></tr>
+    </table>
+    <h2>Journal RGPD (${(archiveJson.journal_rgpd || []).length} entrées)</h2>
+    <table>
+      <tr><th>Date</th><th>Action</th><th>Module</th><th>Criticité</th></tr>
+      ${(archiveJson.journal_rgpd || []).slice(0, 200).map(l =>
+        `<tr><td>${new Date(l.created_at).toLocaleDateString('fr-FR')}</td>
+         <td>${l.action || ''}</td><td>${l.module || ''}</td><td>${l.criticite || ''}</td></tr>`
+      ).join('')}
+    </table>
+  </body></html>`);
+  win.document.close();
 }
 
 async function adminToggleBan(userId, banned) {
@@ -2034,7 +2179,15 @@ function openNewUserModal() {
   $('#nu-prenom').value = '';
   $('#nu-email').value = '';
   $('#nu-password').value = '';
+  if ($('#nu-numero-mandat')) $('#nu-numero-mandat').value = '';
   $('#nu-error').textContent = '';
+  // Peupler le sélecteur manager (DCI / NIV2)
+  const sel = $('#nu-manager-id');
+  if (sel) {
+    const managers = Object.values(state.profilesById || {}).filter(p => p.role === 'dci' || p.is_admin);
+    sel.innerHTML = '<option value="">— Aucun (admin par défaut) —</option>'
+      + managers.map(p => `<option value="${p.id}">${escapeHtml(p.prenom || '')} ${escapeHtml(p.nom || '')} (${p.role || 'admin'})</option>`).join('');
+  }
   $('#new-user-modal').classList.add('show');
 }
 
@@ -2087,6 +2240,8 @@ async function createNewUser() {
         siret: $('#nu-siret')?.value?.trim() || null,
         adresse_pro: $('#nu-adresse')?.value?.trim() || null,
         tva: $('#nu-tva')?.value?.trim() || null,
+        numero_mandat: $('#nu-numero-mandat')?.value?.trim() || null,
+        dci_parent_id: $('#nu-manager-id')?.value || null,
      }),
       })
 
