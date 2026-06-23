@@ -2054,12 +2054,15 @@ async function createNewUser() {
     return;
   }
 
-  // Vérifier que l'email n'est pas déjà utilisé par un autre compte
+  // Recharger depuis Supabase pour éviter les faux positifs sur données en cache
+  $('#nu-error').textContent = 'Vérification en cours…';
+  await loadAdminUsers();
   const emailExistant = (state.adminUsers || []).find(u => u.email?.toLowerCase() === email.toLowerCase());
   if (emailExistant) {
     $('#nu-error').textContent = "Cet e-mail est déjà utilisé par un compte existant (" + (emailExistant.prenom || emailExistant.email) + "). Utilisez une adresse différente.";
     return;
   }
+  $('#nu-error').textContent = '';
   if (password.length < 8) {
     $('#nu-error').textContent = "Le mot de passe doit faire au moins 8 caractères.";
     return;
