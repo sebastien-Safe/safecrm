@@ -31,7 +31,7 @@ URL de base : `https://qdjmzietysukediqkebg.supabase.co/functions/v1/`
 | | |
 |---|---|
 | Méthode | `POST` |
-| Auth | JWT admin (`is_admin = true`) |
+| Auth | JWT admin (`is_admin = true`) + **AAL2 (TOTP obligatoire)** |
 | CORS | `https://crm.safe-digitalisation.fr` |
 
 **Body :**
@@ -81,7 +81,7 @@ URL de base : `https://qdjmzietysukediqkebg.supabase.co/functions/v1/`
 | | |
 |---|---|
 | Méthode | `POST` |
-| Auth | JWT admin |
+| Auth | JWT admin + **AAL2 (TOTP obligatoire)** |
 | CORS | `https://crm.safe-digitalisation.fr` |
 | Rate limit | 5 résiliations / heure / admin |
 
@@ -150,7 +150,7 @@ Calcule TTC = HT × `TVA_MULTIPLIER` en centimes. Crée une session `subscriptio
 | | |
 |---|---|
 | Méthode | `POST` |
-| Auth | JWT admin |
+| Auth | JWT admin + **AAL2 (TOTP obligatoire)** |
 | CORS | `https://crm.safe-digitalisation.fr` |
 
 **Body :**

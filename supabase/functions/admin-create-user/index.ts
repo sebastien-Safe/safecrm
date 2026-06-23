@@ -13,6 +13,15 @@ function json(b: unknown, s = 200) {
   );
 }
 
+function getJwtAal(token: string): string {
+  try {
+    const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const pad = b64 + '='.repeat((4 - b64.length % 4) % 4);
+    const { aal } = JSON.parse(atob(pad));
+    return aal || 'aal1';
+  } catch { return 'aal1'; }
+}
+
 // Changement ici : Deno.serve au lieu de serve
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -51,6 +60,10 @@ Deno.serve(async (req) => {
     .single();
   if (!profile?.is_admin) {
     return json({ error: "forbidden" }, 403);
+  }
+
+  if (getJwtAal(token) !== 'aal2') {
+    return json({ error: "mfa_required", message: "Authentification à deux facteurs requise pour créer un utilisateur." }, 403);
   }
 
   let body: any;

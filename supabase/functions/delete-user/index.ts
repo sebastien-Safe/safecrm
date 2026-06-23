@@ -23,6 +23,11 @@ Deno.serve(async (req) => {
     const { data: callerProfile } = await caller.from('profiles').select('is_admin, role').eq('id', callerUser.id).single();
     if (!callerProfile?.is_admin) return err(403, 'Réservé aux administrateurs');
 
+    const _token = authHeader.replace('Bearer ', '');
+    if (getJwtAal(_token) !== 'aal2') {
+      return err(403, 'Authentification à deux facteurs requise pour supprimer un utilisateur.');
+    }
+
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
 
     const { target_user_id } = await req.json();
@@ -125,6 +130,15 @@ Deno.serve(async (req) => {
     return err(500, String(e));
   }
 });
+
+function getJwtAal(token: string): string {
+  try {
+    const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const pad = b64 + '='.repeat((4 - b64.length % 4) % 4);
+    const { aal } = JSON.parse(atob(pad));
+    return aal || 'aal1';
+  } catch { return 'aal1'; }
+}
 
 function err(status: number, message: string) {
   return new Response(JSON.stringify({ ok: false, error: message }), {

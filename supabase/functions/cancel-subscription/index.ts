@@ -9,6 +9,15 @@ const cors = {
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 
+function getJwtAal(token: string): string {
+  try {
+    const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const pad = b64 + '='.repeat((4 - b64.length % 4) % 4);
+    const { aal } = JSON.parse(atob(pad));
+    return aal || 'aal1';
+  } catch { return 'aal1'; }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -31,6 +40,10 @@ Deno.serve(async (req) => {
 
   const { data: profile } = await sb.from("profiles").select("is_admin, prenom").eq("id", user.id).single();
   if (!profile?.is_admin) return json({ error: "forbidden", message: "Seul un administrateur peut valider une résiliation." }, 403);
+
+  if (getJwtAal(token) !== 'aal2') {
+    return json({ error: "mfa_required", message: "Authentification à deux facteurs requise pour résilier un abonnement." }, 403);
+  }
 
   let body: { contract_id?: string; cancelled_by?: string; resync?: boolean };
   try { body = await req.json(); } catch { return json({ error: "invalid_json" }, 400); }

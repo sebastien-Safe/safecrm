@@ -1251,10 +1251,10 @@
       </tr>
       <tr>
         <td>P2-5</td>
-        <td><strong>Enforcer TOTP côté serveur</strong> — vérifier le niveau d'assurance (<code>aal2</code>) du JWT dans les RLS critiques ou dans les Edge Functions sensibles</td>
-        <td>—</td>
-        <td class="effort">4 h</td>
-        <td><span class="badge-partial">⏳ En attente</span></td>
+        <td><strong>Enforcer TOTP côté serveur</strong> — claim <code>aal2</code> vérifié dans les 3 Edge Functions sensibles : <code>admin-create-user</code>, <code>delete-user</code>, <code>cancel-subscription</code>. Helper <code>getJwtAal()</code> décode le JWT localement après validation Supabase. Retourne <code>403 mfa_required</code> si AAL1.</td>
+        <td><code>supabase/functions/admin-create-user/index.ts</code><br><code>supabase/functions/delete-user/index.ts</code><br><code>supabase/functions/cancel-subscription/index.ts</code></td>
+        <td class="effort">2 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">ANSSI MFA, Supabase AAL</span></td>
       </tr>
       <tr>
