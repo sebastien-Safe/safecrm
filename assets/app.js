@@ -222,6 +222,13 @@ async function showApp() {
   $('#reset-screen').style.display = 'none';
   $('#app').style.display = 'flex';
   await loadAll();
+  // Redirection depuis WORK → onglet admin cible
+  const workGoto = sessionStorage.getItem('safe_work_goto');
+  if (workGoto && isAdmin()) {
+    sessionStorage.removeItem('safe_work_goto');
+    switchView('admin');
+    setTimeout(() => switchAdminTab(workGoto), 80);
+  }
 }
 
 async function login() {
@@ -945,7 +952,7 @@ function currentJoursTravailles() {
 function switchAdminTab(tab) {
   state.adminView = tab;
   $all('[data-admin-tab]').forEach(b => b.classList.toggle('active', b.dataset.adminTab === tab));
-  ['overview', 'per-user', 'users', 'registre', 'securite'].forEach(t => {
+  ['overview', 'per-user', 'users', 'registre', 'securite', 'reglages'].forEach(t => {
     const el = $('#admin-panel-' + t);
     if (el) el.style.display = (t === tab) ? '' : 'none';
   });
@@ -954,6 +961,7 @@ function switchAdminTab(tab) {
   if (tab === 'per-user') renderAdminPerUser();
   if (tab === 'registre') renderRegistreRGPD();
   if (tab === 'securite') renderSecurityPanel();
+  if (tab === 'reglages') loadFournisseurs();
 }
 
 // ── Panel Sécurité ────────────────────────────────────────
@@ -2720,7 +2728,7 @@ async function disableTotp() {
 
 // Rôles nécessitant un TOTP obligatoire (Art.42 RGPD — accès aux données sensibles)
 // Correspond à admin_global / dpo / broker_admin dans la nomenclature RGPD du CRM
-const TOTP_REQUIRED_ROLES = ['admin_candy', 'super_admin'];
+const TOTP_REQUIRED_ROLES = ['admin_candy', 'super_admin', 'dci'];
 
 // Journalisation des événements TOTP dans totp_audit (non bloquant)
 async function _logTotpEvent(event, role) {
@@ -4780,5 +4788,110 @@ function copyIcalUrl() {
     setTimeout(() => btn.textContent = orig, 2500);
   });
 }
+
+// ==========================================================================
+// RÉGLAGES — REGISTRE FOURNISSEURS TIERS (RGPD art. 28 / NIS2 supply chain)
+// ==========================================================================
+
+async function loadFournisseurs() {
+  const tbody = $('#fournisseurs-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mut)">Chargement…</td></tr>';
+  const { data, error } = await sb.from('fournisseurs').select('*').order('niveau_risque', { ascending: false }).order('nom');
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="7" class="empty">Erreur de chargement.</td></tr>'; return; }
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">Aucun fournisseur enregistré.</td></tr>'; return; }
+  const risqueBadge = { faible: 'badge-green', moyen: 'badge-orange', eleve: 'badge-red' };
+  const risqueLabel = { faible: '🟢 Faible', moyen: '🟡 Moyen', eleve: '🔴 Élevé' };
+  const catLabel = { hebergeur:'Hébergeur', paiement:'Paiement', communication:'Communication', 'sous-traitant':'Sous-traitant', securite:'Sécurité', editeur:'Éditeur', autre:'Autre' };
+  tbody.innerHTML = data.map(f => `
+    <tr>
+      <td><strong>${escapeHtml(f.nom)}</strong>${f.contact_technique ? `<br><span class="mut" style="font-size:.75rem">${escapeHtml(f.contact_technique)}</span>` : ''}</td>
+      <td>${escapeHtml(f.pays)}</td>
+      <td>${escapeHtml(catLabel[f.categorie] || f.categorie)}</td>
+      <td><span class="badge ${risqueBadge[f.niveau_risque] || 'badge-orange'}">${risqueLabel[f.niveau_risque] || f.niveau_risque}</span></td>
+      <td style="text-align:center">${f.dpa_signe
+        ? (f.dpa_url ? `<a href="${escapeHtml(f.dpa_url)}" target="_blank" rel="noopener" style="color:var(--ok);font-size:.8rem">✅ DPA ↗</a>` : '<span style="color:var(--ok)">✅</span>')
+        : '<span style="color:var(--alert)">❌</span>'}</td>
+      <td style="font-size:.78rem;color:var(--mut)">${escapeHtml(f.certifications || '—')}</td>
+      <td>
+        <button class="btn btn-out btn-sm" onclick="openFournisseurModal('${f.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteFournisseur('${f.id}','${escapeHtml(f.nom)}')">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+
+function openFournisseurModal(id) {
+  const modal = $('#fournisseur-modal');
+  $('#fournisseur-modal-error').style.display = 'none';
+  if (id) {
+    const f = (window._fournisseursCache || []).find(x => x.id === id);
+    if (!f) { loadFournisseurs(); return; }
+    $('#fournisseur-modal-title').textContent = 'Modifier le fournisseur';
+    $('#f-id').value        = f.id;
+    $('#f-nom').value       = f.nom || '';
+    $('#f-pays').value      = f.pays || '';
+    $('#f-categorie').value = f.categorie || 'autre';
+    $('#f-risque').value    = f.niveau_risque || 'moyen';
+    $('#f-certif').value    = f.certifications || '';
+    $('#f-dpa-url').value   = f.dpa_url || '';
+    $('#f-contact').value   = f.contact_technique || '';
+    $('#f-notes').value     = f.notes || '';
+    $('#f-dpa-signe').checked = !!f.dpa_signe;
+  } else {
+    $('#fournisseur-modal-title').textContent = 'Nouveau fournisseur';
+    ['f-id','f-nom','f-pays','f-certif','f-dpa-url','f-contact','f-notes'].forEach(id => { const el = $('#' + id); if (el) el.value = ''; });
+    $('#f-categorie').value  = 'hebergeur';
+    $('#f-risque').value     = 'moyen';
+    $('#f-dpa-signe').checked = false;
+  }
+  modal.classList.add('show');
+}
+
+async function saveFournisseur() {
+  const id  = $('#f-id').value;
+  const nom = $('#f-nom').value.trim();
+  if (!nom) { $('#fournisseur-modal-error').textContent = 'Le nom est obligatoire.'; $('#fournisseur-modal-error').style.display = ''; return; }
+  const payload = {
+    nom, pays: $('#f-pays').value.trim() || 'FR',
+    categorie:         $('#f-categorie').value,
+    niveau_risque:     $('#f-risque').value,
+    certifications:    $('#f-certif').value.trim()   || null,
+    dpa_signe:         $('#f-dpa-signe').checked,
+    dpa_url:           $('#f-dpa-url').value.trim()  || null,
+    contact_technique: $('#f-contact').value.trim()  || null,
+    notes:             $('#f-notes').value.trim()     || null,
+    updated_at:        new Date().toISOString(),
+  };
+  const { error } = id
+    ? await sb.from('fournisseurs').update(payload).eq('id', id)
+    : await sb.from('fournisseurs').insert(payload);
+  if (error) { $('#fournisseur-modal-error').textContent = 'Erreur : ' + error.message; $('#fournisseur-modal-error').style.display = ''; return; }
+  if (typeof logRgpd === 'function') logRgpd('fournisseur_modifie', 'Réglages', {
+    criticite: 'Attention', donnees: 'registre fournisseurs tiers',
+    details: { nom, action: id ? 'modification' : 'ajout', niveau_risque: payload.niveau_risque },
+  });
+  $('#fournisseur-modal').classList.remove('show');
+  await loadFournisseurs();
+}
+
+async function deleteFournisseur(id, nom) {
+  if (!confirm(`Supprimer le fournisseur "${nom}" du registre ?`)) return;
+  await sb.from('fournisseurs').delete().eq('id', id);
+  if (typeof logRgpd === 'function') logRgpd('fournisseur_modifie', 'Réglages', {
+    criticite: 'Attention', donnees: 'registre fournisseurs tiers',
+    details: { nom, action: 'suppression' },
+  });
+  await loadFournisseurs();
+}
+
+// Cache fournisseurs pour l'édition
+(async () => {
+  const orig = loadFournisseurs;
+  window.loadFournisseurs = async function() {
+    await orig();
+    const { data } = await sb.from('fournisseurs').select('*');
+    window._fournisseursCache = data || [];
+  };
+})();
 
 init()

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Incidents NIS2 — S@FE WORK</title>
+  <link rel="icon" type="image/svg+xml" href="/work/favicon.svg">
+  <link rel="stylesheet" href="/work/shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/config.js"></script>
+  <style>
+    .nis2-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:28px}
+    .stat-card{background:rgba(20,34,64,.7);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+    .stat-card .val{font-size:2rem;font-weight:800;color:#fff;font-family:var(--ff-mono)}
+    .stat-card .lbl{font-size:.78rem;color:var(--mut);margin-top:4px;text-transform:uppercase;letter-spacing:.08em}
+    .stat-card.danger{border-color:rgba(255,77,94,.4);background:rgba(255,77,94,.06)}
+    .stat-card.warn  {border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.06)}
+    .stat-card.ok    {border-color:rgba(34,197,94,.4); background:rgba(34,197,94,.06)}
+    .incident-card{background:rgba(20,34,64,.7);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:12px}
+    .incident-card.ouvert  {border-left:4px solid var(--alert)}
+    .incident-card.en_cours{border-left:4px solid var(--gold)}
+    .incident-card.clos    {border-left:4px solid var(--ok)}
+    .badge-type{display:inline-block;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:6px;letter-spacing:.06em;text-transform:uppercase}
+    .badge-cyber{background:rgba(255,77,94,.15);color:#fca5a5}
+    .badge-viol {background:rgba(245,158,11,.15);color:var(--gold)}
+    .badge-indisp{background:rgba(59,130,246,.15);color:#93c5fd}
+    .badge-autre{background:rgba(148,163,184,.1);color:var(--mut)}
+    .badge-statut{display:inline-block;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:6px}
+    .badge-ouvert  {background:rgba(255,77,94,.15);color:#fca5a5}
+    .badge-en_cours{background:rgba(245,158,11,.15);color:var(--gold)}
+    .badge-clos    {background:rgba(34,197,94,.15); color:#86efac}
+    .timer-badge{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px}
+    .timer-ok   {background:rgba(34,197,94,.1); color:#86efac;border:1px solid rgba(34,197,94,.25)}
+    .timer-warn {background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.25)}
+    .timer-late {background:rgba(255,77,94,.1); color:#fca5a5;border:1px solid rgba(255,77,94,.25)}
+    .form-panel{background:rgba(20,34,64,.7);border:1px solid var(--line);border-radius:var(--r);padding:24px;margin-bottom:28px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media(max-width:600px){.form-row{grid-template-columns:1fr}}
+    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+    .field label{font-size:.78rem;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+    .field input,.field select,.field textarea{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:#fff;font-size:.88rem;font-family:var(--ff-body);outline:none;transition:border-color .15s}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+    .field select option{background:var(--navy-mid);color:#fff}
+    .field textarea{min-height:80px;resize:vertical}
+    .anssi-bar{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .empty-state{text-align:center;padding:48px 20px;color:var(--mut)}
+    .empty-state .ico{font-size:2.5rem;margin-bottom:12px}
+    .incident-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    .incident-detail{margin-top:10px;font-size:.84rem;color:var(--mut-2);line-height:1.6}
+    .incident-detail strong{color:#fff;font-weight:600}
+    .incident-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+
+<div id="login-screen" class="login-wrap">
+  <div class="login-box">
+    <span class="eyebrow">S@FE WORK</span>
+    <h1>S<b style="color:var(--gold)">@</b>FE</h1>
+    <p>Accès réservé aux administrateurs</p>
+    <div class="field"><label>E-mail</label><input type="email" id="l-email" autocomplete="email"></div>
+    <div class="field"><label>Mot de passe</label><input type="password" id="l-pass" autocomplete="current-password"></div>
+    <button class="btn btn-gold" onclick="doLogin()" style="width:100%;justify-content:center">Se connecter</button>
+    <div class="login-error" id="login-err"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div class="topbar-brand">S<b>@</b>FE<small>WORK</small></div>
+    <div style="font-size:.8rem;color:var(--mut);padding:0 8px;border:1px solid var(--line);border-radius:6px">🛡️ Incidents NIS2</div>
+    <div class="topbar-user" style="margin-left:auto;display:flex;align-items:center;gap:10px">
+      <a href="/work/index.html" class="btn btn-out" style="font-size:.78rem;padding:5px 12px;text-decoration:none">← WORK</a>
+      <a href="/" class="btn btn-out" style="font-size:.78rem;padding:5px 12px;text-decoration:none">← CRM</a>
+      <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="shell" style="max-width:960px;margin:0 auto;padding:28px 20px">
+
+    <!-- Stats -->
+    <div style="margin-bottom:24px">
+      <span class="eyebrow">Registre de sécurité</span>
+      <h2 style="font-size:1.4rem">Incidents NIS2</h2>
+    </div>
+    <div class="nis2-grid" id="stats-grid">
+      <div class="stat-card danger"><div class="val" id="st-ouverts">—</div><div class="lbl">Incidents ouverts</div></div>
+      <div class="stat-card warn"> <div class="val" id="st-en-cours">—</div><div class="lbl">En cours</div></div>
+      <div class="stat-card ok">   <div class="val" id="st-clos">—</div><div class="lbl">Clôturés</div></div>
+      <div class="stat-card">      <div class="val" id="st-anssi">—</div><div class="lbl">Notifiés ANSSI</div></div>
+    </div>
+
+    <!-- Formulaire de déclaration -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 style="margin:0">Déclarer un incident</h3>
+      <button class="btn btn-out btn-sm" onclick="toggleForm()">+ Nouveau</button>
+    </div>
+
+    <div class="form-panel" id="form-panel" style="display:none">
+      <h4 style="margin:0 0 18px;color:var(--gold)">Nouveau signalement</h4>
+      <div class="form-row">
+        <div class="field">
+          <label>Date de détection *</label>
+          <input type="datetime-local" id="f-detected">
+        </div>
+        <div class="field">
+          <label>Type d'incident *</label>
+          <select id="f-type">
+            <option value="">— Sélectionner —</option>
+            <option value="cyberattaque">Cyberattaque (ransomware, phishing, intrusion…)</option>
+            <option value="violation_donnees">Violation de données personnelles</option>
+            <option value="indisponibilite">Indisponibilité de service</option>
+            <option value="autre">Autre incident de sécurité</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Systèmes affectés</label>
+        <input type="text" id="f-systemes" placeholder="ex : CRM, Supabase, emails Brevo…">
+      </div>
+      <div class="field">
+        <label>Description de l'incident *</label>
+        <textarea id="f-description" placeholder="Nature de l'incident, vecteur d'attaque identifié, données concernées…"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Impact estimé</label>
+          <textarea id="f-impact" placeholder="Nombre de personnes concernées, données exposées, durée d'indisponibilité…"></textarea>
+        </div>
+        <div class="field">
+          <label>Mesures prises</label>
+          <textarea id="f-mesures" placeholder="Isolation, changement de mots de passe, notification clients, dépôt de plainte…"></textarea>
+        </div>
+      </div>
+      <div class="anssi-bar" style="margin-bottom:18px">
+        <span style="font-size:1.1rem">🏛️</span>
+        <div style="flex:1">
+          <div style="font-size:.83rem;font-weight:700;color:#fff">Notification ANSSI (72h)</div>
+          <div style="font-size:.75rem;color:var(--mut);margin-top:2px">Si votre organisation est une entité essentielle ou importante NIS2, la notification est obligatoire dans les 24h (alerte précoce) puis 72h (rapport initial).</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.83rem;color:#fff">
+          <input type="checkbox" id="f-anssi" style="width:16px;height:16px;accent-color:var(--gold)"> Déjà notifié
+        </label>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-gold" onclick="saveIncident()">Enregistrer l'incident</button>
+        <button class="btn btn-out" onclick="toggleForm()">Annuler</button>
+      </div>
+      <div id="form-error" style="color:var(--alert);font-size:.83rem;margin-top:10px;display:none"></div>
+    </div>
+
+    <!-- Liste des incidents -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <h3 style="margin:0">Timeline des incidents</h3>
+      <div style="display:flex;gap:8px">
+        <select id="filter-statut" onchange="renderIncidents()" style="background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:5px 10px;color:var(--mut-2);font-size:.78rem;outline:none">
+          <option value="">Tous statuts</option>
+          <option value="ouvert">Ouvert</option>
+          <option value="en_cours">En cours</option>
+          <option value="clos">Clôturé</option>
+        </select>
+        <button class="btn btn-out btn-sm" onclick="loadIncidents()">↺</button>
+      </div>
+    </div>
+    <div id="incidents-list"></div>
+
+  </div>
+</div>
+
+<script>
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser = null;
+let _incidents = [];
+
+async function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { document.getElementById('login-err').textContent = error.message; return; }
+  init();
+}
+async function doLogout() { await sb.auth.signOut(); location.reload(); }
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { document.getElementById('login-screen').style.display = ''; document.getElementById('app').style.display = 'none'; return; }
+  currentUser = session.user;
+  const { data: prof } = await sb.from('profiles').select('is_admin').eq('id', currentUser.id).maybeSingle();
+  if (!prof?.is_admin) { document.getElementById('login-screen').style.display = ''; alert('Accès réservé aux administrateurs.'); return; }
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('f-detected').value = now.toISOString().slice(0,16);
+  await loadIncidents();
+}
+
+async function loadIncidents() {
+  const { data } = await sb.from('incidents_nis2').select('*').order('detected_at', { ascending: false });
+  _incidents = data || [];
+  updateStats();
+  renderIncidents();
+}
+
+function updateStats() {
+  document.getElementById('st-ouverts').textContent   = _incidents.filter(i => i.statut === 'ouvert').length;
+  document.getElementById('st-en-cours').textContent  = _incidents.filter(i => i.statut === 'en_cours').length;
+  document.getElementById('st-clos').textContent      = _incidents.filter(i => i.statut === 'clos').length;
+  document.getElementById('st-anssi').textContent     = _incidents.filter(i => i.anssi_notifie).length;
+}
+
+function renderIncidents() {
+  const filter = document.getElementById('filter-statut').value;
+  const list = filter ? _incidents.filter(i => i.statut === filter) : _incidents;
+  const el = document.getElementById('incidents-list');
+  if (!list.length) {
+    el.innerHTML = `<div class="incident-card"><div class="empty-state"><div class="ico">🛡️</div><p>Aucun incident enregistré${filter ? ' pour ce statut' : ''}.</p></div></div>`;
+    return;
+  }
+  el.innerHTML = list.map(i => {
+    const detected = new Date(i.detected_at);
+    const hours72 = (Date.now() - detected.getTime()) / 3600000;
+    let timerBadge = '';
+    if (i.statut !== 'clos' && !i.anssi_notifie) {
+      if (hours72 < 24)      timerBadge = `<span class="timer-badge timer-ok">🟢 ${Math.round(hours72)}h / 72h ANSSI</span>`;
+      else if (hours72 < 72) timerBadge = `<span class="timer-badge timer-warn">🟡 ${Math.round(hours72)}h / 72h ANSSI</span>`;
+      else                   timerBadge = `<span class="timer-badge timer-late">🔴 Délai 72h dépassé</span>`;
+    } else if (i.anssi_notifie) {
+      timerBadge = `<span class="timer-badge timer-ok">✅ ANSSI notifié</span>`;
+    }
+    const typeLabels = { cyberattaque:'Cyberattaque', violation_donnees:'Violation données', indisponibilite:'Indisponibilité', autre:'Autre' };
+    const typeBadges = { cyberattaque:'badge-cyber', violation_donnees:'badge-viol', indisponibilite:'badge-indisp', autre:'badge-autre' };
+    return `
+    <div class="incident-card ${i.statut}">
+      <div class="incident-meta">
+        <span class="badge-type ${typeBadges[i.type] || 'badge-autre'}">${typeLabels[i.type] || i.type}</span>
+        <span class="badge-statut badge-${i.statut}">${i.statut.replace('_',' ')}</span>
+        ${timerBadge}
+        <span style="font-size:.75rem;color:var(--mut);margin-left:auto">${detected.toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</span>
+      </div>
+      ${i.systemes_affectes ? `<div style="font-size:.78rem;color:var(--gold);margin-bottom:6px">Systèmes : ${i.systemes_affectes}</div>` : ''}
+      <div class="incident-detail">${i.description}</div>
+      ${i.impact_estime  ? `<div class="incident-detail" style="margin-top:6px"><strong>Impact :</strong> ${i.impact_estime}</div>` : ''}
+      ${i.mesures_prises ? `<div class="incident-detail" style="margin-top:6px"><strong>Mesures :</strong> ${i.mesures_prises}</div>` : ''}
+      <div class="incident-actions">
+        ${i.statut === 'ouvert'   ? `<button class="btn btn-out btn-sm" onclick="updateStatut('${i.id}','en_cours')">▶ Passer En cours</button>` : ''}
+        ${i.statut === 'en_cours' ? `<button class="btn btn-ok  btn-sm" onclick="updateStatut('${i.id}','clos')">✓ Clôturer</button>` : ''}
+        ${!i.anssi_notifie && i.statut !== 'clos' ? `<button class="btn btn-out btn-sm" onclick="markAnssi('${i.id}')">🏛️ Marquer ANSSI notifié</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleForm() {
+  const p = document.getElementById('form-panel');
+  p.style.display = p.style.display === 'none' ? '' : 'none';
+}
+
+async function saveIncident() {
+  const detected = document.getElementById('f-detected').value;
+  const type     = document.getElementById('f-type').value;
+  const desc     = document.getElementById('f-description').value.trim();
+  const errEl    = document.getElementById('form-error');
+  errEl.style.display = 'none';
+  if (!detected || !type || !desc) { errEl.textContent = 'Champs obligatoires manquants (date, type, description).'; errEl.style.display = ''; return; }
+  const { error } = await sb.from('incidents_nis2').insert({
+    user_id:           currentUser.id,
+    detected_at:       new Date(detected).toISOString(),
+    type,
+    systemes_affectes: document.getElementById('f-systemes').value.trim() || null,
+    description:       desc,
+    impact_estime:     document.getElementById('f-impact').value.trim()   || null,
+    mesures_prises:    document.getElementById('f-mesures').value.trim()  || null,
+    anssi_notifie:     document.getElementById('f-anssi').checked,
+    anssi_notifie_at:  document.getElementById('f-anssi').checked ? new Date().toISOString() : null,
+    statut:            'ouvert',
+  });
+  if (error) { errEl.textContent = 'Erreur : ' + error.message; errEl.style.display = ''; return; }
+  try {
+    await sb.from('audit_logs').insert({
+      user_id: currentUser.id, user_role: 'Administrateur',
+      action: 'incident_nis2_declare', module: 'Sécurité', entity_type: 'incident',
+      donnees_concernees: 'type, systèmes, description, mesures', criticite: 'Critique', resultat: 'Succès',
+      details: { type, systemes: document.getElementById('f-systemes').value.trim() },
+    });
+  } catch(e) { console.warn('[RGPD] log incident:', e); }
+  toggleForm();
+  document.getElementById('f-type').value = '';
+  document.getElementById('f-description').value = '';
+  document.getElementById('f-systemes').value = '';
+  document.getElementById('f-impact').value = '';
+  document.getElementById('f-mesures').value = '';
+  document.getElementById('f-anssi').checked = false;
+  await loadIncidents();
+}
+
+async function updateStatut(id, statut) {
+  await sb.from('incidents_nis2').update({ statut, updated_at: new Date().toISOString() }).eq('id', id);
+  await loadIncidents();
+}
+
+async function markAnssi(id) {
+  await sb.from('incidents_nis2').update({ anssi_notifie: true, anssi_notifie_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', id);
+  try {
+    await sb.from('audit_logs').insert({
+      user_id: currentUser.id, user_role: 'Administrateur',
+      action: 'incident_nis2_anssi_notifie', module: 'Sécurité', entity_type: 'incident', entity_id: id,
+      donnees_concernees: 'statut notification ANSSI', criticite: 'Critique', resultat: 'Succès',
+      details: { notifie_at: new Date().toISOString() },
+    });
+  } catch(e) {}
+  await loadIncidents();
+}
+
+init();
+</script>
+</body>
+</html>

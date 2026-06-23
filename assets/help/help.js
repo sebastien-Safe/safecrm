@@ -166,8 +166,22 @@ function renderHelpDocs(body) {
         </div>
       </div>`).join('');
 
+  const docsLink = (typeof HELP_DOCS_LINK !== 'undefined')
+    ? `<a href="${HELP_DOCS_LINK.url}" target="_blank" rel="noopener"
+         style="display:flex;align-items:center;gap:12px;border:1.5px solid rgba(245,158,11,.4);border-radius:10px;padding:14px 16px;text-decoration:none;background:rgba(245,158,11,.06);margin-bottom:20px;transition:border-color .15s"
+         onmouseover="this.style.borderColor='rgba(245,158,11,.8)'" onmouseout="this.style.borderColor='rgba(245,158,11,.4)'">
+        <span style="font-size:1.4rem">📄</span>
+        <div>
+          <div style="font-weight:700;font-size:.9rem;color:#0a1628">${HELP_DOCS_LINK.label}</div>
+          <div style="font-size:.77rem;color:#64748b;margin-top:2px">${HELP_DOCS_LINK.description}</div>
+        </div>
+        <span style="margin-left:auto;color:#f59e0b;font-size:1rem">↗</span>
+      </a>`
+    : '';
+
   body.innerHTML = `
     <div style="padding:20px 22px">
+      ${docsLink}
       <h3 style="margin:0 0 16px;font-family:Sora,sans-serif;font-size:1rem">📚 Documentation des modules</h3>
       ${cards}
     </div>`;

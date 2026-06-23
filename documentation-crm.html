@@ -188,6 +188,8 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <li><a href="#s14"><span class="num">14</span>Architecture Technique &amp; Schémas</a></li>
     <li><a href="#s15"><span class="num">15</span>Documents Juridiques &amp; Conformité</a></li>
     <li><a href="#s16"><span class="num">16</span>Journal RGPD — Registre des traitements &amp; traçabilité</a></li>
+    <li><a href="#s17"><span class="num">17</span>Sécurité NIS2 — Incidents, MFA, Registre fournisseurs</a></li>
+    <li><a href="#s18"><span class="num">18</span>DPA — Sous-traitants &amp; acteurs externes</a></li>
   </ol>
 </div>
 
@@ -1565,6 +1567,160 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 17. SÉCURITÉ NIS2 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s17">
+  <div class="section-header">
+    <div class="section-num">17</div>
+    <div class="section-title">Sécurité NIS2 — Incidents, MFA, Registre fournisseurs</div>
+  </div>
+
+  <h3>Module Incidents NIS2 (<code>/work/incidents-nis2.html</code>)</h3>
+  <p>Accessible depuis WORK → Incidents NIS2 ou Administration → Réglages. Réservé aux administrateurs. Chaque incident est enregistré dans la table <code>incidents_nis2</code> (RLS : admins uniquement) et logué dans <code>audit_logs</code>.</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Champ</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>detected_at</code></td><td>Date/heure de détection de l'incident</td></tr>
+      <tr><td><code>type</code></td><td>cyberattaque · violation_donnees · indisponibilite · autre</td></tr>
+      <tr><td><code>systemes_affectes</code></td><td>Systèmes d'information touchés</td></tr>
+      <tr><td><code>description</code></td><td>Nature de l'incident, vecteur, données concernées</td></tr>
+      <tr><td><code>impact_estime</code></td><td>Nombre de personnes, données exposées, durée</td></tr>
+      <tr><td><code>mesures_prises</code></td><td>Isolation, changement de mots de passe, dépôt de plainte…</td></tr>
+      <tr><td><code>anssi_notifie</code></td><td>Boolean — notification ANSSI effectuée</td></tr>
+      <tr><td><code>anssi_notifie_at</code></td><td>Horodatage de la notification ANSSI</td></tr>
+      <tr><td><code>statut</code></td><td>ouvert · en_cours · clos</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="info-box">
+    <strong>Indicateur 72h :</strong> Le module calcule automatiquement le délai écoulé depuis la détection. En dessous de 24h : vert. Entre 24h et 72h : orange (alerte précoce NIS2). Au-delà de 72h sans notification ANSSI : rouge. Note : la notification ANSSI n'est légalement obligatoire que pour les entités essentielles/importantes NIS2 (&gt;50 salariés ou &gt;10 M€ CA). Pour S@FE en tant que micro-entreprise, c'est une bonne pratique commerciale.
+  </div>
+
+  <h3>Double authentification MFA TOTP</h3>
+  <p>Géré via <code>assets/app.js</code> — fonctions <code>challengeTOTPIfNeeded()</code>, <code>_forceTotpEnrollment()</code>, <code>refreshTOTPStatus()</code>.</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Rôle</th><th>MFA obligatoire</th><th>Comportement si absent</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge b-admin">super_admin</span></td><td>✅ Oui</td><td>Enrôlement forcé à la connexion, non annulable</td></tr>
+      <tr><td><span class="badge b-admin">admin_candy</span></td><td>✅ Oui</td><td>Enrôlement forcé à la connexion, non annulable</td></tr>
+      <tr><td><span class="badge b-dci">dci</span></td><td>✅ Oui</td><td>Enrôlement forcé à la connexion, non annulable</td></tr>
+      <tr><td><span class="badge b-all">user (Niveau 1)</span></td><td>⚪ Optionnel</td><td>Accès accordé sans MFA, activation possible depuis le profil</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Constante de configuration : <code>TOTP_REQUIRED_ROLES = ['admin_candy', 'super_admin', 'dci']</code>. Appareil de confiance mémorisé 2h (<code>safe_totp_trust_{uid}</code> en localStorage). Chaque événement TOTP est logué dans <code>totp_audit</code>.</p>
+
+  <h3>Registre des fournisseurs tiers — table <code>fournisseurs</code></h3>
+  <p>Accessible depuis Administration → ⚙️ Réglages. Réservé aux administrateurs. Implémente l'obligation de cartographie des sous-traitants (RGPD art. 28 et NIS2 supply chain).</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Fournisseur</th><th>Pays</th><th>Catégorie</th><th>Risque</th><th>DPA</th><th>Certifications clés</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Supabase</strong></td><td>US/EU</td><td>Hébergeur / BDD</td><td><span class="badge b-admin">Élevé</span></td><td>✅</td><td>SOC2 Type 2, ISO 27001</td></tr>
+      <tr><td><strong>Stripe</strong></td><td>US</td><td>Paiement</td><td><span class="badge b-admin">Élevé</span></td><td>✅</td><td>PCI DSS L1, SOC1/2</td></tr>
+      <tr><td><strong>Brevo</strong></td><td>FR</td><td>Communication</td><td><span class="badge b-dci">Moyen</span></td><td>✅</td><td>ISO 27001, RGPD natif</td></tr>
+      <tr><td><strong>OVHcloud</strong></td><td>FR</td><td>Hébergeur</td><td><span class="badge b-all">Faible</span></td><td>✅</td><td>ISO 27001, HDS, SecNumCloud</td></tr>
+      <tr><td><strong>Cloudflare</strong></td><td>US</td><td>Sécurité / CDN</td><td><span class="badge b-dci">Moyen</span></td><td>✅</td><td>ISO 27001, SOC 2 Type II</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Les fournisseurs sont éditables depuis l'interface (ajout, modification, suppression). Chaque modification est logée : <code>fournisseur_modifie</code> — Attention.</p>
+
+  <h3>Accès depuis WORK</h3>
+  <ul>
+    <li><strong>Bouton "← CRM"</strong> dans la topbar de toutes les pages WORK — retour direct à l'index CRM.</li>
+    <li><strong>Sidebar WORK</strong> : section "Sécurité" avec liens directs Incidents NIS2, Journal RGPD, Journal de sécurité.</li>
+    <li><strong>Cartes dashboard WORK</strong> : 4 cartes d'accès rapide (Journal RGPD, Sécurité, Incidents NIS2, Registre fournisseurs). Les 3 cartes CRM utilisent <code>sessionStorage.safe_work_goto</code> pour naviguer automatiquement vers l'onglet admin cible à l'arrivée sur le CRM.</li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 18. DPA — SOUS-TRAITANTS & ACTEURS EXTERNES -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s18">
+  <div class="section-header">
+    <div class="section-num">18</div>
+    <div class="section-title">DPA — Accords sous-traitants &amp; acteurs externes</div>
+  </div>
+
+  <p>S@FE SASU utilise des services tiers dans le cadre de l'exploitation du CRM. Chacun de ces acteurs traite, à des degrés divers, des données personnelles pour le compte de S@FE. Les accords de traitement des données (DPA) en vigueur sont référencés ci-dessous.</p>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Acteur</th><th>Rôle RGPD</th><th>Données traitées</th><th>Transfert hors UE</th><th>DPA / Politique</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Supabase Inc.</strong></td>
+        <td>Sous-traitant (art. 28)</td>
+        <td>Toutes les données CRM (contacts, contrats, profils, logs, fichiers)</td>
+        <td>⚠️ Oui (US) — région EU disponible et recommandée</td>
+        <td><a href="https://supabase.com/privacy" target="_blank">DPA Supabase ↗</a> — SCC incluses</td>
+      </tr>
+      <tr>
+        <td><strong>Stripe Inc.</strong></td>
+        <td>Responsable conjoint / Sous-traitant</td>
+        <td>Données bancaires clients, emails, montants, abonnements</td>
+        <td>⚠️ Oui (US) — Privacy Shield successor / SCC</td>
+        <td><a href="https://stripe.com/fr/privacy" target="_blank">DPA Stripe ↗</a></td>
+      </tr>
+      <tr>
+        <td><strong>Brevo (ex-Sendinblue)</strong></td>
+        <td>Sous-traitant (art. 28)</td>
+        <td>Emails, prénoms, noms des destinataires (mandataires, clients)</td>
+        <td>✅ Non — serveurs France</td>
+        <td><a href="https://www.brevo.com/fr/legal/privacypolicy/" target="_blank">DPA Brevo ↗</a></td>
+      </tr>
+      <tr>
+        <td><strong>OVHcloud</strong></td>
+        <td>Sous-traitant (art. 28)</td>
+        <td>Fichiers statiques complémentaires (CDN)</td>
+        <td>✅ Non — 100 % Europe</td>
+        <td><a href="https://www.ovhcloud.com/fr/personal-data-protection/" target="_blank">DPA OVH ↗</a> — SecNumCloud qualifié ANSSI</td>
+      </tr>
+      <tr>
+        <td><strong>Cloudflare Inc.</strong></td>
+        <td>Sous-traitant (art. 28)</td>
+        <td>Adresses IP, headers HTTP (protection DDoS, DNS)</td>
+        <td>⚠️ Oui (US) — SCC</td>
+        <td><a href="https://www.cloudflare.com/fr-fr/privacypolicy/" target="_blank">DPA Cloudflare ↗</a></td>
+      </tr>
+      <tr>
+        <td><strong>Anthropic (Claude AI)</strong></td>
+        <td>Sous-traitant IA (si utilisé pour assistance CRM)</td>
+        <td>Contenu des requêtes soumises à l'IA — <strong>ne pas inclure de données personnelles identifiantes</strong></td>
+        <td>⚠️ Oui (US)</td>
+        <td><a href="https://www.anthropic.com/privacy" target="_blank">Politique Anthropic ↗</a> — API: données non utilisées pour l'entraînement par défaut</td>
+      </tr>
+      <tr>
+        <td><strong>xAI / Grok</strong></td>
+        <td>Sous-traitant IA (si utilisé)</td>
+        <td>Contenu des requêtes — <strong>ne pas inclure de données personnelles identifiantes</strong></td>
+        <td>⚠️ Oui (US)</td>
+        <td><a href="https://x.ai/legal/privacy-policy" target="_blank">Politique xAI ↗</a> — vérifier les conditions d'utilisation des données</td>
+      </tr>
+      <tr>
+        <td><strong>GitHub (Microsoft)</strong></td>
+        <td>Hébergeur de code source</td>
+        <td>Code source uniquement — aucune donnée personnelle client dans le repo</td>
+        <td>⚠️ Oui (US)</td>
+        <td><a href="https://docs.github.com/fr/site-policy/privacy-policies/github-general-privacy-statement" target="_blank">DPA GitHub ↗</a></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="info-box" style="margin-top:20px;border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.06)">
+    <strong>⚠️ Règle d'or IA :</strong> Les outils IA externes (Claude, Grok, ChatGPT…) ne doivent jamais recevoir de données personnelles identifiantes de clients S@FE (nom, email, SIRET, téléphone). Seules des données anonymisées ou agrégées peuvent être soumises à ces services. Toute utilisation d'IA avec des données nominatives doit faire l'objet d'une évaluation DPIA spécifique.
+  </div>
+
+  <div class="info-box" style="margin-top:12px">
+    <strong>Transferts hors UE :</strong> Les transferts vers des pays tiers (US) sont encadrés par des Clauses Contractuelles Types (SCC) émises par la Commission européenne (décision 2021/914). S@FE doit s'assurer que chaque fournisseur US dispose de SCC valides et d'un mécanisme de recours effectif (RGPD art. 46).
+  </div>
+</div>
+
 <!-- FOOTER -->
 <div style="border-top:2px solid var(--line);padding:32px 0;margin:40px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
   <div>
@@ -1573,7 +1729,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <div style="font-size:.8rem;color:var(--txt3)">contact@safe-digitalisation.fr · safe-digitalisation.fr</div>
   </div>
   <div style="font-size:.8rem;color:var(--txt3);text-align:right">
-    Documentation CRM v2026-V5<br>
+    Documentation CRM v2026-V6<br>
     Mise à jour : 23 juin 2026<br>
     Confidentiel — Usage interne
   </div>

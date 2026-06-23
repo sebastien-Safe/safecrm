@@ -270,7 +270,8 @@ select option{background:var(--navy-mid)}
     <div class="topbar-brand">S<b>@</b>FE<small>WORK</small></div>
     
     <div class="topbar-user">
-      <span>Connecté : <strong id="user-label">—</strong></span>
+      <a href="/" class="btn btn-out" style="font-size:.78rem;padding:5px 12px;text-decoration:none;border-color:rgba(245,158,11,.4);color:var(--gold)">← CRM</a>
+      <span style="font-size:.83rem;color:var(--mut)">Connecté : <strong id="user-label">—</strong></span>
       <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
     </div>
   </div>
@@ -281,9 +282,24 @@ select option{background:var(--navy-mid)}
     <nav class="sidebar" id="work-sidebar">
 
       <!-- Navigation principale -->
+      <div class="sidebar-section">
+        <button class="sidebar-item active" id="nav-dashboard" onclick="showView('dashboard')"><span class="ico">🏠</span> Tableau de bord</button>
+        <button class="sidebar-item" id="nav-clients"   onclick="showView('clients')"  ><span class="ico">👥</span> Clients</button>
+        <button class="sidebar-item" id="nav-automate"  onclick="showView('automate')" ><span class="ico">⚡</span> Automatisations</button>
+        <button class="sidebar-item" id="nav-tasks"     onclick="showView('tasks')"    ><span class="ico">✅</span> Tâches</button>
+        <button class="sidebar-item" id="nav-journal"   onclick="showView('journal')"  ><span class="ico">📋</span> Journal</button>
+      </div>
 
+      <div class="sidebar-section" style="margin-top:8px;border-top:1px solid var(--line);padding-top:12px">
+        <div class="sidebar-section-label" style="padding:0 12px;margin-bottom:6px">Sécurité</div>
+        <a class="sidebar-item" href="/work/incidents-nis2.html"><span class="ico">🛡️</span> Incidents NIS2</a>
+        <a class="sidebar-item" href="/" onclick="sessionStorage.setItem('safe_work_goto','rgpd');"><span class="ico">📒</span> Journal RGPD</a>
+        <a class="sidebar-item" href="/" onclick="sessionStorage.setItem('safe_work_goto','securite');"><span class="ico">🔒</span> Sécurité</a>
+      </div>
 
-
+      <div class="sidebar-section" style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line)">
+        <a class="sidebar-item" href="/"><span class="ico">←</span> Retour au CRM</a>
+      </div>
 
     </nav>
 
@@ -333,6 +349,33 @@ select option{background:var(--navy-mid)}
         </div>
         <div class="card" id="dash-journal-preview">
           <div class="empty"><div class="ico">📋</div><p>Aucune action enregistrée</p></div>
+        </div>
+
+        <!-- Accès rapide sécurité & journaux -->
+        <div class="section-head" style="margin-top:28px">
+          <h2>Sécurité & Conformité</h2>
+        </div>
+        <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">
+          <a href="/" onclick="sessionStorage.setItem('safe_work_goto','rgpd');return true;" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(59,130,246,.3)" title="Accéder au Journal RGPD dans le CRM">
+            <div class="val" style="font-size:1.4rem">📒</div>
+            <div class="lbl">Journal RGPD</div>
+            <div style="font-size:.72rem;color:var(--mut);margin-top:6px">Admin → Registre RGPD</div>
+          </a>
+          <a href="/" onclick="sessionStorage.setItem('safe_work_goto','securite');return true;" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(59,130,246,.3)" title="Accéder au journal de sécurité dans le CRM">
+            <div class="val" style="font-size:1.4rem">🔒</div>
+            <div class="lbl">Journal sécurité</div>
+            <div style="font-size:.72rem;color:var(--mut);margin-top:6px">Admin → Sécurité · connexions</div>
+          </a>
+          <a href="/work/incidents-nis2.html" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(245,158,11,.3)">
+            <div class="val" style="font-size:1.4rem">🛡️</div>
+            <div class="lbl">Incidents NIS2</div>
+            <div style="font-size:.72rem;color:var(--mut);margin-top:6px">Déclarer · timeline · ANSSI</div>
+          </a>
+          <a href="/" onclick="sessionStorage.setItem('safe_work_goto','reglages');return true;" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(148,163,184,.2)" title="Registre des fournisseurs tiers">
+            <div class="val" style="font-size:1.4rem">⚙️</div>
+            <div class="lbl">Registre fournisseurs</div>
+            <div style="font-size:.72rem;color:var(--mut);margin-top:6px">Admin → Réglages · RGPD art. 28</div>
+          </a>
         </div>
       </div>
 

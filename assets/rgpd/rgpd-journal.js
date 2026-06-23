@@ -83,6 +83,9 @@ const JOURNAL_ACTION_LABELS = {
   pdf_contrat_genere:            'Bon de commande généré (PDF)',
   mot_de_passe_reinitialise:     'Réinitialisation mot de passe',
   mot_de_passe_modifie:          'Modification mot de passe',
+  fournisseur_modifie:           'Registre fournisseurs modifié',
+  incident_nis2_declare:         'Incident NIS2 déclaré',
+  incident_nis2_anssi_notifie:   'Notification ANSSI enregistrée',
 };
 
 const JOURNAL_CRITICITE_CLASS = {

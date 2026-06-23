@@ -164,7 +164,7 @@ const HELP_VIEWS_DATA = {
     title: 'Administration',
     icon: '⚙️',
     roles: 'admin',
-    description: 'L\'espace Administration est réservé aux administrateurs. Il regroupe la gestion des utilisateurs, la vue performance de l\'équipe, les contacts RGPD KO et le Registre RGPD.',
+    description: 'L\'espace Administration est réservé aux administrateurs. Il regroupe la gestion des utilisateurs, la vue performance de l\'équipe, les contacts RGPD KO, le Registre RGPD, la sécurité et les réglages.',
     sections: [
       {
         title: 'Onglets disponibles',
@@ -173,8 +173,9 @@ const HELP_VIEWS_DATA = {
           'Résultats — performance par commercial',
           'Par utilisateur — détail individuel + bordereau',
           'Gestion des utilisateurs — créer/modifier/désactiver',
-          'Contacts RGPD KO — contacts à régulariser',
-          'Registre RGPD — Article 30, Journal, Droits, Rapports',
+          '🔒 Sécurité — journal de connexion, alertes intrusion',
+          '📒 Registre RGPD — Article 30, Journal, Droits, Rapports',
+          '⚙️ Réglages — registre des fournisseurs tiers, niveaux de risque',
         ],
       },
     ],
@@ -183,12 +184,142 @@ const HELP_VIEWS_DATA = {
       { title: 'Générer un bordereau de commission', content: 'Onglet "Résultats" → cliquez sur un commercial → "Générer le bordereau". Un PDF est téléchargé automatiquement.' },
       { title: 'Accéder au Journal RGPD', content: 'Onglet "Registre RGPD" → sous-onglet "Journal RGPD". Toutes les opérations sur données personnelles sont tracées ici.' },
       { title: 'Valider une résiliation', content: 'Depuis le dashboard (bloc "Résiliations en attente"), cliquez sur "Résiliation validée". L\'action est irréversible.' },
+      { title: 'Gérer le registre fournisseurs', content: 'Onglet "Réglages" → section "Registre des fournisseurs". Ajoutez, modifiez ou évaluez le niveau de risque de chaque sous-traitant (RGPD art. 28 et NIS2 supply chain).' },
     ],
     errors: [
       { q: 'Je ne peux pas créer d\'utilisateur', a: 'Seuls les super-admins peuvent créer des utilisateurs. Contactez votre gestionnaire de compte S@FE.' },
       { q: 'Un bordereau affiche 0 €', a: 'Vérifiez que des contrats ont été créés par cet utilisateur sur la période sélectionnée.' },
     ],
-    related: ['dashboard'],
+    related: ['dashboard', 'securite'],
+  },
+
+  pipeline: {
+    title: 'Pipeline Kanban',
+    icon: '🗂️',
+    roles: 'all',
+    description: 'Le Pipeline Kanban remplace les vues Contacts et Contrats séparées. Il offre une vision visuelle de votre portefeuille organisé en colonnes par statut commercial, avec checklist, pièces jointes et compteur de valeur global.',
+    sections: [
+      {
+        title: 'Colonnes du pipeline',
+        items: [
+          'Prospect — premier contact, pas encore qualifié',
+          'Qualifié — besoin identifié, projet confirmé',
+          'Proposition — offre envoyée, bon de commande en attente',
+          'Négociation — discussions tarifaires ou contractuelles en cours',
+          'Gagné — contrat signé, client actif',
+          'Perdu — opportunité non concrétisée',
+        ],
+      },
+      {
+        title: 'Fonctionnalités par carte',
+        items: [
+          'Glisser-déposer entre colonnes pour changer de statut',
+          'Priorité : Haute / Normale / Basse (badge coloré)',
+          'Checklist : ajout de tâches spécifiques à ce client',
+          'Pièces jointes : dépôt de fichiers (contrats PDF, devis, factures…)',
+          'Détail contrat : valeur, type, récurrence',
+        ],
+      },
+    ],
+    steps: [
+      { title: 'Déplacer une carte', content: 'Cliquez-glissez la carte vers la colonne cible. Le statut du contact est mis à jour automatiquement en base de données.' },
+      { title: 'Ajouter une tâche (checklist)', content: 'Cliquez sur la carte → section Checklist → "Ajouter une tâche". Cochez pour marquer comme terminée.' },
+      { title: 'Déposer une pièce jointe', content: 'Cliquez sur l\'icône trombone de la carte → "Ajouter un fichier". Le fichier est stocké dans Supabase Storage (contrats-pdf/pj/{id}/).' },
+      { title: 'Filtrer et rechercher', content: 'Utilisez la barre de recherche (nom, entreprise) et le filtre de statut en haut du pipeline. Le compteur de valeur totale s\'adapte automatiquement.' },
+      { title: 'Voir le compteur global', content: 'La valeur totale affichée en haut correspond à la somme des montants de contrats actifs (non résiliés) correspondant aux filtres en cours.' },
+    ],
+    errors: [
+      { q: 'Une carte ne se déplace pas', a: 'Vérifiez votre connexion. Le déplacement fait un appel Supabase en temps réel — si la connexion est coupée, la carte reviendra à sa position initiale.' },
+      { q: 'La pièce jointe ne s\'upload pas', a: 'Taille maximale : 50 Mo. Formats acceptés : PDF, images, Word. Vérifiez que le fichier n\'est pas déjà ouvert dans une autre application.' },
+    ],
+    related: ['dashboard', 'contracts'],
+  },
+
+  securite: {
+    title: 'Sécurité & Conformité',
+    icon: '🔒',
+    roles: 'all',
+    description: 'S@FE CRM intègre plusieurs mécanismes de sécurité conformes aux recommandations CNIL, NIS2 et ISO 27001 : double authentification, sessions limitées, journalisation, isolation des données et gestion des incidents.',
+    sections: [
+      {
+        title: 'Double authentification (MFA TOTP)',
+        items: [
+          'Obligatoire pour les rôles Admin, Super Admin et DCI',
+          'Optionnel (fortement recommandé) pour les commerciaux Niveau 1',
+          'Activation : Profil → "Double authentification" → Scanner le QR code avec Google Authenticator ou Authy',
+          'Validité du code : 30 secondes. Appareil de confiance mémorisé 2h.',
+          'En cas de perte d\'accès à l\'application TOTP : contactez votre administrateur S@FE',
+        ],
+      },
+      {
+        title: 'Sessions et verrouillage',
+        items: [
+          'Durée maximale de session : 4 heures (RGPD Art. 42)',
+          'Alerte 15 minutes avant expiration automatique',
+          'Verrouillage après 5 tentatives de connexion échouées',
+          'Déblocage par un administrateur uniquement (Administration → Sécurité)',
+        ],
+      },
+      {
+        title: 'Incidents NIS2',
+        items: [
+          'Déclaration d\'incident : /work/incidents-nis2.html (admins uniquement)',
+          'Champs : type d\'incident, systèmes affectés, description, mesures prises',
+          'Indicateur 72h : délai de notification ANSSI (si entité assujettie NIS2)',
+          'Timeline des incidents classés par statut : Ouvert / En cours / Clôturé',
+        ],
+      },
+    ],
+    steps: [
+      { title: 'Activer le MFA TOTP', content: 'Cliquez sur votre prénom en haut à droite → Profil → section "Double authentification" → "Configurer". Scannez le QR code, saisissez le code à 6 chiffres pour confirmer l\'activation.' },
+      { title: 'Voir le journal de sécurité', content: 'Administration → onglet "🔒 Sécurité". Liste des 50 dernières tentatives de connexion avec résultat, IP et indicateur de verrouillage.' },
+      { title: 'Débloquer un utilisateur verrouillé', content: 'Administration → Sécurité → liste des comptes verrouillés → bouton "Débloquer". Le compteur d\'échecs est réinitialisé.' },
+      { title: 'Déclarer un incident NIS2', content: 'Depuis WORK → menu "Incidents NIS2" ou directement via /work/incidents-nis2.html. Réservé aux administrateurs.' },
+    ],
+    errors: [
+      { q: 'Je n\'ai plus accès à mon application TOTP', a: 'Contactez immédiatement votre administrateur S@FE. Il peut désactiver temporairement le MFA depuis la gestion des utilisateurs.' },
+      { q: 'Ma session expire trop vite', a: 'La limite de 4h est fixée par la politique RGPD interne. Elle ne peut pas être modifiée. Sauvegardez votre travail régulièrement.' },
+      { q: 'Mon compte est verrouillé', a: 'Après 5 tentatives échouées, seul un administrateur peut débloquer votre compte. Contactez votre responsable S@FE.' },
+    ],
+    related: ['admin', 'dashboard'],
+  },
+
+  automatisations: {
+    title: 'Modules & Automatisations',
+    icon: '⚡',
+    roles: 'all',
+    description: 'L\'espace WORK regroupe les modules opérationnels avancés : DPO externalisé, SEO, Cybersécurité, Click & Collect, Social. Chaque module peut déclencher des workflows automatisés à partir des données CRM.',
+    sections: [
+      {
+        title: 'Modules disponibles',
+        items: [
+          'DPO Externalisé — audit RGPD, registre des traitements, réponses aux droits',
+          'SEO — rapports de positionnement, actions techniques, livrables client',
+          'Cybersécurité — rapport de vulnérabilités, plan de remédiation',
+          'Click & Collect — configuration et suivi des commandes',
+          'Social — pilotage des réseaux sociaux clients',
+        ],
+      },
+      {
+        title: 'Automatisations disponibles',
+        items: [
+          'Génération de rapports PDF client en un clic',
+          'Envoi automatique par email (Brevo) à la génération',
+          'Mise à jour du statut de mission dans le CRM',
+          'Création de tâche de suivi automatique après livraison',
+        ],
+      },
+    ],
+    steps: [
+      { title: 'Accéder aux modules', content: 'Depuis le CRM : menu WORK (sidebar) → sélectionnez le module. Depuis un navigateur : /work/index.html.' },
+      { title: 'Lancer une automatisation', content: 'WORK → "Automatisations" → sélectionnez un client et un contrat → choisissez le workflow → cliquez sur "Lancer".' },
+      { title: 'Suivre les actions lancées', content: 'WORK → "Journal des actions". Chaque automatisation est tracée avec horodatage, client concerné et résultat.' },
+    ],
+    errors: [
+      { q: 'Le module n\'apparaît pas', a: 'Vérifiez que le client a un contrat actif pour ce service. Les modules ne sont disponibles que pour les contrats en statut "Contrat en cours".' },
+      { q: 'L\'email n\'est pas envoyé après génération PDF', a: 'Vérifiez la configuration Brevo (template ID). Consultez le journal des actions WORK pour voir le détail de l\'erreur.' },
+    ],
+    related: ['dashboard', 'contracts'],
   },
 
 };
@@ -240,6 +371,26 @@ const HELP_FAQ_DATA = [
     ],
   },
   {
+    theme: 'Pipeline Kanban',
+    icon: '🗂️',
+    items: [
+      { q: 'Comment changer le statut d\'un contact ?', a: 'Glissez-déposez la carte du contact vers la colonne souhaitée. Le statut est mis à jour immédiatement en base de données.' },
+      { q: 'Où sont stockées les pièces jointes ?', a: 'Dans Supabase Storage, dossier contrats-pdf/pj/{contact_id}/. Elles sont accessibles depuis la carte du contact dans le pipeline.' },
+      { q: 'La checklist est-elle partagée avec l\'équipe ?', a: 'Oui. La checklist est liée au contact, pas à l\'utilisateur. Tous les membres ayant accès au contact voient les mêmes tâches.' },
+      { q: 'Le compteur de valeur tient-il compte des filtres ?', a: 'Oui. Le total affiché en haut du pipeline correspond uniquement aux contrats actifs des contacts visibles selon votre recherche et filtre en cours.' },
+    ],
+  },
+  {
+    theme: 'Sécurité & MFA',
+    icon: '🔒',
+    items: [
+      { q: 'Le MFA est-il obligatoire ?', a: 'Oui pour les rôles Admin, Super Admin et DCI. Fortement recommandé pour tous. L\'enrôlement est forcé à la connexion pour les rôles privilégiés.' },
+      { q: 'Quelle application utiliser pour le TOTP ?', a: 'Google Authenticator, Microsoft Authenticator ou Authy. Toute application compatible RFC 6238 (TOTP standard) fonctionne.' },
+      { q: 'Que faire si je perds mon téléphone ?', a: 'Contactez immédiatement votre administrateur S@FE. Il peut réinitialiser votre facteur MFA depuis la console Supabase. Ne partagez jamais votre code TOTP.' },
+      { q: 'Qu\'est-ce qu\'un incident NIS2 ?', a: 'Tout événement qui affecte la sécurité des systèmes d\'information : cyberattaque, violation de données, indisponibilité prolongée. À déclarer dans WORK → Incidents NIS2.' },
+    ],
+  },
+  {
     theme: 'RGPD',
     icon: '🔐',
     items: [
@@ -248,6 +399,7 @@ const HELP_FAQ_DATA = [
       { q: 'Comment exporter le registre RGPD ?', a: 'Administration → Registre RGPD → onglet "Registre des traitements" → bouton "Exporter PDF".' },
       { q: 'Que faire face à une demande d\'effacement ?', a: 'Administration → Registre RGPD → onglet "Demandes de droits". Enregistrez la demande. Vous avez 1 mois pour y répondre (Art. 17 RGPD).' },
       { q: 'Le Journal RGPD peut-il être modifié ?', a: 'Non. Le journal est immuable par conception. Toute tentative de modification est bloquée au niveau de la base de données.' },
+      { q: 'Où signer la clause de confidentialité ?', a: 'À la première connexion, le CRM vous redirige automatiquement vers la page de signature. Vous pouvez aussi y accéder directement : /clause-confidentialite.html.' },
     ],
   },
   {
@@ -321,6 +473,15 @@ const HELP_RGPD_DATA = [
     ],
   },
 ];
+
+// ============================================================
+// DOCUMENTATION TECHNIQUE COMPLÈTE
+// ============================================================
+const HELP_DOCS_LINK = {
+  url: '/documentation-crm.html',
+  label: 'Documentation CRM complète',
+  description: 'Architecture technique, schémas de base de données, registre RGPD complet, sécurité, modules Work, droits par rôle.',
+};
 
 // ============================================================
 // TUTORIELS GUIDÉS PAR VUE
