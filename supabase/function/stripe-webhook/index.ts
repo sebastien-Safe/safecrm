@@ -261,18 +261,18 @@ serve(async (req) => {
   const body   = await req.text();
   const now    = new Date().toISOString();
 
+  if (!WEBHOOK_SECRET) {
+    console.error("STRIPE_WEBHOOK_SECRET manquant — webhook rejeté");
+    return new Response("webhook not configured", { status: 500 });
+  }
+  const sig = req.headers.get("stripe-signature");
+  if (!sig) return new Response("missing sig", { status: 400 });
   let event: Stripe.Event;
-  if (WEBHOOK_SECRET) {
-    const sig = req.headers.get("stripe-signature");
-    if (!sig) return new Response("missing sig", { status: 400 });
-    try {
-      event = stripe.webhooks.constructEvent(body, sig, WEBHOOK_SECRET);
-    } catch (e) {
-      console.error("Webhook signature error:", e);
-      return new Response("bad sig", { status: 400 });
-    }
-  } else {
-    event = JSON.parse(body);
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, WEBHOOK_SECRET);
+  } catch (e) {
+    console.error("Webhook signature error:", e);
+    return new Response("bad sig", { status: 400 });
   }
 
   async function contractBySubId(subId: string) {
