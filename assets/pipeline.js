@@ -651,6 +651,7 @@ function _plBuildFilterSelect() {
   const usedIds  = new Set(_plContacts.map(c => c.created_by));
   const relevant = Object.values(state.profilesById).filter(p => usedIds.has(p.id));
   if (relevant.length <= 1) { sel.style.display = 'none'; return; }
+  sel.style.display = '';
   sel.innerHTML = '<option value="">Tous les commerciaux</option>'
     + relevant.map(p => `<option value="${p.id}">${escapeHtml(p.prenom || p.nom || p.id)}</option>`).join('');
 }
