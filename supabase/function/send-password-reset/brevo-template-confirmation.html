@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mot de passe modifié — S@FE CRM</title>
+</head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:40px 16px">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#0a1628;border-radius:16px;overflow:hidden">
+
+        <!-- EN-TÊTE -->
+        <tr>
+          <td style="background:#0a1628;padding:32px 40px 24px;border-bottom:2px solid #22c55e;text-align:center">
+            <div style="font-size:26px;font-weight:900;color:#f59e0b;letter-spacing:-0.5px">S@FE CRM</div>
+            <div style="font-size:11px;color:#64748b;letter-spacing:2px;text-transform:uppercase;margin-top:4px">Sécurité du compte</div>
+          </td>
+        </tr>
+
+        <!-- CORPS -->
+        <tr>
+          <td style="padding:36px 40px">
+
+            <!-- ICÔNE SUCCÈS -->
+            <div style="text-align:center;margin-bottom:24px">
+              <div style="display:inline-block;width:64px;height:64px;background:rgba(34,197,94,.12);border:2px solid rgba(34,197,94,.3);border-radius:50%;line-height:64px;font-size:28px">✅</div>
+            </div>
+
+            <p style="font-size:15px;color:#94a3b8;margin:0 0 6px;text-align:center">Bonjour {{ params.PRENOM }},</p>
+            <h1 style="font-size:22px;font-weight:800;color:#f1f5f9;margin:0 0 16px;line-height:1.3;text-align:center">Votre mot de passe<br>a bien été modifié</h1>
+
+            <!-- BLOC CONFIRMATION -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.25);border-radius:10px;margin-bottom:24px">
+              <tr>
+                <td style="padding:16px 20px">
+                  <p style="font-size:14px;color:#86efac;margin:0;line-height:1.8">
+                    🕐 <strong>Date et heure :</strong> {{ params.DATE_HEURE }}<br>
+                    🔐 <strong>Action :</strong> Changement de mot de passe confirmé<br>
+                    🌐 <strong>Compte :</strong> S@FE CRM
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <p style="font-size:14px;color:#94a3b8;line-height:1.8;margin:0 0 24px;text-align:center">
+              Votre nouveau mot de passe est actif immédiatement.<br>
+              Vous pouvez dès à présent vous connecter avec vos nouveaux identifiants.
+            </p>
+
+            <!-- NOTE SÉCURITÉ -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px">
+              <tr>
+                <td style="padding:14px 18px">
+                  <p style="font-size:13px;color:#fca5a5;margin:0;line-height:1.7">
+                    🚨 <strong>Ce changement ne vient pas de vous ?</strong><br>
+                    Contactez immédiatement votre administrateur S@FE. Votre compte a peut-être été compromis.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- PIED DE PAGE -->
+        <tr>
+          <td style="background:#060e1c;padding:20px 40px;border-top:1px solid #1e2d4a">
+            <p style="font-size:11px;color:#334155;margin:0;text-align:center;line-height:1.8">
+              Cet email a été envoyé automatiquement par S@FE CRM · Ne pas répondre à ce message<br>
+              S@FE SASU — Opérateur de solutions numériques pour TPE/PME
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

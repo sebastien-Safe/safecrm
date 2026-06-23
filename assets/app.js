@@ -229,17 +229,26 @@ async function sendPasswordReset() {
   $('#forgot-success').style.display = 'block';
 }
 
+function _sendPasswordChangedConfirmation(email) {
+  fetch(`${SUPABASE_URL}/functions/v1/send-password-reset`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'confirmation', email }),
+  }).catch(() => {});
+}
+
 async function submitNewPassword() {
   const pw1 = $('#reset-password').value;
   const pw2 = $('#reset-password-2').value;
   $('#reset-error').textContent = '';
   if (!pw1 || pw1.length < 6) { $('#reset-error').textContent = 'Le mot de passe doit contenir au moins 6 caractères.'; return; }
   if (pw1 !== pw2) { $('#reset-error').textContent = 'Les deux mots de passe ne correspondent pas.'; return; }
-  const { error } = await sb.auth.updateUser({ password: pw1 });
+  const { error, data: updData } = await sb.auth.updateUser({ password: pw1 });
   if (error) { $('#reset-error').textContent = 'Erreur : ' + error.message; return; }
-  $('#reset-screen').style.display = 'none';
   const { data: { session } } = await sb.auth.getSession();
   state.user = session?.user || null;
+  _sendPasswordChangedConfirmation(updData?.user?.email || session?.user?.email || '');
+  $('#reset-screen').style.display = 'none';
   await showApp();
 }
 
@@ -959,6 +968,7 @@ async function changePassword() {
     $('#password-error').textContent = 'Erreur : ' + error.message;
     return;
   }
+  _sendPasswordChangedConfirmation(state.user?.email || '');
   if (typeof logRgpd === 'function') logRgpd('mot_de_passe_modifie', 'Sécurité', {
     criticite: 'Attention', donnees: 'mot de passe (non stocké)',
   });
@@ -3891,12 +3901,12 @@ async function saveNewPassword() {
     const { error } = await sb.auth.updateUser({ password: pwd });
     if (error) throw new Error(error.message);
 
-    // Mettre à jour password_set et password_changed_at
     await sb.from('profiles').update({
       password_set:        true,
       password_changed_at: new Date().toISOString(),
     }).eq('id', state.user.id);
 
+    _sendPasswordChangedConfirmation(state.user?.email || '');
     closeChangePasswordModal();
     document.getElementById('password-renewal-banner').style.display = 'none';
 
