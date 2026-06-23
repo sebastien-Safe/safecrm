@@ -1,7 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // ⚠️ Mettre à jour avec l'ID du template créé dans Brevo
-const BREVO_TEMPLATE_ID = 8;
+const BREVO_TEMPLATE_ID = 10;
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
