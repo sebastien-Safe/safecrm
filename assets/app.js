@@ -880,6 +880,87 @@ function openProfileModal() {
   $('#password-success').style.display = 'none';
   setAvatar($('#profile-avatar-preview'), state.profile?.photo_url, state.profile?.prenom || state.user?.email);
   $('#profile-modal').classList.add('show');
+  _loadMyJournal();
+}
+
+async function _loadMyJournal() {
+  const container = document.getElementById('my-journal-container');
+  if (!container) return;
+  container.innerHTML = '<p class="mut" style="font-size:.82rem;text-align:center;padding:12px">Chargement…</p>';
+
+  const { data, error } = await sb.from('audit_logs')
+    .select('action, module, details, created_at')
+    .eq('user_id', state.user.id)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (error || !data?.length) {
+    container.innerHTML = '<p class="mut" style="font-size:.82rem;text-align:center;padding:12px">Aucune action enregistrée.</p>';
+    return;
+  }
+
+  const ACTION_LABELS = {
+    contact_cree:        'Contact créé',
+    contact_modifie:     'Contact modifié',
+    contact_supprime:    'Contact supprimé',
+    contrat_cree:        'Contrat créé',
+    contrat_modifie:     'Contrat modifié',
+    contrat_supprime:    'Contrat supprimé',
+    interaction_creee:   'Interaction créée',
+    tache_creee:         'Tâche créée',
+    tache_completee:     'Tâche terminée',
+    profil_modifie:      'Profil modifié',
+    utilisateur_cree:    'Utilisateur créé',
+    utilisateur_supprime:'Utilisateur supprimé',
+    utilisateur_bloque:  'Utilisateur bloqué',
+    utilisateur_debloque:'Utilisateur débloqué',
+    paiement_confirme:   'Paiement confirmé',
+    export_effectue:     'Export effectué',
+    purge_effectuee:     'Purge RGPD',
+  };
+
+  const MODULE_COLORS = {
+    Contacts:       '#3b82f6',
+    Contrats:       '#8b5cf6',
+    Profil:         '#f59e0b',
+    Administration: '#ef4444',
+    Tâches:         '#22c55e',
+    RGPD:           '#06b6d4',
+  };
+
+  const rows = data.map(e => {
+    const d = e.details || {};
+    const detail = d.entreprise || d.nom || d.type || d.objet || d.email || '—';
+    const date = new Date(e.created_at).toLocaleString('fr-FR', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+    const label  = ACTION_LABELS[e.action] || e.action || '—';
+    const module = e.module || '—';
+    const color  = MODULE_COLORS[module] || '#64748b';
+    return `<tr>
+      <td style="font-size:.75rem;color:#64748b;white-space:nowrap">${date}</td>
+      <td style="font-size:.8rem">${escapeHtml(label)}</td>
+      <td><span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;background:${color}22;color:${color}">${escapeHtml(module)}</span></td>
+      <td style="font-size:.78rem;color:#94a3b8;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeHtml(String(detail))}">${escapeHtml(String(detail))}</td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.07)">
+            <th style="text-align:left;padding:6px 8px;font-size:.7rem;color:#64748b;font-weight:600">Date</th>
+            <th style="text-align:left;padding:6px 8px;font-size:.7rem;color:#64748b;font-weight:600">Action</th>
+            <th style="text-align:left;padding:6px 8px;font-size:.7rem;color:#64748b;font-weight:600">Module</th>
+            <th style="text-align:left;padding:6px 8px;font-size:.7rem;color:#64748b;font-weight:600">Détail</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <p class="mut" style="font-size:.7rem;text-align:right;margin-top:8px">${data.length} action${data.length > 1 ? 's' : ''} · 50 dernières entrées</p>`;
 }
 
 function closeProfileModal() {

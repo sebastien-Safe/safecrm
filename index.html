@@ -1270,6 +1270,16 @@
       <button class="btn btn-out" id="totp-enroll-btn">Activer la 2FA (QR code)</button>
       <button class="btn btn-danger" id="totp-disable-btn" style="display:none">Désactiver la 2FA</button>
     </div>
+
+    <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
+      <h3 style="font-size:1rem;margin:0">📋 Mon journal d'activité</h3>
+      <button class="btn btn-out btn-sm" onclick="_loadMyJournal()" style="font-size:.75rem">↺ Actualiser</button>
+    </div>
+    <div id="my-journal-container">
+      <p class="mut" style="font-size:.82rem;text-align:center;padding:12px">Chargement…</p>
+    </div>
   </div>
 </div>
 
