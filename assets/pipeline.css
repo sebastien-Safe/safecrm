@@ -16,6 +16,20 @@
 .pfl-arrow { color:#334155; font-size:.9rem; font-weight:300; }
 .pfl-tip { font-size:.73rem; color:#475569; margin-left:4px; }
 
+/* ── BADGE RÉSILIÉ ── */
+.pcard-resilie-badge {
+  display:inline-block;
+  margin:3px 0 4px;
+  padding:2px 8px;
+  background:rgba(239,68,68,.15);
+  border:1px solid rgba(239,68,68,.35);
+  border-radius:20px;
+  color:#fca5a5;
+  font-size:.72rem;
+  font-weight:700;
+  letter-spacing:.03em;
+}
+
 .pipeline-toolbar {
   display:flex; align-items:center; gap:12px;
   padding:14px 20px 10px;

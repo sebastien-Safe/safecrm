@@ -8,7 +8,7 @@ const PIPELINE_COLS = [
   { id:'signe',        label:'Signé',         color:'#8b5cf6', icon:'✍️' },
   { id:'en_cours',     label:'En cours',      color:'#f59e0b', icon:'⚙️' },
   { id:'livre',        label:'Livré',         color:'#22c55e', icon:'✅' },
-  { id:'resilie',      label:'Résilié',       color:'#ef4444', icon:'🚫' },
+  { id:'resilie',      label:'Terminé',       color:'#6b7280', icon:'🏁' },
 ];
 
 const PRIORITIES = {
@@ -216,6 +216,7 @@ function _plCardHTML(contact) {
     <div style="padding-left:6px">
       <div class="pcard-company">${escapeHtml(contact.entreprise || contact.nom || '—')}</div>
       <div class="pcard-name">${escapeHtml(contact.prenom || '')} ${escapeHtml(contact.nom || '')}</div>
+      ${contact.kanban_col === 'resilie' ? '<div class="pcard-resilie-badge">🚫 Résilié</div>' : ''}
       <div class="pcard-meta">
         <div class="pcard-meta-item">👤 ${escapeHtml(commercialName)}</div>
         ${totalMontant > 0 ? `<div class="pcard-meta-item pcard-amount">💰 ${montantStr}</div>` : ''}
@@ -256,12 +257,16 @@ function _plContractDetailHTML(ct, idx, contactId) {
     <div class="pcard-contract-detail-row"><span>Statut</span><span>${escapeHtml(ct.statut || '—')}</span></div>
     <div class="pcard-contract-detail-row"><span>Échéance</span><span>${echeance}</span></div>
     ${ct.notes ? `<div class="pcard-contract-notes">📝 ${escapeHtml(ct.notes)}</div>` : ''}
-    <div style="margin-top:8px;display:flex;gap:6px">
-      <button class="pcard-edit-btn" style="flex:1;justify-content:center"
-        onclick="openContractModal('${ct.id}');event.stopPropagation()">
-        ✏️ Modifier / Envoyer
-      </button>
-    </div>
+    ${(() => {
+      const col = (_plContacts.find(c => c.id === contactId)?.kanban_col) || 'prospect';
+      const canSend = ['prospect','devis_envoye'].includes(col);
+      return `<div style="margin-top:8px;display:flex;gap:6px">
+        <button class="pcard-edit-btn" style="flex:1;justify-content:center"
+          onclick="openContractModal('${ct.id}');event.stopPropagation()">
+          ✏️ ${canSend ? 'Modifier / Envoyer' : 'Voir le contrat'}
+        </button>
+      </div>`;
+    })()}
   </div>`;
 }
 
