@@ -3332,6 +3332,80 @@ function initProfileAddressListeners() {
   });
 }
 
+// ── VIOLATION DE DONNÉES — Art. 33 RGPD ─────────────────────────────────────
+
+function openViolationModal() {
+  const today = new Date().toISOString().slice(0, 10);
+  const dateEl = document.getElementById('violation-date');
+  if (dateEl && !dateEl.value) dateEl.value = today;
+  document.getElementById('violation-modal').style.display = 'flex';
+}
+
+function closeViolationModal() {
+  document.getElementById('violation-modal').style.display = 'none';
+}
+
+async function submitViolation() {
+  const desc       = (document.getElementById('violation-desc')?.value || '').trim();
+  const date       = document.getElementById('violation-date')?.value || '';
+  const categories = (document.getElementById('violation-categories')?.value || '').trim();
+  const nb         = document.getElementById('violation-nb')?.value || '';
+
+  if (!desc) { alert('La description de la violation est obligatoire.'); return; }
+
+  const btn = document.getElementById('btn-violation-submit');
+  if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours…'; }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const resp = await fetch(
+      'https://qwzqatfewbzwrvqhvpbo.supabase.co/functions/v1/send-crm-email',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + session.access_token,
+        },
+        body: JSON.stringify({
+          type: 'violation_cnil',
+          description: desc,
+          date_decouverte: date,
+          categories_donnees: categories || null,
+          nb_personnes: nb ? parseInt(nb, 10) : null,
+        }),
+      }
+    );
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+    if (typeof logRgpd === 'function') {
+      await logRgpd('incident_nis2_declare', 'RGPD', {
+        criticite: 'Critique',
+        donnees: categories || 'Non précisé',
+        resultat: 'Succès',
+        details: {
+          date_decouverte: date,
+          description: desc,
+          nb_personnes: nb || null,
+          alerte_email: 'Envoyée',
+          lien_cnil: 'https://notifications.cnil.fr',
+        },
+      });
+    }
+
+    closeViolationModal();
+    document.getElementById('violation-desc').value       = '';
+    document.getElementById('violation-categories').value = '';
+    document.getElementById('violation-nb').value         = '';
+
+    alert('✅ Alerte envoyée à l\'administrateur.\nViolation enregistrée dans le journal RGPD.\n\nÉtape suivante : déclarer sur https://notifications.cnil.fr (délai 72h Art.33)');
+  } catch (e) {
+    console.error('[Violation CNIL]', e);
+    alert('Erreur lors de l\'envoi. Réessayez ou contactez le support.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🚨 Envoyer l\'alerte & journaliser'; }
+  }
+}
+
 function bindEvents() {
   // Login / logout
   $('#login-btn').addEventListener('click', login);

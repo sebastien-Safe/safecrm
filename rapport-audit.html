@@ -1194,10 +1194,10 @@
       </tr>
       <tr>
         <td>P1-8</td>
-        <td><strong>Rédiger le plan de réponse aux incidents</strong> — procédures d'escalade, notification CNIL 72h, communication de crise, contacts responsables</td>
-        <td><code>docs/INCIDENT_RESPONSE.md</code></td>
-        <td class="effort">4 h</td>
-        <td><span class="badge-partial">⏳ En attente</span></td>
+        <td><strong>Plan de réponse aux incidents — déclaration violation CNIL</strong> — bouton 🚨 dans le panneau RGPD : modal de saisie (description, date, catégories, nb personnes) → email alerte admin <code>🚨🚨🚨🚨VIOLATION DE DONNÉES🚨🚨🚨🚨</code> via Brevo + entrée journal RGPD (<code>incident_nis2_declare</code>, criticité Critique) + lien <code>notifications.cnil.fr</code> dans le corps du mail</td>
+        <td><code>send-crm-email</code> v16 · <code>assets/app.js</code> · <code>index.html</code></td>
+        <td class="effort">3 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">NIS2 Art.21, RGPD Art.33</span></td>
       </tr>
       <tr>

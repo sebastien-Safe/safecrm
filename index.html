@@ -764,7 +764,10 @@
                 <h3 style="margin:0">Registre des activités de traitement (Article 30 RGPD)</h3>
                 <p class="mut" style="margin-top:6px">Responsable de traitement : <b>S@FE SAS</b> — SIRET 104 699 558 00011. DPO interne : <b id="reg-dpo-name">Sébastien Alonso</b> — contact : <a href="mailto:contact@safe-digitalisation.fr" style="color:var(--accent)">contact@safe-digitalisation.fr</a>.</p>
               </div>
-              <button class="btn btn-out btn-sm" id="btn-export-registre">📄 Exporter PDF</button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-out btn-sm" id="btn-export-registre">📄 Exporter PDF</button>
+                <button class="btn btn-sm" id="btn-declarer-violation" style="background:#dc2626;color:#fff;border-color:#dc2626" onclick="openViolationModal()">🚨 Déclarer une violation</button>
+              </div>
             </div>
             <div class="scrollx">
               <table class="tbl" id="registre-rgpd-table">
@@ -2023,6 +2026,39 @@
       S@FE SASU · SIRET 104 699 558 00011 · contact@safe-digitalisation.fr
     </div>
 
+  </div>
+</div>
+
+<!-- Modal — Déclaration de violation de données (Art. 33 RGPD) -->
+<div id="violation-modal" class="modal" style="display:none;align-items:center;justify-content:center">
+  <div class="modal-box" style="max-width:520px;width:100%">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+      <span style="font-size:22px">🚨</span>
+      <h3 style="margin:0;color:#dc2626">Déclarer une violation de données</h3>
+    </div>
+    <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#7f1d1d;line-height:1.6">
+      <strong>Article 33 RGPD</strong> — En cas de violation susceptible d'engendrer un risque, vous disposez de <strong>72 heures</strong> pour notifier la CNIL sur <a href="https://notifications.cnil.fr" target="_blank" style="color:#dc2626;font-weight:700">notifications.cnil.fr</a>.
+    </div>
+    <div class="field">
+      <label>Date de découverte *</label>
+      <input id="violation-date" type="date">
+    </div>
+    <div class="field">
+      <label>Description de la violation *</label>
+      <textarea id="violation-desc" rows="3" placeholder="Ex : accès non autorisé à la base de données, fuite d'adresses email…" style="width:100%;box-sizing:border-box"></textarea>
+    </div>
+    <div class="field">
+      <label>Catégories de données concernées</label>
+      <input id="violation-categories" type="text" placeholder="Ex : noms, emails, SIRET, données contractuelles">
+    </div>
+    <div class="field">
+      <label>Nombre approximatif de personnes concernées</label>
+      <input id="violation-nb" type="number" min="0" placeholder="Ex : 42">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+      <button class="btn btn-out btn-sm" onclick="closeViolationModal()">Annuler</button>
+      <button class="btn btn-sm" id="btn-violation-submit" style="background:#dc2626;color:#fff;border-color:#dc2626" onclick="submitViolation()">🚨 Envoyer l'alerte &amp; journaliser</button>
+    </div>
   </div>
 </div>
 

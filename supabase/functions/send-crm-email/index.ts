@@ -643,5 +643,94 @@ serve(async (req) => {
     return json({ ok: true });
   }
 
+  // ── VIOLATION DE DONNÉES — ALERTE CNIL ───────────────────────────────────
+  if (type === "violation_cnil") {
+    const { description, date_decouverte, categories_donnees, nb_personnes } = body;
+
+    const { data: { user: adminUser } } = await sbAnon.auth.getUser();
+    const adminEmail = adminUser?.email || "contact@safe-digitalisation.fr";
+
+    const dateDecouv = date_decouverte
+      ? new Date(date_decouverte).toLocaleDateString("fr-FR")
+      : new Date().toLocaleDateString("fr-FR");
+    const dateAlerte = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+    const heureAlerte = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
+    const html = `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><title>Violation de données</title></head>
+<body style="margin:0;padding:0;background:#1a0000;font-family:Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#1a0000;padding:32px 16px"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:600px;width:100%">
+  <tr><td style="background:#dc2626;padding:28px 32px;text-align:center">
+    <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:.02em">🚨 VIOLATION DE DONNÉES 🚨</div>
+    <div style="color:rgba(255,255,255,.9);font-size:13px;margin-top:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">
+      Article 33 RGPD — Délai 72h CNIL en cours
+    </div>
+    <div style="color:rgba(255,255,255,.7);font-size:12px;margin-top:4px">Alerte générée le ${dateAlerte} à ${heureAlerte}</div>
+  </td></tr>
+  <tr><td style="padding:32px">
+    <div style="background:#fef2f2;border:2px solid #dc2626;border-radius:10px;padding:20px;margin-bottom:24px">
+      <p style="font-size:13px;font-weight:700;color:#dc2626;margin:0 0 12px;text-transform:uppercase">⏱ Obligation légale — Art. 33 RGPD</p>
+      <p style="font-size:14px;color:#1e293b;margin:0;line-height:1.7">
+        Vous disposez de <strong>72 heures</strong> à compter de la découverte pour notifier la CNIL si la violation est susceptible d'engendrer un risque pour les droits et libertés des personnes.
+      </p>
+      <div style="margin-top:14px;text-align:center">
+        <a href="https://notifications.cnil.fr" target="_blank"
+          style="display:inline-block;background:#dc2626;color:#fff;font-weight:700;font-size:14px;
+          padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:.02em">
+          🔗 Déclarer sur notifications.cnil.fr →
+        </a>
+      </div>
+    </div>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:24px">
+      <tr style="background:#f8fafc"><td colspan="2" style="padding:10px 16px;font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em">Détails de la violation</td></tr>
+      <tr style="border-top:1px solid #e2e8f0">
+        <td style="padding:10px 16px;font-size:12px;color:#64748b;width:160px;vertical-align:top">Date de découverte</td>
+        <td style="padding:10px 16px;font-size:13px;color:#1e293b;font-weight:600">${escTs(dateDecouv)}</td>
+      </tr>
+      ${nb_personnes ? `<tr style="border-top:1px solid #e2e8f0">
+        <td style="padding:10px 16px;font-size:12px;color:#64748b;vertical-align:top">Personnes concernées</td>
+        <td style="padding:10px 16px;font-size:13px;color:#1e293b;font-weight:600">~${escTs(String(nb_personnes))}</td>
+      </tr>` : ""}
+      ${categories_donnees ? `<tr style="border-top:1px solid #e2e8f0">
+        <td style="padding:10px 16px;font-size:12px;color:#64748b;vertical-align:top">Catégories de données</td>
+        <td style="padding:10px 16px;font-size:13px;color:#1e293b">${escTs(categories_donnees)}</td>
+      </tr>` : ""}
+      <tr style="border-top:1px solid #e2e8f0">
+        <td style="padding:10px 16px;font-size:12px;color:#64748b;vertical-align:top">Description</td>
+        <td style="padding:10px 16px;font-size:13px;color:#1e293b;line-height:1.6">${escTs(description || "Non renseigné").replace(/\n/g, "<br>")}</td>
+      </tr>
+    </table>
+
+    <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:16px 20px;margin-bottom:20px">
+      <p style="font-size:12px;font-weight:700;color:#92400e;margin:0 0 8px;text-transform:uppercase">📋 Étapes immédiates</p>
+      <ol style="font-size:13px;color:#374151;margin:0;padding-left:18px;line-height:2">
+        <li>Documenter l'incident dans le registre interne</li>
+        <li>Évaluer le risque pour les personnes concernées</li>
+        <li><strong>Notifier la CNIL sous 72h</strong> si risque avéré</li>
+        <li>Informer les personnes concernées si risque élevé</li>
+        <li>Mettre en place les mesures correctives</li>
+      </ol>
+    </div>
+
+    <p style="font-size:12px;color:#94a3b8;text-align:center;margin:0">
+      S@FE CRM — Alerte automatique violation de données personnelles<br>
+      Cet email a été généré depuis le module RGPD du CRM
+    </p>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+
+    await sendBrevoHtml(
+      "🚨🚨🚨🚨VIOLATION DE DONNÉES🚨🚨🚨🚨",
+      { email: adminEmail, name: "Administrateur S@FE" },
+      html,
+    );
+
+    return json({ ok: true });
+  }
+
   return json({ error: "Type inconnu" }, 400);
 });
