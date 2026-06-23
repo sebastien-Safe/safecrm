@@ -3332,6 +3332,60 @@ function initProfileAddressListeners() {
   });
 }
 
+// ── MONITORING ERREURS JS ────────────────────────────────────────────────────
+
+function initErrorMonitoring() {
+  const IGNORE = [
+    /Script error/i,
+    /ResizeObserver loop/i,
+    /Extension context invalidated/i,
+    /Non-Error promise rejection/i,
+    /Loading chunk/i,
+  ];
+
+  const _seen = new Map(); // message → timestamp dernière capture
+
+  async function _reportError(message, source, err) {
+    const msg = String(message || 'Unknown error').slice(0, 500);
+    if (IGNORE.some(r => r.test(msg))) return;
+
+    const now = Date.now();
+    if (_seen.has(msg) && now - _seen.get(msg) < 30000) return;
+    _seen.set(msg, now);
+
+    try {
+      await sb.from('audit_logs').insert({
+        user_id:            state?.user?.id   || null,
+        user_role:          state?.profile?.role || 'inconnu',
+        action:             'js_error',
+        module:             'Monitoring',
+        criticite:          'Critique',
+        resultat:           'Erreur',
+        donnees_concernees: null,
+        details: {
+          message: msg,
+          source:  String(source || '').slice(0, 300),
+          stack:   err?.stack?.slice(0, 1000) || null,
+          url:     location.href,
+        },
+      });
+    } catch { /* éviter la boucle infinie */ }
+  }
+
+  window.addEventListener('error', e => {
+    _reportError(e.message, (e.filename || '') + (e.lineno ? ':' + e.lineno : ''), e.error);
+  });
+
+  window.addEventListener('unhandledrejection', e => {
+    const reason = e.reason;
+    _reportError(
+      'Promise rejetée : ' + (reason?.message || String(reason)).slice(0, 300),
+      null,
+      reason instanceof Error ? reason : null,
+    );
+  });
+}
+
 // ── VIOLATION DE DONNÉES — Art. 33 RGPD ─────────────────────────────────────
 
 function openViolationModal() {
@@ -3407,6 +3461,8 @@ async function submitViolation() {
 }
 
 function bindEvents() {
+  initErrorMonitoring();
+
   // Login / logout
   $('#login-btn').addEventListener('click', login);
   $('#login-password').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });

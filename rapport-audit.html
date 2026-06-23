@@ -1202,10 +1202,10 @@
       </tr>
       <tr>
         <td>P1-9</td>
-        <td><strong>Mettre en place un monitoring</strong> — configurer Sentry (ou équivalent) pour capturer les erreurs JS côté client et les exceptions dans les Edge Functions</td>
-        <td>Intégration transversale</td>
-        <td class="effort">4 h</td>
-        <td><span class="badge-partial">⏳ En attente</span></td>
+        <td><strong>Monitoring erreurs JS (équivalent Sentry, sans dépendance externe)</strong> — <code>initErrorMonitoring()</code> dans <code>bindEvents()</code> : capture <code>window.onerror</code> + <code>unhandledrejection</code>, filtre les bruits (extensions, ResizeObserver…), dédup 30 s, insère dans <code>audit_logs</code> (action <code>js_error</code>, criticité Critique) via Supabase. Label <code>js_error</code> ajouté au journal RGPD.</td>
+        <td><code>assets/app.js</code> · <code>assets/rgpd/rgpd-journal.js</code></td>
+        <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">NIS2 Art.21, Résilience</span></td>
       </tr>
     </tbody>
