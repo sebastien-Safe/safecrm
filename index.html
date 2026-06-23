@@ -764,7 +764,10 @@
                 <h3 style="margin:0">Registre des activités de traitement (Article 30 RGPD)</h3>
                 <p class="mut" style="margin-top:6px">Responsable de traitement : <b>S@FE SAS</b> — SIRET 104 699 558 00011. DPO interne : <b id="reg-dpo-name">Sébastien Alonso</b> — contact : <a href="mailto:contact@safe-digitalisation.fr" style="color:var(--accent)">contact@safe-digitalisation.fr</a>.</p>
               </div>
-              <button class="btn btn-out btn-sm" id="btn-export-registre">📄 Exporter PDF</button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-out btn-sm" id="btn-export-registre">📄 Exporter PDF</button>
+                <button class="btn btn-sm" id="btn-declarer-violation" style="background:#dc2626;color:#fff;border-color:#dc2626" onclick="openViolationModal()">🚨 Déclarer une violation</button>
+              </div>
             </div>
             <div class="scrollx">
               <table class="tbl" id="registre-rgpd-table">
@@ -1237,14 +1240,24 @@
     <div class="field"><label>Prénom *</label><input id="profile-prenom" type="text" placeholder="Votre prénom"></div>
     <div class="field"><label>Nom *</label><input id="profile-nom" type="text" placeholder="Nom de famille"></div>
     <div class="field"><label>Téléphone *</label><input id="profile-telephone" type="tel" placeholder="06 XX XX XX XX"></div>
-    <div class="field"><label>Adresse *</label><input id="profile-adresse" type="text" placeholder="Adresse complète"></div>
+    <div class="field"><label>Adresse *</label><input id="profile-adresse" type="text" placeholder="N° et nom de rue"></div>
+    <div class="field-row">
+      <div class="field" style="flex:0 0 130px">
+        <label>Code postal *</label>
+        <input id="profile-code-postal" type="text" maxlength="5" placeholder="75001" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Ville *</label>
+        <select id="profile-ville"><option value="">— Saisissez un code postal —</option></select>
+      </div>
+    </div>
     <div class="field"><label>SIRET *</label><input id="profile-siret" type="text" placeholder="14 chiffres"></div>
     <div class="field"><label>RC Pro</label><input id="profile-rcpro" type="text" placeholder="Référence assurance RC Pro"></div>
     <div style="border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:8px">
-      <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#64748b;margin-bottom:10px">📍 Géographie commerciale</div>
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#64748b;margin-bottom:10px">📍 Géographie — remplie automatiquement</div>
       <div class="field-row">
-        <div class="field"><label>Région</label><input id="profile-region" type="text" placeholder="Ex : Île-de-France"></div>
-        <div class="field"><label>Département</label><input id="profile-departement" type="text" placeholder="Ex : Seine-et-Marne (77)"></div>
+        <div class="field"><label>Région</label><input id="profile-region" type="text" readonly style="opacity:.6;cursor:default" placeholder="Auto via code postal"></div>
+        <div class="field"><label>Département</label><input id="profile-departement" type="text" readonly style="opacity:.6;cursor:default" placeholder="Auto via code postal"></div>
       </div>
       <div class="field"><label>Secteur commercial</label><input id="profile-secteur" type="text" placeholder="Ex : Secteur Est — Grande couronne"></div>
     </div>
@@ -1632,21 +1645,23 @@
 
 <!-- ============ MODALE "MES DONNÉES" (RGPD utilisateur) ============ -->
 <div class="modal" id="mydata-modal">
-  <div class="modal-card" style="max-width:580px">
-    <h3>Mes données personnelles (RGPD)</h3>
-    <p class="mut">Vous avez accès aux droits suivants sur les données vous concernant, traitées par S@FE pour le compte de l'exploitation du CRM.</p>
+  <div class="modal-card" style="max-width:600px">
+    <h3 id="mydata-modal-title">Mes données personnelles (RGPD)</h3>
+    <p class="mut" style="font-size:.85rem">Données vous concernant traitées par S@FE dans le CRM. Base légale : exécution du contrat (Art. 6.1.b RGPD). Conservation : durée de la mission + 5 ans.</p>
     <div id="mydata-content" style="margin:14px 0"></div>
-    <div class="modal-actions">
+    <div id="mydata-export-stats" style="margin-bottom:14px;font-size:.83rem;color:var(--txt2)"></div>
+    <div class="modal-actions" style="flex-wrap:wrap;gap:8px">
       <button class="btn btn-out" id="mydata-cancel-btn">Fermer</button>
-      <button class="btn btn-out" id="mydata-request-btn">Demander effacement / portabilité</button>
-      <button class="btn btn-pri" id="mydata-save-btn">Enregistrer mes modifications</button>
+      <button class="btn btn-out" id="mydata-export-btn" title="Télécharger toutes vos données au format CSV (Art. 20 RGPD)">⬇ Exporter mes données (CSV)</button>
+      <button class="btn btn-out" id="mydata-request-btn" title="Envoyer une demande d'effacement ou de portabilité par e-mail">✉ Demander l'effacement</button>
+      <button class="btn btn-pri" id="mydata-save-btn">Enregistrer</button>
     </div>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.min.js" integrity="sha384-JWEyvHh+lRf0sN/WWY+QTQwX+CyWqmNg4tkc8GQzAMEtR2wGNrCJlvnu1lHD1kDm" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" integrity="sha384-Izc791esqyEy3BEIC42q7jbE0AaOkACziN+dyyXgYeDmpeMCLz0xA+xYN3aCd5zz" crossorigin="anonymous"></script>
 <script src="assets/config.js"></script>
 <script src="assets/contacts/contacts.js"></script>
 <script src="assets/contacts/contacts.service.js"></script>
@@ -1663,6 +1678,8 @@
 <script src="assets/contracts/contracts-stripe.js"></script>
 <script src="assets/contracts/contracts-notifications.js"></script>
 <script src="assets/contracts/index.js"></script>
+<script src="assets/tasks/tasks.js"></script>
+<script src="assets/totp/totp.js"></script>
 <script src="assets/pipeline.js"></script>
 <script src="assets/app.js"></script>
 <script src="assets/rgpd/rgpd-journal.js"></script>
@@ -2013,6 +2030,39 @@
       S@FE SASU · SIRET 104 699 558 00011 · contact@safe-digitalisation.fr
     </div>
 
+  </div>
+</div>
+
+<!-- Modal — Déclaration de violation de données (Art. 33 RGPD) -->
+<div id="violation-modal" class="modal">
+  <div class="modal-box" style="max-width:520px;width:100%">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+      <span style="font-size:22px">🚨</span>
+      <h3 style="margin:0;color:#dc2626">Déclarer une violation de données</h3>
+    </div>
+    <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#7f1d1d;line-height:1.6">
+      <strong>Article 33 RGPD</strong> — En cas de violation susceptible d'engendrer un risque, vous disposez de <strong>72 heures</strong> pour notifier la CNIL sur <a href="https://notifications.cnil.fr" target="_blank" style="color:#dc2626;font-weight:700">notifications.cnil.fr</a>.
+    </div>
+    <div class="field">
+      <label>Date de découverte *</label>
+      <input id="violation-date" type="date">
+    </div>
+    <div class="field">
+      <label>Description de la violation *</label>
+      <textarea id="violation-desc" rows="3" placeholder="Ex : accès non autorisé à la base de données, fuite d'adresses email…" style="width:100%;box-sizing:border-box"></textarea>
+    </div>
+    <div class="field">
+      <label>Catégories de données concernées</label>
+      <input id="violation-categories" type="text" placeholder="Ex : noms, emails, SIRET, données contractuelles">
+    </div>
+    <div class="field">
+      <label>Nombre approximatif de personnes concernées</label>
+      <input id="violation-nb" type="number" min="0" placeholder="Ex : 42">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+      <button class="btn btn-out btn-sm" onclick="closeViolationModal()">Annuler</button>
+      <button class="btn btn-sm" id="btn-violation-submit" style="background:#dc2626;color:#fff;border-color:#dc2626" onclick="submitViolation()">🚨 Envoyer l'alerte &amp; journaliser</button>
+    </div>
   </div>
 </div>
 

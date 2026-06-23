@@ -1,0 +1,77 @@
+name: Security Checks
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  security:
+    name: Vérifications sécurité
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── 1. CORS wildcard ──────────────────────────────────────────────────
+      - name: "CORS — aucun wildcard Access-Control-Allow-Origin: *"
+        run: |
+          if grep -rn '"Access-Control-Allow-Origin":\s*"\*"' supabase/functions/ --include="*.ts"; then
+            echo "❌ CORS wildcard détecté dans une Edge Function."
+            echo "   Remplacer * par https://crm.safe-digitalisation.fr"
+            exit 1
+          fi
+          if grep -rn "'Access-Control-Allow-Origin':\s*'\*'" supabase/functions/ --include="*.ts"; then
+            echo "❌ CORS wildcard détecté dans une Edge Function."
+            echo "   Remplacer * par https://crm.safe-digitalisation.fr"
+            exit 1
+          fi
+          echo "✅ CORS — aucun wildcard trouvé"
+
+      # ── 2. Typo BREBO ────────────────────────────────────────────────────
+      - name: "BREVO — vérification typo BREBO"
+        run: |
+          if grep -rn 'BREBO' supabase/functions/ --include="*.ts"; then
+            echo "❌ Typo BREBO détectée — la variable d'env Brevo est BREVO"
+            exit 1
+          fi
+          echo "✅ BREVO — aucune typo BREBO"
+
+      # ── 3. SRI sur scripts CDN ───────────────────────────────────────────
+      - name: "SRI — scripts CDN avec integrity="
+        run: |
+          FAILED=0
+          for f in $(find . -name "*.html" -not -path "./.git/*"); do
+            if grep -qE '<script[^>]+src="https://(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com)' "$f"; then
+              if grep -E '<script[^>]+src="https://(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com)' "$f" | grep -qv 'integrity='; then
+                echo "❌ Script CDN sans SRI : $f"
+                grep -nE '<script[^>]+src="https://(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com)' "$f" | grep -v 'integrity='
+                FAILED=1
+              fi
+            fi
+          done
+          if [ $FAILED -ne 0 ]; then
+            echo "   Ajouter integrity=\"sha384-…\" + crossorigin=\"anonymous\""
+            echo "   Référence : scripts/check-sri.sh"
+            exit 1
+          fi
+          echo "✅ SRI — tous les scripts CDN ont un hash integrity="
+
+      # ── 4. Secrets accidentels ───────────────────────────────────────────
+      - name: "Secrets — aucun fichier .env commité"
+        run: |
+          if git ls-files | grep -E '\.env($|\.)' | grep -v '\.env\.example'; then
+            echo "❌ Fichier .env détecté dans le dépôt — retirer et révoquer les secrets"
+            exit 1
+          fi
+          echo "✅ Secrets — aucun .env commité"
+
+      - name: "Secrets — aucune clé API en dur dans le JS"
+        run: |
+          # Patterns: clés Stripe live (sk_live_), clés Supabase service role (longues)
+          if grep -rn 'sk_live_' assets/ --include="*.js" 2>/dev/null; then
+            echo "❌ Clé Stripe LIVE détectée dans le JS frontend"
+            exit 1
+          fi
+          echo "✅ Secrets — aucune clé Stripe live dans le JS"

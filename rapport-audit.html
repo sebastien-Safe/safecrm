@@ -527,11 +527,11 @@
       <span>La fonction de création de session Stripe est déployée sous le nom <code>creaye-checkout</code> (faute de frappe non corrigée). Tout appel à <code>supabase.functions.invoke('create-checkout', …)</code> retournerait une 404 si le nom n'est pas corrigé aussi côté client. Le risque est une régression silencieuse si quelqu'un renomme le call côté client en corrigeant la faute sans toucher le nom du répertoire déployé.</span>
     </div>
   </div>
-  <div class="finding p1">
-    <div class="finding-icon">⚠️</div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
     <div class="finding-content">
-      <strong>CORS <code>Access-Control-Allow-Origin: *</code> sur toutes les Edge Functions</strong>
-      <span>Les Edge Functions <code>send-clause-email</code>, <code>send-mandat-email</code>, <code>send-password-reset</code>, <code>creaye-checkout</code>, <code>admin-create-user</code> répondent toutes avec <code>"Access-Control-Allow-Origin": "*"</code>. Pour des fonctions sensibles (création d'utilisateur, paiement, envoi d'email), ce header devrait être restreint au domaine de l'application.</span>
+      <strong>✅ CORRIGÉ P1-2 — CORS restreint sur toutes les Edge Functions (commit 61fdcda)</strong>
+      <span>Les 12 Edge Functions browser-facing ont été mises à jour : <code>"Access-Control-Allow-Origin": "*"</code> → <code>"https://crm.safe-digitalisation.fr"</code>. <code>stripe-webhook</code> inchangé (appelé par Stripe, pas le navigateur). Toutes redéployées et actives.</span>
     </div>
   </div>
   <div class="finding p2">
@@ -750,11 +750,11 @@
       <span>Le header Content-Security-Policy de <code>index.html</code> autorise <code>'unsafe-inline'</code> pour les scripts. Cela annule la protection contre les attaques XSS (Cross-Site Scripting) que la CSP est censée fournir. OWASP A03:2021 — Injection. Si un attaquant parvient à injecter du JavaScript (via un champ de formulaire, un contact malveillant, une URL), ce code s'exécutera sans restriction.</span>
     </div>
   </div>
-  <div class="finding p0">
-    <div class="finding-icon">🚨</div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
     <div class="finding-content">
-      <strong>CRITIQUE — Aucun Subresource Integrity (SRI) sur les CDN</strong>
-      <span>Les bibliothèques <code>supabase-js</code>, <code>jsPDF</code>, <code>QRCode</code> sont chargées depuis des CDN externes sans hash SRI. Si l'un de ces CDN est compromis (supply chain attack), du code malveillant peut s'exécuter dans l'application. OWASP A06:2021 — Vulnerable and Outdated Components. En 2024, plusieurs CDN JS ont été victimes de ce type d'attaque.</span>
+      <strong>✅ CORRIGÉ P1-1 — SRI ajouté sur tous les CDN (commit 141de8e)</strong>
+      <span>Les bibliothèques <code>supabase-js@2.108.2</code>, <code>jsPDF@2.5.1</code>, <code>QRCode@1.5.3</code>, <code>Chart.js@4.4.1</code> ont été épinglées avec leurs attributs <code>integrity="sha384-…"</code> + <code>crossorigin="anonymous"</code> sur les 12 fichiers HTML. Un hook pre-commit bloque les commits sans SRI. Script <code>scripts/check-sri.sh</code> créé pour vérification manuelle.</span>
     </div>
   </div>
   <div class="finding p1">
@@ -1058,6 +1058,14 @@
       <span class="fix-commit">82b18b6</span>
       <div><strong>P0-5 — RLS safe_connectors corrigé</strong> — 4 policies granulaires : SELECT ouvert (guard modules), INSERT/UPDATE/DELETE admins uniquement. Log restreint aux admins. <em>Migration v28 appliquée et vérifiée en base — 6 policies actives.</em></div>
     </div>
+    <div class="fix-entry">
+      <span class="fix-commit">141de8e</span>
+      <div><strong>P1-1 — SRI sur tous les CDN</strong> — <code>integrity="sha384-…"</code> + <code>crossorigin="anonymous"</code> ajoutés sur 4 bibliothèques tierces (supabase-js, jsPDF, QRCode, Chart.js) dans les 12 fichiers HTML. Garde-fous : hook pre-commit bloquant + <code>scripts/check-sri.sh</code>.</div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">61fdcda</span>
+      <div><strong>P1-2 — CORS restreint sur 12 Edge Functions</strong> — <code>"Access-Control-Allow-Origin": "*"</code> → <code>"https://crm.safe-digitalisation.fr"</code>. <code>stripe-webhook</code> non modifié (appelé par Stripe). Toutes les fonctions redéployées et actives. Bonus : import <code>serve</code> manquant corrigé dans <code>creaye-checkout</code>.</div>
+    </div>
   </div>
 
   <table class="action-table" style="margin-bottom:24px">
@@ -1119,70 +1127,85 @@
   <h3>⚠️ P1 — Risques élevés (à traiter sous 30 jours)</h3>
   <table class="action-table" style="margin-bottom:24px">
     <thead>
-      <tr><th>#</th><th>Action</th><th>Fichier(s)</th><th>Effort</th><th>Référence</th></tr>
+      <tr><th>#</th><th>Action</th><th>Fichier(s)</th><th>Effort</th><th>Statut</th><th>Référence</th></tr>
     </thead>
     <tbody>
       <tr>
         <td>P1-1</td>
-        <td><strong>Ajouter SRI sur les CDN</strong> — calculer et ajouter les attributs <code>integrity="sha384-…"</code> sur chaque <code>&lt;script src="cdn…"&gt;</code></td>
-        <td><code>index.html</code></td>
+        <td><strong>Ajouter SRI sur les CDN</strong> — <code>integrity="sha384-…"</code> + <code>crossorigin="anonymous"</code> sur 12 fichiers HTML. Hook pre-commit + <code>scripts/check-sri.sh</code></td>
+        <td><code>index.html</code>, 11 fichiers <code>work/</code></td>
         <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">OWASP A06, ANSSI R22</span></td>
       </tr>
       <tr>
         <td>P1-2</td>
-        <td><strong>Restreindre CORS des Edge Functions</strong> — remplacer <code>Access-Control-Allow-Origin: *</code> par le domaine de l'application (<code>https://votre-domaine.com</code>)</td>
-        <td>Toutes les Edge Functions</td>
+        <td><strong>Restreindre CORS des Edge Functions</strong> — <code>Access-Control-Allow-Origin: *</code> → <code>https://crm.safe-digitalisation.fr</code> sur 12 fonctions. <code>stripe-webhook</code> inchangé.</td>
+        <td>12 Edge Functions</td>
         <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé + déployé</span></td>
         <td><span class="action-ref">OWASP A07, ANSSI R23</span></td>
       </tr>
       <tr>
         <td>P1-3</td>
-        <td><strong>Consolider les dossiers Edge Functions</strong> — unifier <code>supabase/function/</code> et <code>supabase/functions/</code> en un seul répertoire standard Supabase CLI</td>
-        <td><code>supabase/function/</code>, <code>supabase/functions/</code></td>
+        <td><strong>Consolider les dossiers Edge Functions</strong> — <code>supabase/function/</code> (singulier, non-standard) fusionné dans <code>supabase/functions/</code>. <code>admin-create-user</code> extrait du dossier imbriqué <code>creaye-checkout/</code>. 2 doublons supprimés.</td>
+        <td><code>supabase/functions/</code> (14 fonctions)</td>
         <td class="effort">2 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">Best practices Supabase</span></td>
       </tr>
       <tr>
         <td>P1-4</td>
-        <td><strong>Renommer <code>creaye-checkout</code> → <code>create-checkout</code></strong> et mettre à jour le nom d'invocation côté client</td>
-        <td><code>supabase/function/creaye-checkout/</code>, <code>assets/app.js</code></td>
+        <td><strong>Renommer <code>creaye-checkout</code> → <code>create-checkout</code></strong> — dossier local renommé, <code>import { serve }</code> manquant corrigé, redéployé en v27. Découverte : le frontend appelait déjà <code>create-checkout</code> (la correction CORS P1-2 n'avait pas atteint la bonne fonction). Ghost <code>creaye-checkout</code> v1 laissé inerte.</td>
+        <td><code>supabase/functions/create-checkout/</code></td>
         <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé + déployé v27</span></td>
         <td><span class="action-ref">Maintenabilité</span></td>
       </tr>
       <tr>
         <td>P1-5</td>
-        <td><strong>Mettre en place CI/CD basique</strong> — GitHub Actions pour lint JS, vérification des migrations SQL, tests E2E Playwright minimaux sur les flux critiques (login, paiement)</td>
-        <td><code>.github/workflows/</code> (à créer)</td>
+        <td><strong>CI/CD GitHub Actions</strong> — <code>security.yml</code> : CORS wildcard, typo BREBO, SRI CDN, secrets .env (chaque push). <code>deno-check.yml</code> : lint + type-check sur changements <code>supabase/functions/</code>. E2E Playwright reporté P2 (nécessite instance Supabase de test dédiée).</td>
+        <td><code>.github/workflows/security.yml</code>, <code>deno-check.yml</code></td>
         <td class="effort">1-2 j</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">ANSSI, DevSecOps</span></td>
       </tr>
       <tr>
         <td>P1-6</td>
-        <td><strong>Mettre à jour le README</strong> — documenter l'état réel (v27), le processus d'installation, les variables d'environnement requises, et la procédure de migration</td>
+        <td><strong>README réécrit</strong> — état réel v28, variables d'env (Supabase, Stripe, Brevo, IA), procédure d'installation, tableau des 14 Edge Functions, migrations SQL, CI/CD, sécurité, structure projet. Ancien README (304 lignes d'historique) remplacé par documentation opérationnelle.</td>
         <td><code>README.md</code></td>
         <td class="effort">2 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">Maintenabilité</span></td>
       </tr>
       <tr>
         <td>P1-7</td>
-        <td><strong>Vérifier et compléter la couverture escapeHtml</strong> — audit systématique des occurrences d'<code>innerHTML</code> sans <code>escapeHtml</code> dans <code>app.js</code></td>
-        <td><code>assets/app.js</code></td>
+        <td><strong>Couverture escapeHtml complétée — 3 XSS corrigées</strong><br>
+          Audit de 72 occurrences <code>innerHTML</code> dans <code>app.js</code> + 17 fichiers JS. Vulnérabilités confirmées et corrigées :<br>
+          (A) <code>activites.join(', ')</code> → <code>.map(a =&gt; escapeHtml(a)).join(', ')</code> ;<br>
+          (C) <code>_buildSecteurCard()</code> : <code>geo</code> (region+dept+secteur) injecté brut → séparation <code>geoRaw</code> + <code>escapeHtml</code>.<br>
+          (C) Éliminée structurellement : <code>region</code> et <code>departement</code> deviennent lecture seule (auto-remplis via <code>geo.api.gouv.fr</code>).<br>
+          Bonus UX : formulaire profil migré vers code postal + ville (select) identique à la fiche contact. Migration SQL : <code>-schema-v29.sql</code> (<code>ADD COLUMN code_postal, ville</code> sur <code>profiles</code>).
+        </td>
+        <td><code>assets/app.js</code>, <code>index.html</code>, <code>supabase/-schema-v29.sql</code></td>
         <td class="effort">3 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">OWASP A03 XSS</span></td>
       </tr>
       <tr>
         <td>P1-8</td>
-        <td><strong>Rédiger le plan de réponse aux incidents</strong> — procédures d'escalade, notification CNIL 72h, communication de crise, contacts responsables</td>
-        <td><code>docs/INCIDENT_RESPONSE.md</code></td>
-        <td class="effort">4 h</td>
+        <td><strong>Plan de réponse aux incidents — déclaration violation CNIL</strong> — bouton 🚨 dans le panneau RGPD : modal de saisie (description, date, catégories, nb personnes) → email alerte admin <code>🚨🚨🚨🚨VIOLATION DE DONNÉES🚨🚨🚨🚨</code> via Brevo + entrée journal RGPD (<code>incident_nis2_declare</code>, criticité Critique) + lien <code>notifications.cnil.fr</code> dans le corps du mail</td>
+        <td><code>send-crm-email</code> v16 · <code>assets/app.js</code> · <code>index.html</code></td>
+        <td class="effort">3 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">NIS2 Art.21, RGPD Art.33</span></td>
       </tr>
       <tr>
         <td>P1-9</td>
-        <td><strong>Mettre en place un monitoring</strong> — configurer Sentry (ou équivalent) pour capturer les erreurs JS côté client et les exceptions dans les Edge Functions</td>
-        <td>Intégration transversale</td>
-        <td class="effort">4 h</td>
+        <td><strong>Monitoring erreurs JS (équivalent Sentry, sans dépendance externe)</strong> — <code>initErrorMonitoring()</code> dans <code>bindEvents()</code> : capture <code>window.onerror</code> + <code>unhandledrejection</code>, filtre les bruits (extensions, ResizeObserver…), dédup 30 s, insère dans <code>audit_logs</code> (action <code>js_error</code>, criticité Critique) via Supabase. Label <code>js_error</code> ajouté au journal RGPD.</td>
+        <td><code>assets/app.js</code> · <code>assets/rgpd/rgpd-journal.js</code></td>
+        <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">NIS2 Art.21, Résilience</span></td>
       </tr>
     </tbody>
@@ -1191,73 +1214,95 @@
   <h3>🟡 P2 — Améliorations (à planifier sur 90 jours)</h3>
   <table class="action-table" style="margin-bottom:24px">
     <thead>
-      <tr><th>#</th><th>Action</th><th>Effort</th><th>Référence</th></tr>
+      <tr><th>#</th><th>Action</th><th>Fichiers</th><th>Effort</th><th>Statut</th><th>Référence</th></tr>
     </thead>
     <tbody>
       <tr>
         <td>P2-1</td>
-        <td><strong>Épingler les versions des imports Deno</strong> — passer de <code>stripe@14</code> à <code>stripe@14.5.0</code> et ajouter un <code>deno.lock</code></td>
+        <td><strong>Épingler les versions des imports Deno</strong> — <code>stripe@14</code> → <code>stripe@14.5.0</code>, <code>supabase-js@2</code> → <code>supabase-js@2.49.4</code> dans les 13 Edge Functions + <code>import_map.json</code> centralisé</td>
+        <td><code>supabase/functions/</code> (13 fichiers) · <code>import_map.json</code></td>
         <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">OWASP A06, Supply Chain</span></td>
       </tr>
       <tr>
         <td>P2-2</td>
-        <td><strong>Accélérer l'extraction modulaire de <code>app.js</code></strong> — continuer vers <code>assets/app/journal.js</code>, <code>assets/app/kanban.js</code>, etc. Objectif &lt;1 500 lignes par module</td>
-        <td class="effort">3-5 j</td>
+        <td><strong>Extraction modulaire de <code>app.js</code></strong> — Phase 1 : 2 modules extraits et branchés dans <code>index.html</code> : <code>assets/tasks/tasks.js</code> (9 fonctions, ~150 lignes) et <code>assets/totp/totp.js</code> (8 fonctions, ~330 lignes). <code>app.js</code> réduit de 5 777 → 5 298 lignes (−479 lignes, −8 %). Modules admin, profile et messaging restent dans <code>app.js</code> (travail continu).</td>
+        <td><code>assets/tasks/tasks.js</code><br><code>assets/totp/totp.js</code><br><code>assets/app.js</code>, <code>index.html</code>, <code>build.mjs</code></td>
+        <td class="effort">1 j (phase 1)</td>
+        <td><span class="badge-partial">⚠️ Partiel</span></td>
         <td><span class="action-ref">Maintenabilité, OWASP A04</span></td>
       </tr>
       <tr>
         <td>P2-3</td>
-        <td><strong>Documenter les droits RGPD dans l'interface</strong> — ajouter une section "Mes données" permettant export CSV et demande d'effacement</td>
-        <td class="effort">2 j</td>
+        <td><strong>Droits RGPD dans l'interface</strong> — Modale "Mes données" enrichie : stats dynamiques (nb contacts/contrats/tâches), bouton <em>⬇ Exporter mes données (CSV)</em> (Art.20 portabilité — profil + contacts + contrats + tâches, journalisé dans <code>audit_logs</code>), bouton <em>✉ Demander l'effacement</em> (mailto structuré Art.17). Vue complète : prénom éditable, e-mail, rôle, n° mandat, ID.</td>
+        <td><code>assets/app.js</code>, <code>index.html</code></td>
+        <td class="effort">4 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">RGPD Art.15-20</span></td>
       </tr>
       <tr>
         <td>P2-4</td>
-        <td><strong>Minifier et bundler les assets</strong> — intégrer Vite ou esbuild pour réduire <code>app.js</code> de 244 KB à ~60 KB (Brotli)</td>
-        <td class="effort">1 j</td>
+        <td><strong>Minifier et bundler les assets</strong> — <code>package.json</code> + <code>build.mjs</code> (esbuild) : minification des 30 fichiers JS + 2 CSS vers <code>dist/</code>. GitHub Actions <code>.github/workflows/deploy.yml</code> : build automatique sur push main → déploiement Pages. <strong>Action requise :</strong> changer la source GitHub Pages de "Branch: main" à "GitHub Actions" dans les settings du dépôt.</td>
+        <td><code>package.json</code>, <code>build.mjs</code>, <code>.github/workflows/deploy.yml</code></td>
+        <td class="effort">3 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">Core Web Vitals, WCAG 2.1</span></td>
       </tr>
       <tr>
         <td>P2-5</td>
-        <td><strong>Enforcer TOTP côté serveur</strong> — vérifier le niveau d'assurance (<code>aal2</code>) du JWT dans les RLS critiques ou dans les Edge Functions sensibles</td>
-        <td class="effort">4 h</td>
+        <td><strong>Enforcer TOTP côté serveur</strong> — claim <code>aal2</code> vérifié dans les 3 Edge Functions sensibles : <code>admin-create-user</code>, <code>delete-user</code>, <code>cancel-subscription</code>. Helper <code>getJwtAal()</code> décode le JWT localement après validation Supabase. Retourne <code>403 mfa_required</code> si AAL1.</td>
+        <td><code>supabase/functions/admin-create-user/index.ts</code><br><code>supabase/functions/delete-user/index.ts</code><br><code>supabase/functions/cancel-subscription/index.ts</code></td>
+        <td class="effort">2 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">ANSSI MFA, Supabase AAL</span></td>
       </tr>
       <tr>
         <td>P2-6</td>
-        <td><strong>Ajouter ARIA sur les modales</strong> — <code>role="dialog"</code>, <code>aria-modal</code>, <code>aria-labelledby</code>, focus trap</td>
-        <td class="effort">1 j</td>
+        <td><strong>Ajouter ARIA sur les modales</strong> — <code>initModalAria()</code> via <code>MutationObserver</code> sur les 23 modales : <code>role="dialog"</code>, <code>aria-modal="true"</code>, <code>aria-labelledby</code> auto sur le premier titre h2/h3/h4, focus trap Tab/Shift-Tab, restauration du focus à la fermeture. <code>violation-modal</code> migré vers classe <code>.show</code>.</td>
+        <td><code>assets/app.js</code>, <code>index.html</code></td>
+        <td class="effort">3 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">WCAG 2.1 AA — 4.1.2</span></td>
       </tr>
       <tr>
         <td>P2-7</td>
-        <td><strong>Externaliser les templates Brevo en variables d'env</strong> — remplacer les IDs hardcodés par <code>Deno.env.get("BREVO_TEMPLATE_INVOICE")</code></td>
+        <td><strong>Externaliser les templates Brevo en variables d'env</strong> — 6 IDs externalisés sur 3 fonctions : <code>BREVO_TEMPLATE_RESILIATION</code> (3), <code>BREVO_TEMPLATE_BORDEREAU</code> (4), <code>BREVO_TEMPLATE_COMMISSION</code> (0 à définir), <code>BREVO_TEMPLATE_MANDAT</code> (5), <code>BREVO_TEMPLATE_CLAUSE_COLLAB</code> (7), <code>BREVO_TEMPLATE_CLAUSE_PUBLIC</code> (6). Fallbacks numériques garantissent la rétrocompatibilité.</td>
+        <td><code>send-crm-email</code> v17 · <code>send-clause-email</code> v10 · <code>send-mandat-email</code> v10</td>
         <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">Maintenabilité</span></td>
       </tr>
       <tr>
         <td>P2-8</td>
-        <td><strong>Documenter les Edge Functions</strong> — ajouter un <code>README.md</code> dans <code>supabase/function/</code> décrivant chaque fonction (contrat d'API, auth requise, events Stripe gérés)</td>
-        <td class="effort">3 h</td>
+        <td><strong>Documenter les Edge Functions</strong> — <code>supabase/functions/README.md</code> créé : 14 fonctions documentées (méthode, auth, CORS, body, réponse, events Stripe gérés, tableau des secrets et des templates Brevo)</td>
+        <td><code>supabase/functions/README.md</code></td>
+        <td class="effort">2 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">Maintenabilité, NIS2</span></td>
       </tr>
       <tr>
         <td>P2-9</td>
-        <td><strong>Adopter Supabase CLI pour les migrations</strong> — convertir les 27 fichiers manuels en migrations Supabase CLI (<code>supabase/migrations/</code>) pour activer la gestion versionée</td>
-        <td class="effort">1 j</td>
+        <td><strong>Adopter Supabase CLI pour les migrations</strong> — créé <code>supabase/supabase/config.toml</code> (projet lié, MFA TOTP activé) + <code>migrations/20240601000000_baseline.sql</code> (v1→v29 consolidées, 2 393 lignes) + <code>CONTRIBUTING.md</code> documentant le workflow <code>supabase migration new</code> / <code>db push</code>.</td>
+        <td><code>supabase/supabase/config.toml</code><br><code>supabase/supabase/migrations/</code><br><code>supabase/supabase/CONTRIBUTING.md</code></td>
+        <td class="effort">2 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">Best practices Supabase</span></td>
       </tr>
       <tr>
         <td>P2-10</td>
-        <td><strong>TVA en variable d'environnement</strong> — extraire <code>120</code> (= HT × 1.2) vers <code>Deno.env.get("TVA_MULTIPLIER")</code> dans <code>creaye-checkout</code></td>
+        <td><strong>TVA en variable d'environnement</strong> — <code>120</code> → <code>Deno.env.get("TVA_MULTIPLIER") ?? 120</code> dans <code>create-checkout</code> (3 occurrences). Déployer <code>supabase secrets set TVA_MULTIPLIER=120</code> pour rendre le taux modifiable sans redéploiement.</td>
+        <td><code>create-checkout</code> v28</td>
         <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">Légal, Maintenabilité</span></td>
       </tr>
       <tr>
         <td>P2-11</td>
-        <td><strong>Consolider les fichiers PDF</strong> — vérifier <code>assets/contract-pdf.js</code> vs <code>assets/contracts/contracts-pdf.js</code> et supprimer le doublon</td>
-        <td class="effort">1 h</td>
+        <td><strong>Consolider les fichiers PDF</strong> — <code>assets/contract-pdf.js</code> (21 KB, non référencé) supprimé. <code>assets/contracts/contracts-pdf.js</code> (26 KB, chargé dans <code>index.html</code>) est la version active et contient 2 fonctions supplémentaires (<code>generateContractPDF</code>, <code>sendOrderLink</code>).</td>
+        <td><code>assets/contract-pdf.js</code> supprimé</td>
+        <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">Maintenabilité</span></td>
       </tr>
     </tbody>

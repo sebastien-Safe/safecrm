@@ -1,0 +1,38 @@
+name: Deno — Edge Functions
+
+on:
+  push:
+    paths:
+      - "supabase/functions/**"
+  pull_request:
+    paths:
+      - "supabase/functions/**"
+
+jobs:
+  deno:
+    name: Lint & Type-check Edge Functions
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      # ── Lint ─────────────────────────────────────────────────────────────
+      - name: "deno lint"
+        run: |
+          deno lint supabase/functions/ \
+            --ignore=supabase/functions/agenda-ics/index.ts
+          echo "✅ Lint OK"
+
+      # ── Type-check ───────────────────────────────────────────────────────
+      - name: "deno check"
+        run: |
+          find supabase/functions -name "index.ts" | while read f; do
+            echo "→ deno check $f"
+            deno check "$f" || exit 1
+          done
+          echo "✅ Type-check OK"

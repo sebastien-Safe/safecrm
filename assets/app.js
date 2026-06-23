@@ -86,7 +86,7 @@ function gaugeSvg(pct) {
 
 // → déplacé dans contacts/contacts.js : CONTACT_STATUT_BADGE, ACTIVITE_BADGE, CONTACT_FIELD_IDS, CONTACT_CONSENT_IDS, contactName
 // → déplacé dans contracts/contracts.js : CONTRACT_STATUT_BADGE
-const PRIORITY_BADGE = { 'Basse': 'badge-gray', 'Normale': 'badge-blue', 'Haute': 'badge-red' };
+// → déplacé dans tasks/tasks.js : PRIORITY_BADGE, TASK_TYPE_BADGE
 
 function showCrmToast(html, duration = 8000) {
   const t = document.createElement('div');
@@ -96,7 +96,7 @@ function showCrmToast(html, duration = 8000) {
   setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, duration);
   return t;
 }
-const TASK_TYPE_BADGE = { 'Premier contact': 'badge-blue', 'RDV visio': 'badge-gold', 'RDV terrain': 'badge-green', 'Autre': 'badge-gray' };
+// → déplacé dans tasks/tasks.js : getFilteredTasks, taskCardHtml, renderTasks, onTaskTypeChange, openTaskModal, closeTaskModal, saveTask, deleteTask, quickSetTaskStatus
 
 // → déplacé dans contracts/contracts.js : CONTRACT_ICONS, getContractIcon, FORMULE_PRESETS, FORMULE_CUSTOM, COMMISSION_FALLBACK
 
@@ -635,7 +635,7 @@ function renderDashboard() {
     <div class="mini-item">
       <div>
         <div class="t">${escapeHtml(c.nom)}${c.entreprise ? ' — ' + escapeHtml(c.entreprise) : ''}</div>
-        <div class="s">${(c.activites || []).join(', ') || '—'}</div>
+        <div class="s">${(c.activites || []).map(a => escapeHtml(a)).join(', ') || '—'}</div>
       </div>
       <span class="badge ${CONTACT_STATUT_BADGE[statut] || 'badge-gray'}">${escapeHtml(statut)}</span>
     </div>`;
@@ -658,158 +658,8 @@ function renderDashboard() {
 // → déplacé dans contracts/contracts-formulas.js : populateFormuleSelect, onFormuleChange, updateNetDisplay, autoCalcEcheance, onContractTypeChange
 // → déplacé dans contracts/contracts.service.js : saveContract, deleteContract
 
-// ---------------------------------------------------------
-// TÂCHES
-// ---------------------------------------------------------
-function getFilteredTasks() {
-  const assigne = $('#tasks-filter-assigne').value.trim().toLowerCase();
-  return state.tasks.filter(t => {
-    if (assigne && !(t.assigne_a || '').toLowerCase().includes(assigne)) return false;
-    return true;
-  });
-}
-
-function taskCardHtml(t) {
-  const overdue = isOverdue(t.echeance, t.statut);
-  let nextBtn = '';
-  if (t.statut === 'À faire') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|En cours">→ En cours</button>`;
-  if (t.statut === 'En cours') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|Terminé">→ Terminé</button>`;
-  if (t.statut === 'Terminé') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|À faire">↺ Réouvrir</button>`;
-  const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
-  const rdvLine = isRdv && (t.rdv_date || t.rdv_heure || t.rdv_lieu)
-    ? `<div class="meta" style="margin-top:6px"><span>📍 ${formatDate(t.rdv_date)}${t.rdv_heure ? ' à ' + t.rdv_heure.slice(0,5) : ''}${t.rdv_lieu ? ' — ' + escapeHtml(t.rdv_lieu) : ''}</span></div>`
-    : '';
-  return `
-    <div class="kanban-card">
-      ${t.type_tache ? `<span class="badge ${TASK_TYPE_BADGE[t.type_tache] || 'badge-gray'}" style="margin-bottom:6px;display:inline-block">${escapeHtml(t.type_tache)}</span>` : ''}
-      <div class="title">${escapeHtml(t.titre)}</div>
-      <div class="meta">
-        <span class="${overdue ? 'overdue' : ''}">📅 ${formatDate(t.echeance)}</span>
-        <span class="badge ${PRIORITY_BADGE[t.priorite] || 'badge-gray'}">${escapeHtml(t.priorite)}</span>
-      </div>
-      ${rdvLine}
-      ${t.contact_id ? `<div class="meta" style="margin-top:6px"><span>👤 ${escapeHtml(contactName(t.contact_id))}</span></div>` : ''}
-      ${t.assigne_a ? `<div class="meta" style="margin-top:4px"><span>🧑‍💼 ${escapeHtml(t.assigne_a)}</span></div>` : ''}
-      <div class="actions">
-        ${nextBtn}
-        <button class="btn btn-out btn-sm" data-edit-task="${t.id}">Modifier</button>
-      </div>
-    </div>`;
-}
-
-function renderTasks() {
-  const list = getFilteredTasks();
-  const cols = { 'À faire': [], 'En cours': [], 'Terminé': [] };
-  list.forEach(t => { (cols[t.statut] || cols['À faire']).push(t); });
-  $('#kanban-todo').innerHTML = cols['À faire'].length ? cols['À faire'].map(taskCardHtml).join('') : '<p class="empty">Aucune tâche.</p>';
-  $('#kanban-inprogress').innerHTML = cols['En cours'].length ? cols['En cours'].map(taskCardHtml).join('') : '<p class="empty">Aucune tâche.</p>';
-  $('#kanban-done').innerHTML = cols['Terminé'].length ? cols['Terminé'].map(taskCardHtml).join('') : '<p class="empty">Aucune tâche.</p>';
-}
-
-function onTaskTypeChange() {
-  const type = $('#t-type').value;
-  const isRdv = type === 'RDV visio' || type === 'RDV terrain';
-  $('#t-rdv-fields').style.display = isRdv ? 'block' : 'none';
-  $('#t-echeance-row').style.gridTemplateColumns = isRdv ? '1fr' : '1fr 1fr';
-  $('#t-echeance-field').style.display = isRdv ? 'none' : '';
-  $('#t-rdv-lieu-label').textContent = type === 'RDV terrain' ? 'Lieu du RDV' : 'Lieu / Lien visio';
-  $('#t-rdv-lieu').placeholder = type === 'RDV terrain'
-    ? 'Ex : adresse du rendez-vous'
-    : 'Ex : lien Google Meet, Teams, Zoom…';
-}
-
-function openTaskModal(id = null) {
-  // Rafraîchir les selects (contacts et contrats) à chaque ouverture
-  populateContactSelects();
-  populateContractSelects();
-
-  const t = id ? state.tasks.find(x => x.id === id) : null;
-  $('#task-modal-title').textContent = t ? 'Modifier la tâche' : 'Nouvelle tâche';
-  $('#t-id').value = t?.id || '';
-  $('#t-type').value = t?.type_tache || 'Premier contact';
-  $('#t-titre').value = t?.titre || '';
-  $('#t-description').value = t?.description || '';
-  $('#t-contact').value = t?.contact_id || '';
-  $('#t-contract').value = t?.contract_id || '';
-  $('#t-rdv-date').value = t?.rdv_date || '';
-  $('#t-rdv-heure').value = t?.rdv_heure ? t.rdv_heure.slice(0, 5) : '';
-  $('#t-rdv-lieu').value = t?.rdv_lieu || '';
-  $('#t-echeance').value = t?.echeance || '';
-  $('#t-priorite').value = t?.priorite || 'Normale';
-  $('#t-statut').value = t?.statut || 'À faire';
-  // Populate assigné dropdown with users
-  const assigneSelect = $('#t-assigne');
-  const userOpts = Object.values(state.profilesById || {})
-    .sort((a, b) => (a.prenom || '').localeCompare(b.prenom || ''))
-    .map(u => `<option value="${escapeHtml(u.prenom || u.id)}">${escapeHtml(u.prenom || '—')}</option>`).join('');
-  assigneSelect.innerHTML = '<option value="">— Non assigné —</option>' + userOpts;
-  assigneSelect.value = t?.assigne_a || '';
-  onTaskTypeChange();
-  $('#task-delete-btn').style.display = t ? 'inline-flex' : 'none';
-  $('#task-modal').classList.add('show');
-}
-
-function closeTaskModal() {
-  $('#task-modal').classList.remove('show');
-}
-
-async function saveTask() {
-  const id = $('#t-id').value;
-  const titre = $('#t-titre').value.trim();
-  if (!titre) { alert('Le titre est obligatoire.'); return; }
-  const statut = $('#t-statut').value;
-  const type_tache = $('#t-type').value;
-  const isRdv = type_tache === 'RDV visio' || type_tache === 'RDV terrain';
-  const rdv_date = isRdv ? ($('#t-rdv-date').value || null) : null;
-  const payload = {
-    type_tache,
-    titre,
-    description: $('#t-description').value.trim() || null,
-    contact_id: $('#t-contact').value || null,
-    contract_id: $('#t-contract').value || null,
-    rdv_date,
-    rdv_heure: isRdv ? ($('#t-rdv-heure').value || null) : null,
-    rdv_lieu: isRdv ? ($('#t-rdv-lieu').value.trim() || null) : null,
-    // Pour un RDV, l'échéance suit la date du RDV (sinon la date saisie librement)
-    echeance: isRdv ? rdv_date : ($('#t-echeance').value || null),
-    priorite: $('#t-priorite').value,
-    statut,
-    assigne_a: $('#t-assigne').value.trim() || null,
-  };
-  // Mémorise la date de passage à "Terminé" (pour l'objectif "Tâches terminées")
-  const existing = id ? state.tasks.find(x => x.id === id) : null;
-  if (statut === 'Terminé') {
-    if (!existing || existing.statut !== 'Terminé') payload.termine_at = new Date().toISOString();
-  } else {
-    payload.termine_at = null;
-  }
-  let error;
-  if (id) {
-    ({ error } = await sb.from('tasks').update(payload).eq('id', id));
-  } else {
-    ({ error } = await sb.from('tasks').insert({ ...payload, created_by: state.user.id }));
-  }
-  if (error) return alert('Erreur : ' + error.message);
-  closeTaskModal();
-  await loadAll();
-}
-
-async function deleteTask() {
-  const id = $('#t-id').value;
-  if (!id) return;
-  if (!confirm('Supprimer cette tâche ?')) return;
-  const { error } = await sb.from('tasks').delete().eq('id', id);
-  if (error) return alert('Erreur : ' + error.message);
-  closeTaskModal();
-  await loadAll();
-}
-
-async function quickSetTaskStatus(id, statut) {
-  const payload = { statut, termine_at: statut === 'Terminé' ? new Date().toISOString() : null };
-  const { error } = await sb.from('tasks').update(payload).eq('id', id);
-  if (error) return alert('Erreur : ' + error.message);
-  await loadAll();
-}
+// → déplacé dans tasks/tasks.js : getFilteredTasks, taskCardHtml, renderTasks, onTaskTypeChange,
+//   openTaskModal, closeTaskModal, saveTask, deleteTask, quickSetTaskStatus
 
 // ---------------------------------------------------------
 // PROFIL UTILISATEUR (prénom, photo, jours travaillés)
@@ -845,6 +695,14 @@ function openProfileModal() {
   if (document.getElementById('profile-adresse'))   document.getElementById('profile-adresse').value   = state.profile?.adresse    || '';
   if (document.getElementById('profile-rcpro'))        document.getElementById('profile-rcpro').value        = state.profile?.rcpro_numero  || '';
   if (document.getElementById('profile-siret'))        document.getElementById('profile-siret').value        = state.profile?.siret         || '';
+  if (document.getElementById('profile-code-postal'))  document.getElementById('profile-code-postal').value  = state.profile?.code_postal   || '';
+  const _pvEl = document.getElementById('profile-ville');
+  if (_pvEl) {
+    const _sv = state.profile?.ville || '';
+    _pvEl.innerHTML = _sv
+      ? `<option value="${escapeHtml(_sv)}">${escapeHtml(_sv)}</option>`
+      : '<option value="">— Saisissez un code postal —</option>';
+  }
   if (document.getElementById('profile-region'))       document.getElementById('profile-region').value       = state.profile?.region        || '';
   if (document.getElementById('profile-departement'))  document.getElementById('profile-departement').value  = state.profile?.departement   || '';
   if (document.getElementById('profile-secteur'))      document.getElementById('profile-secteur').value      = state.profile?.secteur       || '';
@@ -936,6 +794,8 @@ async function saveProfile() {
   const adresse     = (document.getElementById('profile-adresse')?.value||'').trim() || null;
   const rcpro       = (document.getElementById('profile-rcpro')?.value||'').trim() || null;
   const siret       = (document.getElementById('profile-siret')?.value||'').trim() || null;
+  const code_postal = (document.getElementById('profile-code-postal')?.value||'').trim() || null;
+  const ville       = (document.getElementById('profile-ville')?.value||'').trim() || null;
   const region      = (document.getElementById('profile-region')?.value||'').trim() || null;
   const departement = (document.getElementById('profile-departement')?.value||'').trim() || null;
   const secteur     = (document.getElementById('profile-secteur')?.value||'').trim() || null;
@@ -965,13 +825,15 @@ const { error } = await sb.from('profiles').upsert({
   nom,
   telephone,
   adresse,
+  code_postal,
+  ville,
   siret,
   rcpro_numero: rcpro,
   photo_url,
   region,
   departement,
   secteur,
-  profil_completed: !!(prenom && nom && telephone && adresse && siret)
+  profil_completed: !!(prenom && nom && telephone && adresse && code_postal && ville && siret)
 });  if (error) { $('#profile-error').textContent = 'Erreur : ' + error.message; return; }
 
   if (typeof logRgpd === 'function') await logRgpd('profil_modifie', 'Profil', {
@@ -1478,7 +1340,8 @@ function _resetResultatsFilters() {
 function _buildSecteurCard(c) {
   const dci = c.dci;
   const nom = [dci.prenom, dci.nom].filter(Boolean).join(' ') || '—';
-  const geo = [dci.region, dci.departement, dci.secteur].filter(Boolean).join(' · ') || '<span class="mut" style="font-size:.75rem">Géographie non renseignée</span>';
+  const _geoRaw = [dci.region, dci.departement, dci.secteur].filter(Boolean).join(' · ');
+  const geo = _geoRaw ? escapeHtml(_geoRaw) : '<span class="mut" style="font-size:.75rem">Géographie non renseignée</span>';
 
   // Badge statut commission
   let commBadge = '';
@@ -2694,24 +2557,83 @@ async function sendHelp() {
 }
 
 // --- Mes données (droits RGPD de l'utilisateur sur le CRM) ---
-function openMyDataModal() {
+async function openMyDataModal() {
   if (!state.user) return;
   const p = state.profile || {};
   const html = `
     <div class="field"><label>Prénom</label><input id="myd-prenom" type="text" value="${escapeHtml(p.prenom || '')}"></div>
     <div class="field-row">
-      <div class="field"><label>E-mail (modifiable depuis votre profil)</label><input type="email" value="${escapeHtml(state.user.email || '')}" disabled></div>
-      <div class="field"><label>Identifiant utilisateur</label><input type="text" value="${escapeHtml(state.user.id || '')}" disabled></div>
+      <div class="field"><label>E-mail</label><input type="email" value="${escapeHtml(state.user.email || '')}" disabled></div>
+      <div class="field"><label>Rôle</label><input type="text" value="${escapeHtml(p.role || '—')}" disabled></div>
     </div>
-    <div class="note" style="margin-top:6px">
-      <b>Données traitées par S@FE pour le compte du CRM</b> :
-      e-mail (authentification), prénom et photo de profil (interface), contacts/contrats/tâches/objectifs créés (responsabilité du CRM).
-      Base légale : exécution du contrat de travail / mission (art. 6.1.b RGPD).
-      Conservation : durée de la mission + 5 ans (obligations comptables).
-      Vous disposez d'un droit d'accès, de rectification, d'effacement, d'opposition, de limitation et de portabilité.
+    <div class="field-row">
+      <div class="field"><label>N° mandat</label><input type="text" value="${escapeHtml(p.numero_mandat || '—')}" disabled></div>
+      <div class="field"><label>Identifiant interne</label><input type="text" value="${escapeHtml(state.user.id || '')}" disabled style="font-size:.78rem"></div>
     </div>`;
   $('#mydata-content').innerHTML = html;
+  // Charger les stats en arrière-plan
+  const statsEl = $('#mydata-export-stats');
+  if (statsEl) {
+    statsEl.textContent = 'Chargement des statistiques…';
+    try {
+      const [{ count: nbContacts }, { count: nbContrats }, { count: nbTaches }] = await Promise.all([
+        sb.from('contacts').select('id', { count: 'exact', head: true }).eq('created_by', state.user.id),
+        sb.from('contracts').select('id', { count: 'exact', head: true }).eq('created_by', state.user.id),
+        sb.from('tasks').select('id', { count: 'exact', head: true }).eq('created_by', state.user.id),
+      ]);
+      statsEl.innerHTML = `Données associées à votre compte : <strong>${nbContacts ?? 0}</strong> contacts · <strong>${nbContrats ?? 0}</strong> contrats · <strong>${nbTaches ?? 0}</strong> tâches`;
+    } catch { statsEl.textContent = ''; }
+  }
   $('#mydata-modal').classList.add('show');
+}
+
+async function exportMyDataCSV() {
+  if (!state.user) return;
+  const btn = $('#mydata-export-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Préparation…'; }
+  try {
+    const [{ data: profil }, { data: contacts }, { data: contrats }, { data: taches }] = await Promise.all([
+      sb.from('profiles').select('*').eq('id', state.user.id).single(),
+      sb.from('contacts').select('nom,prenom,email,telephone,entreprise,statut,created_at').eq('created_by', state.user.id).order('created_at'),
+      sb.from('contracts').select('type,formule,montant,recurrence,statut,date_debut,date_echeance,created_at').eq('created_by', state.user.id).order('created_at'),
+      sb.from('tasks').select('titre,statut,priorite,echeance,created_at').eq('created_by', state.user.id).order('created_at'),
+    ]);
+
+    const csvBlocks = [];
+    const toCSV = (rows, label) => {
+      if (!rows?.length) return `=== ${label} ===\nAucune donnée\n\n`;
+      const keys = Object.keys(rows[0]);
+      const lines = [keys.join(';'), ...rows.map(r => keys.map(k => `"${String(r[k] ?? '').replace(/"/g, '""')}"`).join(';'))];
+      return `=== ${label} ===\n${lines.join('\n')}\n\n`;
+    };
+
+    csvBlocks.push(`S@FE CRM — Export de données personnelles (Art.20 RGPD)\nDate d'export : ${new Date().toLocaleString('fr-FR')}\nUtilisateur : ${state.user.email}\n\n`);
+    csvBlocks.push(toCSV(profil ? [profil] : [], 'Profil'));
+    csvBlocks.push(toCSV(contacts, 'Contacts créés'));
+    csvBlocks.push(toCSV(contrats, 'Contrats créés'));
+    csvBlocks.push(toCSV(taches, 'Tâches créées'));
+
+    const blob = new Blob([csvBlocks.join('')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `safe-crm-mes-donnees-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    if (typeof logRgpd === 'function') {
+      await logRgpd('export_donnees_personnelles', 'RGPD', {
+        criticite: 'Moyen', donnees: 'Profil, Contacts, Contrats, Tâches', resultat: 'Succès',
+        details: { article: 'Art.20 RGPD — Portabilité' },
+      });
+    }
+  } catch (e) {
+    alert('Erreur lors de l\'export : ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⬇ Exporter mes données (CSV)'; }
+  }
 }
 
 async function saveMyData() {
@@ -2829,337 +2751,8 @@ function setupInactivityTimeout() {
 
 // --- Envoi du bon de commande au client (lien de paiement Stripe) ---
 // → déplacé dans contracts/contracts-pdf.js : sendOrderLink, generateContractPDF
-// =========================================================
-// DOUBLE AUTHENTIFICATION TOTP (QR code)
-// =========================================================
-
-async function refreshTOTPStatus() {
-  if (!state.user) return;
-  try {
-    const { data } = await sb.auth.mfa.listFactors();
-    const verified = (data?.totp || []).filter(f => f.status === 'verified');
-    const enrolled = verified.length > 0;
-    state._totpFactors = data?.totp || [];
-    $('#totp-status-label').textContent = enrolled
-      ? '🔒 2FA activée — appli d\'authentification requise à chaque connexion.'
-      : 'Non activée — appuyez sur le bouton pour scanner un QR code.';
-    $('#totp-enroll-btn').style.display = enrolled ? 'none' : 'inline-flex';
-    $('#totp-disable-btn').style.display = enrolled ? 'inline-flex' : 'none';
-  } catch (e) { console.warn('listFactors:', e); }
-}
-
-async function openTotpEnroll() {
-  const err = $('#totp-enroll-error'); err.style.display = 'none';
-  $('#totp-code').value = '';
-  try {
-    // 1. Lister les facteurs déjà existants pour cet utilisateur
-    const { data: factorsData, error: listErr } = await sb.auth.mfa.listFactors();
-    if (listErr) { alert("Erreur (listFactors) : " + (listErr.message || JSON.stringify(listErr))); console.error(listErr); return; }
-    const allTotp = (factorsData?.totp) || [];
-
-    // S'il existe déjà un facteur vérifié, on bloque
-    const verified = allTotp.find(f => f.status === 'verified');
-    if (verified) {
-      alert("Votre compte a déjà la 2FA activée. Désactivez-la d'abord pour en enregistrer une nouvelle.");
-      return;
-    }
-
-    // Nettoyer les anciens enrôlements non vérifiés (Supabase n'autorise qu'un seul facteur en cours)
-    for (const f of allTotp) {
-      if (f.status !== 'verified') {
-        try { await sb.auth.mfa.unenroll({ factorId: f.id }); }
-        catch (e) { console.warn('unenroll cleanup:', e); }
-      }
-    }
-
-    // 2. Démarrer un nouvel enrôlement (sans friendlyName pour éviter les conflits de doublon)
-    const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp' });
-    if (error) {
-      alert("Erreur Supabase MFA : " + (error.message || JSON.stringify(error)) + "\n\nLog technique : " + JSON.stringify(error));
-      console.error('mfa.enroll error:', error);
-      return;
-    }
-    if (!data?.totp) {
-      alert("Réponse inattendue de Supabase : aucun QR code retourné. Vérifiez que MFA TOTP est bien activé dans Authentication → Settings → Multi-Factor Authentication.\n\nRéponse reçue : " + JSON.stringify(data));
-      console.error('mfa.enroll unexpected:', data);
-      return;
-    }
-
-    state._totpEnrollFactorId = data.id;
-
-    // 3. Affichage du QR code
-    const otpauth = data.totp.uri;
-    const container = $('#totp-qr'); container.innerHTML = '';
-
-    // Plan A : librairie qrcode.js (canvas)
-    if (window.QRCode && typeof window.QRCode.toCanvas === 'function') {
-      const canvas = document.createElement('canvas');
-      await window.QRCode.toCanvas(canvas, otpauth, { width: 220, margin: 1, color: { dark: '#0a1628', light: '#ffffff' } });
-      container.appendChild(canvas);
-    }
-    // Plan B : qr_code envoyé par Supabase en SVG dataURL (selon version SDK)
-    else if (data.totp.qr_code) {
-      const img = document.createElement('img');
-      img.src = data.totp.qr_code;
-      img.alt = 'QR code TOTP';
-      img.style.cssText = 'width:220px;height:220px;background:#fff;padding:10px;border-radius:8px';
-      container.appendChild(img);
-    }
-    // Plan C : générateur en ligne (sans réseau utilisateur)
-    else {
-      const img = document.createElement('img');
-      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(otpauth);
-      img.alt = 'QR code TOTP';
-      img.style.cssText = 'background:#fff;padding:10px;border-radius:8px';
-      container.appendChild(img);
-    }
-
-    // Fallback texte si rien ne s'affiche (au pire l'utilisateur peut taper la clé manuellement)
-    const hint = document.createElement('p');
-    hint.className = 'mut';
-    hint.style.cssText = 'font-size:.78rem;margin-top:8px;text-align:center';
-    hint.textContent = "Si le QR code ne s'affiche pas, saisissez la clé secrète ci-dessous dans votre application.";
-    container.appendChild(hint);
-
-    $('#totp-secret').value = data.totp.secret;
-    $('#totp-enroll-modal').classList.add('show');
-
-  } catch (e) {
-    // Erreur non Supabase (ex. réseau, lib non chargée)
-    alert("Exception lors de l'enrôlement TOTP : " + (e.message || e) + "\n\nVoir la console (F12) pour le détail technique.");
-    console.error('openTotpEnroll exception:', e);
-  }
-}
-
-async function verifyTotpEnroll() {
-  const err = $('#totp-enroll-error'); err.style.display = 'none';
-  const code = $('#totp-code').value.trim();
-  const factorId = state._totpEnrollFactorId;
-  if (!factorId) { err.textContent = "Aucun enrôlement en cours."; err.style.display = 'block'; return; }
-  if (!/^\d{6}$/.test(code)) { err.textContent = "Saisissez un code à 6 chiffres."; err.style.display = 'block'; return; }
-  try {
-    const ch = await sb.auth.mfa.challenge({ factorId });
-    if (ch.error) throw ch.error;
-    const v = await sb.auth.mfa.verify({ factorId, challengeId: ch.data.id, code });
-    if (v.error) throw v.error;
-    $('#totp-enroll-modal').classList.remove('show');
-    alert('✅ Double authentification activée. Vous devrez désormais saisir un code à 6 chiffres à chaque connexion.');
-    refreshTOTPStatus();
-  } catch (e) {
-    err.textContent = 'Code refusé : ' + (e.message || e);
-    err.style.display = 'block';
-  }
-}
-
-async function disableTotp() {
-  if (!confirm("Désactiver la double authentification ? Vous pourrez la réactiver à tout moment.")) return;
-  try {
-    const factors = state._totpFactors || [];
-    for (const f of factors) {
-      await sb.auth.mfa.unenroll({ factorId: f.id });
-    }
-    alert('Double authentification désactivée.');
-    refreshTOTPStatus();
-  } catch (e) { alert('Erreur : ' + (e.message || e)); }
-}
-
-// Rôles nécessitant un TOTP obligatoire (Art.42 RGPD — accès aux données sensibles)
-// Correspond à admin_global / dpo / broker_admin dans la nomenclature RGPD du CRM
-const TOTP_REQUIRED_ROLES = ['admin_candy', 'super_admin', 'dci'];
-
-// Journalisation des événements TOTP dans totp_audit (non bloquant)
-async function _logTotpEvent(event, role) {
-  try {
-    await sb.from('totp_audit').insert({
-      user_id:    state.user?.id || null,
-      event,
-      role:       role || getRole(),
-      user_agent: navigator.userAgent.slice(0, 200),
-    });
-  } catch (_) { /* non bloquant */ }
-}
-
-// Vérification TOTP après login
-// - Rôles privilégiés (admin_candy, super_admin) : TOTP obligatoire, enrollment forcé si absent
-// - Autres rôles : TOTP vérifié si déjà enrôlé volontairement, sinon passé
-// Trust device : code validé il y a moins de 2h → pas de re-challenge
-async function challengeTOTPIfNeeded() {
-  try {
-    const userId   = state.user?.id || '';
-    const trustKey = 'safe_totp_trust_' + userId;
-    const trustExp = parseInt(localStorage.getItem(trustKey) || '0', 10);
-
-    // Appareil de confiance encore valide (< 2h) → pas de challenge
-    if (trustExp > Date.now()) return true;
-
-    // Récupérer le rôle (state.profile pas encore chargé à ce stade du login)
-    let userRole = 'user';
-    try {
-      const { data: pData } = await sb.from('profiles').select('role').eq('id', userId).maybeSingle();
-      userRole = pData?.role || 'user';
-    } catch (_) {}
-    const isPrivileged = TOTP_REQUIRED_ROLES.includes(userRole);
-
-    const { data: factorsData } = await sb.auth.mfa.listFactors();
-    const totp = (factorsData?.totp || []).find(f => f.status === 'verified');
-
-    if (!totp) {
-      if (isPrivileged) {
-        // Rôle privilégié sans TOTP → enrollment forcé, non annulable
-        await _logTotpEvent('enrollment_required', userRole);
-        return await _forceTotpEnrollment();
-      }
-      // Rôle standard → TOTP volontaire, on passe
-      return true;
-    }
-
-    // TOTP enrôlé → vérifier le niveau d'assurance
-    const { data: aalData } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aalData && aalData.currentLevel === aalData.nextLevel) {
-      // Déjà vérifié dans cette session → marquer trust 2h
-      localStorage.setItem(trustKey, String(Date.now() + 2 * 3600 * 1000));
-      await _logTotpEvent('verify_ok_aal', userRole);
-      return true;
-    }
-
-    // Demander le code TOTP
-    return await new Promise((resolve) => {
-      const modal = $('#totp-challenge-modal');
-      const err   = $('#totp-challenge-error');
-      err.style.display = 'none';
-      $('#totp-challenge-code').value = '';
-      modal.classList.add('show');
-
-      $('#totp-challenge-cancel').onclick = async () => {
-        modal.classList.remove('show');
-        await _logTotpEvent('challenge_cancelled', userRole);
-        await sb.auth.signOut();
-        resolve(false);
-      };
-
-      $('#totp-challenge-verify').onclick = async () => {
-        const code = $('#totp-challenge-code').value.trim();
-        if (!/^\d{6}$/.test(code)) { err.textContent = 'Code à 6 chiffres requis.'; err.style.display = 'block'; return; }
-        try {
-          const ch = await sb.auth.mfa.challenge({ factorId: totp.id });
-          if (ch.error) throw ch.error;
-          const v = await sb.auth.mfa.verify({ factorId: totp.id, challengeId: ch.data.id, code });
-          if (v.error) throw v.error;
-          modal.classList.remove('show');
-          localStorage.setItem(trustKey, String(Date.now() + 2 * 3600 * 1000));
-          await _logTotpEvent('verify_ok', userRole);
-          resolve(true);
-        } catch (e) {
-          await _logTotpEvent('verify_fail', userRole);
-          err.textContent = 'Code refusé : ' + (e.message || e);
-          err.style.display = 'block';
-        }
-      };
-    });
-  } catch (e) { console.warn('AAL check:', e); return true; }
-}
-
-// Enrôlement TOTP forcé — non annulable — appelé si aucun TOTP enrôlé au login
-async function _forceTotpEnrollment() {
-  return new Promise((resolve) => {
-    let overlay = document.getElementById('totp-force-overlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'totp-force-overlay';
-      overlay.style.cssText = `
-        position:fixed;inset:0;z-index:9999;background:rgba(10,22,40,.97);
-        display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;
-        padding:24px;text-align:center;color:#e2e8f0`;
-      overlay.innerHTML = `
-        <div style="max-width:420px;width:100%">
-          <div style="font-size:2.5rem;margin-bottom:8px">🔐</div>
-          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:6px">Double authentification obligatoire</h2>
-          <p style="font-size:.85rem;color:#94a3b8;margin-bottom:20px">
-            Configurez Google Authenticator ou Authy pour accéder au CRM.<br>
-            Cette étape est requise pour tous les utilisateurs.
-          </p>
-          <div id="totp-force-qr" style="background:#fff;display:inline-block;padding:10px;border-radius:8px;margin-bottom:12px"></div>
-          <p style="font-size:.75rem;color:#94a3b8;margin-bottom:4px">Clé manuelle :</p>
-          <input id="totp-force-secret" type="text" readonly
-            style="width:100%;text-align:center;font-family:monospace;font-size:.85rem;
-                   background:#1e293b;border:1px solid #334155;border-radius:6px;
-                   padding:8px;color:#f1f5f9;margin-bottom:14px">
-          <div class="field">
-            <input id="totp-force-code" type="text" maxlength="6" placeholder="Code à 6 chiffres"
-              style="width:100%;text-align:center;font-size:1.4rem;letter-spacing:.35em;
-                     font-family:monospace;background:#1e293b;border:1px solid #334155;
-                     border-radius:8px;padding:12px;color:#f1f5f9">
-          </div>
-          <p id="totp-force-error" style="color:#fc8181;font-size:.82rem;margin-bottom:10px;display:none"></p>
-          <button id="totp-force-verify" class="btn btn-pri" style="width:100%;justify-content:center">
-            Activer et continuer →
-          </button>
-          <p style="font-size:.72rem;color:#64748b;margin-top:14px">
-            Scannez le QR code avec votre application d'authentification.
-          </p>
-        </div>`;
-      document.body.appendChild(overlay);
-    }
-
-    overlay.style.display = 'flex';
-
-    // Lancer l'enrôlement TOTP
-    (async () => {
-      try {
-        // Nettoyer d'éventuels anciens facteurs non vérifiés
-        const { data: fd } = await sb.auth.mfa.listFactors();
-        for (const f of (fd?.totp || []).filter(f => f.status !== 'verified')) {
-          try { await sb.auth.mfa.unenroll({ factorId: f.id }); } catch (_) {}
-        }
-
-        const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp' });
-        if (error || !data?.totp) {
-          document.getElementById('totp-force-error').textContent = 'Erreur Supabase MFA : ' + (error?.message || 'inconnu');
-          document.getElementById('totp-force-error').style.display = 'block';
-          return;
-        }
-
-        overlay._factorId = data.id;
-        document.getElementById('totp-force-secret').value = data.totp.secret;
-
-        const qrEl = document.getElementById('totp-force-qr');
-        if (typeof QRCode !== 'undefined') {
-          new QRCode(qrEl, { text: data.totp.uri, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.M });
-        } else if (data.totp.qr_code) {
-          const img = document.createElement('img');
-          img.src = data.totp.qr_code; img.width = 160;
-          qrEl.appendChild(img);
-        }
-      } catch (e) {
-        document.getElementById('totp-force-error').textContent = 'Erreur : ' + e.message;
-        document.getElementById('totp-force-error').style.display = 'block';
-      }
-    })();
-
-    document.getElementById('totp-force-verify').onclick = async () => {
-      const code     = (document.getElementById('totp-force-code').value || '').trim();
-      const errEl    = document.getElementById('totp-force-error');
-      const factorId = overlay._factorId;
-      errEl.style.display = 'none';
-      if (!/^\d{6}$/.test(code)) { errEl.textContent = 'Code à 6 chiffres requis.'; errEl.style.display = 'block'; return; }
-      if (!factorId)             { errEl.textContent = 'Enrôlement non initialisé.'; errEl.style.display = 'block'; return; }
-      try {
-        const ch = await sb.auth.mfa.challenge({ factorId });
-        if (ch.error) throw ch.error;
-        const v = await sb.auth.mfa.verify({ factorId, challengeId: ch.data.id, code });
-        if (v.error) throw v.error;
-        overlay.style.display = 'none';
-        // Marquer trust 2h
-        const trustKey = 'safe_totp_trust_' + (state.user?.id || '');
-        localStorage.setItem(trustKey, String(Date.now() + 2 * 3600 * 1000));
-        resolve(true);
-      } catch (e) {
-        errEl.textContent = 'Code refusé : ' + (e.message || e);
-        errEl.style.display = 'block';
-      }
-    };
-  });
-}
+// → déplacé dans totp/totp.js : TOTP_REQUIRED_ROLES, refreshTOTPStatus, openTotpEnroll,
+//   verifyTotpEnroll, disableTotp, _logTotpEvent, challengeTOTPIfNeeded, _forceTotpEnrollment
 
 // --- Registre RGPD (Article 30) ---
 const REGISTRE_RGPD = [
@@ -3268,7 +2861,237 @@ function exportRegistrePDF() {
   });
 }
 
+function initProfileAddressListeners() {
+  const cpInput  = document.getElementById('profile-code-postal');
+  const villeEl  = document.getElementById('profile-ville');
+  const regionEl = document.getElementById('profile-region');
+  const deptEl   = document.getElementById('profile-departement');
+  if (!cpInput || !villeEl) return;
+
+  let _communes = [];
+
+  function _applyGeo(commune) {
+    if (regionEl) regionEl.value = commune.region?.nom || '';
+    if (deptEl)   deptEl.value   = commune.departement
+      ? commune.codeDepartement + ' — ' + commune.departement.nom
+      : commune.codeDepartement || '';
+  }
+
+  cpInput.addEventListener('input', async function () {
+    const cp = this.value.trim();
+    villeEl.innerHTML = '<option value="">— Saisissez un code postal —</option>';
+    if (regionEl) regionEl.value = '';
+    if (deptEl)   deptEl.value   = '';
+    _communes = [];
+    if (cp.length !== 5 || !/^\d{5}$/.test(cp)) return;
+
+    villeEl.innerHTML = '<option value="">Recherche…</option>';
+    try {
+      const resp = await fetch(
+        'https://geo.api.gouv.fr/communes?codePostal=' + encodeURIComponent(cp) +
+        '&fields=nom,codeDepartement,departement,region&format=json'
+      );
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      _communes = await resp.json();
+      if (!Array.isArray(_communes) || !_communes.length) {
+        villeEl.innerHTML = '<option value="">Aucune commune trouvée</option>';
+        return;
+      }
+      villeEl.innerHTML = _communes
+        .map(c => `<option value="${escapeHtml(c.nom)}">${escapeHtml(c.nom)}</option>`)
+        .join('');
+      _applyGeo(_communes[0]);
+    } catch (e) {
+      villeEl.innerHTML = '<option value="">Erreur — réessayez</option>';
+    }
+  });
+
+  villeEl.addEventListener('change', function () {
+    const c = _communes.find(x => x.nom === this.value);
+    if (c) _applyGeo(c);
+  });
+}
+
+// ── MONITORING ERREURS JS ────────────────────────────────────────────────────
+
+function initErrorMonitoring() {
+  const IGNORE = [
+    /Script error/i,
+    /ResizeObserver loop/i,
+    /Extension context invalidated/i,
+    /Non-Error promise rejection/i,
+    /Loading chunk/i,
+  ];
+
+  const _seen = new Map(); // message → timestamp dernière capture
+
+  async function _reportError(message, source, err) {
+    const msg = String(message || 'Unknown error').slice(0, 500);
+    if (IGNORE.some(r => r.test(msg))) return;
+
+    const now = Date.now();
+    if (_seen.has(msg) && now - _seen.get(msg) < 30000) return;
+    _seen.set(msg, now);
+
+    try {
+      await sb.from('audit_logs').insert({
+        user_id:            state?.user?.id   || null,
+        user_role:          state?.profile?.role || 'inconnu',
+        action:             'js_error',
+        module:             'Monitoring',
+        criticite:          'Critique',
+        resultat:           'Erreur',
+        donnees_concernees: null,
+        details: {
+          message: msg,
+          source:  String(source || '').slice(0, 300),
+          stack:   err?.stack?.slice(0, 1000) || null,
+          url:     location.href,
+        },
+      });
+    } catch { /* éviter la boucle infinie */ }
+  }
+
+  window.addEventListener('error', e => {
+    _reportError(e.message, (e.filename || '') + (e.lineno ? ':' + e.lineno : ''), e.error);
+  });
+
+  window.addEventListener('unhandledrejection', e => {
+    const reason = e.reason;
+    _reportError(
+      'Promise rejetée : ' + (reason?.message || String(reason)).slice(0, 300),
+      null,
+      reason instanceof Error ? reason : null,
+    );
+  });
+}
+
+// ── VIOLATION DE DONNÉES — Art. 33 RGPD ─────────────────────────────────────
+
+function openViolationModal() {
+  const today = new Date().toISOString().slice(0, 10);
+  const dateEl = document.getElementById('violation-date');
+  if (dateEl && !dateEl.value) dateEl.value = today;
+  document.getElementById('violation-modal').classList.add('show');
+}
+
+function closeViolationModal() {
+  document.getElementById('violation-modal').classList.remove('show');
+}
+
+async function submitViolation() {
+  const desc       = (document.getElementById('violation-desc')?.value || '').trim();
+  const date       = document.getElementById('violation-date')?.value || '';
+  const categories = (document.getElementById('violation-categories')?.value || '').trim();
+  const nb         = document.getElementById('violation-nb')?.value || '';
+
+  if (!desc) { alert('La description de la violation est obligatoire.'); return; }
+
+  const btn = document.getElementById('btn-violation-submit');
+  if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours…'; }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const resp = await fetch(
+      'https://qwzqatfewbzwrvqhvpbo.supabase.co/functions/v1/send-crm-email',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + session.access_token,
+        },
+        body: JSON.stringify({
+          type: 'violation_cnil',
+          description: desc,
+          date_decouverte: date,
+          categories_donnees: categories || null,
+          nb_personnes: nb ? parseInt(nb, 10) : null,
+        }),
+      }
+    );
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+    if (typeof logRgpd === 'function') {
+      await logRgpd('incident_nis2_declare', 'RGPD', {
+        criticite: 'Critique',
+        donnees: categories || 'Non précisé',
+        resultat: 'Succès',
+        details: {
+          date_decouverte: date,
+          description: desc,
+          nb_personnes: nb || null,
+          alerte_email: 'Envoyée',
+          lien_cnil: 'https://notifications.cnil.fr',
+        },
+      });
+    }
+
+    closeViolationModal();
+    document.getElementById('violation-desc').value       = '';
+    document.getElementById('violation-categories').value = '';
+    document.getElementById('violation-nb').value         = '';
+
+    alert('✅ Alerte envoyée à l\'administrateur.\nViolation enregistrée dans le journal RGPD.\n\nÉtape suivante : déclarer sur https://notifications.cnil.fr (délai 72h Art.33)');
+  } catch (e) {
+    console.error('[Violation CNIL]', e);
+    alert('Erreur lors de l\'envoi. Réessayez ou contactez le support.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🚨 Envoyer l\'alerte & journaliser'; }
+  }
+}
+
+function initModalAria() {
+  const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  let _trap = null;
+  let _lastFocus = null;
+
+  function trapFocus(box, e) {
+    if (e.key !== 'Tab') return;
+    const els = [...box.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null);
+    if (!els.length) return;
+    const first = els[0], last = els[els.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  }
+
+  function onShow(modal) {
+    const box = modal.querySelector('.box,.modal-box');
+    if (!box) return;
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    const heading = box.querySelector('h2,h3,h4');
+    if (heading) {
+      if (!heading.id) heading.id = modal.id + '-aria-title';
+      box.setAttribute('aria-labelledby', heading.id);
+    }
+    _lastFocus = document.activeElement;
+    const first = box.querySelector(FOCUSABLE);
+    if (first) setTimeout(() => first.focus(), 50);
+    if (_trap) document.removeEventListener('keydown', _trap);
+    _trap = (e) => trapFocus(box, e);
+    document.addEventListener('keydown', _trap);
+  }
+
+  function onHide() {
+    if (_trap) { document.removeEventListener('keydown', _trap); _trap = null; }
+    if (_lastFocus?.focus) { _lastFocus.focus(); _lastFocus = null; }
+  }
+
+  $all('.modal').forEach(modal => {
+    new MutationObserver(() => {
+      if (modal.classList.contains('show')) onShow(modal);
+      else onHide();
+    }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+  });
+}
+
 function bindEvents() {
+  initErrorMonitoring();
+  initModalAria();
+
   // Login / logout
   $('#login-btn').addEventListener('click', login);
   $('#login-password').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
@@ -3336,6 +3159,7 @@ function bindEvents() {
   $('#profile-save-btn').addEventListener('click', saveProfile);
   $('#profile-photo-input').addEventListener('change', previewProfilePhoto);
   $('#password-save-btn').addEventListener('click', changePassword);
+  initProfileAddressListeners();
 
   // Objectifs
   $('#save-jours-btn').addEventListener('click', saveJoursTravailles);
@@ -3405,6 +3229,7 @@ function bindEvents() {
   $('#open-mydata-btn')?.addEventListener('click', openMyDataModal);
   $('#mydata-cancel-btn')?.addEventListener('click', () => $('#mydata-modal').classList.remove('show'));
   $('#mydata-save-btn')?.addEventListener('click', saveMyData);
+  $('#mydata-export-btn')?.addEventListener('click', exportMyDataCSV);
   $('#mydata-request-btn')?.addEventListener('click', requestMyDataExport);
 
   // === Félicitations objectif atteint ===
