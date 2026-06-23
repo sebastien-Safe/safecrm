@@ -82,7 +82,7 @@ serve(async (req) => {
     to:         [{ email: user.email!, name: fullName }],
     bcc:        [{ email: "contact@safe-digitalisation.fr", name: "S@FE Admin" }],
     replyTo:    { email: "contact@safe-digitalisation.fr", name: "Michel Alonso" },
-    templateId: 5,
+    templateId: Number(Deno.env.get("BREVO_TEMPLATE_MANDAT") ?? 5),
     params: {
       FIRST_NAME:        firstName,
       NUMERO:            numero || "",

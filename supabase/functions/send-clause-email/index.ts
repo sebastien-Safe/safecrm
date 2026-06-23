@@ -5,12 +5,12 @@ const CORS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// templateId 7 = Clause Collaborateur (CRM user)
-// templateId 8 = Clause Publique (external)
-// IDs à confirmer après création dans Brevo
+// IDs configurables via Supabase secrets :
+// BREVO_TEMPLATE_CLAUSE_COLLAB (défaut 7) = Clause Collaborateur (CRM user)
+// BREVO_TEMPLATE_CLAUSE_PUBLIC (défaut 6) = Clause Publique (external)
 const TEMPLATE: Record<string, number> = {
-  collaborateur: 7, // à confirmer après création dans Brevo
-  public:        6,
+  collaborateur: Number(Deno.env.get("BREVO_TEMPLATE_CLAUSE_COLLAB") ?? 7),
+  public:        Number(Deno.env.get("BREVO_TEMPLATE_CLAUSE_PUBLIC") ?? 6),
 };
 
 serve(async (req) => {

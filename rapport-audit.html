@@ -1267,10 +1267,10 @@
       </tr>
       <tr>
         <td>P2-7</td>
-        <td><strong>Externaliser les templates Brevo en variables d'env</strong> — remplacer les IDs hardcodés par <code>Deno.env.get("BREVO_TEMPLATE_INVOICE")</code></td>
-        <td>—</td>
+        <td><strong>Externaliser les templates Brevo en variables d'env</strong> — 6 IDs externalisés sur 3 fonctions : <code>BREVO_TEMPLATE_RESILIATION</code> (3), <code>BREVO_TEMPLATE_BORDEREAU</code> (4), <code>BREVO_TEMPLATE_COMMISSION</code> (0 à définir), <code>BREVO_TEMPLATE_MANDAT</code> (5), <code>BREVO_TEMPLATE_CLAUSE_COLLAB</code> (7), <code>BREVO_TEMPLATE_CLAUSE_PUBLIC</code> (6). Fallbacks numériques garantissent la rétrocompatibilité.</td>
+        <td><code>send-crm-email</code> v17 · <code>send-clause-email</code> v10 · <code>send-mandat-email</code> v10</td>
         <td class="effort">1 h</td>
-        <td><span class="badge-partial">⏳ En attente</span></td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">Maintenabilité</span></td>
       </tr>
       <tr>

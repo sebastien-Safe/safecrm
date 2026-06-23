@@ -42,6 +42,11 @@ serve(async (req) => {
   const body = await req.json();
   const { type } = body;
 
+  // ── IDs templates Brevo (configurables via Supabase secrets) ─────────────
+  const TMPL_RESILIATION = Number(Deno.env.get("BREVO_TEMPLATE_RESILIATION") ?? 3);
+  const TMPL_BORDEREAU   = Number(Deno.env.get("BREVO_TEMPLATE_BORDEREAU")   ?? 4);
+  const TMPL_COMMISSION  = Number(Deno.env.get("BREVO_TEMPLATE_COMMISSION")   ?? 0);
+
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   async function getCommercial(userId: string) {
@@ -150,7 +155,7 @@ serve(async (req) => {
       : "à l'échéance en cours";
 
     await sendBrevo(
-      3,
+      TMPL_RESILIATION,
       { email: contact.email, name: clientNom },
       {
         FIRST_NAME:      firstName,
@@ -196,7 +201,7 @@ serve(async (req) => {
     } : undefined;
 
     await sendBrevo(
-      4,
+      TMPL_BORDEREAU,
       { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}`.trim() },
       {
         FIRST_NAME:          commercial.prenom,
@@ -246,7 +251,7 @@ serve(async (req) => {
     const dateVirement = new Date().toLocaleDateString("fr-FR");
 
     await sendBrevo(
-      0, // ⚠️ templateId à renseigner — ID 6 est pris (Clause publique) — utiliser l'ID suivant disponible dans Brevo
+      TMPL_COMMISSION, // ⚠️ BREVO_TEMPLATE_COMMISSION à définir dans Supabase secrets (ID 6 pris = Clause publique)
       { email: commercial.email, name: `${commercial.prenom} ${commercial.nom}`.trim() },
       {
         FIRST_NAME:          commercial.prenom,
