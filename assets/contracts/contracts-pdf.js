@@ -528,6 +528,12 @@ async function sendOrderLink() {
 
   await sb.from('contracts').update({ statut: 'Envoyé' }).eq('id', contract.id);
 
+  // Avancer la carte pipeline en "Devis envoyé"
+  if (typeof _advanceKanban === 'function') await _advanceKanban(contract.contact_id, 'devis_envoye');
+  if (typeof initPipeline === 'function' && document.getElementById('view-pipeline')?.classList.contains('active')) {
+    initPipeline();
+  }
+
   alert(
     `✅ Lien créé et copié dans le presse-papier !\n\n` +
     `Votre client mail s'est ouvert avec le lien pré-rempli.\n` +

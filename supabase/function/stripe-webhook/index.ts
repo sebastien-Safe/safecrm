@@ -304,21 +304,24 @@ serve(async (req) => {
         session_id: session.id, subscription: session.subscription, mode: session.mode,
       });
 
+      // Avancer le pipeline : Devis envoyé → En cours
+      const { data: ct } = await sb.from("contracts")
+        .select("contact_id, created_by").eq("id", contractId).maybeSingle();
+      if (ct?.contact_id) {
+        await sb.from("contacts").update({ kanban_col: "en_cours" }).eq("id", ct.contact_id);
+      }
+
       // Facture uniquement pour paiements ponctuels (les abonnements → invoice.paid)
-      if (session.mode === "payment" && session.amount_total) {
-        const { data: ct } = await sb.from("contracts")
-          .select("contact_id, created_by").eq("id", contractId).maybeSingle();
-        if (ct) {
-          await envoyerFacture(sb, {
-            contractId,
-            contactId:      ct.contact_id,
-            createdBy:      ct.created_by,
-            amountTtcCents: session.amount_total,
-            stripeEventId:  event.id,
-            stripeRef:      (typeof session.payment_intent === "string" ? session.payment_intent : session.id),
-            dateTs:         Math.floor(Date.now() / 1000),
-          });
-        }
+      if (session.mode === "payment" && session.amount_total && ct) {
+        await envoyerFacture(sb, {
+          contractId,
+          contactId:      ct.contact_id,
+          createdBy:      ct.created_by,
+          amountTtcCents: session.amount_total,
+          stripeEventId:  event.id,
+          stripeRef:      (typeof session.payment_intent === "string" ? session.payment_intent : session.id),
+          dateTs:         Math.floor(Date.now() / 1000),
+        });
       }
     }
   }
@@ -428,6 +431,7 @@ serve(async (req) => {
             statut: "Résilié", resilié_at: now, date_echeance: periodEnd,
             resiliation_stripe_checked_at: now,
           }).eq("id", ct.id);
+          await sb.from("contacts").update({ kanban_col: "resilie" }).eq("id", ct.contact_id);
           await log("resiliation_programmee_stripe", ct.id, { via: "customer.subscription.updated", period_end: periodEnd });
         }
       } else if (!sub.cancel_at_period_end && prev.cancel_at_period_end) {
@@ -435,6 +439,7 @@ serve(async (req) => {
           await sb.from("contracts").update({
             statut: "Contrat en cours", resilié_at: null, resiliation_validee_at: null,
           }).eq("id", ct.id);
+          await sb.from("contacts").update({ kanban_col: "en_cours" }).eq("id", ct.contact_id);
           await log("resiliation_annulee_stripe", ct.id, { via: "customer.subscription.updated" });
         }
       }
@@ -452,6 +457,7 @@ serve(async (req) => {
         statut: "Résilié", resilié_at: now, date_echeance: periodEnd,
         resiliation_stripe_checked_at: now,
       }).eq("id", ct.id);
+      await sb.from("contacts").update({ kanban_col: "resilie" }).eq("id", ct.contact_id);
       await log("resiliation_effective_stripe", ct.id, {
         via: "customer.subscription.deleted", period_end: periodEnd, sub_status: sub.status,
       });

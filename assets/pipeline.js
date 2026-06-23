@@ -191,9 +191,10 @@ function _plCardHTML(contact) {
 
   return `
   <div class="pcard" id="pcard-${contact.id}"
-       draggable="true"
+       draggable="${isAdmin()}"
        ondragstart="_plDragStart(event,'${contact.id}')"
-       ondragend="_plDragEnd(event)">
+       ondragend="_plDragEnd(event)"
+       style="${isAdmin() ? '' : 'cursor:default'}">`
     <div class="pcard-priority-stripe" style="background:${prio.color}"></div>
 
     <div class="pcard-head" style="padding-left:6px">
@@ -233,6 +234,10 @@ function _plCardHTML(contact) {
       <button class="pcard-edit-btn" style="background:rgba(37,99,235,.15);color:#93c5fd;border-color:rgba(37,99,235,.3)" onclick="openContractForContact('${contact.id}')">
         ➕ Nouveau contrat
       </button>
+      ${contact.kanban_col === 'en_cours' && isAdmin() ? `
+      <button class="pcard-edit-btn" style="background:rgba(34,197,94,.15);color:#86efac;border-color:rgba(34,197,94,.3)" onclick="_plMarquerLivre('${contact.id}')">
+        ✅ Marquer livré
+      </button>` : ''}
     </div>
   </div>`;
 }
@@ -514,10 +519,31 @@ async function _plUpdateRelance(contactId, value) {
 }
 
 // ═══════════════════════════════════════
+// MARQUER LIVRÉ
+// ═══════════════════════════════════════
+
+async function _plMarquerLivre(contactId) {
+  if (!isAdmin()) return;
+  if (!confirm('Marquer cette fiche comme Livré ? Les contrats actifs seront passés en "Terminé".')) return;
+  const { error } = await sb.from('contacts').update({ kanban_col: 'livre' }).eq('id', contactId);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  // Passer les contrats actifs en Terminé
+  const contracts = (_plContracts[contactId] || []).filter(ct => ct.statut === 'Contrat en cours');
+  for (const ct of contracts) {
+    await sb.from('contracts').update({ statut: 'Terminé' }).eq('id', ct.id);
+  }
+  const contact = _plContacts.find(c => c.id === contactId);
+  if (contact) contact.kanban_col = 'livre';
+  await initPipeline();
+  if (typeof showCrmToast === 'function') showCrmToast('✅ Fiche passée en <strong>Livré</strong>');
+}
+
+// ═══════════════════════════════════════
 // DRAG & DROP
 // ═══════════════════════════════════════
 
 function _plDragStart(event, contactId) {
+  if (!isAdmin()) { event.preventDefault(); return; }
   _plDragging = contactId;
   event.dataTransfer.effectAllowed = 'move';
   event.dataTransfer.setData('text/plain', contactId);
@@ -542,6 +568,7 @@ function _plDragLeave(event, colId) {
 async function _plDrop(event, colId) {
   event.preventDefault();
   document.querySelectorAll('.pcol-cards').forEach(c => c.classList.remove('drag-over'));
+  if (!isAdmin()) return;
   const contactId = event.dataTransfer.getData('text/plain') || _plDragging;
   if (!contactId) return;
   const contact = _plContacts.find(c => c.id === contactId);
