@@ -602,8 +602,8 @@
   <div class="finding p0">
     <div class="finding-icon">🚨</div>
     <div class="finding-content">
-      <strong>CRITIQUE — Typo <code>BREBO</code> au lieu de <code>BREVO</code> — emails de facturation silencieusement coupés</strong>
-      <span>Dans <code>supabase/function/stripe-webhook/index.ts</code>, lignes 207 et 383 : <code>const BREVO = Deno.env.get("BREBO")</code>. Si la variable d'environnement est correctement nommée <code>BREVO</code> dans le dashboard Supabase, cette lecture retourne <code>undefined</code> et la condition <code>if (!BREVO) return;</code> court-circuite l'envoi. Conséquence : <strong>tous les emails de confirmation de paiement, de facture, et d'échec de paiement ne sont jamais envoyés</strong>. Ce bug est silencieux — aucune erreur n'est levée, aucun log d'erreur.</span>
+      <strong>CRITIQUE — Typo <code>BREBO</code> au lieu de <code>BREVO</code> — <em>tous</em> les emails silencieusement coupés</strong>
+      <span>La typo <code>Deno.env.get("BREBO")</code> au lieu de <code>"BREVO"</code> était présente dans <strong>5 Edge Functions</strong> : <code>stripe-webhook</code>, <code>send-clause-email</code>, <code>send-password-reset</code>, <code>send-mandat-email</code>, <code>send-crm-email</code>. La variable retournait <code>undefined</code> et la condition <code>if (!BREVO) return;</code> court-circuitait l'envoi silencieusement. <strong>Aucun email n'était envoyé depuis la mise en prod</strong> : ni facturation, ni reset de mot de passe, ni clauses, ni mandats, ni rapports DPO/SEO/Cyber. <span class="badge-ok" style="font-size:11px">✅ Corrigé — commits ac50d83 + 16932e3 — 5 fonctions redéployées</span></span>
     </div>
   </div>
   <div class="finding p1">
@@ -1040,7 +1040,11 @@
     </div>
     <div class="fix-entry">
       <span class="fix-commit">ac50d83</span>
-      <div><strong>P0-2 — BREBO → BREVO corrigé</strong> — Emails de facturation et d'échec de paiement désormais fonctionnels. Secret <code>BREVO</code> configuré dans Supabase. <em>Déployé : stripe-webhook v26.</em></div>
+      <div><strong>P0-2 — BREBO → BREVO (stripe-webhook)</strong> — Emails de facturation et d'échec de paiement. Secret <code>BREVO</code> configuré dans Supabase. <em>Déployé : stripe-webhook v26.</em></div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">16932e3</span>
+      <div><strong>P0-2b — BREBO → BREVO étendu (contrôle post-correction)</strong> — Découverte lors du contrôle systématique : la même typo cassait 4 autres fonctions email. <em>Corrigées et redéployées : send-clause-email v8, send-password-reset v7, send-mandat-email v8, send-crm-email v14. Désormais aucun email d'aucune fonction n'était envoyé depuis la mise en prod.</em></div>
     </div>
     <div class="fix-entry">
       <span class="fix-commit">867c4f9</span>
@@ -1071,10 +1075,10 @@
       </tr>
       <tr>
         <td>P0-2</td>
-        <td><strong>Corriger la typo <code>BREBO</code> → <code>BREVO</code></strong> + configurer secret Supabase + redéployer</td>
-        <td><code>supabase/function/stripe-webhook/index.ts</code></td>
-        <td class="effort">15 min</td>
-        <td><span class="badge-ok">✅ Corrigé + déployé</span></td>
+        <td><strong>Corriger la typo <code>BREBO</code> → <code>BREVO</code></strong> dans les 5 Edge Functions email + configurer secret Supabase + redéployer</td>
+        <td><code>stripe-webhook</code>, <code>send-clause-email</code>, <code>send-password-reset</code>, <code>send-mandat-email</code>, <code>send-crm-email</code></td>
+        <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé + 5 fonctions déployées</span></td>
         <td><span class="action-ref">Brevo API, NIS2 Art.21</span></td>
       </tr>
       <tr>
@@ -1365,7 +1369,7 @@
     <div class="rm-label axis">Impact<br>Critique</div>
     <div class="rm-cell modere"><span class="rm-item">Panne Supabase</span></div>
     <div class="rm-cell eleve"><span class="rm-item">Supply chain CDN</span><span class="rm-item">Webhook spoofing</span></div>
-    <div class="rm-cell critique"><span class="rm-item">Pas de .gitignore</span><span class="rm-item">BREBO bug emails</span></div>
+    <div class="rm-cell critique"><span class="rm-item">✅ .gitignore créé</span><span class="rm-item">✅ BREBO corrigé (5 fonctions)</span></div>
     <div class="rm-cell critique"><span class="rm-item">CSP unsafe-inline</span></div>
     <!-- Ligne 2 — Impact Élevé -->
     <div class="rm-label axis">Impact<br>Élevé</div>
