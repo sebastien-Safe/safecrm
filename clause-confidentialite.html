@@ -361,7 +361,7 @@ async function signer() {
 
     // Enregistrement en base
     btn.textContent = 'Enregistrement…';
-    const { error } = await sb.from('clauses_confidentialite').insert({
+    const { error } = await sb.from('clauses_confidentialite').upsert({
       user_id:               currentUser.id,
       signature:             sigData,
       ip:                    null,
@@ -369,7 +369,7 @@ async function signer() {
       nom_signataire:        nom,
       email_signataire:      email,
       signed_pdf_clause_url: pdfUrl,
-    });
+    }, { onConflict: 'user_id', ignoreDuplicates: false });
     if (error) throw new Error(error.message);
 
     // Journal RGPD — signature clause (inline)
@@ -416,7 +416,7 @@ async function signer() {
     } catch (e) { console.warn('Email clause non envoyé :', e); }
 
     // Afficher le bloc succès puis rediriger
-    document.getElementById('sig-section').style.display = 'none';
+    document.querySelector('.sig-section').style.display = 'none';
     const banner = document.getElementById('signed-banner');
     banner.style.display = 'block';
     document.getElementById('dl-link').href = pdfUrl;
