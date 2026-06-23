@@ -1645,14 +1645,16 @@
 
 <!-- ============ MODALE "MES DONNÉES" (RGPD utilisateur) ============ -->
 <div class="modal" id="mydata-modal">
-  <div class="modal-card" style="max-width:580px">
-    <h3>Mes données personnelles (RGPD)</h3>
-    <p class="mut">Vous avez accès aux droits suivants sur les données vous concernant, traitées par S@FE pour le compte de l'exploitation du CRM.</p>
+  <div class="modal-card" style="max-width:600px">
+    <h3 id="mydata-modal-title">Mes données personnelles (RGPD)</h3>
+    <p class="mut" style="font-size:.85rem">Données vous concernant traitées par S@FE dans le CRM. Base légale : exécution du contrat (Art. 6.1.b RGPD). Conservation : durée de la mission + 5 ans.</p>
     <div id="mydata-content" style="margin:14px 0"></div>
-    <div class="modal-actions">
+    <div id="mydata-export-stats" style="margin-bottom:14px;font-size:.83rem;color:var(--txt2)"></div>
+    <div class="modal-actions" style="flex-wrap:wrap;gap:8px">
       <button class="btn btn-out" id="mydata-cancel-btn">Fermer</button>
-      <button class="btn btn-out" id="mydata-request-btn">Demander effacement / portabilité</button>
-      <button class="btn btn-pri" id="mydata-save-btn">Enregistrer mes modifications</button>
+      <button class="btn btn-out" id="mydata-export-btn" title="Télécharger toutes vos données au format CSV (Art. 20 RGPD)">⬇ Exporter mes données (CSV)</button>
+      <button class="btn btn-out" id="mydata-request-btn" title="Envoyer une demande d'effacement ou de portabilité par e-mail">✉ Demander l'effacement</button>
+      <button class="btn btn-pri" id="mydata-save-btn">Enregistrer</button>
     </div>
   </div>
 </div>

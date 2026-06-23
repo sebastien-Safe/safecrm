@@ -2707,24 +2707,83 @@ async function sendHelp() {
 }
 
 // --- Mes données (droits RGPD de l'utilisateur sur le CRM) ---
-function openMyDataModal() {
+async function openMyDataModal() {
   if (!state.user) return;
   const p = state.profile || {};
   const html = `
     <div class="field"><label>Prénom</label><input id="myd-prenom" type="text" value="${escapeHtml(p.prenom || '')}"></div>
     <div class="field-row">
-      <div class="field"><label>E-mail (modifiable depuis votre profil)</label><input type="email" value="${escapeHtml(state.user.email || '')}" disabled></div>
-      <div class="field"><label>Identifiant utilisateur</label><input type="text" value="${escapeHtml(state.user.id || '')}" disabled></div>
+      <div class="field"><label>E-mail</label><input type="email" value="${escapeHtml(state.user.email || '')}" disabled></div>
+      <div class="field"><label>Rôle</label><input type="text" value="${escapeHtml(p.role || '—')}" disabled></div>
     </div>
-    <div class="note" style="margin-top:6px">
-      <b>Données traitées par S@FE pour le compte du CRM</b> :
-      e-mail (authentification), prénom et photo de profil (interface), contacts/contrats/tâches/objectifs créés (responsabilité du CRM).
-      Base légale : exécution du contrat de travail / mission (art. 6.1.b RGPD).
-      Conservation : durée de la mission + 5 ans (obligations comptables).
-      Vous disposez d'un droit d'accès, de rectification, d'effacement, d'opposition, de limitation et de portabilité.
+    <div class="field-row">
+      <div class="field"><label>N° mandat</label><input type="text" value="${escapeHtml(p.numero_mandat || '—')}" disabled></div>
+      <div class="field"><label>Identifiant interne</label><input type="text" value="${escapeHtml(state.user.id || '')}" disabled style="font-size:.78rem"></div>
     </div>`;
   $('#mydata-content').innerHTML = html;
+  // Charger les stats en arrière-plan
+  const statsEl = $('#mydata-export-stats');
+  if (statsEl) {
+    statsEl.textContent = 'Chargement des statistiques…';
+    try {
+      const [{ count: nbContacts }, { count: nbContrats }, { count: nbTaches }] = await Promise.all([
+        sb.from('contacts').select('id', { count: 'exact', head: true }).eq('created_by', state.user.id),
+        sb.from('contracts').select('id', { count: 'exact', head: true }).eq('created_by', state.user.id),
+        sb.from('tasks').select('id', { count: 'exact', head: true }).eq('created_by', state.user.id),
+      ]);
+      statsEl.innerHTML = `Données associées à votre compte : <strong>${nbContacts ?? 0}</strong> contacts · <strong>${nbContrats ?? 0}</strong> contrats · <strong>${nbTaches ?? 0}</strong> tâches`;
+    } catch { statsEl.textContent = ''; }
+  }
   $('#mydata-modal').classList.add('show');
+}
+
+async function exportMyDataCSV() {
+  if (!state.user) return;
+  const btn = $('#mydata-export-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Préparation…'; }
+  try {
+    const [{ data: profil }, { data: contacts }, { data: contrats }, { data: taches }] = await Promise.all([
+      sb.from('profiles').select('*').eq('id', state.user.id).single(),
+      sb.from('contacts').select('nom,prenom,email,telephone,entreprise,statut,created_at').eq('created_by', state.user.id).order('created_at'),
+      sb.from('contracts').select('type,formule,montant,recurrence,statut,date_debut,date_echeance,created_at').eq('created_by', state.user.id).order('created_at'),
+      sb.from('tasks').select('titre,statut,priorite,echeance,created_at').eq('created_by', state.user.id).order('created_at'),
+    ]);
+
+    const csvBlocks = [];
+    const toCSV = (rows, label) => {
+      if (!rows?.length) return `=== ${label} ===\nAucune donnée\n\n`;
+      const keys = Object.keys(rows[0]);
+      const lines = [keys.join(';'), ...rows.map(r => keys.map(k => `"${String(r[k] ?? '').replace(/"/g, '""')}"`).join(';'))];
+      return `=== ${label} ===\n${lines.join('\n')}\n\n`;
+    };
+
+    csvBlocks.push(`S@FE CRM — Export de données personnelles (Art.20 RGPD)\nDate d'export : ${new Date().toLocaleString('fr-FR')}\nUtilisateur : ${state.user.email}\n\n`);
+    csvBlocks.push(toCSV(profil ? [profil] : [], 'Profil'));
+    csvBlocks.push(toCSV(contacts, 'Contacts créés'));
+    csvBlocks.push(toCSV(contrats, 'Contrats créés'));
+    csvBlocks.push(toCSV(taches, 'Tâches créées'));
+
+    const blob = new Blob([csvBlocks.join('')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `safe-crm-mes-donnees-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    if (typeof logRgpd === 'function') {
+      await logRgpd('export_donnees_personnelles', 'RGPD', {
+        criticite: 'Moyen', donnees: 'Profil, Contacts, Contrats, Tâches', resultat: 'Succès',
+        details: { article: 'Art.20 RGPD — Portabilité' },
+      });
+    }
+  } catch (e) {
+    alert('Erreur lors de l\'export : ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⬇ Exporter mes données (CSV)'; }
+  }
 }
 
 async function saveMyData() {
@@ -3649,6 +3708,7 @@ function bindEvents() {
   $('#open-mydata-btn')?.addEventListener('click', openMyDataModal);
   $('#mydata-cancel-btn')?.addEventListener('click', () => $('#mydata-modal').classList.remove('show'));
   $('#mydata-save-btn')?.addEventListener('click', saveMyData);
+  $('#mydata-export-btn')?.addEventListener('click', exportMyDataCSV);
   $('#mydata-request-btn')?.addEventListener('click', requestMyDataExport);
 
   // === Félicitations objectif atteint ===
