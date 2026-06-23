@@ -1,7 +1,7 @@
 // S@FE CRM — Service Worker PWA
 // Version cache — incrémenter pour forcer la mise à jour
-const CACHE_VERSION = 'safe-crm-v4';
-const CACHE_STATIC  = 'safe-crm-static-v4';
+const CACHE_VERSION = 'safe-crm-v5';
+const CACHE_STATIC  = 'safe-crm-static-v5';
 
 // Assets à mettre en cache (shell applicatif)
 const STATIC_ASSETS = [
@@ -14,9 +14,6 @@ const STATIC_ASSETS = [
   '/favicon.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
-  // Fonts locales
-  '/assets/fonts/plexsans-400.woff2',
-  '/assets/fonts/sora-800.woff2',
 ];
 
 // ── INSTALLATION ──
