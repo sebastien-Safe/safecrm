@@ -24,9 +24,10 @@ serve(async (req) => {
     return json({ error: "bad_method" }, 405);
   }
 
-  const SK = Deno.env.get("STRIPE_SECRET_KEY");
-  const SU = Deno.env.get("SUPABASE_URL")!;
-  const SR = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const SK  = Deno.env.get("STRIPE_SECRET_KEY");
+  const SU  = Deno.env.get("SUPABASE_URL")!;
+  const SR  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const TVA = Number(Deno.env.get("TVA_MULTIPLIER") ?? 120); // HT€ × TVA → centimes TTC (120 = 20 % TVA)
   if (!SK) return json({ error: "no_stripe_key" }, 500);
 
   const sb = createClient(SU, SR);
@@ -70,7 +71,7 @@ serve(async (req) => {
           price_data: {
             currency: "eur",
             product_data: { name: n + " - Mensuel TTC" },
-            unit_amount: Math.round(m * 120),
+            unit_amount: Math.round(m * TVA),
             recurring: { interval: "month" }
           },
           quantity: 1
@@ -81,7 +82,7 @@ serve(async (req) => {
           price_data: {
             currency: "eur",
             product_data: { name: n + " - MeP TTC" },
-            unit_amount: Math.round(s * 120)
+            unit_amount: Math.round(s * TVA)
           },
           quantity: 1
         });
@@ -101,7 +102,7 @@ serve(async (req) => {
             price_data: {
               currency: "eur",
               product_data: { name: n + " TTC" },
-              unit_amount: Math.round((m + s) * 120)
+              unit_amount: Math.round((m + s) * TVA)
             },
             quantity: 1
           }

@@ -1291,10 +1291,10 @@
       </tr>
       <tr>
         <td>P2-10</td>
-        <td><strong>TVA en variable d'environnement</strong> — extraire <code>120</code> (= HT × 1.2) vers <code>Deno.env.get("TVA_MULTIPLIER")</code> dans <code>create-checkout</code></td>
-        <td>—</td>
+        <td><strong>TVA en variable d'environnement</strong> — <code>120</code> → <code>Deno.env.get("TVA_MULTIPLIER") ?? 120</code> dans <code>create-checkout</code> (3 occurrences). Déployer <code>supabase secrets set TVA_MULTIPLIER=120</code> pour rendre le taux modifiable sans redéploiement.</td>
+        <td><code>create-checkout</code> v28</td>
         <td class="effort">30 min</td>
-        <td><span class="badge-partial">⏳ En attente</span></td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">Légal, Maintenabilité</span></td>
       </tr>
       <tr>
