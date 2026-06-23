@@ -96,9 +96,12 @@ async function saveContract() {
   closeContractModal();
   await loadAll();
 
-  // Auto-avancement kanban selon le statut du contrat
-  const targetCol = _STATUT_TO_KANBAN[payload.statut];
-  if (targetCol) await _advanceKanban(contact_id, targetCol);
+  // Auto-avancement kanban uniquement à la création (INSERT)
+  // Pour un contrat existant (UPDATE), la carte pipeline ne bouge que via l'envoi explicite du devis
+  if (!id) {
+    const targetCol = _STATUT_TO_KANBAN[payload.statut];
+    if (targetCol) await _advanceKanban(contact_id, targetCol);
+  }
 
   // Recharger le pipeline si la vue est active
   if (typeof initPipeline === 'function' && document.getElementById('view-pipeline')?.classList.contains('active')) {
