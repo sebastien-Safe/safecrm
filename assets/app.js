@@ -2020,8 +2020,13 @@ async function exportArchivePdf(archiveId) {
   const deleteDate  = new Date(archive.delete_after).toLocaleDateString('fr-FR');
 
   const win = window.open('', '_blank');
+  const nomS          = escapeHtml(nom);
+  const mandatS       = escapeHtml(archive.numero_mandat || '—');
+  const emailS        = escapeHtml(archive.email);
+  const roleS         = escapeHtml(archive.role || '—');
+  const userIdS       = escapeHtml(archive.original_user_id);
   win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
-    <title>Archive RGPD — ${nom}</title>
+    <title>Archive RGPD — ${nomS}</title>
     <style>
       body{font-family:Arial,sans-serif;font-size:13px;color:#1e293b;padding:32px;max-width:800px;margin:auto}
       h1{font-size:20px;border-bottom:2px solid #2563eb;padding-bottom:8px;color:#2563eb}
@@ -2037,27 +2042,27 @@ async function exportArchivePdf(archiveId) {
     <div class="no-print" style="margin-bottom:20px">
       <button onclick="window.print()" style="padding:8px 16px;background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨 Imprimer / Enregistrer PDF</button>
     </div>
-    <h1>🗄 Archive RGPD — ${nom}</h1>
+    <h1>🗄 Archive RGPD — ${nomS}</h1>
     <div class="meta">
       <p><strong>Objet :</strong> Conservation légale 5 ans (Art. L123-22 C.com)</p>
       <p><strong>Archivé le :</strong> ${archiveDate}</p>
       <p><strong>Suppression prévue le :</strong> ${deleteDate}</p>
-      <p><strong>N° de mandat :</strong> ${archive.numero_mandat || '—'}</p>
+      <p><strong>N° de mandat :</strong> ${mandatS}</p>
     </div>
     <h2>Identité</h2>
     <table>
       <tr><th>Champ</th><th>Valeur</th></tr>
-      <tr><td>Nom complet</td><td>${nom}</td></tr>
-      <tr><td>E-mail</td><td>${archive.email}</td></tr>
-      <tr><td>Rôle</td><td>${archive.role || '—'}</td></tr>
-      <tr><td>ID utilisateur</td><td>${archive.original_user_id}</td></tr>
+      <tr><td>Nom complet</td><td>${nomS}</td></tr>
+      <tr><td>E-mail</td><td>${emailS}</td></tr>
+      <tr><td>Rôle</td><td>${roleS}</td></tr>
+      <tr><td>ID utilisateur</td><td>${userIdS}</td></tr>
     </table>
     <h2>Journal RGPD (${(archiveJson.journal_rgpd || []).length} entrées)</h2>
     <table>
       <tr><th>Date</th><th>Action</th><th>Module</th><th>Criticité</th></tr>
       ${(archiveJson.journal_rgpd || []).slice(0, 200).map(l =>
         `<tr><td>${new Date(l.created_at).toLocaleDateString('fr-FR')}</td>
-         <td>${l.action || ''}</td><td>${l.module || ''}</td><td>${l.criticite || ''}</td></tr>`
+         <td>${escapeHtml(l.action || '')}</td><td>${escapeHtml(l.module || '')}</td><td>${escapeHtml(l.criticite || '')}</td></tr>`
       ).join('')}
     </table>
   </body></html>`);
@@ -5106,10 +5111,13 @@ function _selectAgendaDay(iso, events) {
   panel.style.display = 'block';
 }
 
-function copyIcalUrl() {
+async function copyIcalUrl() {
   const uid = state.user?.id;
   if (!uid) return;
-  const url = `${SUPABASE_URL}/functions/v1/agenda-ics?uid=${uid}`;
+  // Récupérer le token ICS personnel depuis le profil (colonne ics_token)
+  const { data: profile } = await sb.from('profiles').select('ics_token').eq('id', uid).single();
+  if (!profile?.ics_token) { alert('Impossible de récupérer le token agenda.'); return; }
+  const url = `${SUPABASE_URL}/functions/v1/agenda-ics?uid=${uid}&tok=${profile.ics_token}`;
   navigator.clipboard.writeText(url).then(() => {
     const btn = $('#btn-ical-subscribe');
     const orig = btn.textContent;

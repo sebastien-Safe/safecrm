@@ -1,12 +1,10 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-// Formate une date ISO en YYYYMMDD pour iCal
 function toICalDate(iso: string): string {
   return iso.replace(/-/g, "").slice(0, 8);
 }
 
-// Formate une datetime ISO en YYYYMMDDTHHmmssZ pour iCal
 function toICalDateTime(date: string, heure?: string | null): string {
   if (heure) {
     const h = heure.slice(0, 5).replace(":", "");
@@ -15,12 +13,10 @@ function toICalDateTime(date: string, heure?: string | null): string {
   return `${toICalDate(date)}T000000Z`;
 }
 
-// Échappe les caractères spéciaux iCal
 function esc(s: string): string {
   return (s || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
 }
 
-// Génère un UID stable par tâche
 function uid(taskId: string, domain: string): string {
   return `task-${taskId}@${domain}`;
 }
@@ -28,14 +24,26 @@ function uid(taskId: string, domain: string): string {
 serve(async (req) => {
   const url = new URL(req.url);
   const userId = url.searchParams.get("uid");
+  const token  = url.searchParams.get("tok");
 
-  if (!userId) {
-    return new Response("Paramètre uid manquant", { status: 400 });
+  if (!userId || !token) {
+    return new Response("Paramètres manquants", { status: 400 });
   }
 
   const SB_URL = Deno.env.get("SUPABASE_URL")!;
   const SB_SRV = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const sb = createClient(SB_URL, SB_SRV);
+
+  // Valider le token contre la base — chaque utilisateur a son propre ics_token
+  const { data: profile, error: profileError } = await sb
+    .from("profiles")
+    .select("ics_token")
+    .eq("id", userId)
+    .single();
+
+  if (profileError || !profile || profile.ics_token !== token) {
+    return new Response("Token invalide ou expiré", { status: 403 });
+  }
 
   const { data: tasks, error } = await sb
     .from("tasks")
@@ -66,14 +74,12 @@ serve(async (req) => {
 
       if (isRdv && t.rdv_heure) {
         dtstart = toICalDateTime(dateRef, t.rdv_heure);
-        // RDV d'1h par défaut
         const [hh, mm] = t.rdv_heure.slice(0, 5).split(":").map(Number);
         const endH = String(hh + 1).padStart(2, "0");
         dtend = `${toICalDate(dateRef)}T${endH}${String(mm).padStart(2, "0")}00`;
       } else {
         allDay = true;
         dtstart = toICalDate(dateRef);
-        // Jour suivant pour les événements toute la journée
         const d = new Date(dateRef);
         d.setDate(d.getDate() + 1);
         dtend = d.toISOString().replace(/-/g, "").slice(0, 8);
