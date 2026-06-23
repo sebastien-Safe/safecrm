@@ -28,7 +28,10 @@ jobs:
         run: npm install
 
       - name: Minifier JS et CSS
-        run: npm run build
+        run: |
+          node --version
+          node node_modules/.bin/esbuild --version
+          npm run build
 
       - name: Upload artifact Pages
         uses: actions/upload-pages-artifact@v3
