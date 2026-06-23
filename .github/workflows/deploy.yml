@@ -28,7 +28,16 @@ jobs:
         run: npm install
 
       - name: Minifier JS et CSS
-        run: npm run build
+        run: |
+          set +e
+          npm run build > /tmp/build.log 2>&1
+          EXIT=$?
+          if [ $EXIT -ne 0 ]; then
+            tail -40 /tmp/build.log | while IFS= read -r line; do
+              [ -n "$line" ] && echo "::error::$line"
+            done
+            exit $EXIT
+          fi
 
       - name: Upload artifact Pages
         uses: actions/upload-pages-artifact@v3
