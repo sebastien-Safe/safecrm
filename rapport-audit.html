@@ -527,11 +527,11 @@
       <span>La fonction de création de session Stripe est déployée sous le nom <code>creaye-checkout</code> (faute de frappe non corrigée). Tout appel à <code>supabase.functions.invoke('create-checkout', …)</code> retournerait une 404 si le nom n'est pas corrigé aussi côté client. Le risque est une régression silencieuse si quelqu'un renomme le call côté client en corrigeant la faute sans toucher le nom du répertoire déployé.</span>
     </div>
   </div>
-  <div class="finding p1">
-    <div class="finding-icon">⚠️</div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
     <div class="finding-content">
-      <strong>CORS <code>Access-Control-Allow-Origin: *</code> sur toutes les Edge Functions</strong>
-      <span>Les Edge Functions <code>send-clause-email</code>, <code>send-mandat-email</code>, <code>send-password-reset</code>, <code>creaye-checkout</code>, <code>admin-create-user</code> répondent toutes avec <code>"Access-Control-Allow-Origin": "*"</code>. Pour des fonctions sensibles (création d'utilisateur, paiement, envoi d'email), ce header devrait être restreint au domaine de l'application.</span>
+      <strong>✅ CORRIGÉ P1-2 — CORS restreint sur toutes les Edge Functions (commit 61fdcda)</strong>
+      <span>Les 12 Edge Functions browser-facing ont été mises à jour : <code>"Access-Control-Allow-Origin": "*"</code> → <code>"https://crm.safe-digitalisation.fr"</code>. <code>stripe-webhook</code> inchangé (appelé par Stripe, pas le navigateur). Toutes redéployées et actives.</span>
     </div>
   </div>
   <div class="finding p2">
@@ -750,11 +750,11 @@
       <span>Le header Content-Security-Policy de <code>index.html</code> autorise <code>'unsafe-inline'</code> pour les scripts. Cela annule la protection contre les attaques XSS (Cross-Site Scripting) que la CSP est censée fournir. OWASP A03:2021 — Injection. Si un attaquant parvient à injecter du JavaScript (via un champ de formulaire, un contact malveillant, une URL), ce code s'exécutera sans restriction.</span>
     </div>
   </div>
-  <div class="finding p0">
-    <div class="finding-icon">🚨</div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
     <div class="finding-content">
-      <strong>CRITIQUE — Aucun Subresource Integrity (SRI) sur les CDN</strong>
-      <span>Les bibliothèques <code>supabase-js</code>, <code>jsPDF</code>, <code>QRCode</code> sont chargées depuis des CDN externes sans hash SRI. Si l'un de ces CDN est compromis (supply chain attack), du code malveillant peut s'exécuter dans l'application. OWASP A06:2021 — Vulnerable and Outdated Components. En 2024, plusieurs CDN JS ont été victimes de ce type d'attaque.</span>
+      <strong>✅ CORRIGÉ P1-1 — SRI ajouté sur tous les CDN (commit 141de8e)</strong>
+      <span>Les bibliothèques <code>supabase-js@2.108.2</code>, <code>jsPDF@2.5.1</code>, <code>QRCode@1.5.3</code>, <code>Chart.js@4.4.1</code> ont été épinglées avec leurs attributs <code>integrity="sha384-…"</code> + <code>crossorigin="anonymous"</code> sur les 12 fichiers HTML. Un hook pre-commit bloque les commits sans SRI. Script <code>scripts/check-sri.sh</code> créé pour vérification manuelle.</span>
     </div>
   </div>
   <div class="finding p1">
@@ -1058,6 +1058,14 @@
       <span class="fix-commit">82b18b6</span>
       <div><strong>P0-5 — RLS safe_connectors corrigé</strong> — 4 policies granulaires : SELECT ouvert (guard modules), INSERT/UPDATE/DELETE admins uniquement. Log restreint aux admins. <em>Migration v28 appliquée et vérifiée en base — 6 policies actives.</em></div>
     </div>
+    <div class="fix-entry">
+      <span class="fix-commit">141de8e</span>
+      <div><strong>P1-1 — SRI sur tous les CDN</strong> — <code>integrity="sha384-…"</code> + <code>crossorigin="anonymous"</code> ajoutés sur 4 bibliothèques tierces (supabase-js, jsPDF, QRCode, Chart.js) dans les 12 fichiers HTML. Garde-fous : hook pre-commit bloquant + <code>scripts/check-sri.sh</code>.</div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">61fdcda</span>
+      <div><strong>P1-2 — CORS restreint sur 12 Edge Functions</strong> — <code>"Access-Control-Allow-Origin": "*"</code> → <code>"https://crm.safe-digitalisation.fr"</code>. <code>stripe-webhook</code> non modifié (appelé par Stripe). Toutes les fonctions redéployées et actives. Bonus : import <code>serve</code> manquant corrigé dans <code>creaye-checkout</code>.</div>
+    </div>
   </div>
 
   <table class="action-table" style="margin-bottom:24px">
@@ -1119,21 +1127,23 @@
   <h3>⚠️ P1 — Risques élevés (à traiter sous 30 jours)</h3>
   <table class="action-table" style="margin-bottom:24px">
     <thead>
-      <tr><th>#</th><th>Action</th><th>Fichier(s)</th><th>Effort</th><th>Référence</th></tr>
+      <tr><th>#</th><th>Action</th><th>Fichier(s)</th><th>Effort</th><th>Statut</th><th>Référence</th></tr>
     </thead>
     <tbody>
       <tr>
         <td>P1-1</td>
-        <td><strong>Ajouter SRI sur les CDN</strong> — calculer et ajouter les attributs <code>integrity="sha384-…"</code> sur chaque <code>&lt;script src="cdn…"&gt;</code></td>
-        <td><code>index.html</code></td>
+        <td><strong>Ajouter SRI sur les CDN</strong> — <code>integrity="sha384-…"</code> + <code>crossorigin="anonymous"</code> sur 12 fichiers HTML. Hook pre-commit + <code>scripts/check-sri.sh</code></td>
+        <td><code>index.html</code>, 11 fichiers <code>work/</code></td>
         <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">OWASP A06, ANSSI R22</span></td>
       </tr>
       <tr>
         <td>P1-2</td>
-        <td><strong>Restreindre CORS des Edge Functions</strong> — remplacer <code>Access-Control-Allow-Origin: *</code> par le domaine de l'application (<code>https://votre-domaine.com</code>)</td>
-        <td>Toutes les Edge Functions</td>
+        <td><strong>Restreindre CORS des Edge Functions</strong> — <code>Access-Control-Allow-Origin: *</code> → <code>https://crm.safe-digitalisation.fr</code> sur 12 fonctions. <code>stripe-webhook</code> inchangé.</td>
+        <td>12 Edge Functions</td>
         <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé + déployé</span></td>
         <td><span class="action-ref">OWASP A07, ANSSI R23</span></td>
       </tr>
       <tr>
@@ -1141,6 +1151,7 @@
         <td><strong>Consolider les dossiers Edge Functions</strong> — unifier <code>supabase/function/</code> et <code>supabase/functions/</code> en un seul répertoire standard Supabase CLI</td>
         <td><code>supabase/function/</code>, <code>supabase/functions/</code></td>
         <td class="effort">2 h</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">Best practices Supabase</span></td>
       </tr>
       <tr>
@@ -1148,6 +1159,7 @@
         <td><strong>Renommer <code>creaye-checkout</code> → <code>create-checkout</code></strong> et mettre à jour le nom d'invocation côté client</td>
         <td><code>supabase/function/creaye-checkout/</code>, <code>assets/app.js</code></td>
         <td class="effort">30 min</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">Maintenabilité</span></td>
       </tr>
       <tr>
@@ -1155,6 +1167,7 @@
         <td><strong>Mettre en place CI/CD basique</strong> — GitHub Actions pour lint JS, vérification des migrations SQL, tests E2E Playwright minimaux sur les flux critiques (login, paiement)</td>
         <td><code>.github/workflows/</code> (à créer)</td>
         <td class="effort">1-2 j</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">ANSSI, DevSecOps</span></td>
       </tr>
       <tr>
@@ -1162,6 +1175,7 @@
         <td><strong>Mettre à jour le README</strong> — documenter l'état réel (v27), le processus d'installation, les variables d'environnement requises, et la procédure de migration</td>
         <td><code>README.md</code></td>
         <td class="effort">2 h</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">Maintenabilité</span></td>
       </tr>
       <tr>
@@ -1169,6 +1183,7 @@
         <td><strong>Vérifier et compléter la couverture escapeHtml</strong> — audit systématique des occurrences d'<code>innerHTML</code> sans <code>escapeHtml</code> dans <code>app.js</code></td>
         <td><code>assets/app.js</code></td>
         <td class="effort">3 h</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">OWASP A03 XSS</span></td>
       </tr>
       <tr>
@@ -1176,6 +1191,7 @@
         <td><strong>Rédiger le plan de réponse aux incidents</strong> — procédures d'escalade, notification CNIL 72h, communication de crise, contacts responsables</td>
         <td><code>docs/INCIDENT_RESPONSE.md</code></td>
         <td class="effort">4 h</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">NIS2 Art.21, RGPD Art.33</span></td>
       </tr>
       <tr>
@@ -1183,6 +1199,7 @@
         <td><strong>Mettre en place un monitoring</strong> — configurer Sentry (ou équivalent) pour capturer les erreurs JS côté client et les exceptions dans les Edge Functions</td>
         <td>Intégration transversale</td>
         <td class="effort">4 h</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">NIS2 Art.21, Résilience</span></td>
       </tr>
     </tbody>
