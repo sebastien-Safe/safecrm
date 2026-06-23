@@ -1,0 +1,56 @@
+# ============================================================
+# S@FE CRM — .gitignore
+# ============================================================
+
+# Environnement et secrets — NE JAMAIS COMMITER
+.env
+.env.*
+.env.local
+.env.production
+.env.staging
+*.secret
+*.pem
+*.key
+*.p12
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+._*
+
+# Éditeurs
+.idea/
+*.swp
+*.swo
+*~
+.vscode/settings.json
+
+# Node / bundler (si ajouté ultérieurement)
+node_modules/
+dist/
+.next/
+.nuxt/
+out/
+build/
+
+# Logs et exports temporaires
+*.log
+*.tmp
+*.bak
+exports/
+backups/
+
+# Claude Code — données de session locale
+.claude/
+
+# Scripts utilitaires de développement
+download-stripe-docs.sh
+
+# ============================================================
+# NOTE : assets/config.js est intentionnellement tracké.
+# Il contient uniquement la clé "publishable" Supabase,
+# conçue pour être publique et protégée par les règles RLS.
+# Ne JAMAIS y ajouter la service_role key ou tout autre secret.
+# ============================================================
