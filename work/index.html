@@ -723,6 +723,16 @@ async function initApp(token, user){
     currentUser = {id:user.id, email:user.email, prenom:user.email.split('@')[0]};
   }
 
+  if (!currentUser.is_admin) {
+    document.getElementById('login-screen').innerHTML = `
+      <div class="login-box">
+        <h1 style="margin-bottom:12px">S<b style="color:var(--gold)">@</b>FE</h1>
+        <p style="margin-bottom:20px;color:var(--mut)">L'espace WORK est réservé aux administrateurs.</p>
+        <a href="/" class="btn btn-gold" style="width:100%;justify-content:center;text-decoration:none">← Retour au CRM</a>
+      </div>`;
+    return;
+  }
+
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('user-label').textContent = currentUser.prenom;
