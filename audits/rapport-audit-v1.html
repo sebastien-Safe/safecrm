@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Rapport d'Audit — S@FE CRM — Juin 2026</title>
+<style>
+  :root {
+    --safe-blue: #1a3a5c;
+    --safe-green: #00c896;
+    --safe-red: #e53935;
+    --safe-orange: #ff8c00;
+    --safe-yellow: #f9a825;
+    --safe-grey: #f4f6f9;
+    --text: #1e2630;
+    --text-light: #5a6a7e;
+    --border: #dce3ee;
+    --p0: #e53935;
+    --p1: #ff8c00;
+    --p2: #f9a825;
+    --p3: #43a047;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f7; color: var(--text); font-size: 14px; line-height: 1.6; }
+
+  /* ── COUVERTURE ── */
+  .cover {
+    background: linear-gradient(135deg, var(--safe-blue) 0%, #0d2238 100%);
+    color: #fff; padding: 80px 60px; min-height: 320px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .cover .badge { display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,200,150,.15); border: 1px solid var(--safe-green);
+    color: var(--safe-green); font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    padding: 4px 12px; border-radius: 20px; margin-bottom: 24px; width: fit-content; text-transform: uppercase; }
+  .cover h1 { font-size: 38px; font-weight: 800; line-height: 1.15; margin-bottom: 12px; }
+  .cover h1 span { color: var(--safe-green); }
+  .cover p.subtitle { font-size: 16px; color: rgba(255,255,255,.7); margin-bottom: 32px; }
+  .cover-meta { display: flex; gap: 40px; flex-wrap: wrap; }
+  .cover-meta div { display: flex; flex-direction: column; gap: 2px; }
+  .cover-meta .label { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.5); }
+  .cover-meta .value { font-size: 14px; font-weight: 600; color: #fff; }
+
+  /* ── NAVIGATION ── */
+  nav { background: var(--safe-blue); padding: 0 32px; position: sticky; top: 0; z-index: 100;
+    display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  nav::-webkit-scrollbar { display: none; }
+  nav a { color: rgba(255,255,255,.7); text-decoration: none; font-size: 12px; font-weight: 600;
+    padding: 14px 16px; white-space: nowrap; border-bottom: 3px solid transparent;
+    transition: all .2s; }
+  nav a:hover { color: #fff; border-bottom-color: var(--safe-green); }
+
+  /* ── MAIN LAYOUT ── */
+  main { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+  section { background: #fff; border-radius: 12px; padding: 40px; margin-bottom: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+  h2 { font-size: 22px; font-weight: 800; color: var(--safe-blue); margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 2px solid var(--safe-green); display: flex; align-items: center; gap: 10px; }
+  h3 { font-size: 16px; font-weight: 700; color: var(--safe-blue); margin: 24px 0 10px; }
+  h4 { font-size: 13px; font-weight: 700; color: var(--text); margin: 16px 0 6px; }
+  p { margin-bottom: 10px; color: var(--text-light); }
+  p strong { color: var(--text); }
+  ul, ol { padding-left: 20px; margin-bottom: 10px; }
+  li { color: var(--text-light); margin-bottom: 4px; }
+  li strong { color: var(--text); }
+  code { background: #eef1f7; border-radius: 4px; padding: 2px 6px; font-family: 'Fira Code', 'Consolas', monospace; font-size: 12px; color: #c62828; }
+
+  /* ── SCORE GLOBAL ── */
+  .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .score-card { background: var(--safe-grey); border-radius: 10px; padding: 20px; text-align: center; border: 1px solid var(--border); }
+  .score-card .num { font-size: 42px; font-weight: 900; line-height: 1; }
+  .score-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-light); margin-top: 6px; }
+  .score-card.global { background: var(--safe-blue); border: none; }
+  .score-card.global .num { color: var(--safe-green); }
+  .score-card.global .label { color: rgba(255,255,255,.7); }
+  .score-card.warn .num { color: var(--p1); }
+  .score-card.danger .num { color: var(--p0); }
+  .score-card.ok .num { color: var(--p3); }
+
+  /* ── DOMAINES TABLE ── */
+  .domains-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  .domains-table th { background: var(--safe-grey); color: var(--safe-blue); font-weight: 700; font-size: 11px;
+    text-transform: uppercase; letter-spacing: .06em; padding: 10px 14px; text-align: left; border: 1px solid var(--border); }
+  .domains-table td { padding: 10px 14px; border: 1px solid var(--border); vertical-align: middle; }
+  .domains-table tr:nth-child(even) td { background: #fafbfc; }
+  .score-bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .score-bar { flex: 1; height: 8px; background: #e8ecf2; border-radius: 4px; overflow: hidden; }
+  .score-bar .fill { height: 100%; border-radius: 4px; transition: width .4s; }
+  .score-val { font-weight: 800; font-size: 14px; min-width: 42px; text-align: right; }
+
+  /* ── BADGES PRIORITÉ ── */
+  .badge-p0, .badge-p1, .badge-p2, .badge-p3 {
+    display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 11px;
+    font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+  }
+  .badge-p0 { background: #fdecea; color: var(--p0); border: 1px solid #f5c6c5; }
+  .badge-p1 { background: #fff3e0; color: var(--p1); border: 1px solid #ffe0b2; }
+  .badge-p2 { background: #fffde7; color: #b47a00; border: 1px solid #fff176; }
+  .badge-p3 { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+
+  /* ── DOMAINE AUDIT CARD ── */
+  .audit-domain { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+  .audit-domain-header { background: var(--safe-grey); padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .audit-domain-header .title { font-weight: 700; font-size: 15px; color: var(--safe-blue); display: flex; align-items: center; gap: 8px; }
+  .audit-domain-header .score-chip { font-weight: 900; font-size: 18px; min-width: 60px; text-align: right; }
+  .audit-domain-body { padding: 20px; }
+
+  /* ── FINDINGS ── */
+  .finding { display: flex; gap: 12px; margin-bottom: 12px; padding: 12px 14px;
+    border-radius: 8px; border-left: 4px solid; }
+  .finding.p0 { background: #fdecea; border-color: var(--p0); }
+  .finding.p1 { background: #fff3e0; border-color: var(--p1); }
+  .finding.p2 { background: #fffde7; border-color: var(--p2); }
+  .finding.p3 { background: #e8f5e9; border-color: var(--p3); }
+  .finding.ok { background: #e8f5e9; border-color: var(--p3); }
+  .finding-icon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }
+  .finding-content { flex: 1; }
+  .finding-content strong { font-size: 13px; display: block; margin-bottom: 3px; }
+  .finding-content span { font-size: 12px; color: var(--text-light); }
+  .finding-content code { font-size: 11px; }
+
+  /* ── PLAN D'ACTIONS ── */
+  .action-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .action-table th { background: var(--safe-blue); color: #fff; padding: 10px 14px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  .action-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .action-table tr:hover td { background: var(--safe-grey); }
+  .action-table .effort { font-weight: 700; color: var(--safe-blue); }
+  .action-ref { font-size: 10px; color: var(--text-light); font-style: italic; }
+  .badge-ok { display:inline-flex; align-items:center; gap:4px; background:#e8f5e9; color:#2e7d32;
+    border:1px solid #a5d6a7; border-radius:12px; font-size:11px; font-weight:700; padding:2px 9px; }
+  .badge-partial { display:inline-flex; align-items:center; gap:4px; background:#fff8e1; color:#f57f17;
+    border:1px solid #ffe082; border-radius:12px; font-size:11px; font-weight:700; padding:2px 9px; }
+  .badge-pending { display:inline-flex; align-items:center; gap:4px; background:#f3f4f6; color:#6b7280;
+    border:1px solid #d1d5db; border-radius:12px; font-size:11px; font-weight:700; padding:2px 9px; }
+  .fix-log { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:20px 24px; margin-bottom:24px; }
+  .fix-log h3 { color:#166534; margin-bottom:14px; font-size:15px; }
+  .fix-entry { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #d1fae5; }
+  .fix-entry:last-child { border-bottom:none; }
+  .fix-commit { font-family:'Fira Code',monospace; font-size:11px; background:#dcfce7; color:#166534; padding:2px 7px; border-radius:4px; white-space:nowrap; }
+
+  /* ── CHECKLIST ── */
+  .check-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .check-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px;
+    background: var(--safe-grey); border-radius: 8px; border: 1px solid var(--border); }
+  .check-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .check-text { font-size: 12px; }
+  .check-text strong { display: block; color: var(--text); margin-bottom: 2px; font-size: 13px; }
+  .check-text span { color: var(--text-light); }
+
+  /* ── RISK MATRIX ── */
+  .risk-matrix { display: grid; grid-template-columns: auto repeat(4, 1fr); grid-template-rows: auto repeat(4, 1fr);
+    gap: 4px; max-width: 700px; }
+  .rm-label { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text-light); }
+  .rm-label.axis { background: var(--safe-blue); color: #fff; border-radius: 4px; padding: 8px; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+  .rm-cell { border-radius: 6px; padding: 6px 8px; min-height: 60px; font-size: 10px; display: flex; flex-direction: column; gap: 3px; }
+  .rm-cell.faible { background: #e8f5e9; }
+  .rm-cell.modere { background: #fffde7; }
+  .rm-cell.eleve  { background: #fff3e0; }
+  .rm-cell.critique { background: #fdecea; }
+  .rm-item { background: rgba(255,255,255,.7); border-radius: 3px; padding: 2px 5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── FOOTER ── */
+  footer { text-align: center; padding: 40px; color: var(--text-light); font-size: 12px; }
+  footer strong { color: var(--safe-blue); }
+
+  /* ── UTILS ── */
+  .tag-ref { display: inline-block; background: #e8ecf2; color: var(--safe-blue); font-size: 10px;
+    font-weight: 700; padding: 2px 7px; border-radius: 10px; margin: 2px; }
+  .section-intro { background: linear-gradient(135deg, #eef6ff, #f0f9f5); border: 1px solid #dce9f8;
+    border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } main { padding: 20px 12px; } .cover { padding: 40px 20px; } }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  table.info-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.info-table td { padding: 8px 12px; border: 1px solid var(--border); }
+  table.info-table td:first-child { font-weight: 700; background: var(--safe-grey); width: 35%; color: var(--safe-blue); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     COUVERTURE
+════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="badge">🔍 Rapport d'audit confidentiel</div>
+  <h1>Audit de sécurité &amp; conformité<br><span>S@FE CRM</span></h1>
+  <p class="subtitle">Analyse exhaustive — 16 domaines — Architecture, Cybersécurité, RGPD, ANSSI, NIS2, WCAG</p>
+  <div class="cover-meta">
+    <div><span class="label">Date d'audit</span><span class="value">22 juin 2026 — MàJ : 23 juin 2026</span></div>
+    <div><span class="label">Version analysée</span><span class="value">Schema v27 — app.js 5 473 lignes</span></div>
+    <div><span class="label">Référentiel</span><span class="value">OWASP Top 10 · RGPD · ANSSI · NIS2 · WCAG 2.1</span></div>
+    <div><span class="label">Auditeur</span><span class="value">S@FE AUDITOR AI — Claude Sonnet 4.6</span></div>
+    <div><span class="label">Classification</span><span class="value">CONFIDENTIEL — Diffusion restreinte</span></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#synthese">Synthèse</a>
+  <a href="#domaines">Domaines</a>
+  <a href="#d1">Architecture</a>
+  <a href="#d2">DevSecOps</a>
+  <a href="#d3">Base de données</a>
+  <a href="#d4">Edge Functions</a>
+  <a href="#d5">Paiement</a>
+  <a href="#d6">Emails</a>
+  <a href="#d7">Authentification</a>
+  <a href="#d8">RBAC</a>
+  <a href="#d9">RLS &amp; Données</a>
+  <a href="#d10">Cybersécurité</a>
+  <a href="#d11">RGPD</a>
+  <a href="#d12">ANSSI/NIS2</a>
+  <a href="#d13">Documentation</a>
+  <a href="#d14">UX/Accessibilité</a>
+  <a href="#d15">Performance</a>
+  <a href="#d16">Résilience</a>
+  <a href="#plan">Plan d'actions</a>
+  <a href="#checklist">Checklist</a>
+  <a href="#matrice">Matrice</a>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════════════════════
+     SYNTHÈSE EXÉCUTIVE
+════════════════════════════════════════════════════════ -->
+<section id="synthese">
+  <h2>📋 Synthèse exécutive</h2>
+
+  <div class="section-intro">
+    <p>Le présent rapport présente les résultats d'un audit exhaustif du CRM S@FE réalisé en lecture seule sur la base de l'analyse statique du code source (frontend, Edge Functions, schémas SQL, configuration). L'application est une SPA vanilla JS hébergée en statique, s'appuyant sur Supabase (PostgreSQL + Auth + Edge Functions), Stripe (paiements) et Brevo (emails transactionnels).</p>
+    <p>L'audit couvre 16 domaines et s'appuie sur les référentiels OWASP Top 10, RGPD/CNIL, ANSSI RGS, NIS2, WCAG 2.1 AA et les meilleures pratiques Supabase, Stripe et Deno.</p>
+  </div>
+
+  <!-- Scores globaux -->
+  <div class="score-grid">
+    <div class="score-card global">
+      <div class="num">61</div>
+      <div class="label">Score global /100</div>
+    </div>
+    <div class="score-card danger">
+      <div class="num" style="color:#43a047">5/5</div>
+      <div class="label">P0 corrigés (4b reporté P1)</div>
+    </div>
+    <div class="score-card warn">
+      <div class="num">9</div>
+      <div class="label">Risques P1 élevés</div>
+    </div>
+    <div class="score-card">
+      <div class="num" style="color:var(--p2)">11</div>
+      <div class="label">Améliorations P2</div>
+    </div>
+    <div class="score-card ok">
+      <div class="num">8</div>
+      <div class="label">Points positifs</div>
+    </div>
+  </div>
+
+  <h3>Verdict global</h3>
+  <p>L'application S@FE CRM présente une architecture fonctionnelle et des mécanismes de sécurité pensés (TOTP, RLS, audit logs, signature walls). Cependant, plusieurs <strong>vulnérabilités critiques</strong> nécessitent une correction immédiate avant toute mise en production à grande échelle : absence de <code>.gitignore</code> exposant potentiellement les credentials, un bug de typo silencieux coupant l'envoi d'emails de facturation, et une CSP trop permissive annulant la protection XSS.</p>
+  <p>Le code source monolithique (<code>app.js</code> 244 KB, 5 473 lignes) constitue un risque opérationnel majeur — toute modification est difficile à tester et à auditer. L'extraction modulaire en cours est la bonne direction mais doit être accélérée.</p>
+
+  <h3>Points forts</h3>
+  <ul>
+    <li>TOTP/MFA intégré et challengé systématiquement à la connexion</li>
+    <li>RLS Supabase activé sur toutes les tables critiques</li>
+    <li>Journal d'activité (<code>audit_logs</code>) avec politiques RLS différenciées admin/user</li>
+    <li>Double signature obligatoire (clause confidentialité + charte SI annuelle)</li>
+    <li>Rate limiting anti-brute-force sur les tentatives de connexion</li>
+    <li>Trigger automatique RGPD pour la durée de conservation des données</li>
+    <li>PWA complète avec Service Worker (offline, manifest, icons)</li>
+    <li>Processus de migration SQL documenté (27 versions)</li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     TABLEAU DES DOMAINES
+════════════════════════════════════════════════════════ -->
+<section id="domaines">
+  <h2>📊 Tableau de bord — 16 domaines</h2>
+  <table class="domains-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Domaine</th>
+        <th>Score</th>
+        <th>Niveau</th>
+        <th>Priorité max</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td><td><a href="#d1">Architecture &amp; stack</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:62%;background:#ff8c00"></div></div><span class="score-val" style="color:#ff8c00">62</span></div></td>
+        <td>⚠️ Moyen</td><td><span class="badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>2</td><td><a href="#d2">DevSecOps / CI-CD / Git</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:45%;background:#ff8c00"></div></div><span class="score-val" style="color:#ff8c00">45</span></div></td>
+        <td>⚠️ Moyen</td><td><span class="badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>3</td><td><a href="#d3">Base de données / Schéma</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:65%;background:#f9a825"></div></div><span class="score-val" style="color:#f9a825">65</span></div></td>
+        <td>⚠️ Moyen</td><td><span class="badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>4</td><td><a href="#d4">Edge Functions</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:55%;background:#ff8c00"></div></div><span class="score-val" style="color:#ff8c00">55</span></div></td>
+        <td>⚠️ Moyen</td><td><span class="badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>5</td><td><a href="#d5">Paiement Stripe</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:70%;background:#f9a825"></div></div><span class="score-val" style="color:#f9a825">70</span></div></td>
+        <td>✅ Bon</td><td><span class="badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>6</td><td><a href="#d6">Emails / Brevo</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:65%;background:#f9a825"></div></div><span class="score-val" style="color:#f9a825">65</span></div></td>
+        <td>⚠️ Moyen</td><td><span class="badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>7</td><td><a href="#d7">Authentification / MFA</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:72%;background:#f9a825"></div></div><span class="score-val" style="color:#f9a825">72</span></div></td>
+        <td>✅ Bon</td><td><span class="badge-p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>8</td><td><a href="#d8">RBAC / Gestion des rôles</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:65%;background:#f9a825"></div></div><span class="score-val" style="color:#f9a825">65</span></div></td>
+        <td>⚠️ Moyen</td><td><span class="badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>9</td><td><a href="#d9">RLS &amp; Sécurité des données</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:73%;background:#f9a825"></div></div><span class="score-val" style="color:#f9a825">73</span></div></td>
+        <td>✅ Bon</td><td><span class="badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>10</td><td><a href="#d10">Cybersécurité (CSP, XSS…)</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:52%;background:#ff8c00"></div></div><span class="score-val" style="color:#ff8c00">52</span></div></td>
+        <td>⚠️ Moyen</td><td><span class="badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>11</td><td><a href="#d11">RGPD / Conformité</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:70%;background:#f9a825"></div></div><span class="score-val" style="color:#f9a825">70</span></div></td>
+        <td>✅ Bon</td><td><span class="badge-p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>12</td><td><a href="#d12">ANSSI / NIS2</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:60%;background:#ff8c00"></div></div><span class="score-val" style="color:#ff8c00">60</span></div></td>
+        <td>⚠️ Moyen</td><td><span class="badge-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>13</td><td><a href="#d13">Documentation</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:60%;background:#ff8c00"></div></div><span class="score-val" style="color:#ff8c00">60</span></div></td>
+        <td>⚠️ Moyen</td><td><span class="badge-p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>14</td><td><a href="#d14">UX / Accessibilité WCAG</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:58%;background:#ff8c00"></div></div><span class="score-val" style="color:#ff8c00">58</span></div></td>
+        <td>⚠️ Moyen</td><td><span class="badge-p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>15</td><td><a href="#d15">Performance / SEO</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:48%;background:#e53935"></div></div><span class="score-val" style="color:#e53935">48</span></div></td>
+        <td>🟠 Faible</td><td><span class="badge-p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>16</td><td><a href="#d16">Résilience / Continuité</a></td>
+        <td><div class="score-bar-wrap"><div class="score-bar"><div class="fill" style="width:55%;background:#ff8c00"></div></div><span class="score-val" style="color:#ff8c00">55</span></div></td>
+        <td>⚠️ Moyen</td><td><span class="badge-p1">P1</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 1 — ARCHITECTURE
+════════════════════════════════════════════════════════ -->
+<section id="d1">
+  <h2>🏗️ Domaine 1 — Architecture &amp; Stack <span style="margin-left:auto;font-size:20px;color:#ff8c00">62/100</span></h2>
+
+  <table class="info-table" style="margin-bottom:20px">
+    <tr><td>Stack frontend</td><td>HTML5 / CSS3 / JavaScript ES6+ vanille (aucun framework)</td></tr>
+    <tr><td>Backend</td><td>Supabase (PostgreSQL 15, Auth, Storage, Edge Functions Deno)</td></tr>
+    <tr><td>Paiement</td><td>Stripe (Checkout + webhooks)</td></tr>
+    <tr><td>Emails</td><td>Brevo (anciennement Sendinblue) via API REST</td></tr>
+    <tr><td>Hébergement</td><td>GitHub Pages (statique) + Supabase cloud</td></tr>
+    <tr><td>Taille du code principal</td><td><code>assets/app.js</code> — 5 473 lignes, 244 KB non minifié</td></tr>
+    <tr><td>Migrations SQL</td><td>27 fichiers manuels (<code>-schema.sql</code> à <code>-schema-v27.sql</code>)</td></tr>
+  </table>
+
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Fichier monolithique — <code>assets/app.js</code> 244 KB, 5 473 lignes</strong>
+      <span>Un seul fichier concentre toute la logique métier (contacts, contrats, kanban, journal, auth, TOTP…). L'extraction modulaire est en cours (<code>assets/contacts/</code>, <code>assets/contracts/</code>, <code>assets/app/</code>) mais incomplète. Risque : dette technique croissante, impossibilité de tester unitairement, merge conflicts fréquents, temps de parsing JS long.</span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Duplication des dossiers Edge Functions</strong>
+      <span>Deux répertoires coexistent : <code>supabase/function/</code> (12 fonctions actives) et <code>supabase/functions/</code> (3 fonctions — <code>call-ia</code>, <code>send-crm-email</code>, <code>_shared</code>). Cette duplication crée une ambiguïté sur les versions déployées et augmente le risque de déployer la mauvaise version.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Duplication potentielle — PDF contracts</strong>
+      <span><code>assets/contract-pdf.js</code> et <code>assets/contracts/contracts-pdf.js</code> — deux fichiers avec potentiellement la même logique de génération PDF. À vérifier et consolider.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Modules work/ non intégrés</strong>
+      <span>Le répertoire <code>work/</code> contient des modules (DPO, SEO, Cyber, ClickCollect, Social) distincts du CRM principal. Leur relation avec le noyau, leur état de maintenance et leur couverture par les politiques de sécurité ne sont pas documentés.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Architecture BaaS adaptée à la taille du projet</strong>
+      <span>Le choix Supabase élimine la gestion d'une infrastructure serveur, délègue l'auth et fournit RLS au niveau base de données. Adapté à une équipe réduite.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 2 — DEVSECOPS
+════════════════════════════════════════════════════════ -->
+<section id="d2">
+  <h2>🔧 Domaine 2 — DevSecOps / CI-CD / Git <span style="margin-left:auto;font-size:20px;color:#ff8c00">45/100</span></h2>
+
+  <div class="finding p0">
+    <div class="finding-icon">🚨</div>
+    <div class="finding-content">
+      <strong>CRITIQUE — Aucun fichier <code>.gitignore</code></strong>
+      <span>Le projet ne possède pas de <code>.gitignore</code>. Le fichier <code>assets/config.js</code> contenant l'URL Supabase (<code>https://qdjmzietysukediqkebg.supabase.co</code>) et la clé publishable (<code>sb_publishable_8uD3m60n9GfMt2h_GkmB7w_MpdFN5_s</code>) est probablement commité dans l'historique Git. Si le dépôt est public, ou s'il existe un accès unauthorized aux logs Git, ces clés sont exposées. Un attaquant peut interroger la base directement si les RLS présentent des failles. De plus, tout fichier sensible temporaire (logs, exports, scripts) créé à la racine sera automatiquement tracké.</span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Pas de pipeline CI/CD — aucun test automatisé</strong>
+      <span>Aucun fichier <code>.github/workflows/</code>, Dockerfile, ou configuration de test (Jest, Playwright…) n'est présent. Les déploiements sont manuels. Toute régression n'est détectée qu'en production.</span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>27 migrations SQL appliquées manuellement</strong>
+      <span>Les fichiers <code>-schema-v1.sql</code> à <code>-schema-v27.sql</code> sont appliqués à la main sur la base de données Supabase. Aucun outil de migration automatisé (Supabase CLI <code>supabase migration</code>, Flyway…) n'est utilisé. Le risque est une désynchronisation entre l'environnement de développement, de staging et de production.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>README obsolète</strong>
+      <span>La documentation de setup mentionne les schémas v2 à v5 alors que la base en est à la version 27. Un développeur entrant suivrait des instructions caduques.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Scripts utilitaires commités (<code>download-stripe-docs.sh</code>)</strong>
+      <span>Des scripts de développement sans rapport avec l'application sont trackés dans le dépôt. Bonne hygiène : les exclure via <code>.gitignore</code> ou les déplacer hors du projet.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 3 — BASE DE DONNÉES
+════════════════════════════════════════════════════════ -->
+<section id="d3">
+  <h2>🗄️ Domaine 3 — Base de données / Schéma SQL <span style="margin-left:auto;font-size:20px;color:#f9a825">65/100</span></h2>
+
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Schéma initial (v1) avec policies trop permissives</strong>
+      <span>Le schéma v1 crée des policies de type <code>auth_full_access_contacts</code> avec <code>USING (auth.role() = 'authenticated')</code> — tout utilisateur authentifié peut lire et écrire toutes les lignes de <code>contacts</code>, <code>contracts</code>, <code>tasks</code>. Les versions suivantes ont raffiné ces politiques, mais si la migration v1 a été appliquée sans toutes les suivantes, ou si une restauration partielle est faite, ces permissions excessives réapparaissent.</span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong><code>safe_connectors</code> — policy USING(true) WITH CHECK(true)</strong>
+      <span>Schema v26 : <code>CREATE POLICY "auth_safe_connectors" ON safe_connectors TO authenticated USING (true) WITH CHECK (true)</code>. Tout utilisateur authentifié peut lire ET écrire n'importe quel enregistrement de cette table, y compris des connecteurs appartenant à d'autres clients. Ce n'est probablement pas l'intention.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Absence d'index sur les colonnes de filtrage courantes</strong>
+      <span>Les migrations n'indiquent pas d'index sur <code>contacts.user_id</code>, <code>audit_logs.created_at</code>, <code>audit_logs.user_id</code>, <code>contracts.statut</code>. Sur un volume croissant, les requêtes RLS (qui filtrent par <code>user_id</code>) peuvent devenir lentes sans index.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Tables d'audit modernes (v27) avec RLS strictes</strong>
+      <span><code>totp_audit</code> et <code>audit_access_log</code> ont des policies restrictives et correctes. La table <code>audit_logs</code> possède deux policies distinctes : admin SELECT all + <code>audit_select_own</code> pour les utilisateurs. Architecture exemplaire.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Trigger RGPD automatique</strong>
+      <span><code>check_rgpd_expiry()</code> — trigger automatique pour la gestion de l'expiration des données personnelles. Bonne pratique de Privacy by Design (Art. 25 RGPD).</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 4 — EDGE FUNCTIONS
+════════════════════════════════════════════════════════ -->
+<section id="d4">
+  <h2>⚡ Domaine 4 — Edge Functions (Deno) <span style="margin-left:auto;font-size:20px;color:#ff8c00">55/100</span></h2>
+
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Typo critique — répertoire <code>creaye-checkout</code> au lieu de <code>create-checkout</code></strong>
+      <span>La fonction de création de session Stripe est déployée sous le nom <code>creaye-checkout</code> (faute de frappe non corrigée). Tout appel à <code>supabase.functions.invoke('create-checkout', …)</code> retournerait une 404 si le nom n'est pas corrigé aussi côté client. Le risque est une régression silencieuse si quelqu'un renomme le call côté client en corrigeant la faute sans toucher le nom du répertoire déployé.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>✅ CORRIGÉ P1-2 — CORS restreint sur toutes les Edge Functions (commit 61fdcda)</strong>
+      <span>Les 12 Edge Functions browser-facing ont été mises à jour : <code>"Access-Control-Allow-Origin": "*"</code> → <code>"https://crm.safe-digitalisation.fr"</code>. <code>stripe-webhook</code> inchangé (appelé par Stripe, pas le navigateur). Toutes redéployées et actives.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Imports CDN non épinglés (pas de version exacte de hash)</strong>
+      <span>Les Edge Functions importent depuis <code>https://esm.sh/stripe@14</code>, <code>https://esm.sh/@supabase/supabase-js@2</code> avec des versions majeures uniquement. Un bug introduit dans une version mineure ou patch sera automatiquement récupéré. Les imports devraient utiliser des versions exactes (<code>@14.5.0</code>) ou un <em>lock file</em> Deno.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Logs d'erreur insuffisants dans les Edge Functions</strong>
+      <span>Les blocs <code>catch</code> retournent une 500 générique sans <code>console.error()</code> sur tous les chemins d'erreur. Les incidents de production sont invisibles sans instrumentation supplémentaire.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Vérification JWT Supabase dans <code>send-mandat-email</code></strong>
+      <span>La fonction vérifie le header <code>Authorization: Bearer &lt;token&gt;</code> et valide l'utilisateur via <code>supabase.auth.getUser()</code> avant tout traitement. Bonne pratique.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 5 — PAIEMENT STRIPE
+════════════════════════════════════════════════════════ -->
+<section id="d5">
+  <h2>💳 Domaine 5 — Paiement Stripe <span style="margin-left:auto;font-size:20px;color:#f9a825">70/100</span></h2>
+
+  <div class="finding p0">
+    <div class="finding-icon">🚨</div>
+    <div class="finding-content">
+      <strong>CRITIQUE — Webhook Stripe sans vérification de signature si variable absente</strong>
+      <span>Dans <code>supabase/function/stripe-webhook/index.ts</code>, la vérification de signature Stripe via <code>stripe.webhooks.constructEventAsync()</code> n'est exécutée que si <code>STRIPE_WEBHOOK_SECRET</code> est défini. Si cette variable d'environnement n'est pas configurée sur le projet Supabase, n'importe qui peut envoyer des événements Stripe falsifiés et déclencher des abonnements, des créations de clients, ou des annulations frauduleuses. La vérification doit être obligatoire, non conditionnelle.</span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Calcul TTC hardcodé — risque légal si TVA change</strong>
+      <span>Dans <code>creaye-checkout</code> : <code>Math.round(m * 120)</code> calcule le TTC à 20% (HT × 1.2, exprimé en centimes). Si le taux de TVA applicables évolue (ex. prestations spécifiques, DOM-TOM), la formule devra être mise à jour manuellement. Préférer une variable d'environnement <code>TVA_RATE</code>.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Numéro ORIAS — incohérence possible</strong>
+      <span><code>assets/app.js</code> affiche <code>ORIAS : N° 26008536</code> dans les documents générés. À confirmer que ce numéro est identique dans tous les templates (emails Brevo, devis PDF, conditions générales).</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>5 événements Stripe gérés correctement</strong>
+      <span><code>checkout.session.completed</code>, <code>invoice.paid</code>, <code>invoice.payment_failed</code>, <code>customer.subscription.updated</code>, <code>customer.subscription.deleted</code> sont tous traités avec mise à jour de la base de données. Architecture correcte.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 6 — EMAILS / BREVO
+════════════════════════════════════════════════════════ -->
+<section id="d6">
+  <h2>📧 Domaine 6 — Emails / Brevo <span style="margin-left:auto;font-size:20px;color:#f9a825">65/100</span></h2>
+
+  <div class="finding p0">
+    <div class="finding-icon">🚨</div>
+    <div class="finding-content">
+      <strong>CRITIQUE — Typo <code>BREBO</code> au lieu de <code>BREVO</code> — <em>tous</em> les emails silencieusement coupés</strong>
+      <span>La typo <code>Deno.env.get("BREBO")</code> au lieu de <code>"BREVO"</code> était présente dans <strong>5 Edge Functions</strong> : <code>stripe-webhook</code>, <code>send-clause-email</code>, <code>send-password-reset</code>, <code>send-mandat-email</code>, <code>send-crm-email</code>. La variable retournait <code>undefined</code> et la condition <code>if (!BREVO) return;</code> court-circuitait l'envoi silencieusement. <strong>Aucun email n'était envoyé depuis la mise en prod</strong> : ni facturation, ni reset de mot de passe, ni clauses, ni mandats, ni rapports DPO/SEO/Cyber. <span class="badge-ok" style="font-size:11px">✅ Corrigé — commits ac50d83 + 16932e3 — 5 fonctions redéployées</span></span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Intégration Brevo via <code>fetch</code> direct sans SDK</strong>
+      <span>Les appels à l'API Brevo sont faits via <code>fetch()</code> avec headers manuels. En cas de changement d'API Brevo (authentification, endpoint, format), le code doit être modifié manuellement. Un SDK officiel fournirait une abstraction stable et des messages d'erreur structurés.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Pas de mécanisme de retry pour les emails transactionnels</strong>
+      <span>Si l'appel Brevo échoue (timeout, 5xx), l'email est perdu sans aucune mécanisme de reprise. Les emails de facturation sont des communications légalement importantes.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>IDs de templates Brevo hardcodés</strong>
+      <span>Les IDs de templates Brevo (1, 2, 7…) sont écrits en dur dans le code. En cas de recréation des templates dans Brevo, tous les IDs doivent être mis à jour manuellement dans chaque Edge Function.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 7 — AUTHENTIFICATION / MFA
+════════════════════════════════════════════════════════ -->
+<section id="d7">
+  <h2>🔐 Domaine 7 — Authentification / MFA <span style="margin-left:auto;font-size:20px;color:#f9a825">72/100</span></h2>
+
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>TOTP/MFA challengé systématiquement</strong>
+      <span><code>challengeTOTPIfNeeded()</code> est appelé au démarrage de l'application et bloque l'accès si le facteur MFA n'est pas validé. La table <code>totp_audit</code> trace toutes les tentatives.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Anti-brute-force via Edge Function dédiée</strong>
+      <span><code>record-login-failure</code> : 5 tentatives → ban 30 minutes, rate limiting IP à 30 req/heure. Architecture correcte et proportionnée.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Double signature obligatoire avant accès</strong>
+      <span>Le mur de signature (<code>_checkAndShowSignatureWall()</code>) vérifie la clause de confidentialité ET la charte SI (valide ≤ 12 mois). Le guide est inaccessible sans les deux. Bonne pratique RGPD et RH.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>TOTP non obligatoire côté serveur (enforcement client-side)</strong>
+      <span>Le challenge TOTP est effectué dans le JavaScript client. Un utilisateur qui contournerait le JS (accès direct à l'API Supabase avec un token JWT valide) pourrait accéder aux données sans valider le TOTP. Pour une protection totale, une RLS conditionnelle ou un middleware serveur devrait vérifier l'assurance d'authentification (<code>aal2</code>) du token JWT.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Réinitialisation de mot de passe par email — vecteur de phishing</strong>
+      <span>La fonction <code>send-password-reset</code> envoie un lien de réinitialisation. Si un attaquant peut déclencher un reset pour n'importe quel email, cela constitue un vecteur de harcèlement. Vérifier la présence d'un captcha ou d'un rate limit sur cet endpoint.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 8 — RBAC
+════════════════════════════════════════════════════════ -->
+<section id="d8">
+  <h2>👥 Domaine 8 — RBAC / Gestion des rôles <span style="margin-left:auto;font-size:20px;color:#f9a825">65/100</span></h2>
+
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Vérification de rôle admin uniquement côté client</strong>
+      <span><code>isAdmin()</code> retourne <code>!!state.profile?.is_admin</code> — valeur lue depuis la table <code>profiles</code> via Supabase. Si un utilisateur malveillant modifie son propre <code>is_admin</code> à <code>true</code> en base (impossible si la RLS est correcte, mais vérifier), ou si un bug d'assignation de rôle survient, l'UI pourrait afficher des fonctionnalités admin à un utilisateur non-admin. Les Edge Functions critiques (admin-create-user) vérifient le profil côté serveur — c'est bien. Les vérifications d'accès aux vues admin dans l'UI sont purement client-side.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Pas de rôle intermédiaire — binaire admin / user</strong>
+      <span>Le système ne connaît que deux rôles : admin et utilisateur standard. Pour une équipe plus grande, un rôle "manager" (lecture de toutes les données mais pas de création d'utilisateurs) serait utile. Pas critique mais à anticiper.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Création d'utilisateur par Edge Function avec vérification côté serveur</strong>
+      <span><code>admin-create-user</code> vérifie que l'appelant est admin avant de créer l'utilisateur. La logique critique n'est pas uniquement côté client.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 9 — RLS & SÉCURITÉ DES DONNÉES
+════════════════════════════════════════════════════════ -->
+<section id="d9">
+  <h2>🛡️ Domaine 9 — RLS &amp; Sécurité des données <span style="margin-left:auto;font-size:20px;color:#f9a825">73/100</span></h2>
+
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Policy <code>safe_connectors</code> avec <code>WITH CHECK (true)</code></strong>
+      <span>Tout utilisateur authentifié peut insérer ou modifier n'importe quel enregistrement de <code>safe_connectors</code>. Cette table contient probablement des intégrations sensibles (clés API tierces, webhooks). La policy devrait filtrer par <code>user_id = auth.uid()</code> ou par organisation.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Clé publishable Supabase en clair dans <code>assets/config.js</code></strong>
+      <span>La clé <code>sb_publishable_8uD3m60n9GfMt2h_GkmB7w_MpdFN5_s</code> est volontairement publique (c'est son usage prévu) et ne peut pas accéder aux données sans JWT valide, grâce à RLS. Cependant sans <code>.gitignore</code>, si cette clé est dans l'historique Git d'un dépôt public, les scanners automatiques de secrets (GitHub secret scanning, truffleHog) la signaleront comme exposition.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>RLS activé sur toutes les tables critiques</strong>
+      <span>Les tables <code>contacts</code>, <code>contracts</code>, <code>tasks</code>, <code>audit_logs</code>, <code>profiles</code>, <code>clauses_confidentialite</code>, <code>chartes_usage_si</code> ont toutes RLS enabled.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Table <code>audit_logs</code> avec double policy granulaire</strong>
+      <span>Policy <code>audit_select_own</code> : l'utilisateur ne voit que ses propres logs. Policy <code>admin_select_all</code> : l'admin voit tout. Aucune policy INSERT/UPDATE/DELETE côté client — l'écriture est réservée aux Edge Functions avec service_role.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 10 — CYBERSÉCURITÉ
+════════════════════════════════════════════════════════ -->
+<section id="d10">
+  <h2>🔒 Domaine 10 — Cybersécurité (OWASP Top 10) <span style="margin-left:auto;font-size:20px;color:#ff8c00">52/100</span></h2>
+
+  <div class="finding p0">
+    <div class="finding-icon">🚨</div>
+    <div class="finding-content">
+      <strong>CRITIQUE — CSP avec <code>'unsafe-inline'</code> pour les scripts</strong>
+      <span>Le header Content-Security-Policy de <code>index.html</code> autorise <code>'unsafe-inline'</code> pour les scripts. Cela annule la protection contre les attaques XSS (Cross-Site Scripting) que la CSP est censée fournir. OWASP A03:2021 — Injection. Si un attaquant parvient à injecter du JavaScript (via un champ de formulaire, un contact malveillant, une URL), ce code s'exécutera sans restriction.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>✅ CORRIGÉ P1-1 — SRI ajouté sur tous les CDN (commit 141de8e)</strong>
+      <span>Les bibliothèques <code>supabase-js@2.108.2</code>, <code>jsPDF@2.5.1</code>, <code>QRCode@1.5.3</code>, <code>Chart.js@4.4.1</code> ont été épinglées avec leurs attributs <code>integrity="sha384-…"</code> + <code>crossorigin="anonymous"</code> sur les 12 fichiers HTML. Un hook pre-commit bloque les commits sans SRI. Script <code>scripts/check-sri.sh</code> créé pour vérification manuelle.</span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Service Worker peut cacher du code malveillant injecté</strong>
+      <span><code>sw.js</code> utilise une stratégie cache-first pour les assets JS/CSS. Si un attaquant réussit à faire cacher une version compromise d'un fichier, le Service Worker continuera à servir cette version corrompue même après que le serveur soit nettoyé, jusqu'à la mise à jour du cache (changement de version dans <code>sw.js</code>).</span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Utilisation d'<code>innerHTML</code> — risque XSS résiduel</strong>
+      <span><code>app.js</code> contient 111 occurrences d'<code>escapeHtml</code> et autant d'<code>innerHTML</code>. Si une occurrence d'<code>innerHTML</code> utilise des données non échappées (bug de dev futur), une XSS est possible. La présence de <code>escapeHtml()</code> est une bonne pratique mais sa couverture exhaustive doit être vérifiée par revue de code systématique.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Pas de headers de sécurité HTTP additionnels</strong>
+      <span>Les headers <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy: strict-origin-when-cross-origin</code>, <code>Permissions-Policy</code> ne sont pas documentés dans la configuration de l'hébergement (GitHub Pages ne permet pas de personnaliser les headers HTTP).</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Fonction <code>escapeHtml()</code> systématiquement utilisée</strong>
+      <span>111 appels à <code>escapeHtml()</code> pour toutes les données affichées en HTML. Discipline défensive correcte.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 11 — RGPD
+════════════════════════════════════════════════════════ -->
+<section id="d11">
+  <h2>⚖️ Domaine 11 — RGPD / Conformité CNIL <span style="margin-left:auto;font-size:20px;color:#f9a825">70/100</span></h2>
+
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Clause de confidentialité et charte SI obligatoires</strong>
+      <span>Double consentement explicite tracé en base avec date de signature. Rechargement annuel obligatoire de la charte SI. Conforme Art. 7 RGPD (consentement documenté).</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Registre des traitements présent</strong>
+      <span><code>docs/legal/REGISTRE_TRAITEMENTS.md</code> documente les traitements de données. Conforme Art. 30 RGPD.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Durée de conservation — 5 ans</strong>
+      <span>La conservation des archives est alignée sur l'obligation légale Art. L123-22 Code de commerce. Le trigger RGPD automatise la purge.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Pas de procédure documentée pour l'exercice des droits</strong>
+      <span>Les droits d'accès, de rectification, d'effacement (Art. 15-17 RGPD) et de portabilité (Art. 20) ne semblent pas implémentés dans l'interface CRM. Un contact peut-il demander l'export ou l'effacement de ses données ? Le processus doit être formalisé.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Mentions légales — vérification ORIAS</strong>
+      <span>Le numéro ORIAS <code>26008536</code> est affiché. Vérifier sa validité sur le registre officiel ORIAS et que la mention obligatoire de l'ACPR est présente si l'activité relève de l'intermédiation en assurance.</span>
+    </div>
+  </div>
+  <div class="finding p3">
+    <div class="finding-icon">💡</div>
+    <div class="finding-content">
+      <strong>PIA (Privacy Impact Assessment) non documenté</strong>
+      <span>Pour un CRM traitant des données personnelles de prospects/clients, une AIPD (Analyse d'Impact) est recommandée par la CNIL pour les traitements à risque.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 12 — ANSSI / NIS2
+════════════════════════════════════════════════════════ -->
+<section id="d12">
+  <h2>🏛️ Domaine 12 — ANSSI / NIS2 <span style="margin-left:auto;font-size:20px;color:#ff8c00">60/100</span></h2>
+
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Authentification forte (MFA) conforme ANSSI</strong>
+      <span>TOTP (Time-based One-Time Password) implémenté et challengé systématiquement. Conforme aux recommandations ANSSI sur l'authentification (PA-022).</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Journalisation des accès et des actions</strong>
+      <span><code>audit_logs</code>, <code>totp_audit</code>, <code>audit_access_log</code> tracent les actions utilisateurs. Conforme à la recommandation ANSSI sur la journalisation (R29 du guide d'hygiène informatique) et à NIS2 Art. 21 (mesures de sécurité incluant la journalisation).</span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Pas de plan de réponse aux incidents formalisé</strong>
+      <span>NIS2 (directive 2022/2555) exige un plan de gestion des incidents de sécurité (Art. 21.2.b). Aucun document de ce type n'est présent dans le projet. Les procédures d'escalade, de notification CNIL (72h) et de communication de crise ne sont pas documentées.</span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Pas de politique de mises à jour des dépendances</strong>
+      <span>Les bibliothèques CDN (Supabase JS, jsPDF, QRCode) sont référencées avec des versions fixes dans le code source mais sans processus automatisé de surveillance des vulnérabilités (Dependabot, Snyk…). Conforme à NIS2 Art. 21.2.e (gestion des vulnérabilités).</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Chiffrement des données au repos non documenté</strong>
+      <span>Supabase chiffre les données au repos par défaut (AES-256). Ce point positif n'est pas documenté dans les politiques de sécurité. La mention devrait apparaître dans le registre des traitements.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 13 — DOCUMENTATION
+════════════════════════════════════════════════════════ -->
+<section id="d13">
+  <h2>📖 Domaine 13 — Documentation <span style="margin-left:auto;font-size:20px;color:#ff8c00">60/100</span></h2>
+
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong><code>guide.html</code> — documentation utilisateur à jour</strong>
+      <span>Le guide couvre les 6 vues principales (dont le Journal d'activité), le processus de paiement avec la modale de confirmation, les fonctions du kanban, et les règles d'accès (clause + charte SI). Récemment mis à jour et nettoyé des sections obsolètes.</span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>README technique obsolète (v2-v5 mentionnés, on est en v27)</strong>
+      <span>Un développeur entrant dans le projet suivrait des instructions d'installation décalées de 22 versions de migration. Le README doit être synchronisé avec l'état réel du projet.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Pas de documentation des Edge Functions</strong>
+      <span>Aucun fichier <code>README.md</code> dans les dossiers <code>supabase/function/</code> ne documente les contrats d'API (paramètres attendus, format de réponse, authentification requise) des 12 Edge Functions déployées.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Architecture Decision Records (ADR) absents</strong>
+      <span>Les choix architecturaux (vanilla JS vs framework, GitHub Pages vs Vercel, Brevo vs SendGrid, migration manuelle vs CLI) ne sont pas documentés. En cas de rotation d'équipe, les raisons de ces choix sont perdues.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 14 — UX / ACCESSIBILITÉ
+════════════════════════════════════════════════════════ -->
+<section id="d14">
+  <h2>🎨 Domaine 14 — UX / Accessibilité WCAG 2.1 <span style="margin-left:auto;font-size:20px;color:#ff8c00">58/100</span></h2>
+
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Thème unique sombre — aucune option mode clair</strong>
+      <span>L'application n'offre qu'un thème sombre. Certains utilisateurs (notamment avec des troubles visuels) préfèrent un thème clair. L'absence de <code>prefers-color-scheme</code> dans le CSS peut également poser des problèmes d'impression (fond noir = encre gaspillée). WCAG 2.1 critère 1.4.3 (contraste).</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Attributs ARIA insuffisants sur les modales et composants dynamiques</strong>
+      <span>Les modales injectées via <code>innerHTML</code> ne semblent pas gérer systématiquement <code>role="dialog"</code>, <code>aria-modal="true"</code>, <code>aria-labelledby</code>, ni le piège de focus (<em>focus trap</em>). WCAG 2.1 critère 4.1.2 (nom, rôle, valeur).</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Navigation clavier non vérifiée</strong>
+      <span>Le kanban et les vues dynamiques sont construits par injection HTML. La navigabilité au clavier (Tab, Entrée, Échap) dans les composants générés dynamiquement n'est pas garantie. WCAG 2.1 critère 2.1.1 (clavier).</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Guide utilisateur complet et accessible</strong>
+      <span><code>guide.html</code> offre un guide rôle-sensitif (attributs <code>data-guide-min-role</code>) avec une navigation par ancres et un contenu structuré pour chaque fonctionnalité.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 15 — PERFORMANCE / SEO
+════════════════════════════════════════════════════════ -->
+<section id="d15">
+  <h2>⚡ Domaine 15 — Performance / SEO <span style="margin-left:auto;font-size:20px;color:#e53935">48/100</span></h2>
+
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong><code>app.js</code> 244 KB non minifié — temps de parsing JS élevé</strong>
+      <span>Un fichier JS de 244 KB non minifié se traduit par un temps de parsing et compilation significatif sur mobile (Core Web Vitals — Total Blocking Time). Sur un réseau 4G, le chargement seul représente ~800ms. Avec minification + compression Brotli, on atteindrait ~60 KB.</span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>3 bibliothèques CDN chargées séquentiellement sans <code>async/defer</code></strong>
+      <span>Supabase JS, jsPDF et QRCode sont chargés en bas de page mais sans <code>async</code> ni <code>defer</code> explicites. Ils bloquent le parsing HTML pendant leur téléchargement.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Absence de bundler — pas de tree-shaking ni code-splitting</strong>
+      <span>Sans Vite, Rollup ou Webpack, tout le code est livré dans un seul bundle non optimisé. Une architecture avec code-splitting permettrait de ne charger que le code nécessaire à la vue active.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>PWA complète — Service Worker cache-first</strong>
+      <span>La stratégie cache-first pour les assets permet un chargement quasi-instantané lors des visites suivantes. Le manifest est complet avec icônes multi-formats. Bonne expérience utilisateur après la première visite.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     DOMAINE 16 — RÉSILIENCE
+════════════════════════════════════════════════════════ -->
+<section id="d16">
+  <h2>🔄 Domaine 16 — Résilience / Continuité d'activité <span style="margin-left:auto;font-size:20px;color:#ff8c00">55/100</span></h2>
+
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Pas de stratégie de backup documentée</strong>
+      <span>Supabase effectue des backups automatiques (Point-in-Time Recovery sur les plans Pro), mais aucune procédure de restauration n'est documentée. En cas d'incident, combien de temps faut-il pour restaurer ? Qui est responsable ?</span>
+    </div>
+  </div>
+  <div class="finding p1">
+    <div class="finding-icon">⚠️</div>
+    <div class="finding-content">
+      <strong>Single Point of Failure — Supabase cloud</strong>
+      <span>L'application dépend entièrement de Supabase cloud. Une panne Supabase (qui survient plusieurs fois par an) rend le CRM totalement inaccessible. Aucun mode dégradé ni fallback n'est implémenté.</span>
+    </div>
+  </div>
+  <div class="finding p2">
+    <div class="finding-icon">🟡</div>
+    <div class="finding-content">
+      <strong>Pas de monitoring / alerting</strong>
+      <span>Aucun outil de monitoring applicatif (Sentry, Datadog, ou simple webhook d'alerte) n'est configuré. Les erreurs en production (Edge Functions, échecs de paiement Stripe, erreurs JS) sont invisibles jusqu'à signalement utilisateur.</span>
+    </div>
+  </div>
+  <div class="finding ok">
+    <div class="finding-icon">✅</div>
+    <div class="finding-content">
+      <strong>Service Worker — mode offline partiel</strong>
+      <span>Le Service Worker permet une consultation des données mises en cache même sans connexion. L'application reste partiellement fonctionnelle en mode offline pour les opérations de lecture.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     PLAN D'ACTIONS
+════════════════════════════════════════════════════════ -->
+<section id="plan">
+  <h2>🗺️ Plan d'actions — P0 à P3</h2>
+
+  <h3>🚨 P0 — Critiques</h3>
+
+  <div class="fix-log">
+    <h3>✅ Journal des corrections appliquées — 23 juin 2026</h3>
+    <div class="fix-entry">
+      <span class="fix-commit">ad8f136</span>
+      <div><strong>P0-1 — .gitignore créé</strong> — Protection contre commit accidentel de secrets. Retrait du tracking de <code>.DS_Store</code> et <code>.claude/settings.json</code>.</div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">ac50d83</span>
+      <div><strong>P0-2 — BREBO → BREVO (stripe-webhook)</strong> — Emails de facturation et d'échec de paiement. Secret <code>BREVO</code> configuré dans Supabase. <em>Déployé : stripe-webhook v26.</em></div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">16932e3</span>
+      <div><strong>P0-2b — BREBO → BREVO étendu (contrôle post-correction)</strong> — Découverte lors du contrôle systématique : la même typo cassait 4 autres fonctions email. <em>Corrigées et redéployées : send-clause-email v8, send-password-reset v7, send-mandat-email v8, send-crm-email v14. Désormais aucun email d'aucune fonction n'était envoyé depuis la mise en prod.</em></div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">867c4f9</span>
+      <div><strong>P0-3 — Signature Stripe webhook obligatoire</strong> — Fallback sans vérification supprimé. Secret <code>STRIPE_WEBHOOK_SECRET</code> configuré dans Supabase. <em>Déployé : stripe-webhook v26.</em></div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">65cb0c3</span>
+      <div><strong>P0-4a — Scripts inline externalisés</strong> — 3 blocs <code>&lt;script&gt;</code> inline déplacés vers <code>assets/app-init.js</code>. <em>Phase 4b (79 handlers onclick) reportée en P1 — trop risquée sans refactor progressif.</em></div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">82b18b6</span>
+      <div><strong>P0-5 — RLS safe_connectors corrigé</strong> — 4 policies granulaires : SELECT ouvert (guard modules), INSERT/UPDATE/DELETE admins uniquement. Log restreint aux admins. <em>Migration v28 appliquée et vérifiée en base — 6 policies actives.</em></div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">141de8e</span>
+      <div><strong>P1-1 — SRI sur tous les CDN</strong> — <code>integrity="sha384-…"</code> + <code>crossorigin="anonymous"</code> ajoutés sur 4 bibliothèques tierces (supabase-js, jsPDF, QRCode, Chart.js) dans les 12 fichiers HTML. Garde-fous : hook pre-commit bloquant + <code>scripts/check-sri.sh</code>.</div>
+    </div>
+    <div class="fix-entry">
+      <span class="fix-commit">61fdcda</span>
+      <div><strong>P1-2 — CORS restreint sur 12 Edge Functions</strong> — <code>"Access-Control-Allow-Origin": "*"</code> → <code>"https://crm.safe-digitalisation.fr"</code>. <code>stripe-webhook</code> non modifié (appelé par Stripe). Toutes les fonctions redéployées et actives. Bonus : import <code>serve</code> manquant corrigé dans <code>creaye-checkout</code>.</div>
+    </div>
+  </div>
+
+  <table class="action-table" style="margin-bottom:24px">
+    <thead>
+      <tr><th>#</th><th>Action</th><th>Fichier(s)</th><th>Effort</th><th>Statut</th><th>Référence</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>P0-1</td>
+        <td><strong>Créer <code>.gitignore</code></strong> — exclure <code>.env*</code>, <code>.DS_Store</code>, <code>.claude/</code>, scripts temporaires</td>
+        <td><code>.gitignore</code></td>
+        <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">OWASP A02, ANSSI R14</span></td>
+      </tr>
+      <tr>
+        <td>P0-2</td>
+        <td><strong>Corriger la typo <code>BREBO</code> → <code>BREVO</code></strong> dans les 5 Edge Functions email + configurer secret Supabase + redéployer</td>
+        <td><code>stripe-webhook</code>, <code>send-clause-email</code>, <code>send-password-reset</code>, <code>send-mandat-email</code>, <code>send-crm-email</code></td>
+        <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé + 5 fonctions déployées</span></td>
+        <td><span class="action-ref">Brevo API, NIS2 Art.21</span></td>
+      </tr>
+      <tr>
+        <td>P0-3</td>
+        <td><strong>Signature Stripe webhook obligatoire</strong> — suppression du fallback sans vérification + secret configuré</td>
+        <td><code>supabase/function/stripe-webhook/index.ts</code></td>
+        <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé + déployé</span></td>
+        <td><span class="action-ref">Stripe Webhook Security, OWASP A01</span></td>
+      </tr>
+      <tr>
+        <td>P0-4a</td>
+        <td><strong>Scripts inline externalisés</strong> — 3 blocs <code>&lt;script&gt;</code> déplacés vers <code>assets/app-init.js</code></td>
+        <td><code>index.html</code>, <code>assets/app-init.js</code></td>
+        <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">OWASP A03, CSP Level 3</span></td>
+      </tr>
+      <tr>
+        <td>P0-4b</td>
+        <td><strong>Supprimer <code>'unsafe-inline'</code> de la CSP</strong> — 79 handlers <code>onclick=</code> à migrer vers <code>addEventListener()</code> par batches</td>
+        <td><code>index.html</code> (79 éléments)</td>
+        <td class="effort">3-4 sessions</td>
+        <td><span class="badge-partial">⚠️ Reporté P1</span></td>
+        <td><span class="action-ref">OWASP A03, ANSSI R20</span></td>
+      </tr>
+      <tr>
+        <td>P0-5</td>
+        <td><strong>Correction RLS <code>safe_connectors</code></strong> — SELECT ouvert à tous, INSERT/UPDATE/DELETE restreints aux admins. Idem sur <code>safe_connectors_log</code>. Migration v28 appliquée.</td>
+        <td><code>supabase/-schema-v28.sql</code></td>
+        <td class="effort">20 min</td>
+        <td><span class="badge-ok">✅ Corrigé + en base</span></td>
+        <td><span class="action-ref">RGPD Art.25, ANSSI RLS</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>⚠️ P1 — Risques élevés (à traiter sous 30 jours)</h3>
+  <table class="action-table" style="margin-bottom:24px">
+    <thead>
+      <tr><th>#</th><th>Action</th><th>Fichier(s)</th><th>Effort</th><th>Statut</th><th>Référence</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>P1-1</td>
+        <td><strong>Ajouter SRI sur les CDN</strong> — <code>integrity="sha384-…"</code> + <code>crossorigin="anonymous"</code> sur 12 fichiers HTML. Hook pre-commit + <code>scripts/check-sri.sh</code></td>
+        <td><code>index.html</code>, 11 fichiers <code>work/</code></td>
+        <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">OWASP A06, ANSSI R22</span></td>
+      </tr>
+      <tr>
+        <td>P1-2</td>
+        <td><strong>Restreindre CORS des Edge Functions</strong> — <code>Access-Control-Allow-Origin: *</code> → <code>https://crm.safe-digitalisation.fr</code> sur 12 fonctions. <code>stripe-webhook</code> inchangé.</td>
+        <td>12 Edge Functions</td>
+        <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé + déployé</span></td>
+        <td><span class="action-ref">OWASP A07, ANSSI R23</span></td>
+      </tr>
+      <tr>
+        <td>P1-3</td>
+        <td><strong>Consolider les dossiers Edge Functions</strong> — <code>supabase/function/</code> (singulier, non-standard) fusionné dans <code>supabase/functions/</code>. <code>admin-create-user</code> extrait du dossier imbriqué <code>creaye-checkout/</code>. 2 doublons supprimés.</td>
+        <td><code>supabase/functions/</code> (14 fonctions)</td>
+        <td class="effort">2 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">Best practices Supabase</span></td>
+      </tr>
+      <tr>
+        <td>P1-4</td>
+        <td><strong>Renommer <code>creaye-checkout</code> → <code>create-checkout</code></strong> — dossier local renommé, <code>import { serve }</code> manquant corrigé, redéployé en v27. Découverte : le frontend appelait déjà <code>create-checkout</code> (la correction CORS P1-2 n'avait pas atteint la bonne fonction). Ghost <code>creaye-checkout</code> v1 laissé inerte.</td>
+        <td><code>supabase/functions/create-checkout/</code></td>
+        <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé + déployé v27</span></td>
+        <td><span class="action-ref">Maintenabilité</span></td>
+      </tr>
+      <tr>
+        <td>P1-5</td>
+        <td><strong>CI/CD GitHub Actions</strong> — <code>security.yml</code> : CORS wildcard, typo BREBO, SRI CDN, secrets .env (chaque push). <code>deno-check.yml</code> : lint + type-check sur changements <code>supabase/functions/</code>. E2E Playwright reporté P2 (nécessite instance Supabase de test dédiée).</td>
+        <td><code>.github/workflows/security.yml</code>, <code>deno-check.yml</code></td>
+        <td class="effort">1-2 j</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">ANSSI, DevSecOps</span></td>
+      </tr>
+      <tr>
+        <td>P1-6</td>
+        <td><strong>README réécrit</strong> — état réel v28, variables d'env (Supabase, Stripe, Brevo, IA), procédure d'installation, tableau des 14 Edge Functions, migrations SQL, CI/CD, sécurité, structure projet. Ancien README (304 lignes d'historique) remplacé par documentation opérationnelle.</td>
+        <td><code>README.md</code></td>
+        <td class="effort">2 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">Maintenabilité</span></td>
+      </tr>
+      <tr>
+        <td>P1-7</td>
+        <td><strong>Couverture escapeHtml complétée — 3 XSS corrigées</strong><br>
+          Audit de 72 occurrences <code>innerHTML</code> dans <code>app.js</code> + 17 fichiers JS. Vulnérabilités confirmées et corrigées :<br>
+          (A) <code>activites.join(', ')</code> → <code>.map(a =&gt; escapeHtml(a)).join(', ')</code> ;<br>
+          (C) <code>_buildSecteurCard()</code> : <code>geo</code> (region+dept+secteur) injecté brut → séparation <code>geoRaw</code> + <code>escapeHtml</code>.<br>
+          (C) Éliminée structurellement : <code>region</code> et <code>departement</code> deviennent lecture seule (auto-remplis via <code>geo.api.gouv.fr</code>).<br>
+          Bonus UX : formulaire profil migré vers code postal + ville (select) identique à la fiche contact. Migration SQL : <code>-schema-v29.sql</code> (<code>ADD COLUMN code_postal, ville</code> sur <code>profiles</code>).
+        </td>
+        <td><code>assets/app.js</code>, <code>index.html</code>, <code>supabase/-schema-v29.sql</code></td>
+        <td class="effort">3 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">OWASP A03 XSS</span></td>
+      </tr>
+      <tr>
+        <td>P1-8</td>
+        <td><strong>Plan de réponse aux incidents — déclaration violation CNIL</strong> — bouton 🚨 dans le panneau RGPD : modal de saisie (description, date, catégories, nb personnes) → email alerte admin <code>🚨🚨🚨🚨VIOLATION DE DONNÉES🚨🚨🚨🚨</code> via Brevo + entrée journal RGPD (<code>incident_nis2_declare</code>, criticité Critique) + lien <code>notifications.cnil.fr</code> dans le corps du mail</td>
+        <td><code>send-crm-email</code> v16 · <code>assets/app.js</code> · <code>index.html</code></td>
+        <td class="effort">3 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">NIS2 Art.21, RGPD Art.33</span></td>
+      </tr>
+      <tr>
+        <td>P1-9</td>
+        <td><strong>Monitoring erreurs JS (équivalent Sentry, sans dépendance externe)</strong> — <code>initErrorMonitoring()</code> dans <code>bindEvents()</code> : capture <code>window.onerror</code> + <code>unhandledrejection</code>, filtre les bruits (extensions, ResizeObserver…), dédup 30 s, insère dans <code>audit_logs</code> (action <code>js_error</code>, criticité Critique) via Supabase. Label <code>js_error</code> ajouté au journal RGPD.</td>
+        <td><code>assets/app.js</code> · <code>assets/rgpd/rgpd-journal.js</code></td>
+        <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">NIS2 Art.21, Résilience</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>🟡 P2 — Améliorations (à planifier sur 90 jours)</h3>
+  <table class="action-table" style="margin-bottom:24px">
+    <thead>
+      <tr><th>#</th><th>Action</th><th>Fichiers</th><th>Effort</th><th>Statut</th><th>Référence</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>P2-1</td>
+        <td><strong>Épingler les versions des imports Deno</strong> — <code>stripe@14</code> → <code>stripe@14.5.0</code>, <code>supabase-js@2</code> → <code>supabase-js@2.49.4</code> dans les 13 Edge Functions + <code>import_map.json</code> centralisé</td>
+        <td><code>supabase/functions/</code> (13 fichiers) · <code>import_map.json</code></td>
+        <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">OWASP A06, Supply Chain</span></td>
+      </tr>
+      <tr>
+        <td>P2-2</td>
+        <td><strong>Extraction modulaire de <code>app.js</code></strong> — Phase 1 : 2 modules extraits et branchés dans <code>index.html</code> : <code>assets/tasks/tasks.js</code> (9 fonctions, ~150 lignes) et <code>assets/totp/totp.js</code> (8 fonctions, ~330 lignes). <code>app.js</code> réduit de 5 777 → 5 298 lignes (−479 lignes, −8 %). Modules admin, profile et messaging restent dans <code>app.js</code> (travail continu).</td>
+        <td><code>assets/tasks/tasks.js</code><br><code>assets/totp/totp.js</code><br><code>assets/app.js</code>, <code>index.html</code>, <code>build.mjs</code></td>
+        <td class="effort">1 j (phase 1)</td>
+        <td><span class="badge-partial">⚠️ Partiel</span></td>
+        <td><span class="action-ref">Maintenabilité, OWASP A04</span></td>
+      </tr>
+      <tr>
+        <td>P2-3</td>
+        <td><strong>Droits RGPD dans l'interface</strong> — Modale "Mes données" enrichie : stats dynamiques (nb contacts/contrats/tâches), bouton <em>⬇ Exporter mes données (CSV)</em> (Art.20 portabilité — profil + contacts + contrats + tâches, journalisé dans <code>audit_logs</code>), bouton <em>✉ Demander l'effacement</em> (mailto structuré Art.17). Vue complète : prénom éditable, e-mail, rôle, n° mandat, ID.</td>
+        <td><code>assets/app.js</code>, <code>index.html</code></td>
+        <td class="effort">4 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">RGPD Art.15-20</span></td>
+      </tr>
+      <tr>
+        <td>P2-4</td>
+        <td><strong>Minifier et bundler les assets</strong> — <code>package.json</code> + <code>build.mjs</code> (esbuild) : minification des 30 fichiers JS + 2 CSS vers <code>dist/</code>. GitHub Actions <code>.github/workflows/deploy.yml</code> : build automatique sur push main → déploiement Pages. <strong>Action requise :</strong> changer la source GitHub Pages de "Branch: main" à "GitHub Actions" dans les settings du dépôt.</td>
+        <td><code>package.json</code>, <code>build.mjs</code>, <code>.github/workflows/deploy.yml</code></td>
+        <td class="effort">3 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">Core Web Vitals, WCAG 2.1</span></td>
+      </tr>
+      <tr>
+        <td>P2-5</td>
+        <td><strong>Enforcer TOTP côté serveur</strong> — claim <code>aal2</code> vérifié dans les 3 Edge Functions sensibles : <code>admin-create-user</code>, <code>delete-user</code>, <code>cancel-subscription</code>. Helper <code>getJwtAal()</code> décode le JWT localement après validation Supabase. Retourne <code>403 mfa_required</code> si AAL1.</td>
+        <td><code>supabase/functions/admin-create-user/index.ts</code><br><code>supabase/functions/delete-user/index.ts</code><br><code>supabase/functions/cancel-subscription/index.ts</code></td>
+        <td class="effort">2 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">ANSSI MFA, Supabase AAL</span></td>
+      </tr>
+      <tr>
+        <td>P2-6</td>
+        <td><strong>Ajouter ARIA sur les modales</strong> — <code>initModalAria()</code> via <code>MutationObserver</code> sur les 23 modales : <code>role="dialog"</code>, <code>aria-modal="true"</code>, <code>aria-labelledby</code> auto sur le premier titre h2/h3/h4, focus trap Tab/Shift-Tab, restauration du focus à la fermeture. <code>violation-modal</code> migré vers classe <code>.show</code>.</td>
+        <td><code>assets/app.js</code>, <code>index.html</code></td>
+        <td class="effort">3 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">WCAG 2.1 AA — 4.1.2</span></td>
+      </tr>
+      <tr>
+        <td>P2-7</td>
+        <td><strong>Externaliser les templates Brevo en variables d'env</strong> — 6 IDs externalisés sur 3 fonctions : <code>BREVO_TEMPLATE_RESILIATION</code> (3), <code>BREVO_TEMPLATE_BORDEREAU</code> (4), <code>BREVO_TEMPLATE_COMMISSION</code> (0 à définir), <code>BREVO_TEMPLATE_MANDAT</code> (5), <code>BREVO_TEMPLATE_CLAUSE_COLLAB</code> (7), <code>BREVO_TEMPLATE_CLAUSE_PUBLIC</code> (6). Fallbacks numériques garantissent la rétrocompatibilité.</td>
+        <td><code>send-crm-email</code> v17 · <code>send-clause-email</code> v10 · <code>send-mandat-email</code> v10</td>
+        <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">Maintenabilité</span></td>
+      </tr>
+      <tr>
+        <td>P2-8</td>
+        <td><strong>Documenter les Edge Functions</strong> — <code>supabase/functions/README.md</code> créé : 14 fonctions documentées (méthode, auth, CORS, body, réponse, events Stripe gérés, tableau des secrets et des templates Brevo)</td>
+        <td><code>supabase/functions/README.md</code></td>
+        <td class="effort">2 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">Maintenabilité, NIS2</span></td>
+      </tr>
+      <tr>
+        <td>P2-9</td>
+        <td><strong>Adopter Supabase CLI pour les migrations</strong> — créé <code>supabase/supabase/config.toml</code> (projet lié, MFA TOTP activé) + <code>migrations/20240601000000_baseline.sql</code> (v1→v29 consolidées, 2 393 lignes) + <code>CONTRIBUTING.md</code> documentant le workflow <code>supabase migration new</code> / <code>db push</code>.</td>
+        <td><code>supabase/supabase/config.toml</code><br><code>supabase/supabase/migrations/</code><br><code>supabase/supabase/CONTRIBUTING.md</code></td>
+        <td class="effort">2 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">Best practices Supabase</span></td>
+      </tr>
+      <tr>
+        <td>P2-10</td>
+        <td><strong>TVA en variable d'environnement</strong> — <code>120</code> → <code>Deno.env.get("TVA_MULTIPLIER") ?? 120</code> dans <code>create-checkout</code> (3 occurrences). Déployer <code>supabase secrets set TVA_MULTIPLIER=120</code> pour rendre le taux modifiable sans redéploiement.</td>
+        <td><code>create-checkout</code> v28</td>
+        <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">Légal, Maintenabilité</span></td>
+      </tr>
+      <tr>
+        <td>P2-11</td>
+        <td><strong>Consolider les fichiers PDF</strong> — <code>assets/contract-pdf.js</code> (21 KB, non référencé) supprimé. <code>assets/contracts/contracts-pdf.js</code> (26 KB, chargé dans <code>index.html</code>) est la version active et contient 2 fonctions supplémentaires (<code>generateContractPDF</code>, <code>sendOrderLink</code>).</td>
+        <td><code>assets/contract-pdf.js</code> supprimé</td>
+        <td class="effort">30 min</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
+        <td><span class="action-ref">Maintenabilité</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>💡 P3 — Optimisations (backlog)</h3>
+  <table class="action-table">
+    <thead>
+      <tr><th>#</th><th>Action</th><th>Effort</th><th>Référence</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>P3-1</td>
+        <td><strong>Ajouter un mode clair</strong> — implémenter <code>@media (prefers-color-scheme: light)</code> ou un toggle manuel</td>
+        <td class="effort">1 j</td>
+        <td><span class="action-ref">WCAG 2.1 — 1.4.3</span></td>
+      </tr>
+      <tr>
+        <td>P3-2</td>
+        <td><strong>Lazy loading des modules</strong> — charger <code>jsPDF</code> et <code>QRCode</code> uniquement quand nécessaire (génération de PDF/QR)</td>
+        <td class="effort">2 h</td>
+        <td><span class="action-ref">Core Web Vitals</span></td>
+      </tr>
+      <tr>
+        <td>P3-3</td>
+        <td><strong>Activer GitHub secret scanning</strong> — configurer le push protection Gitleaks ou GitHub Advanced Security pour détecter les credentials avant commit</td>
+        <td class="effort">1 h</td>
+        <td><span class="action-ref">OWASP A02, ANSSI R14</span></td>
+      </tr>
+      <tr>
+        <td>P3-4</td>
+        <td><strong>Ajouter retry sur les appels Brevo</strong> — implémenter un mécanisme de 3 tentatives avec back-off exponentiel sur les emails transactionnels</td>
+        <td class="effort">2 h</td>
+        <td><span class="action-ref">Résilience, NIS2</span></td>
+      </tr>
+      <tr>
+        <td>P3-5</td>
+        <td><strong>AIPD — Analyse d'Impact sur la Protection des Données</strong> — réaliser une AIPD formelle pour le traitement des données prospects/clients</td>
+        <td class="effort">2 j</td>
+        <td><span class="action-ref">RGPD Art.35, CNIL</span></td>
+      </tr>
+      <tr>
+        <td>P3-6</td>
+        <td><strong>Documenter le plan de continuité</strong> — procédures de backup/restore Supabase, RTO/RPO cibles, contacts d'urgence</td>
+        <td class="effort">4 h</td>
+        <td><span class="action-ref">NIS2 Art.21, ISO 22301</span></td>
+      </tr>
+      <tr>
+        <td>P3-7</td>
+        <td><strong>Intégrer Dependabot</strong> — surveillance automatique des CVE sur les bibliothèques CDN et les dépendances Deno</td>
+        <td class="effort">1 h</td>
+        <td><span class="action-ref">OWASP A06</span></td>
+      </tr>
+      <tr>
+        <td>P3-8</td>
+        <td><strong>Rôle intermédiaire "Manager"</strong> — ajouter un rôle permettant la lecture globale sans les droits d'administration (création d'utilisateurs, configuration)</td>
+        <td class="effort">1 j</td>
+        <td><span class="action-ref">RBAC, Principe de moindre privilège</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     CHECKLIST DE CONFORMITÉ
+════════════════════════════════════════════════════════ -->
+<section id="checklist">
+  <h2>✅ Checklist de conformité</h2>
+  <div class="check-grid">
+    <div class="check-item"><span class="check-icon">✅</span><div class="check-text"><strong>RGPD — Consentement documenté (Art.7)</strong><span>Signatures électroniques tracées en base avec horodatage</span></div></div>
+    <div class="check-item"><span class="check-icon">✅</span><div class="check-text"><strong>RGPD — Registre des traitements (Art.30)</strong><span>Présent dans <code>docs/legal/REGISTRE_TRAITEMENTS.md</code></span></div></div>
+    <div class="check-item"><span class="check-icon">✅</span><div class="check-text"><strong>RGPD — Conservation limitée</strong><span>Trigger de purge automatique, 5 ans aligné sur Art. L123-22</span></div></div>
+    <div class="check-item"><span class="check-icon">❌</span><div class="check-text"><strong>RGPD — Droits des personnes (Art.15-20)</strong><span>Pas d'interface d'export/effacement pour les contacts</span></div></div>
+    <div class="check-item"><span class="check-icon">❌</span><div class="check-text"><strong>RGPD — AIPD (Art.35)</strong><span>Analyse d'impact non réalisée</span></div></div>
+    <div class="check-item"><span class="check-icon">⚠️</span><div class="check-text"><strong>RGPD — Notification incident (Art.33)</strong><span>Pas de procédure formalisée pour notification CNIL 72h</span></div></div>
+    <div class="check-item"><span class="check-icon">✅</span><div class="check-text"><strong>ANSSI — Authentification forte</strong><span>TOTP/MFA implémenté et challengé</span></div></div>
+    <div class="check-item"><span class="check-icon">✅</span><div class="check-text"><strong>ANSSI — Journalisation</strong><span>audit_logs, totp_audit, audit_access_log</span></div></div>
+    <div class="check-item"><span class="check-icon">❌</span><div class="check-text"><strong>ANSSI — CSP robuste</strong><span>'unsafe-inline' annule la protection XSS</span></div></div>
+    <div class="check-item"><span class="check-icon">❌</span><div class="check-text"><strong>ANSSI — SRI sur CDN</strong><span>Aucun hash d'intégrité sur les bibliothèques tierces</span></div></div>
+    <div class="check-item"><span class="check-icon">✅</span><div class="check-text"><strong>OWASP A01 — Broken Access Control</strong><span>RLS Supabase sur toutes les tables critiques</span></div></div>
+    <div class="check-item"><span class="check-icon">⚠️</span><div class="check-text"><strong>OWASP A02 — Cryptographic Failures</strong><span>Clé publiée sans .gitignore — risque d'historique</span></div></div>
+    <div class="check-item"><span class="check-icon">❌</span><div class="check-text"><strong>OWASP A03 — Injection (XSS)</strong><span>CSP unsafe-inline, innerHTML sans couverture exhaustive</span></div></div>
+    <div class="check-item"><span class="check-icon">✅</span><div class="check-text"><strong>OWASP A07 — Auth Failures</strong><span>Rate limiting, TOTP, sessions Supabase JWT</span></div></div>
+    <div class="check-item"><span class="check-icon">❌</span><div class="check-text"><strong>NIS2 — Plan gestion incidents</strong><span>Non documenté</span></div></div>
+    <div class="check-item"><span class="check-icon">✅</span><div class="check-text"><strong>NIS2 — Mesures de sécurité (Art.21)</strong><span>MFA, journalisation, chiffrement transit (HTTPS)</span></div></div>
+    <div class="check-item"><span class="check-icon">⚠️</span><div class="check-text"><strong>WCAG 2.1 AA — Contraste</strong><span>Thème sombre uniquement — contraste non audité</span></div></div>
+    <div class="check-item"><span class="check-icon">❌</span><div class="check-text"><strong>WCAG 2.1 AA — Clavier (2.1.1)</strong><span>Navigation clavier non garantie sur les composants dynamiques</span></div></div>
+    <div class="check-item"><span class="check-icon">⚠️</span><div class="check-text"><strong>Stripe — Sécurité Webhook</strong><span>Vérification signature conditionnelle (P0 → corriger)</span></div></div>
+    <div class="check-item"><span class="check-icon">✅</span><div class="check-text"><strong>Supabase — RLS activé</strong><span>Toutes les tables critiques protégées</span></div></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     MATRICE DE RISQUES
+════════════════════════════════════════════════════════ -->
+<section id="matrice">
+  <h2>🎯 Matrice des risques</h2>
+  <p style="margin-bottom:16px">Positionnement des risques identifiés selon leur <strong>probabilité d'exploitation</strong> et leur <strong>impact potentiel</strong>.</p>
+
+  <div style="overflow-x:auto">
+  <div class="risk-matrix" style="min-width:500px">
+    <!-- En-têtes colonnes (probabilité) -->
+    <div></div>
+    <div class="rm-label">Faible<br>proba.</div>
+    <div class="rm-label">Modérée<br>proba.</div>
+    <div class="rm-label">Haute<br>proba.</div>
+    <div class="rm-label">Très haute<br>proba.</div>
+    <!-- Ligne 1 — Impact Critique -->
+    <div class="rm-label axis">Impact<br>Critique</div>
+    <div class="rm-cell modere"><span class="rm-item">Panne Supabase</span></div>
+    <div class="rm-cell eleve"><span class="rm-item">Supply chain CDN</span><span class="rm-item">Webhook spoofing</span></div>
+    <div class="rm-cell critique"><span class="rm-item">✅ .gitignore créé</span><span class="rm-item">✅ BREBO corrigé (5 fonctions)</span></div>
+    <div class="rm-cell critique"><span class="rm-item">CSP unsafe-inline</span></div>
+    <!-- Ligne 2 — Impact Élevé -->
+    <div class="rm-label axis">Impact<br>Élevé</div>
+    <div class="rm-cell faible"><span class="rm-item">AIPD manquante</span></div>
+    <div class="rm-cell modere"><span class="rm-item">CORS *</span><span class="rm-item">TOTP client-side only</span></div>
+    <div class="rm-cell eleve"><span class="rm-item">safe_connectors RLS</span><span class="rm-item">Pas SRI CDN</span></div>
+    <div class="rm-cell eleve"><span class="rm-item">App.js 244KB</span><span class="rm-item">Pas de CI/CD</span></div>
+    <!-- Ligne 3 — Impact Modéré -->
+    <div class="rm-label axis">Impact<br>Modéré</div>
+    <div class="rm-cell faible"><span class="rm-item">TVA hardcodée</span></div>
+    <div class="rm-cell faible"><span class="rm-item">Pas de monitoring</span></div>
+    <div class="rm-cell modere"><span class="rm-item">Imports non épinglés</span><span class="rm-item">README obsolète</span></div>
+    <div class="rm-cell modere"><span class="rm-item">BREVO templates ID</span><span class="rm-item">creaye-checkout typo</span></div>
+    <!-- Ligne 4 — Impact Faible -->
+    <div class="rm-label axis">Impact<br>Faible</div>
+    <div class="rm-cell faible"><span class="rm-item">Pas d'AIPD</span></div>
+    <div class="rm-cell faible"><span class="rm-item">Pas mode clair</span></div>
+    <div class="rm-cell faible"><span class="rm-item">ARIA manquant</span></div>
+    <div class="rm-cell faible"><span class="rm-item">PDF doublon</span></div>
+  </div>
+  </div>
+
+  <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:6px"><div style="width:16px;height:16px;background:#fdecea;border-radius:3px;border:1px solid #f5c6c5"></div><span style="font-size:12px">Critique — intervention immédiate</span></div>
+    <div style="display:flex;align-items:center;gap:6px"><div style="width:16px;height:16px;background:#fff3e0;border-radius:3px;border:1px solid #ffe0b2"></div><span style="font-size:12px">Élevé — traitement sous 30 jours</span></div>
+    <div style="display:flex;align-items:center;gap:6px"><div style="width:16px;height:16px;background:#fffde7;border-radius:3px;border:1px solid #fff176"></div><span style="font-size:12px">Modéré — à planifier</span></div>
+    <div style="display:flex;align-items:center;gap:6px"><div style="width:16px;height:16px;background:#e8f5e9;border-radius:3px;border:1px solid #a5d6a7"></div><span style="font-size:12px">Faible — optimisation</span></div>
+  </div>
+</section>
+
+<!-- RÉFÉRENCES -->
+<section>
+  <h2>📚 Références réglementaires et techniques</h2>
+  <div class="two-col">
+    <div>
+      <h3>Réglementaires</h3>
+      <ul>
+        <li><strong>RGPD</strong> — Règlement (UE) 2016/679 — Articles 5, 7, 15-20, 25, 30, 32, 33, 35</li>
+        <li><strong>CNIL</strong> — Guide de la sécurité des données personnelles (2024)</li>
+        <li><strong>NIS2</strong> — Directive (UE) 2022/2555 — Article 21 (mesures de sécurité)</li>
+        <li><strong>ANSSI</strong> — Guide d'hygiène informatique (42 règles) — R14, R20, R22, R23, R29</li>
+        <li><strong>ANSSI</strong> — Recommandations sur l'authentification multifacteur (PA-022)</li>
+        <li><strong>Code de commerce</strong> — Art. L123-22 (conservation 5 ans)</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Techniques</h3>
+      <ul>
+        <li><strong>OWASP Top 10</strong> (2021) — A01 à A10</li>
+        <li><strong>OWASP ASVS</strong> — Application Security Verification Standard v4.0</li>
+        <li><strong>WCAG 2.1</strong> — Web Content Accessibility Guidelines — Niveau AA</li>
+        <li><strong>CSP Level 3</strong> — W3C Content Security Policy</li>
+        <li><strong>Stripe Security</strong> — Webhook signature verification best practices</li>
+        <li><strong>Supabase</strong> — RLS documentation, Auth AAL levels</li>
+        <li><strong>Brevo API v3</strong> — Transactional Email documentation</li>
+        <li><strong>Deno Security</strong> — Lock files, import maps</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p><strong>Rapport d'audit S@FE CRM — Classification : CONFIDENTIEL</strong></p>
+  <p>Généré le 22 juin 2026 par S@FE AUDITOR AI (Claude Sonnet 4.6) — Analyse statique du code source en mode lecture seule</p>
+  <p style="margin-top:8px;font-size:11px">Ce rapport est destiné exclusivement à l'équipe technique et à la direction de S@FE Digitalisation.<br>
+  Les findings P0 doivent être corrigés avant toute extension de la base utilisateurs.</p>
+</footer>
+
+</body>
+</html>
