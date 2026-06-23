@@ -740,7 +740,6 @@ function openProfileModal() {
   setAvatar($('#profile-avatar-preview'), state.profile?.photo_url, state.profile?.prenom || state.user?.email);
   $('#profile-modal').classList.add('show');
 }
-}
 
 function closeProfileModal() {
   $('#profile-modal').classList.remove('show');
