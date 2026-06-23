@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S@FE CRM — Rapport d'Audit Sécurité v2 — 2026-06-23</title>
+<style>
+:root {
+  --bg: #0f172a; --bg2: #1e293b; --bg3: #273549;
+  --gold: #f59e0b; --blue: #3b82f6; --green: #22c55e;
+  --red: #ef4444; --orange: #f97316; --yellow: #eab308;
+  --text: #e2e8f0; --muted: #94a3b8; --border: #334155;
+  --r0: #ef4444; --r1: #f97316; --r2: #eab308; --r3: #22c55e;
+  --ff: 'Segoe UI', system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--ff); font-size: 14px; line-height: 1.6; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px; }
+
+/* ── Header ── */
+.header { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); border-bottom: 2px solid var(--gold); padding: 40px 32px; margin-bottom: 32px; border-radius: 12px; }
+.header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.logo { font-size: 2rem; font-weight: 900; color: var(--gold); letter-spacing: -1px; }
+.logo span { color: #fff; }
+.badge-audit { background: rgba(245,158,11,.15); border: 1px solid var(--gold); color: var(--gold); padding: 4px 12px; border-radius: 20px; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+.header h1 { font-size: 1.5rem; font-weight: 700; color: #fff; margin-top: 16px; }
+.header-meta { display: flex; gap: 24px; margin-top: 12px; flex-wrap: wrap; }
+.header-meta span { color: var(--muted); font-size: .82rem; }
+.header-meta strong { color: var(--text); }
+
+/* ── Score ── */
+.score-block { display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: center; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 28px 32px; margin-bottom: 32px; }
+.score-circle { width: 120px; height: 120px; border-radius: 50%; border: 6px solid var(--blue); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+.score-num { font-size: 2.5rem; font-weight: 900; color: var(--blue); line-height: 1; }
+.score-denom { font-size: .85rem; color: var(--muted); }
+.score-breakdown { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.score-item { background: var(--bg3); border-radius: 8px; padding: 10px 14px; }
+.score-item-label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.score-item-val { font-size: 1rem; font-weight: 700; color: var(--text); margin-top: 2px; }
+.score-item-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 6px; }
+.score-item-fill { height: 100%; border-radius: 2px; }
+
+/* ── Sections ── */
+section { margin-bottom: 36px; }
+.section-title { font-size: 1.1rem; font-weight: 700; color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.section-title .num { background: var(--gold); color: #000; font-size: .72rem; font-weight: 800; padding: 2px 7px; border-radius: 10px; }
+
+/* ── Cards trouvailles ── */
+.finding { background: var(--bg2); border: 1px solid var(--border); border-left: 4px solid; border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; }
+.finding.p0 { border-left-color: var(--r0); }
+.finding.p1 { border-left-color: var(--r1); }
+.finding.p2 { border-left-color: var(--r2); }
+.finding.p3 { border-left-color: var(--r3); }
+.finding.fixed { border-left-color: #475569; opacity: .75; }
+.finding-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+.prio-badge { font-size: .68rem; font-weight: 800; padding: 3px 8px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+.prio-badge.p0 { background: rgba(239,68,68,.2); color: #fca5a5; }
+.prio-badge.p1 { background: rgba(249,115,22,.2); color: #fdba74; }
+.prio-badge.p2 { background: rgba(234,179,8,.2); color: #fde68a; }
+.prio-badge.p3 { background: rgba(34,197,94,.15); color: #86efac; }
+.prio-badge.fixed { background: rgba(71,85,105,.3); color: #94a3b8; }
+.finding-title { font-weight: 700; font-size: .95rem; color: #fff; }
+.finding-id { font-size: .7rem; color: var(--muted); margin-left: auto; white-space: nowrap; }
+.finding-body { font-size: .84rem; color: var(--muted); }
+.finding-body p { margin-bottom: 6px; }
+.finding-body strong { color: var(--text); }
+.tag { display: inline-block; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: .7rem; color: var(--muted); margin: 2px; }
+.tag.red { border-color: var(--r0); color: #fca5a5; }
+.tag.orange { border-color: var(--r1); color: #fdba74; }
+.tag.green { border-color: var(--green); color: #86efac; }
+.fact { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; padding: 2px 8px; border-radius: 10px; margin-top: 6px; }
+.fact.verified { background: rgba(34,197,94,.1); color: #86efac; border: 1px solid rgba(34,197,94,.3); }
+.fact.hypo { background: rgba(234,179,8,.1); color: #fde68a; border: 1px solid rgba(234,179,8,.3); }
+
+/* ── Tableau ── */
+table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+th { background: var(--bg3); color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+td { padding: 9px 12px; border-bottom: 1px solid rgba(51,65,85,.5); color: var(--text); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.02); }
+
+/* ── Strengths ── */
+.strengths { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.strength { background: var(--bg2); border: 1px solid rgba(34,197,94,.2); border-radius: 8px; padding: 14px 16px; display: flex; gap: 10px; align-items: flex-start; }
+.strength-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+.strength-text strong { display: block; font-size: .88rem; color: #fff; }
+.strength-text span { font-size: .78rem; color: var(--muted); }
+
+/* ── Matrix ── */
+.matrix { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.matrix-col { background: var(--bg2); border-radius: 10px; padding: 14px; border-top: 3px solid; }
+.matrix-col.p0 { border-top-color: var(--r0); }
+.matrix-col.p1 { border-top-color: var(--r1); }
+.matrix-col.p2 { border-top-color: var(--r2); }
+.matrix-col.p3 { border-top-color: var(--r3); }
+.matrix-col h3 { font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+.matrix-col.p0 h3 { color: #fca5a5; }
+.matrix-col.p1 h3 { color: #fdba74; }
+.matrix-col.p2 h3 { color: #fde68a; }
+.matrix-col.p3 h3 { color: #86efac; }
+.matrix-item { font-size: .75rem; color: var(--muted); padding: 5px 8px; background: var(--bg3); border-radius: 5px; margin-bottom: 6px; }
+.matrix-item strong { display: block; color: var(--text); font-size: .78rem; }
+
+/* ── Timeline ── */
+.timeline { display: flex; flex-direction: column; gap: 10px; }
+.tl-item { display: grid; grid-template-columns: 100px 1fr; gap: 16px; align-items: start; }
+.tl-date { font-size: .75rem; font-weight: 700; color: var(--muted); padding-top: 3px; }
+.tl-content { background: var(--bg2); border-radius: 8px; padding: 10px 14px; border-left: 3px solid var(--border); }
+.tl-content strong { color: #fff; display: block; font-size: .85rem; }
+.tl-content span { font-size: .78rem; color: var(--muted); }
+
+/* ── Dynamic banner ── */
+.dynamic-banner { background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: .82rem; color: #93c5fd; display: flex; gap: 10px; align-items: flex-start; }
+
+/* ── Info boxes ── */
+.info-box { background: var(--bg2); border-radius: 10px; padding: 16px 20px; margin-bottom: 16px; }
+.info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.info-item label { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); display: block; }
+.info-item span { font-size: .88rem; color: var(--text); }
+
+/* ── Print ── */
+@media print { body { background: #fff; color: #000; } .header { background: #f8fafc !important; border: 1px solid #e2e8f0; } }
+@media (max-width: 700px) { .matrix { grid-template-columns: 1fr 1fr; } .score-block { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     EN-TÊTE
+════════════════════════════════════════════════════════════════════ -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="logo">S<span>@</span>FE <span style="color:var(--muted);font-weight:400;font-size:1.2rem">CRM</span></div>
+      <div class="badge-audit" style="margin-top:8px;display:inline-block">Rapport d'Audit Sécurité — Version 2</div>
+    </div>
+  </div>
+  <h1>Audit de Sécurité Complet — Niveau 2 (Statique + Dynamique)</h1>
+  <div class="header-meta">
+    <span><strong>Date :</strong> 23 juin 2026</span>
+    <span><strong>Auditeur :</strong> S@FE FIX AI (Claude Sonnet 4.6)</span>
+    <span><strong>Projet Supabase :</strong> qdjmzietysukediqkebg (eu-central-1)</span>
+    <span><strong>Branche :</strong> main (post-merge audit/fix-2026-06-23-p1)</span>
+    <span><strong>Périmètre :</strong> Frontend · Edge Functions · Supabase DB · CI/CD · RGPD</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SCORE GLOBAL
+════════════════════════════════════════════════════════════════════ -->
+<div class="score-block">
+  <div class="score-circle">
+    <div class="score-num">75</div>
+    <div class="score-denom">/100</div>
+  </div>
+  <div>
+    <div style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:4px">Score global : <span style="color:var(--yellow)">Bon — Améliorations requises</span></div>
+    <div style="font-size:.8rem;color:var(--muted);margin-bottom:14px">Score précédent (avant corrections P0/P1/P2) : ~48/100 — Progression de +27 points</div>
+    <div class="score-breakdown">
+      <div class="score-item">
+        <div class="score-item-label">Sécurité des accès</div>
+        <div class="score-item-val">68 / 100 <span style="font-size:.7rem;color:var(--muted)">×25%</span></div>
+        <div class="score-item-bar"><div class="score-item-fill" style="width:68%;background:var(--yellow)"></div></div>
+      </div>
+      <div class="score-item">
+        <div class="score-item-label">Sécurité du code</div>
+        <div class="score-item-val">75 / 100 <span style="font-size:.7rem;color:var(--muted)">×15%</span></div>
+        <div class="score-item-bar"><div class="score-item-fill" style="width:75%;background:var(--yellow)"></div></div>
+      </div>
+      <div class="score-item">
+        <div class="score-item-label">Infrastructure CI/CD</div>
+        <div class="score-item-val">72 / 100 <span style="font-size:.7rem;color:var(--muted)">×10%</span></div>
+        <div class="score-item-bar"><div class="score-item-fill" style="width:72%;background:var(--yellow)"></div></div>
+      </div>
+      <div class="score-item">
+        <div class="score-item-label">Conformité RGPD / NIS2</div>
+        <div class="score-item-val">87 / 100 <span style="font-size:.7rem;color:var(--muted)">×20%</span></div>
+        <div class="score-item-bar"><div class="score-item-fill" style="width:87%;background:var(--green)"></div></div>
+      </div>
+      <div class="score-item">
+        <div class="score-item-label">Architecture</div>
+        <div class="score-item-val">76 / 100 <span style="font-size:.7rem;color:var(--muted)">×15%</span></div>
+        <div class="score-item-bar"><div class="score-item-fill" style="width:76%;background:var(--yellow)"></div></div>
+      </div>
+      <div class="score-item">
+        <div class="score-item-label">UX & Accessibilité</div>
+        <div class="score-item-val">82 / 100 <span style="font-size:.7rem;color:var(--muted)">×10%</span></div>
+        <div class="score-item-bar"><div class="score-item-fill" style="width:82%;background:var(--green)"></div></div>
+      </div>
+      <div class="score-item">
+        <div class="score-item-label">Performance DB</div>
+        <div class="score-item-val">58 / 100 <span style="font-size:.7rem;color:var(--muted)">×5%</span></div>
+        <div class="score-item-bar"><div class="score-item-fill" style="width:58%;background:var(--orange)"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MÉTHODOLOGIE
+════════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="section-title"><span class="num">01</span> Méthodologie & Périmètre</div>
+  <div class="dynamic-banner">
+    🔬 <div>Audit <strong>Niveau 2 — Dynamique contrôlé</strong> : analyse statique du code source + exécution de requêtes réelles sur la base de données Supabase via MCP (RLS, advisors sécurité, advisors performance, logs Edge Functions). Les conclusions sont classées <strong>✔️ Fait vérifié</strong> ou <strong>⚠️ Hypothèse</strong>.</div>
+  </div>
+  <div class="info-grid">
+    <div class="info-item"><label>Type d'audit</label><span>Statique (Niveau 1) + Dynamique contrôlé (Niveau 2)</span></div>
+    <div class="info-item"><label>Outils</label><span>Supabase MCP · Stripe MCP · grep · Python3 · curl API GitHub</span></div>
+    <div class="info-item"><label>Tables analysées</label><span>57 tables public (RLS + politiques)</span></div>
+    <div class="info-item"><label>Edge Functions</label><span>18 déployées (14 documentées + 4 orphelines)</span></div>
+    <div class="info-item"><label>Fichiers JS analysés</label><span>app.js (5 298 l.) + 9 modules</span></div>
+    <div class="info-item"><label>Advisors Supabase</label><span>116 sécurité · 159 performance</span></div>
+    <div class="info-item"><label>Base de l'audit</label><span>main post-merge audit/fix-2026-06-23-p1</span></div>
+    <div class="info-item"><label>Audit dynamique</label><span>✔️ Exécuté en temps réel sur prod</span></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MATRICE DE CRITICITÉ
+════════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="section-title"><span class="num">02</span> Matrice de criticité</div>
+  <div class="matrix">
+    <div class="matrix-col p0">
+      <h3>🔴 P0 — Critique</h3>
+      <div class="matrix-item"><strong>SEC-01</strong>test-brevo en production (accès public)</div>
+      <div class="matrix-item"><strong>SEC-02</strong>36 fonctions SQL admin appelables par anon</div>
+    </div>
+    <div class="matrix-col p1">
+      <h3>🟠 P1 — Important</h3>
+      <div class="matrix-item"><strong>SEC-03</strong>IDOR agenda-ics sans authentification</div>
+      <div class="matrix-item"><strong>SEC-04</strong>Vues SECURITY DEFINER (bypass RLS)</div>
+      <div class="matrix-item"><strong>SEC-05</strong>XSS document.write archive RGPD</div>
+    </div>
+    <div class="matrix-col p2">
+      <h3>🟡 P2 — Modéré</h3>
+      <div class="matrix-item"><strong>SEC-06</strong>TOTP trust localStorage contournable</div>
+      <div class="matrix-item"><strong>SEC-07</strong>23 politiques RLS USING(true)</div>
+      <div class="matrix-item"><strong>SEC-08</strong>Actions CI non épinglées par SHA</div>
+      <div class="matrix-item"><strong>SEC-09</strong>Source maps en production</div>
+      <div class="matrix-item"><strong>SEC-10</strong>Password leak protection désactivée</div>
+      <div class="matrix-item"><strong>SEC-11</strong>16 fonctions search_path mutable</div>
+    </div>
+    <div class="matrix-col p3">
+      <h3>🟢 P3 — Mineur / Dette</h3>
+      <div class="matrix-item"><strong>SEC-12</strong>3 fonctions orphelines (hyper, creaye, get-order)</div>
+      <div class="matrix-item"><strong>SEC-13</strong>audit_logs sans index</div>
+      <div class="matrix-item"><strong>SEC-14</strong>44 FK sans index couvrant</div>
+      <div class="matrix-item"><strong>SEC-15</strong>73 politiques RLS init plan</div>
+      <div class="matrix-item"><strong>SEC-16</strong>25 index non utilisés</div>
+      <div class="matrix-item"><strong>SEC-17</strong>npm audit absent du CI</div>
+      <div class="matrix-item"><strong>FIXED</strong>SRI manquants pages satellites ✅</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     TROUVAILLES DÉTAILLÉES
+════════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="section-title"><span class="num">03</span> Trouvailles détaillées</div>
+
+  <!-- SEC-01 -->
+  <div class="finding p0">
+    <div class="finding-head">
+      <span class="prio-badge p0">P0 CRITIQUE</span>
+      <span class="finding-title">SEC-01 — Fonction test-brevo déployée en production sans authentification</span>
+      <span class="finding-id">Edge Function</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> La fonction <code>test-brevo</code> (slug: test-brevo, version 12, verify_jwt: false) est déployée en production sur Supabase Edge Runtime. Elle est publiquement accessible à <code>/functions/v1/test-brevo</code> sans aucune authentification.</p>
+      <p><strong>Impact :</strong> (1) N'importe qui peut déclencher l'envoi d'emails via les templates Brevo de S@FE (template 5 : Mandat DCI) vers n'importe quelle adresse. (2) En mode <code>?mode=list</code>, liste tous les templates Brevo actifs — exposition de la structure email de l'entreprise. (3) La clé API Brevo est utilisée de manière non protégée dans la fonction.</p>
+      <p><strong>Impact métier :</strong> Phishing possible au nom de S@FE, spam, atteinte à la réputation, dépassement du quota email Brevo, risque RGPD (envoi d'emails commerciaux sans consentement).</p>
+      <div><span class="fact verified">✔️ Fait vérifié — code lu via Supabase MCP</span></div>
+      <div style="margin-top:8px"><span class="tag red">verify_jwt:false</span> <span class="tag red">public</span> <span class="tag orange">brevo</span> <span class="tag">production</span></div>
+      <p style="margin-top:10px"><strong>Correction :</strong> Supprimer immédiatement la fonction via Supabase Dashboard → Edge Functions → test-brevo → Delete. Elle ne doit jamais être redéployée en production.</p>
+      <p><strong>Complexité :</strong> Faible · <strong>Temps :</strong> 5 min · <strong>Rollback :</strong> Aucun (suppression uniquement)</p>
+    </div>
+  </div>
+
+  <!-- SEC-02 -->
+  <div class="finding p0">
+    <div class="finding-head">
+      <span class="prio-badge p0">P0 CRITIQUE</span>
+      <span class="finding-title">SEC-02 — 36 fonctions SQL admin exécutables par le rôle anon via REST</span>
+      <span class="finding-id">Supabase DB</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> Des fonctions PL/pgSQL définies avec <code>SECURITY DEFINER</code> sont accessibles via l'API REST Supabase (<code>/rest/v1/rpc/&lt;fn&gt;</code>) par le rôle <code>anon</code> (non authentifié). Parmi elles : <code>admin_create_user</code>, <code>admin_delete_user</code>, <code>admin_list_users</code>, <code>admin_set_admin</code>, <code>_trigger_login_alert</code> et 31 autres.</p>
+      <p><strong>Impact :</strong> Un attaquant non authentifié peut appeler <code>POST /rest/v1/rpc/admin_list_users</code> pour obtenir la liste complète des utilisateurs CRM, ou tenter d'exécuter <code>admin_create_user</code> / <code>admin_delete_user</code>. Comme ces fonctions sont SECURITY DEFINER, elles s'exécutent avec les privilèges de leur créateur (souvent postgres), contournant le RLS.</p>
+      <p><strong>Impact métier :</strong> Fuite de données utilisateurs, potentiel de création/suppression d'utilisateurs non autorisée, atteinte à la confidentialité (RGPD Art.32).</p>
+      <div><span class="fact verified">✔️ Fait vérifié — Supabase advisors (116 entrées analysées)</span></div>
+      <div style="margin-top:8px"><span class="tag red">anon accessible</span> <span class="tag red">SECURITY DEFINER</span> <span class="tag orange">RPC public</span></div>
+      <p style="margin-top:10px"><strong>Correction :</strong> Pour chaque fonction sensible, révoquer l'accès au rôle anon :<br>
+      <code>REVOKE EXECUTE ON FUNCTION public.admin_create_user(...) FROM anon, authenticated;</code><br>
+      Ou basculer en <code>SECURITY INVOKER</code> si la fonction n'a pas besoin des privilèges élevés.</p>
+      <p><strong>Complexité :</strong> Moyenne · <strong>Temps :</strong> 2-4h · <strong>Migration SQL requise</strong></p>
+    </div>
+  </div>
+
+  <!-- SEC-03 -->
+  <div class="finding p1">
+    <div class="finding-head">
+      <span class="prio-badge p1">P1 IMPORTANT</span>
+      <span class="finding-title">SEC-03 — IDOR : agenda-ics expose les tâches de tout utilisateur sans authentification</span>
+      <span class="finding-id">Edge Function</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> La fonction <code>agenda-ics</code> (verify_jwt: false) accepte un paramètre <code>?uid=&lt;user_id&gt;</code> et retourne toutes les tâches non terminées de cet utilisateur au format iCal. Aucune vérification d'identité n'est effectuée.</p>
+      <p><strong>Impact :</strong> Quiconque connaît l'UUID d'un utilisateur CRM peut accéder à l'intégralité de son agenda de tâches. Les UUIDs Supabase sont exposés dans les logs, les interactions, les URL partagées, et dans les données RPC. Insecure Direct Object Reference (IDOR) classique.</p>
+      <p><strong>Impact métier :</strong> Exposition des activités commerciales (rendez-vous, prospects, tâches en cours), violation RGPD Art.5.1.f (intégrité et confidentialité). Les logs confirment 2 UIDs distincts actifs régulièrement.</p>
+      <div><span class="fact verified">✔️ Fait vérifié — code + logs d'exécution via Supabase MCP</span></div>
+      <div style="margin-top:8px"><span class="tag red">IDOR</span> <span class="tag red">verify_jwt:false</span> <span class="tag orange">données personnelles</span></div>
+      <p style="margin-top:10px"><strong>Correction proposée :</strong> Ajouter un token signé HMAC à l'URL (généré par le CRM au moment de la création du lien iCal) et vérifier ce token dans la fonction, OU passer à verify_jwt:true et utiliser le JWT de l'utilisateur pour filtrer ses propres tâches uniquement.</p>
+      <p><strong>Complexité :</strong> Moyenne · <strong>Temps :</strong> 2h · <strong>Impact UX :</strong> Le lien iCal existant dans les clients calendrier devra être régénéré</p>
+    </div>
+  </div>
+
+  <!-- SEC-04 -->
+  <div class="finding p1">
+    <div class="finding-head">
+      <span class="prio-badge p1">P1 IMPORTANT</span>
+      <span class="finding-title">SEC-04 — Vues SECURITY DEFINER : v_interactions et v_equipe_dci contournent le RLS</span>
+      <span class="finding-id">Supabase DB</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> Les vues <code>public.v_interactions</code> et <code>public.v_equipe_dci</code> sont définies avec la propriété <code>SECURITY DEFINER</code>. Elles s'exécutent avec les permissions de leur créateur (superuser ou postgres), ignorant complètement le RLS des tables sous-jacentes.</p>
+      <p><strong>Impact :</strong> Un utilisateur authentifié qui a accès à ces vues peut voir des données de tous les autres utilisateurs, même si les tables <code>interactions</code> et <code>profiles</code> ont des politiques RLS restrictives. Classé <strong>ERROR</strong> par les advisors Supabase.</p>
+      <p><strong>Impact métier :</strong> Violation potentielle de la séparation des données (un DCI peut voir les interactions d'un autre DCI), atteinte RGPD à la minimisation des données.</p>
+      <div><span class="fact verified">✔️ Fait vérifié — advisors sécurité Supabase (niveau ERROR)</span></div>
+      <div style="margin-top:8px"><span class="tag red">SECURITY DEFINER</span> <span class="tag red">bypass RLS</span> <span class="tag orange">ERROR advisor</span></div>
+      <p style="margin-top:10px"><strong>Correction :</strong> Recréer les vues en <code>SECURITY INVOKER</code> (défaut) :<br>
+      <code>CREATE OR REPLACE VIEW public.v_interactions WITH (security_invoker = true) AS SELECT ...;</code><br>
+      Vérifier que les politiques RLS des tables sous-jacentes couvrent bien les cas d'accès.</p>
+      <p><strong>Complexité :</strong> Faible · <strong>Temps :</strong> 30 min · <strong>Migration SQL requise</strong></p>
+    </div>
+  </div>
+
+  <!-- SEC-05 -->
+  <div class="finding p1">
+    <div class="finding-head">
+      <span class="prio-badge p1">P1 IMPORTANT</span>
+      <span class="finding-title">SEC-05 — XSS potentiel : document.write sans escapeHtml dans le popup archive RGPD</span>
+      <span class="finding-id">assets/app.js:2028</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> La fonction d'impression de l'archive RGPD utilise <code>document.write()</code> pour générer un popup HTML. Les données <code>${nom}</code>, <code>${archive.email}</code>, <code>${archive.role}</code>, <code>${archive.numero_mandat}</code> sont interpolées directement sans appel à <code>escapeHtml()</code>.</p>
+      <p><strong>Impact :</strong> Si un nom ou email contenant des balises HTML (<code>&lt;script&gt;alert(1)&lt;/script&gt;</code>) a été stocké en base, le code s'exécutera dans le contexte du popup lors de l'affichage de l'archive. Accès admin requis — risque conditionnel à la compromission d'un compte.</p>
+      <p><strong>Impact métier :</strong> XSS stocké exploitable par un attaquant ayant accès à la DB ou via une injection SQL préalable. Risque de vol de session admin.</p>
+      <div><span class="fact verified">✔️ Fait vérifié statique — assets/app.js ligne 2028-2058</span></div>
+      <div style="margin-top:8px"><span class="tag red">XSS stocké</span> <span class="tag orange">document.write</span> <span class="tag">admin only</span></div>
+      <p style="margin-top:10px"><strong>Correction :</strong> Remplacer chaque interpolation directe par <code>escapeHtml()</code> :<br>
+      <code>${escapeHtml(nom)}</code>, <code>${escapeHtml(archive.email)}</code>, etc.</p>
+      <p><strong>Complexité :</strong> Faible · <strong>Temps :</strong> 15 min · <strong>Risque régression :</strong> Nul</p>
+    </div>
+  </div>
+
+  <!-- SEC-06 -->
+  <div class="finding p2">
+    <div class="finding-head">
+      <span class="prio-badge p2">P2 MODÉRÉ</span>
+      <span class="finding-title">SEC-06 — TOTP trust de 2h stocké en localStorage, contournable côté client</span>
+      <span class="finding-id">assets/totp/totp.js</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> Après validation TOTP, un timestamp d'expiration est stocké dans <code>localStorage</code> (<code>safe_totp_trust_&lt;userId&gt;</code>). Ce mécanisme de "trust 2h" est purement client — un utilisateur peut modifier la valeur via DevTools pour prolonger le trust indéfiniment.</p>
+      <p><strong>Impact :</strong> Pour les 3 opérations critiques (admin-create-user, delete-user, cancel-subscription), le contrôle AAL2 est effectué côté serveur dans la Edge Function → le contournement localStorage est inefficace. Mais pour les opérations dont la protection TOTP est uniquement côté client, un utilisateur peut bypasser la demande de code TOTP.</p>
+      <div><span class="fact verified">✔️ Fait vérifié statique — totp.js lignes 136, 161, 189, 287</span></div>
+      <div><span class="fact hypo">⚠️ Hypothèse — liste complète des opérations protégées uniquement côté client non vérifiée</span></div>
+      <div style="margin-top:8px"><span class="tag orange">localStorage</span> <span class="tag orange">bypass TOTP client</span></div>
+      <p style="margin-top:10px"><strong>Correction :</strong> Stocker le trust TOTP dans <code>sessionStorage</code> (effacé à la fermeture du navigateur) plutôt que <code>localStorage</code>. Pour les opérations sensibles, privilégier la vérification AAL2 côté serveur.</p>
+      <p><strong>Complexité :</strong> Faible · <strong>Temps :</strong> 30 min</p>
+    </div>
+  </div>
+
+  <!-- SEC-07 -->
+  <div class="finding p2">
+    <div class="finding-head">
+      <span class="prio-badge p2">P2 MODÉRÉ</span>
+      <span class="finding-title">SEC-07 — 23 politiques RLS avec USING(true) — accès illimité pour tout utilisateur authentifié</span>
+      <span class="finding-id">Supabase DB</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> 23 tables (modules Click & Collect, Cyber, DPO, SEO, Social) ont des politiques RLS de type <code>ALL ... USING (true) WITH CHECK (true)</code>. Cela signifie que tout utilisateur authentifié peut lire, écrire, modifier et supprimer toutes les données de ces tables, sans restriction de propriété.</p>
+      <p><strong>Exemples :</strong> <code>cc_client_profiles</code>, <code>cc_commandes</code>, <code>cyber_client_audits</code>, <code>dpo_client_profiles</code>, <code>social_posts</code>…</p>
+      <p><strong>Impact :</strong> Un DCI peut accéder aux données clients d'un autre DCI dans ces modules. Violation du principe de moindre privilège et de séparation des données clients.</p>
+      <div><span class="fact verified">✔️ Fait vérifié — advisors sécurité Supabase (rls_policy_always_true, 23 occurrences)</span></div>
+      <div style="margin-top:8px"><span class="tag orange">USING(true)</span> <span class="tag orange">accès non restreint</span> <span class="tag">modules clients</span></div>
+      <p style="margin-top:10px"><strong>Correction :</strong> Restreindre les politiques par propriétaire :<br>
+      <code>USING (created_by = auth.uid())</code> ou <code>USING (user_id = auth.uid())</code> selon la table.</p>
+      <p><strong>Complexité :</strong> Moyenne · <strong>Temps :</strong> 3-5h · <strong>Migration SQL par table</strong></p>
+    </div>
+  </div>
+
+  <!-- SEC-08 -->
+  <div class="finding p2">
+    <div class="finding-head">
+      <span class="prio-badge p2">P2 MODÉRÉ</span>
+      <span class="finding-title">SEC-08 — GitHub Actions non épinglées par SHA (risque supply chain)</span>
+      <span class="finding-id">.github/workflows/</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> Les actions tierces sont référencées par tag (<code>@v5</code>, <code>@v6</code>) plutôt que par SHA de commit immuable. Si le repo d'une action est compromis et que son tag est modifié, du code malveillant s'exécuterait dans le pipeline CI.</p>
+      <p><strong>Actions concernées :</strong> <code>actions/checkout@v5</code>, <code>actions/setup-node@v6</code>, <code>actions/upload-pages-artifact@v3</code>, <code>actions/deploy-pages@v4</code>, <code>denoland/setup-deno@v2</code>.</p>
+      <div><span class="fact verified">✔️ Fait vérifié statique — .github/workflows/*.yml</span></div>
+      <div style="margin-top:8px"><span class="tag orange">supply chain</span> <span class="tag orange">mutable tags</span></div>
+      <p style="margin-top:10px"><strong>Correction :</strong> Épingler par SHA :<br>
+      <code>uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v5</code></p>
+      <p><strong>Complexité :</strong> Faible · <strong>Temps :</strong> 30 min · Script <code>scripts/check-sri.sh</code> peut être adapté</p>
+    </div>
+  </div>
+
+  <!-- SEC-09 -->
+  <div class="finding p2">
+    <div class="finding-head">
+      <span class="prio-badge p2">P2 MODÉRÉ</span>
+      <span class="finding-title">SEC-09 — Source maps générés en production (exposition du code source)</span>
+      <span class="finding-id">build.mjs</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> <code>build.mjs</code> génère des source maps (<code>sourcemap: true</code>) qui sont inclus dans les artefacts déployés sur GitHub Pages. Les DevTools du navigateur permettent alors de lire le code source original non minifié.</p>
+      <p><strong>Impact :</strong> Expose la logique métier, les noms de tables Supabase, les flux d'authentification et les endpoints aux yeux de tout utilisateur. Facilite la rétro-ingénierie.</p>
+      <div><span class="fact verified">✔️ Fait vérifié statique — build.mjs</span></div>
+      <div style="margin-top:8px"><span class="tag orange">source maps</span> <span class="tag">exposition code</span></div>
+      <p style="margin-top:10px"><strong>Correction :</strong> Désactiver les source maps en production :<br>
+      <code>sourcemap: process.env.NODE_ENV !== 'production' ? 'linked' : false</code></p>
+      <p><strong>Complexité :</strong> Faible · <strong>Temps :</strong> 10 min</p>
+    </div>
+  </div>
+
+  <!-- SEC-10 -->
+  <div class="finding p2">
+    <div class="finding-head">
+      <span class="prio-badge p2">P2 MODÉRÉ</span>
+      <span class="finding-title">SEC-10 — Protection contre les mots de passe compromis désactivée (HaveIBeenPwned)</span>
+      <span class="finding-id">Supabase Auth</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> L'option <code>leaked_password_protection</code> est désactivée dans la configuration Supabase Auth. Supabase peut vérifier les mots de passe lors de la création ou du changement contre la base HaveIBeenPwned (HIBP) pour rejeter les mots de passe connus comme compromis.</p>
+      <p><strong>Impact :</strong> Un utilisateur peut définir un mot de passe présent dans des bases de données de fuites (ex : <code>Password123!</code>), augmentant le risque de compromission par credential stuffing.</p>
+      <div><span class="fact verified">✔️ Fait vérifié — advisors sécurité Supabase (auth_leaked_password_protection)</span></div>
+      <div style="margin-top:8px"><span class="tag orange">credential stuffing</span> <span class="tag">auth</span></div>
+      <p style="margin-top:10px"><strong>Correction :</strong> Activer dans Supabase Dashboard → Authentication → Policies → Enable HaveIBeenPwned password protection.</p>
+      <p><strong>Complexité :</strong> Faible · <strong>Temps :</strong> 5 min · <strong>Action manuelle Dashboard</strong></p>
+    </div>
+  </div>
+
+  <!-- SEC-11 -->
+  <div class="finding p2">
+    <div class="finding-head">
+      <span class="prio-badge p2">P2 MODÉRÉ</span>
+      <span class="finding-title">SEC-11 — 16 fonctions avec search_path mutable (risque injection de schéma)</span>
+      <span class="finding-id">Supabase DB</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> Des fonctions comme <code>trg_update_profil_complet</code>, <code>flag_profils_incomplets</code>, <code>update_cyber_audits_updated_at</code>… n'ont pas de <code>SET search_path</code> fixe. Un attaquant avec accès à la DB pourrait créer un schéma malveillant qui intercepte les appels.</p>
+      <div><span class="fact verified">✔️ Fait vérifié — advisors sécurité Supabase (function_search_path_mutable, 16 occurrences)</span></div>
+      <div style="margin-top:8px"><span class="tag orange">search_path</span> <span class="tag">injection schéma</span></div>
+      <p style="margin-top:10px"><strong>Correction :</strong> Ajouter <code>SET search_path = public</code> à chaque fonction dans une migration SQL.<br>
+      Référence : <a href="https://supabase.com/docs/guides/database/functions#security" style="color:var(--blue)">supabase.com/docs/guides/database/functions#security</a></p>
+      <p><strong>Complexité :</strong> Faible · <strong>Temps :</strong> 1h · <strong>Migration SQL</strong></p>
+    </div>
+  </div>
+
+  <!-- SEC-12 -->
+  <div class="finding p3">
+    <div class="finding-head">
+      <span class="prio-badge p3">P3 DETTE</span>
+      <span class="finding-title">SEC-12 — 3 fonctions Edge orphelines en production (hyper-function, creaye-checkout, get-order-data)</span>
+      <span class="finding-id">Edge Functions</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> 3 fonctions non documentées sont actives en production sans référence dans le code CRM :<br>
+      • <code>hyper-function</code> (v18, verify_jwt:false) — boilerplate "Hello World" du template Supabase<br>
+      • <code>creaye-checkout</code> (v1, verify_jwt:false) — doublon avec typo de <code>create-checkout</code><br>
+      • <code>get-order-data</code> (v9, verify_jwt:false) — active dans les logs (200/409), non documentée</p>
+      <p><strong>Impact :</strong> Surface d'attaque inutile, code non auditable, confusion opérationnelle.</p>
+      <div><span class="fact verified">✔️ Fait vérifié — Supabase MCP list_edge_functions + logs</span></div>
+      <p style="margin-top:10px"><strong>Correction :</strong> Supprimer <code>hyper-function</code> et <code>creaye-checkout</code>. Documenter et auditer <code>get-order-data</code> avant décision.</p>
+      <p><strong>Complexité :</strong> Faible · <strong>Temps :</strong> 20 min</p>
+    </div>
+  </div>
+
+  <!-- SEC-13 -->
+  <div class="finding p3">
+    <div class="finding-head">
+      <span class="prio-badge p3">P3 DETTE</span>
+      <span class="finding-title">SEC-13 — Table audit_logs sans aucun index de recherche</span>
+      <span class="finding-id">Supabase DB</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> La table <code>audit_logs</code> n'a aucun index sur les colonnes de requête les plus fréquentes : <code>user_id</code>, <code>action</code>, <code>created_at</code>, <code>entity_type</code>, <code>entity_id</code>.</p>
+      <p><strong>Impact :</strong> Scan séquentiel complet à chaque consultation du journal d'audit. Performance dégradée dès quelques milliers d'entrées. La traçabilité est un élément central de la conformité RGPD.</p>
+      <div><span class="fact verified">✔️ Fait vérifié dynamique — execute_sql sur pg_indexes</span></div>
+      <p style="margin-top:10px"><strong>Correction migration SQL :</strong><br>
+      <code>CREATE INDEX idx_audit_logs_user ON audit_logs(user_id);</code><br>
+      <code>CREATE INDEX idx_audit_logs_action ON audit_logs(action);</code><br>
+      <code>CREATE INDEX idx_audit_logs_created ON audit_logs(created_at DESC);</code></p>
+      <p><strong>Complexité :</strong> Faible · <strong>Temps :</strong> 15 min</p>
+    </div>
+  </div>
+
+  <!-- SEC-14/15/16 regroupés -->
+  <div class="finding p3">
+    <div class="finding-head">
+      <span class="prio-badge p3">P3 DETTE</span>
+      <span class="finding-title">SEC-14/15/16 — Dette performance DB : 44 FK sans index, 73 RLS init plan, 25 index inutilisés</span>
+      <span class="finding-id">Supabase DB</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>SEC-14 — 44 clés étrangères sans index couvrant :</strong> Les JOINs sur les FK non indexées provoquent des scans séquentiels. Exemples : <code>archived_users.archived_by_fkey</code>, <code>contracts.created_by_fkey</code>, <code>chartes_usage_si.user_id_fkey</code>…</p>
+      <p><strong>SEC-15 — 73 politiques RLS avec auth_rls_initplan :</strong> Les politiques utilisant <code>auth.uid()</code> / <code>auth.role()</code> sans <code>(select auth.uid())</code> réévaluent la fonction à chaque ligne scannée. Impact significatif sur les tables volumineuses.</p>
+      <p style="margin-top:6px"><strong>Fix SEC-15 :</strong> Remplacer <code>auth.uid()</code> par <code>(select auth.uid())</code> dans les politiques RLS pour forcer l'évaluation une seule fois.</p>
+      <p><strong>SEC-16 — 25 index non utilisés :</strong> <code>idx_notif_created</code>, <code>idx_leads_email</code>, <code>idx_leads_etape</code>… Overhead en écriture sans bénéfice en lecture.</p>
+      <div><span class="fact verified">✔️ Fait vérifié — advisors performance Supabase (159 entrées)</span></div>
+      <p><strong>Complexité :</strong> Moyenne · <strong>Temps :</strong> 4-6h · <strong>Migration SQL par batch</strong></p>
+    </div>
+  </div>
+
+  <!-- SEC-17 -->
+  <div class="finding p3">
+    <div class="finding-head">
+      <span class="prio-badge p3">P3 DETTE</span>
+      <span class="finding-title">SEC-17 — npm audit absent du pipeline CI</span>
+      <span class="finding-id">.github/workflows/deploy.yml</span>
+    </div>
+    <div class="finding-body">
+      <p><strong>Cause :</strong> Aucune étape <code>npm audit</code> ou outil d'analyse de dépendances (Dependabot, Snyk) n'est présent dans le workflow CI. La seule dépendance (<code>esbuild</code>) est peu risquée, mais le principe s'applique à tout ajout futur.</p>
+      <div><span class="fact verified">✔️ Fait vérifié statique — deploy.yml</span></div>
+      <p style="margin-top:10px"><strong>Correction :</strong> Ajouter après <code>npm install</code> :<br>
+      <code>- name: Audit sécurité npm</code><br>
+      <code>&nbsp;&nbsp;run: npm audit --audit-level=high</code></p>
+      <p><strong>Complexité :</strong> Faible · <strong>Temps :</strong> 5 min</p>
+    </div>
+  </div>
+
+  <!-- FIXED -->
+  <div class="finding fixed">
+    <div class="finding-head">
+      <span class="prio-badge fixed">✅ CORRIGÉ</span>
+      <span class="finding-title">SRI manquants sur 7 pages HTML satellites + actions/checkout Node.js 20 déprécié</span>
+      <span class="finding-id">Commit 25ae7c6 + e08bf93</span>
+    </div>
+    <div class="finding-body">
+      <p>SRI (<code>integrity=</code>) ajoutés sur <code>mandat.html</code>, <code>order.html</code>, <code>guide.html</code>, <code>admin-docs.html</code>, <code>clause-public.html</code>, <code>clause.html</code>, <code>simulateur.html</code>. <code>actions/checkout@v4</code> → <code>@v5</code> dans les 3 workflows. <code>actions/setup-node@v5</code> → <code>@v6</code>. Node.js 20 → 22. Corrigé dans la même session d'audit.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     POINTS FORTS
+════════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="section-title"><span class="num">04</span> Points forts — Ce qui fonctionne bien</div>
+  <div class="strengths">
+    <div class="strength">
+      <div class="strength-icon">🛡️</div>
+      <div class="strength-text"><strong>RLS 100% — 57/57 tables</strong><span>Toutes les tables ont RLS activé ET au moins une politique définie. Aucune table sans protection. Vérifié dynamiquement.</span></div>
+    </div>
+    <div class="strength">
+      <div class="strength-icon">🔐</div>
+      <div class="strength-text"><strong>AAL2 (MFA) côté serveur</strong><span>Les 3 opérations admin critiques (créer, supprimer utilisateur, résilier abonnement) vérifient le claim AAL2 du JWT Supabase dans la Edge Function.</span></div>
+    </div>
+    <div class="strength">
+      <div class="strength-icon">📌</div>
+      <div class="strength-text"><strong>Versions Deno épinglées au patch</strong><span>supabase-js@2.49.4, stripe@14.5.0 — builds reproductibles, pas de surprise de mise à jour automatique.</span></div>
+    </div>
+    <div class="strength">
+      <div class="strength-icon">🔗</div>
+      <div class="strength-text"><strong>SRI sur tous les CDN (index.html)</strong><span>Subresource Integrity sur supabase-js, jspdf, qrcode. Étendu aux pages satellites dans cette session.</span></div>
+    </div>
+    <div class="strength">
+      <div class="strength-icon">🔒</div>
+      <div class="strength-text"><strong>CSP et HTTPS uniquement</strong><span>Content-Security-Policy présente dans index.html. Aucun appel HTTP non sécurisé détecté dans le code frontend.</span></div>
+    </div>
+    <div class="strength">
+      <div class="strength-icon">🌐</div>
+      <div class="strength-text"><strong>CORS restreint</strong><span>Toutes les Edge Functions restreignent Access-Control-Allow-Origin à crm.safe-digitalisation.fr. Aucun wildcard.</span></div>
+    </div>
+    <div class="strength">
+      <div class="strength-icon">🚦</div>
+      <div class="strength-text"><strong>Rate limiting opérationnel</strong><span>cancel-subscription (5/h/admin) et record-login-failure (30/h/IP) avec ban automatique après 5 échecs.</span></div>
+    </div>
+    <div class="strength">
+      <div class="strength-icon">📝</div>
+      <div class="strength-text"><strong>Audit logs pour les opérations critiques</strong><span>Traçabilité des résiliations, créations/suppressions d'utilisateurs, erreurs Stripe dans audit_logs.</span></div>
+    </div>
+    <div class="strength">
+      <div class="strength-icon">⚖️</div>
+      <div class="strength-text"><strong>RGPD Art.15/16/17/20/33 implémentés</strong><span>Droit d'accès, rectification, effacement, portabilité CSV, notification violation CNIL 72h. Conformité solide.</span></div>
+    </div>
+    <div class="strength">
+      <div class="strength-icon">🧱</div>
+      <div class="strength-text"><strong>Architecture modulaire en progression</strong><span>Extraction tasks.js, totp.js, contracts/, contacts/ — app.js réduit de 6077 → 5298 lignes (−13%).</span></div>
+    </div>
+    <div class="strength">
+      <div class="strength-icon">🚫</div>
+      <div class="strength-text"><strong>Signup et anonymous sign-ins désactivés</strong><span>Seuls les utilisateurs créés par un admin peuvent accéder au CRM. Surface d'attaque réduite.</span></div>
+    </div>
+    <div class="strength">
+      <div class="strength-icon">♿</div>
+      <div class="strength-text"><strong>ARIA complet sur 23 modales</strong><span>role=dialog, aria-modal, aria-labelledby, focus trap clavier — accessibilité WCAG 2.1 AA sur les interactions modales.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     RÉSULTATS DYNAMIQUES SUPABASE
+════════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="section-title"><span class="num">05</span> Résultats dynamiques Supabase MCP</div>
+  <table>
+    <thead>
+      <tr><th>Vérification</th><th>Résultat</th><th>Détail</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>RLS activé — toutes les tables</td><td style="color:var(--green)">✅ 57/57</td><td>Aucune table sans RLS ni sans politique</td></tr>
+      <tr><td>Tables sans politique malgré RLS</td><td style="color:var(--green)">✅ 0 table</td><td>Toutes les tables protégées ont au moins 1 politique</td></tr>
+      <tr><td>Advisors sécurité — niveau ERROR</td><td style="color:var(--red)">❌ 2 erreurs</td><td>v_interactions + v_equipe_dci (SECURITY DEFINER)</td></tr>
+      <tr><td>Advisors sécurité — niveau WARN</td><td style="color:var(--orange)">⚠️ 114 warnings</td><td>Fonctions anon, politiques USING(true), search_path…</td></tr>
+      <tr><td>Edge Functions déployées</td><td style="color:var(--yellow)">⚠️ 18 (4 orphelines)</td><td>14 documentées + hyper-function, creaye-checkout, get-order-data, test-brevo</td></tr>
+      <tr><td>Index sur audit_logs</td><td style="color:var(--red)">❌ Aucun</td><td>Scan séquentiel sur user_id, action, created_at</td></tr>
+      <tr><td>Index non utilisés</td><td style="color:var(--yellow)">⚠️ 25 index</td><td>Overhead écriture sans bénéfice lecture</td></tr>
+      <tr><td>FK sans index couvrant</td><td style="color:var(--yellow)">⚠️ 44 FK</td><td>Performance JOINs dégradée</td></tr>
+      <tr><td>RLS auth_rls_initplan</td><td style="color:var(--yellow)">⚠️ 73 politiques</td><td>auth.uid() réévalué à chaque ligne — utiliser (select auth.uid())</td></tr>
+      <tr><td>Erreurs 500 Edge Functions (24h)</td><td style="color:var(--yellow)">⚠️ 2 erreurs</td><td>admin-create-user v13 (avant correction AAL2) — résolu</td></tr>
+      <tr><td>Leaked password protection</td><td style="color:var(--orange)">⚠️ Désactivé</td><td>HaveIBeenPwned non activé dans Supabase Auth</td></tr>
+      <tr><td>Buckets publics avec listing</td><td style="color:var(--yellow)">⚠️ 2 buckets</td><td>avatars + contrats-pdf — politique SELECT trop large</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PLAN DE REMÉDIATION
+════════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="section-title"><span class="num">06</span> Plan de remédiation</div>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Trouvaille</th><th>Priorité</th><th>Temps</th><th>Complexité</th><th>Risque régression</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>SEC-01</td><td>Supprimer test-brevo de Supabase</td><td style="color:#fca5a5">P0</td><td>5 min</td><td>Faible</td><td>Nul</td></tr>
+      <tr><td>SEC-02</td><td>REVOKE EXECUTE fonctions admin sur anon/authenticated</td><td style="color:#fca5a5">P0</td><td>2-4h</td><td>Moyenne</td><td>Faible (vérifier appels RPC frontend)</td></tr>
+      <tr><td>SEC-03</td><td>Sécuriser agenda-ics (token HMAC ou JWT)</td><td style="color:#fdba74">P1</td><td>2h</td><td>Moyenne</td><td>Moyen (liens iCal à régénérer)</td></tr>
+      <tr><td>SEC-04</td><td>Recréer v_interactions + v_equipe_dci en SECURITY INVOKER</td><td style="color:#fdba74">P1</td><td>30 min</td><td>Faible</td><td>Faible</td></tr>
+      <tr><td>SEC-05</td><td>escapeHtml sur document.write archive RGPD (app.js:2028)</td><td style="color:#fdba74">P1</td><td>15 min</td><td>Faible</td><td>Nul</td></tr>
+      <tr><td>SEC-06</td><td>localStorage → sessionStorage pour trust TOTP</td><td style="color:#fde68a">P2</td><td>30 min</td><td>Faible</td><td>Nul</td></tr>
+      <tr><td>SEC-07</td><td>Politiques RLS USING(true) → USING(user_id = auth.uid())</td><td style="color:#fde68a">P2</td><td>3-5h</td><td>Moyenne</td><td>Moyen (tester accès modules clients)</td></tr>
+      <tr><td>SEC-08</td><td>Épingler actions CI par SHA</td><td style="color:#fde68a">P2</td><td>30 min</td><td>Faible</td><td>Nul</td></tr>
+      <tr><td>SEC-09</td><td>Désactiver source maps en production (build.mjs)</td><td style="color:#fde68a">P2</td><td>10 min</td><td>Faible</td><td>Nul</td></tr>
+      <tr><td>SEC-10</td><td>Activer HaveIBeenPwned dans Supabase Auth Dashboard</td><td style="color:#fde68a">P2</td><td>5 min</td><td>Faible</td><td>Nul</td></tr>
+      <tr><td>SEC-11</td><td>SET search_path = public sur 16 fonctions</td><td style="color:#fde68a">P2</td><td>1h</td><td>Faible</td><td>Faible</td></tr>
+      <tr><td>SEC-12</td><td>Supprimer hyper-function, creaye-checkout, auditer get-order-data</td><td style="color:#86efac">P3</td><td>20 min</td><td>Faible</td><td>Nul</td></tr>
+      <tr><td>SEC-13</td><td>Créer index sur audit_logs (user_id, action, created_at)</td><td style="color:#86efac">P3</td><td>15 min</td><td>Faible</td><td>Nul</td></tr>
+      <tr><td>SEC-14</td><td>Index sur 44 FK non indexées (par batch)</td><td style="color:#86efac">P3</td><td>4-6h</td><td>Moyenne</td><td>Nul</td></tr>
+      <tr><td>SEC-15</td><td>(select auth.uid()) dans les 73 politiques RLS</td><td style="color:#86efac">P3</td><td>3h</td><td>Moyenne</td><td>Nul</td></tr>
+      <tr><td>SEC-16</td><td>Supprimer les 25 index inutilisés</td><td style="color:#86efac">P3</td><td>1h</td><td>Faible</td><td>Nul</td></tr>
+      <tr><td>SEC-17</td><td>Ajouter npm audit dans deploy.yml</td><td style="color:#86efac">P3</td><td>5 min</td><td>Faible</td><td>Nul</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     CALENDRIER
+════════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="section-title"><span class="num">07</span> Calendrier de correction recommandé</div>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-date">J+0<br><span style="font-size:.7rem;color:var(--red)">Immédiat</span></div>
+      <div class="tl-content">
+        <strong>SEC-01 — Supprimer test-brevo</strong>
+        <span>Supabase Dashboard → Edge Functions → test-brevo → Delete. 5 minutes. Aucun rollback nécessaire.</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">J+1<br><span style="font-size:.7rem;color:var(--red)">Cette semaine</span></div>
+      <div class="tl-content">
+        <strong>SEC-02 — REVOKE fonctions admin + SEC-04 — Vues SECURITY INVOKER + SEC-05 — escapeHtml</strong>
+        <span>Migration SQL + patch app.js. Risque le plus élevé → traiter en priorité absolue.</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">J+7<br><span style="font-size:.7rem;color:var(--orange)">Semaine 2</span></div>
+      <div class="tl-content">
+        <strong>SEC-03 — Sécuriser agenda-ics + SEC-06 + SEC-09 + SEC-10 + SEC-12</strong>
+        <span>IDOR agenda-ics (impact UX mesuré), sessionStorage TOTP, source maps, HIBP, nettoyage fonctions orphelines.</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">J+14<br><span style="font-size:.7rem;color:var(--yellow)">Semaine 3</span></div>
+      <div class="tl-content">
+        <strong>SEC-07 — RLS USING(true) + SEC-08 — SHA pins + SEC-11 — search_path + SEC-17</strong>
+        <span>23 politiques RLS à affiner, épinglage CI par SHA, fonctions search_path, npm audit.</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">J+30<br><span style="font-size:.7rem;color:var(--green)">Mois 2</span></div>
+      <div class="tl-content">
+        <strong>SEC-13/14/15/16 — Dette performance DB</strong>
+        <span>Index audit_logs, FK sans index, (select auth.uid()), suppression index inutilisés. Planifier en heure creuse.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════════════════════ -->
+<div style="background:var(--bg2);border-top:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-top:40px;font-size:.78rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px">
+  <div>
+    <strong style="color:var(--text)">S@FE FIX AI</strong> — Rapport d'Audit Sécurité v2<br>
+    Généré le 23 juin 2026 · Projet <code>qdjmzietysukediqkebg</code> · Supabase eu-central-1
+  </div>
+  <div style="text-align:right">
+    Audit statique (Niveau 1) + Dynamique contrôlé (Niveau 2)<br>
+    <span style="color:var(--yellow)">Score global : 75/100</span> — Progression +27 pts depuis v1
+  </div>
+</div>
+
+</div>
+</body>
+</html>
