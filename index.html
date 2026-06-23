@@ -703,6 +703,34 @@
             <a href="/work/incidents-nis2.html" target="_blank" class="btn btn-out btn-sm">Ouvrir ↗</a>
           </div>
         </div>
+
+        <!-- Purge des données périmées -->
+        <div class="panel-block" id="purge-section" style="margin-top:16px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+            <div>
+              <h3 style="margin:0">🗑️ Purge des données périmées</h3>
+              <p class="mut" style="margin-top:4px;font-size:.82rem">RGPD art. 5(1)(e) — Limitation de la conservation · Automatique le 1<sup>er</sup> du mois (pg_cron) · Manuel ci-dessous</p>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <div style="font-size:.82rem;color:var(--mut)">Éligibles&nbsp;: <strong id="purge-stat" style="color:#fff">—</strong></div>
+              <button id="purge-trigger-btn" class="btn btn-danger btn-sm" onclick="triggerPurge()" disabled>Déclencher la purge maintenant</button>
+              <button class="btn btn-out btn-sm" onclick="loadPurgeInfo()">↺</button>
+            </div>
+          </div>
+          <div style="font-size:.75rem;color:var(--mut);margin-bottom:10px" id="purge-last">—</div>
+          <div class="scrollx">
+            <table class="tbl">
+              <thead><tr><th>Nom</th><th>Entreprise</th><th>Éligible depuis</th><th>Raison</th></tr></thead>
+              <tbody id="purge-list"></tbody>
+            </table>
+          </div>
+          <div style="font-size:.72rem;color:var(--mut);margin-top:10px;line-height:1.5">
+            <strong style="color:var(--gold)">Règle d'or RGPD :</strong>
+            Contrats terminés/résiliés → anonymisation après <strong>5 ans</strong> (Code de commerce art. L110-4).
+            Prospects sans activité → anonymisation après <strong>3 ans</strong>.
+            Les contrats et journaux d'audit sont conservés (valeur probatoire).
+          </div>
+        </div>
       </div>
 
     </section>

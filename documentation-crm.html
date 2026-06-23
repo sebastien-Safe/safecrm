@@ -190,6 +190,8 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <li><a href="#s16"><span class="num">16</span>Journal RGPD — Registre des traitements &amp; traçabilité</a></li>
     <li><a href="#s17"><span class="num">17</span>Sécurité NIS2 — Incidents, MFA, Registre fournisseurs</a></li>
     <li><a href="#s18"><span class="num">18</span>DPA — Sous-traitants &amp; acteurs externes</a></li>
+    <li><a href="#s19"><span class="num">19</span>AIPD — Analyse d'Impact (DPIA)</a></li>
+    <li><a href="#s20"><span class="num">20</span>Purge automatique des données</a></li>
   </ol>
 </div>
 
@@ -1727,6 +1729,190 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 19. AIPD / DPIA -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section page-break" id="s19">
+  <div class="section-header">
+    <div class="section-num">19</div>
+    <div class="section-title">AIPD — Analyse d'Impact relative à la Protection des Données</div>
+  </div>
+
+  <p>Conformément au RGPD art. 35, S@FE SASU documente ci-dessous son Analyse d'Impact relative à la Protection des Données (AIPD / DPIA). En tant que micro-entreprise (&lt; 250 salariés) traitant des données hors catégories sensibles, l'AIPD n'est pas imposée par la liste CNIL des traitements à risque élevé — elle est conduite volontairement dans une démarche d'accountability (art. 5(2)).</p>
+
+  <div class="info-box" style="margin-bottom:24px">
+    <strong>Méthodologie CNIL PIA v3</strong> — 4 étapes : Contexte · Nécessité &amp; proportionnalité · Risques · Mesures.<br>
+    <strong>Responsable du traitement :</strong> S@FE SASU — 66 av. des Champs-Élysées, 75008 Paris — SIRET 104 699 558 00011<br>
+    <strong>DPO désigné :</strong> Non obligatoire (micro-entreprise, art. 37) — contact RGPD : contact@safe-digitalisation.fr<br>
+    <strong>Date de l'analyse :</strong> Juin 2026 — <strong>Révision annuelle :</strong> Juin 2027
+  </div>
+
+  <h3>Traitement 1 — Gestion des prospects et clients (CRM)</h3>
+  <table class="tbl" style="margin-bottom:20px">
+    <tbody>
+      <tr><td style="width:200px;font-weight:700">Finalité</td><td>Suivi commercial des prospects et clients, gestion de la relation, pipeline Kanban</td></tr>
+      <tr><td style="font-weight:700">Base légale</td><td>Art. 6(1)(b) — exécution du contrat · Art. 6(1)(f) — intérêt légitime (prospection B2B)</td></tr>
+      <tr><td style="font-weight:700">Données traitées</td><td>Identité (nom, prénom), coordonnées (email, téléphone, adresse), SIRET, activités, notes commerciales, consentements, statut RGPD</td></tr>
+      <tr><td style="font-weight:700">Personnes concernées</td><td>Dirigeants et contacts des entreprises clientes ou prospects</td></tr>
+      <tr><td style="font-weight:700">Destinataires</td><td>Commerciaux S@FE (RLS par created_by), administrateurs, DCI (leur équipe uniquement)</td></tr>
+      <tr><td style="font-weight:700">Transferts hors UE</td><td>Supabase (EU-West-1 Dublin) — SCC incluses</td></tr>
+      <tr><td style="font-weight:700">Durée de conservation</td><td>5 ans post-fin de contrat · 3 ans pour les prospects sans activité · Purge automatique pg_cron</td></tr>
+      <tr><td style="font-weight:700">Mesures techniques</td><td>RLS par utilisateur, MFA admin/DCI, audit_logs immuable, purge automatique, clause de confidentialité</td></tr>
+      <tr><td style="font-weight:700">Risque résiduel</td><td><span class="badge b-info">Faible</span> — accès contrôlé par RLS + TOTP, pas de données sensibles (art. 9)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Traitement 2 — Gestion des contrats commerciaux</h3>
+  <table class="tbl" style="margin-bottom:20px">
+    <tbody>
+      <tr><td style="width:200px;font-weight:700">Finalité</td><td>Formalisation, archivage et suivi des engagements contractuels, facturation</td></tr>
+      <tr><td style="font-weight:700">Base légale</td><td>Art. 6(1)(b) — nécessaire à l'exécution du contrat</td></tr>
+      <tr><td style="font-weight:700">Données traitées</td><td>Type de prestation, montant, dates, statut, pièces jointes PDF (Supabase Storage), stripe_subscription_id</td></tr>
+      <tr><td style="font-weight:700">Durée de conservation</td><td>10 ans (Code de commerce art. L123-22 — pièces comptables) · Les contrats ne sont jamais supprimés, seules les données contact sont anonymisées après 5 ans</td></tr>
+      <tr><td style="font-weight:700">Mesures techniques</td><td>PDF archivé dans Storage (bucket contrats-pdf, RLS), audit_logs immuable (trigger Supabase), signature eIDAS AdES</td></tr>
+      <tr><td style="font-weight:700">Risque résiduel</td><td><span class="badge b-info">Faible</span> — intégrité assurée par hash SHA-256 + PDF signé + journal immuable</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Traitement 3 — Prospection commerciale par email (Brevo)</h3>
+  <table class="tbl" style="margin-bottom:20px">
+    <tbody>
+      <tr><td style="width:200px;font-weight:700">Finalité</td><td>Envoi d'emails commerciaux et de suivi aux prospects et clients ayant consenti</td></tr>
+      <tr><td style="font-weight:700">Base légale</td><td>Art. 6(1)(a) — consentement explicite (opt-in enregistré dans la fiche contact avec date) · Art. 6(1)(f) pour la prospection B2B existants</td></tr>
+      <tr><td style="font-weight:700">Données transmises à Brevo</td><td>Email, prénom, nom, entreprise uniquement — pas de données financières</td></tr>
+      <tr><td style="font-weight:700">Transferts hors UE</td><td>Brevo (SAS française, serveurs UE) — DPA signé · Pas de transfert hors EEE</td></tr>
+      <tr><td style="font-weight:700">Droit d'opposition</td><td>Lien désinscription dans chaque email (LCEN art. L33-4-1) · Mise à jour automatique du consentement dans le CRM</td></tr>
+      <tr><td style="font-weight:700">Durée de conservation</td><td>Jusqu'au retrait du consentement, max 3 ans sans interaction</td></tr>
+      <tr><td style="font-weight:700">Risque résiduel</td><td><span class="badge b-info">Faible</span> — données minimisées, opt-in tracé, DPA Brevo conforme</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Traitement 4 — Signature électronique du mandat (eIDAS AdES)</h3>
+  <table class="tbl" style="margin-bottom:20px">
+    <tbody>
+      <tr><td style="width:200px;font-weight:700">Finalité</td><td>Formalisation du mandat commercial donné par le client au DCI S@FE pour le représenter</td></tr>
+      <tr><td style="font-weight:700">Base légale</td><td>Art. 6(1)(b) — nécessaire à l'exécution du contrat · Code civil art. 1367 — validité signature électronique</td></tr>
+      <tr><td style="font-weight:700">Niveau de signature</td><td>Signature Électronique Avancée (AdES, eIDAS art. 26) : OTP envoyé par email + horodatage + hash SHA-256 du document + IP/UA du signataire</td></tr>
+      <tr><td style="font-weight:700">Données traitées</td><td>Email du mandataire (réception OTP), identité (pré-remplie), hash SHA-256 du PDF signé, IP, User-Agent, timestamp Paris</td></tr>
+      <tr><td style="font-weight:700">Archivage</td><td>PDF signé dans Supabase Storage (bucket contrats-pdf) · Entrée audit_logs avec hash (mandat_signe)</td></tr>
+      <tr><td style="font-weight:700">Durée de conservation</td><td>5 ans minimum (valeur probatoire contrat signé) — non soumis à la purge automatique</td></tr>
+      <tr><td style="font-weight:700">Risque résiduel</td><td><span class="badge b-warn">Modéré</span> — risque d'usurpation d'email mitigé par OTP + délai d'expiration (15 min) + IP tracée</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Traitement 5 — Traitement des paiements (Stripe)</h3>
+  <table class="tbl" style="margin-bottom:20px">
+    <tbody>
+      <tr><td style="width:200px;font-weight:700">Finalité</td><td>Facturation, abonnements récurrents, recouvrement</td></tr>
+      <tr><td style="font-weight:700">Base légale</td><td>Art. 6(1)(b) — nécessaire à l'exécution du contrat</td></tr>
+      <tr><td style="font-weight:700">Données S@FE</td><td><strong>PAN non stocké</strong> — seuls stripe_subscription_id, montants et statuts sont conservés dans la base S@FE</td></tr>
+      <tr><td style="font-weight:700">Données Stripe</td><td>Données de carte, identité facturation — Stripe est sous-traitant PCI DSS Level 1 (DPA Stripe signé)</td></tr>
+      <tr><td style="font-weight:700">Transferts hors UE</td><td>Stripe Inc. (USA) — DPA avec SCC · Stripe Ireland Ltd pour les transactions EUR</td></tr>
+      <tr><td style="font-weight:700">Durée de conservation</td><td>10 ans (Code de commerce art. L123-22 — obligation comptable)</td></tr>
+      <tr><td style="font-weight:700">Risque résiduel</td><td><span class="badge b-info">Faible</span> — PAN non stocké chez S@FE, Stripe PCI DSS, webhooks sécurisés (secret vérifié)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Matrice de risques globale</h3>
+  <table class="tbl" style="margin-bottom:20px">
+    <thead><tr><th>Risque</th><th>Vraisemblance</th><th>Gravité</th><th>Score</th><th>Mesure principale</th></tr></thead>
+    <tbody>
+      <tr><td>Accès non autorisé aux données (interne)</td><td>Faible</td><td>Élevée</td><td><span class="badge b-warn">Modéré</span></td><td>RLS par utilisateur + MFA TOTP admin/DCI</td></tr>
+      <tr><td>Accès non autorisé (externe / cyberattaque)</td><td>Très faible</td><td>Élevée</td><td><span class="badge b-info">Faible</span></td><td>Supabase RLS + JWT + HTTPS + headers CSP</td></tr>
+      <tr><td>Exfiltration ou fuite de données</td><td>Très faible</td><td>Élevée</td><td><span class="badge b-info">Faible</span></td><td>RLS immuable + audit_logs + accès exports tracé</td></tr>
+      <tr><td>Altération / falsification des données</td><td>Très faible</td><td>Modérée</td><td><span class="badge b-ok">Négligeable</span></td><td>Trigger immuable audit_logs + hash PDF contrats</td></tr>
+      <tr><td>Perte / destruction accidentelle</td><td>Très faible</td><td>Modérée</td><td><span class="badge b-ok">Négligeable</span></td><td>Sauvegardes Supabase automatiques (Point-in-Time)</td></tr>
+      <tr><td>Non-respect durées de conservation</td><td><strong>Éliminé</strong></td><td>Modérée</td><td><span class="badge b-ok">Résiduel nul</span></td><td>Purge automatique pg_cron mensuelle + interface admin</td></tr>
+      <tr><td>Exercice des droits (portabilité, accès, effacement)</td><td>Faible</td><td>Faible</td><td><span class="badge b-ok">Négligeable</span></td><td>Module Demandes de droits + /work/portabilite.html</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Conclusion &amp; validation</h3>
+  <div class="info-box">
+    <strong>Résultat :</strong> Les risques résiduels sont <strong>faibles à négligeables</strong> après application des mesures techniques et organisationnelles. Aucune consultation préalable de la CNIL n'est requise (art. 36 — les risques résiduels ne sont pas élevés).<br><br>
+    <strong>Validé par :</strong> Sébastien Alonso, Dirigeant S@FE SASU — <strong>Juin 2026</strong><br>
+    <strong>Prochaine révision :</strong> Juin 2027 (ou en cas de changement majeur de traitement)
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- 20. PURGE AUTOMATIQUE -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="s20">
+  <div class="section-header">
+    <div class="section-num">20</div>
+    <div class="section-title">Purge automatique des données — RGPD art. 5(1)(e)</div>
+  </div>
+
+  <p>La politique de conservation est techniquement enforced par un job pg_cron mensuel dans Supabase. Les données ne sont pas supprimées mais <strong>anonymisées</strong> (pseudonymisation irréversible), préservant les enregistrements commerciaux et comptables.</p>
+
+  <h3>Critères d'éligibilité à la purge</h3>
+  <table class="tbl" style="margin-bottom:20px">
+    <thead><tr><th>Cas</th><th>Condition SQL</th><th>Durée</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Client avec contrats terminés/résiliés</td>
+        <td>Tous les contrats en statut <code>'Terminé'</code> ou <code>'Résilié'</code> ET <code>MAX(date_echeance, resilié_at) &lt; NOW() - 5 ans</code></td>
+        <td>5 ans</td>
+        <td>Anonymisation contact + interactions</td>
+      </tr>
+      <tr>
+        <td>Prospect sans contrat</td>
+        <td>Aucun contrat lié ET <code>contacts.created_at &lt; NOW() - 3 ans</code></td>
+        <td>3 ans</td>
+        <td>Anonymisation contact</td>
+      </tr>
+      <tr>
+        <td>Contact déjà purgé</td>
+        <td><code>purge_date IS NOT NULL</code></td>
+        <td>—</td>
+        <td>Ignoré (idempotent)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Données anonymisées vs. conservées</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+    <div>
+      <div style="font-weight:700;color:var(--alert);margin-bottom:8px">🗑️ Anonymisées (contact)</div>
+      <ul style="font-size:.85rem;color:var(--txt2);line-height:2">
+        <li><code>nom</code> → <code>'ANONYMISÉ'</code></li>
+        <li><code>prenom</code> → <code>NULL</code></li>
+        <li><code>email</code> → <code>'purge-{id}@safe-purge.local'</code></li>
+        <li><code>telephone</code> → <code>NULL</code></li>
+        <li><code>linkedin</code> → <code>NULL</code></li>
+        <li><code>adresse</code> → <code>NULL</code></li>
+        <li><code>siret</code> → <code>NULL</code></li>
+        <li><code>notes</code> → <code>NULL</code></li>
+        <li>interactions.<code>contenu</code> → <code>'[contenu anonymisé]'</code></li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-weight:700;color:var(--ok);margin-bottom:8px">✅ Conservées</div>
+      <ul style="font-size:.85rem;color:var(--txt2);line-height:2">
+        <li>Contrats (montants, dates, statuts, PDF)</li>
+        <li><code>audit_logs</code> (journal immuable)</li>
+        <li><code>contacts.statut</code>, <code>activites</code> (données statistiques)</li>
+        <li><code>contacts.purge_date</code> (preuve d'anonymisation)</li>
+        <li>Interactions : <code>type</code>, <code>date</code>, <code>objet</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Infrastructure technique</h3>
+  <table class="tbl">
+    <thead><tr><th>Composant</th><th>Détail</th></tr></thead>
+    <tbody>
+      <tr><td><code>fn_preview_purge_eligibles()</code></td><td>Fonction SQL SECURITY DEFINER retournant les contacts éligibles (lecture seule)</td></tr>
+      <tr><td><code>fn_purge_contact(uuid)</code></td><td>Anonymise un contact individuel + ses interactions + log audit</td></tr>
+      <tr><td><code>fn_purge_donnees_perimees(source)</code></td><td>Purge globale : appelle fn_purge_contact() pour chaque éligible · retourne le compte</td></tr>
+      <tr><td>pg_cron job</td><td><code>'0 3 1 * *'</code> — 1<sup>er</sup> du mois à 03h00 UTC · source = <code>'pg_cron'</code></td></tr>
+      <tr><td>Interface admin CRM</td><td>Admin → Réglages → section "Purge des données périmées" · bouton manuel tracé avec source = <code>'admin_manuel'</code></td></tr>
+      <tr><td>Journal RGPD</td><td>Chaque purge génère une entrée <code>purge_donnees_perimees</code> (Critique) dans <code>audit_logs</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
 <!-- FOOTER -->
 <div style="border-top:2px solid var(--line);padding:32px 0;margin:40px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
   <div>
@@ -1735,7 +1921,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <div style="font-size:.8rem;color:var(--txt3)">contact@safe-digitalisation.fr · safe-digitalisation.fr</div>
   </div>
   <div style="font-size:.8rem;color:var(--txt3);text-align:right">
-    Documentation CRM v2026-V6<br>
+    Documentation CRM v2026-V7<br>
     Mise à jour : 23 juin 2026<br>
     Confidentiel — Usage interne
   </div>

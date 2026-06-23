@@ -961,7 +961,7 @@ function switchAdminTab(tab) {
   if (tab === 'per-user') renderAdminPerUser();
   if (tab === 'registre') renderRegistreRGPD();
   if (tab === 'securite') renderSecurityPanel();
-  if (tab === 'reglages') loadFournisseurs();
+  if (tab === 'reglages') { loadFournisseurs(); loadPurgeInfo(); }
 }
 
 // ── Panel Sécurité ────────────────────────────────────────
@@ -4882,6 +4882,73 @@ async function deleteFournisseur(id, nom) {
     details: { nom, action: 'suppression' },
   });
   await loadFournisseurs();
+}
+
+// =========================================================
+// PURGE AUTOMATIQUE — RGPD art. 5(1)(e) durées de conservation
+// =========================================================
+
+async function loadPurgeInfo() {
+  const wrap = $('#purge-section');
+  if (!wrap) return;
+  const statEl    = $('#purge-stat');
+  const listEl    = $('#purge-list');
+  const lastEl    = $('#purge-last');
+
+  statEl.textContent = '…';
+  listEl.innerHTML   = '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--mut)">Chargement…</td></tr>';
+
+  const { data: rows, error } = await sb.rpc('fn_preview_purge_eligibles');
+  if (error) { statEl.textContent = 'Erreur'; console.error('[purge]', error); return; }
+
+  statEl.textContent = rows.length;
+  $('#purge-trigger-btn').disabled = rows.length === 0;
+
+  listEl.innerHTML = rows.length === 0
+    ? '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--ok)">✅ Aucun contact éligible à la purge.</td></tr>'
+    : rows.map(r => `
+        <tr>
+          <td>${escapeHtml(r.nom || '—')}</td>
+          <td>${escapeHtml(r.entreprise || '—')}</td>
+          <td style="font-size:.78rem;color:var(--mut)">${r.eligible_depuis ? new Date(r.eligible_depuis).toLocaleDateString('fr-FR') : '—'}</td>
+          <td style="font-size:.75rem;color:var(--mut-2)">${escapeHtml(r.raison)}</td>
+        </tr>`).join('');
+
+  // Dernière purge automatique
+  const { data: lastLog } = await sb.from('audit_logs')
+    .select('created_at,details')
+    .eq('action', 'purge_donnees_perimees')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (lastLog) {
+    const d = new Date(lastLog.created_at);
+    const nb = lastLog.details?.nb_contacts_purges ?? lastLog.details?.contact_nom_original ? 1 : '?';
+    lastEl.textContent = `Dernière purge : ${d.toLocaleDateString('fr-FR')} — ${nb} contact(s) anonymisé(s) · source : ${lastLog.details?.source || '—'}`;
+  } else {
+    lastEl.textContent = 'Aucune purge effectuée pour l\'instant.';
+  }
+}
+
+async function triggerPurge() {
+  const n = parseInt($('#purge-stat').textContent, 10) || 0;
+  if (n === 0) return;
+  if (!confirm(`Confirmer la purge de ${n} contact(s) ?\n\nCette action est IRRÉVERSIBLE. Les données personnelles seront anonymisées conformément au RGPD art. 5(1)(e).`)) return;
+
+  $('#purge-trigger-btn').disabled = true;
+  $('#purge-trigger-btn').textContent = 'Purge en cours…';
+
+  const { data, error } = await sb.rpc('fn_purge_donnees_perimees', { p_source: 'admin_manuel' });
+
+  if (error) {
+    alert('Erreur lors de la purge : ' + error.message);
+    console.error('[purge]', error);
+  } else {
+    alert(`✅ Purge effectuée : ${data} contact(s) anonymisé(s).\nAction tracée dans le journal RGPD.`);
+    await loadPurgeInfo();
+  }
+  $('#purge-trigger-btn').textContent = 'Déclencher la purge maintenant';
 }
 
 // Cache fournisseurs pour l'édition

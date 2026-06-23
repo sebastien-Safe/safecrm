@@ -87,6 +87,7 @@ const JOURNAL_ACTION_LABELS = {
   incident_nis2_declare:         'Incident NIS2 déclaré',
   incident_nis2_anssi_notifie:   'Notification ANSSI enregistrée',
   export_portabilite_contact:    'Export portabilité données (RGPD art. 20)',
+  purge_donnees_perimees:        'Purge données périmées (RGPD art. 5)',
 };
 
 const JOURNAL_CRITICITE_CLASS = {
