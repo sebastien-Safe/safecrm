@@ -158,7 +158,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <h1 class="cover-title">Documentation complète<br>des fonctionnalités CRM</h1>
     <p class="cover-sub">Référentiel exhaustif de toutes les fonctionnalités du CRM S@FE — gestion commerciale, contrats, commissions, automatisations et administration.</p>
     <div class="cover-meta">
-      <div><strong>Version</strong><span>2026-V4</span></div>
+      <div><strong>Version</strong><span>2026-V6</span></div>
       <div><strong>Date</strong><span>22 juin 2026</span></div>
       <div><strong>Éditeur</strong><span>S@FE SASU</span></div>
       <div><strong>Rôles</strong><span>Tous niveaux</span></div>
@@ -202,11 +202,17 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <div class="section-title">Authentification &amp; Sécurité</div>
   </div>
 
+  <h3>Navigation &amp; accès aux modules</h3>
+  <p>Le CRM est une Single Page Application (<code>index.html</code>). La navigation se fait via la <strong>barre latérale gauche</strong> (sidebar). Depuis la refonte Pipeline (2026), les anciennes vues "Contacts" et "Contrats" séparées ont été remplacées par un <strong>Pipeline Kanban unifié</strong> (🗂️ Pipeline) qui regroupe les deux en une seule vue Kanban. Les vues Tâches, Résultats, Messages et Administration restent distinctes.</p>
+  <div class="info-box" style="margin-bottom:20px">
+    <strong>Accès WORK :</strong> L'espace WORK (<code>/work/index.html</code>) est distinct du CRM principal. Il est accessible depuis la sidebar (lien WORK) ou directement par URL. Un bouton <strong>← CRM</strong> est présent dans la topbar de toutes les pages WORK pour revenir au CRM.
+  </div>
+
   <h3>Connexion &amp; Gestion de session</h3>
   <div class="feature-grid">
     <div class="feature-card">
       <div class="fc-title">Connexion email / mot de passe</div>
-      <div class="fc-body">Authentification sécurisée via Supabase Auth. Session automatiquement expirée après 8 heures d'inactivité.</div>
+      <div class="fc-body">Authentification sécurisée via Supabase Auth. Session automatiquement expirée après <strong>4 heures</strong> (RGPD Art. 42 — déconnexion automatique, alerte à T-15 min).</div>
     </div>
     <div class="feature-card">
       <div class="fc-title">Double authentification (2FA/TOTP)</div>
@@ -421,7 +427,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   <div class="feature-grid">
     <div class="feature-card">
       <div class="fc-title">Création d'abonnement</div>
-      <div class="fc-body">Edge Function <code>creaye-checkout</code> crée une session Stripe. Lien de paiement généré et transmis au client. Synchronisation automatique du statut contrat après paiement.</div>
+      <div class="fc-body">Edge Function <code>create-checkout</code> crée une session Stripe. Lien de paiement généré et transmis au client. Synchronisation automatique du statut contrat après paiement.</div>
     </div>
     <div class="feature-card">
       <div class="fc-title">Portail client Stripe</div>
@@ -1282,7 +1288,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
       <tr><td><code>send-crm-email</code></td><td>12 types d'email transactionnels · PDF joints (SEO · DPO · Cyber · Bordereau · Facture)</td><td>JWT + is_admin</td><td>v10</td></tr>
       <tr><td><code>call-ia</code></td><td>Routage IA multi-fournisseur (Groq · Grok · Anthropic · Mistral)</td><td>JWT</td><td>v4</td></tr>
       <tr><td><code>stripe-webhook</code></td><td>Webhooks Stripe (payment_succeeded · payment_failed)</td><td>Stripe signature</td><td>—</td></tr>
-      <tr><td><code>send-mandat-email</code></td><td>Email mandat DCI signé + 8 pièces jointes Supabase Storage</td><td>JWT</td><td>—</td></tr>
+      <tr><td><code>send-mandat-email</code></td><td>Email mandat DCI signé + 8 documents commerciaux (9 pièces jointes au total) depuis Supabase Storage</td><td>JWT</td><td>—</td></tr>
       <tr><td><code>send-clause-email</code></td><td>Email clause de confidentialité (collaborateur + public)</td><td>JWT / public</td><td>—</td></tr>
       <tr><td><code>test-brevo</code></td><td>Test d'envoi des 9 templates Brevo (admin uniquement)</td><td>Public (admin-only par logique)</td><td>—</td></tr>
       <tr><td><code>intrusion-guard</code></td><td>Détection bruteforce · Ban IP/email · Journal sécurité</td><td>Aucune (pré-auth)</td><td>—</td></tr>
@@ -1527,7 +1533,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
       <tr><td><code>export_journal_csv</code></td><td>Export journal RGPD (CSV)</td><td><span class="badge b-admin">Critique</span></td><td>RGPD</td><td>Export CSV journal d'audit</td></tr>
       <tr><td><code>export_journal_pdf</code></td><td>Export journal RGPD (PDF)</td><td><span class="badge b-admin">Critique</span></td><td>RGPD</td><td>Export PDF journal d'audit</td></tr>
       <tr><td><code>export_bordereau_commission</code></td><td>Export bordereau commission</td><td><span class="badge b-dci">Attention</span></td><td>Commissions</td><td>Téléchargement bordereau DCI</td></tr>
-      <tr><td><code>paiement_confirme</code></td><td>Paiement confirmé</td><td><span class="badge b-all">Info</span></td><td>Paiements</td><td>Webhook Stripe <code>payment_intent.succeeded</code></td></tr>
+      <tr><td><code>paiement_confirme</code></td><td>Paiement confirmé</td><td><span class="badge b-all">Info</span></td><td>Paiements</td><td>Webhook Stripe <code>invoice.payment_succeeded</code></td></tr>
       <tr><td><code>resiliation_validee</code></td><td>Résiliation validée</td><td><span class="badge b-dci">Attention</span></td><td>Contrats</td><td>Validation admin résiliation + annulation Stripe</td></tr>
     </tbody>
   </table>
@@ -1657,7 +1663,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
         <td>Sous-traitant (art. 28)</td>
         <td>Toutes les données CRM (contacts, contrats, profils, logs, fichiers)</td>
         <td>⚠️ Oui (US) — région EU disponible et recommandée</td>
-        <td><a href="https://supabase.com/privacy" target="_blank">DPA Supabase ↗</a> — SCC incluses</td>
+        <td><a href="https://supabase.com/dpa" target="_blank">DPA Supabase ↗</a> — SCC incluses</td>
       </tr>
       <tr>
         <td><strong>Stripe Inc.</strong></td>
