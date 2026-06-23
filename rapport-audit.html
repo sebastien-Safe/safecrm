@@ -1164,10 +1164,10 @@
       </tr>
       <tr>
         <td>P1-5</td>
-        <td><strong>Mettre en place CI/CD basique</strong> — GitHub Actions pour lint JS, vérification des migrations SQL, tests E2E Playwright minimaux sur les flux critiques (login, paiement)</td>
-        <td><code>.github/workflows/</code> (à créer)</td>
+        <td><strong>CI/CD GitHub Actions</strong> — <code>security.yml</code> : CORS wildcard, typo BREBO, SRI CDN, secrets .env (chaque push). <code>deno-check.yml</code> : lint + type-check sur changements <code>supabase/functions/</code>. E2E Playwright reporté P2 (nécessite instance Supabase de test dédiée).</td>
+        <td><code>.github/workflows/security.yml</code>, <code>deno-check.yml</code></td>
         <td class="effort">1-2 j</td>
-        <td><span class="badge-partial">⏳ En attente</span></td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">ANSSI, DevSecOps</span></td>
       </tr>
       <tr>
