@@ -1156,10 +1156,10 @@
       </tr>
       <tr>
         <td>P1-4</td>
-        <td><strong>Renommer <code>creaye-checkout</code> → <code>create-checkout</code></strong> et mettre à jour le nom d'invocation côté client</td>
-        <td><code>supabase/function/creaye-checkout/</code>, <code>assets/app.js</code></td>
+        <td><strong>Renommer <code>creaye-checkout</code> → <code>create-checkout</code></strong> — dossier local renommé, <code>import { serve }</code> manquant corrigé, redéployé en v27. Découverte : le frontend appelait déjà <code>create-checkout</code> (la correction CORS P1-2 n'avait pas atteint la bonne fonction). Ghost <code>creaye-checkout</code> v1 laissé inerte.</td>
+        <td><code>supabase/functions/create-checkout/</code></td>
         <td class="effort">30 min</td>
-        <td><span class="badge-partial">⏳ En attente</span></td>
+        <td><span class="badge-ok">✅ Corrigé + déployé v27</span></td>
         <td><span class="action-ref">Maintenabilité</span></td>
       </tr>
       <tr>
