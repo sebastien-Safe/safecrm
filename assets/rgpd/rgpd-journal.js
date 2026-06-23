@@ -86,6 +86,7 @@ const JOURNAL_ACTION_LABELS = {
   fournisseur_modifie:           'Registre fournisseurs modifié',
   incident_nis2_declare:         'Incident NIS2 déclaré',
   incident_nis2_anssi_notifie:   'Notification ANSSI enregistrée',
+  export_portabilite_contact:    'Export portabilité données (RGPD art. 20)',
 };
 
 const JOURNAL_CRITICITE_CLASS = {

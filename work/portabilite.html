@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Portabilité des données — S@FE WORK</title>
+  <link rel="icon" type="image/svg+xml" href="/work/favicon.svg">
+  <link rel="stylesheet" href="/work/shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="/assets/config.js"></script>
+  <style>
+    .search-wrap{position:relative;max-width:520px}
+    .search-wrap input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:11px 16px;color:#fff;font-size:.9rem;font-family:var(--ff-body);outline:none;transition:border-color .15s;box-sizing:border-box}
+    .search-wrap input:focus{border-color:var(--accent)}
+    .search-results{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--navy-mid);border:1px solid var(--line);border-radius:10px;max-height:280px;overflow-y:auto;z-index:50;display:none}
+    .search-results.open{display:block}
+    .search-result-item{padding:10px 14px;cursor:pointer;font-size:.87rem;color:var(--mut-2);border-bottom:1px solid var(--line);transition:background .12s}
+    .search-result-item:last-child{border-bottom:none}
+    .search-result-item:hover{background:rgba(255,255,255,.06);color:#fff}
+    .search-result-item .name{font-weight:600;color:#fff}
+    .search-result-item .sub{font-size:.75rem;color:var(--mut);margin-top:2px}
+    .preview-card{background:rgba(20,34,64,.7);border:1px solid var(--line);border-radius:var(--r);padding:24px;margin-top:24px;display:none}
+    .preview-card.show{display:block}
+    .preview-section{margin-bottom:20px}
+    .preview-section h4{font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:0 0 10px}
+    .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+    .preview-field{background:rgba(255,255,255,.04);border-radius:8px;padding:8px 12px}
+    .preview-field .lbl{font-size:.7rem;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+    .preview-field .val{font-size:.85rem;color:#fff;margin-top:2px;word-break:break-all}
+    .consent-row{display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--mut-2);padding:4px 0}
+    .consent-ok  {color:var(--ok)}
+    .consent-nok {color:var(--alert)}
+    .contract-row{background:rgba(255,255,255,.03);border-radius:8px;padding:10px 12px;margin-bottom:6px;font-size:.82rem;color:var(--mut-2)}
+    .contract-row strong{color:#fff}
+    .interaction-row{font-size:.81rem;color:var(--mut-2);padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+    .interaction-row:last-child{border:none}
+    .export-bar{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
+    .warning-box{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:14px 16px;font-size:.83rem;color:var(--mut-2);margin-top:16px;line-height:1.6}
+    .warning-box strong{color:var(--gold)}
+    .empty-state{text-align:center;padding:48px 20px;color:var(--mut)}
+    .empty-state .ico{font-size:2.5rem;margin-bottom:12px}
+    .badge-consent{display:inline-block;font-size:.65rem;font-weight:700;padding:1px 7px;border-radius:5px}
+    .badge-ok {background:rgba(34,197,94,.15);color:#86efac}
+    .badge-nok{background:rgba(255,77,94,.15);color:#fca5a5}
+    .log-entry{background:rgba(20,34,64,.5);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:.8rem;color:var(--mut-2);display:flex;gap:10px}
+    .log-entry .date{color:var(--mut);white-space:nowrap;min-width:130px}
+  </style>
+</head>
+<body>
+
+<div id="login-screen" class="login-wrap">
+  <div class="login-box">
+    <span class="eyebrow">S@FE WORK</span>
+    <h1>S<b style="color:var(--gold)">@</b>FE</h1>
+    <p>Accès réservé aux administrateurs</p>
+    <div class="field"><label>E-mail</label><input type="email" id="l-email" autocomplete="email"></div>
+    <div class="field"><label>Mot de passe</label><input type="password" id="l-pass" autocomplete="current-password"></div>
+    <button class="btn btn-gold" onclick="doLogin()" style="width:100%;justify-content:center">Se connecter</button>
+    <div class="login-error" id="login-err"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div class="topbar-brand">S<b>@</b>FE<small>WORK</small></div>
+    <div style="font-size:.8rem;color:var(--mut);padding:0 8px;border:1px solid var(--line);border-radius:6px">⬇️ Portabilité RGPD</div>
+    <div class="topbar-user" style="margin-left:auto;display:flex;align-items:center;gap:10px">
+      <a href="/work/index.html" class="btn btn-out" style="font-size:.78rem;padding:5px 12px;text-decoration:none">← WORK</a>
+      <a href="/" class="btn btn-out" style="font-size:.78rem;padding:5px 12px;text-decoration:none">← CRM</a>
+      <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="shell" style="max-width:900px;margin:0 auto;padding:28px 20px">
+
+    <div style="margin-bottom:28px">
+      <span class="eyebrow">RGPD art. 20</span>
+      <h2 style="font-size:1.4rem">Portabilité des données</h2>
+      <p style="color:var(--mut);font-size:.87rem;margin-top:6px">Générez l'export complet des données personnelles d'une personne concernée suite à une demande formelle. Réservé aux administrateurs — chaque export est tracé dans le journal RGPD.</p>
+    </div>
+
+    <div class="warning-box">
+      <strong>⚠️ Vérification préalable obligatoire</strong><br>
+      Avant de générer l'export, confirmez l'identité du demandeur par un moyen indépendant (email de confirmation à l'adresse connue, pièce d'identité si nécessaire). Ne transmettez jamais un export sans avoir authentifié la personne concernée.
+    </div>
+
+    <!-- Recherche -->
+    <div style="margin-top:28px">
+      <h3 style="margin-bottom:12px">Sélectionner la personne concernée</h3>
+      <div class="search-wrap">
+        <input type="text" id="contact-search" placeholder="Nom, prénom, entreprise ou email…" autocomplete="off" oninput="searchContacts(this.value)">
+        <div class="search-results" id="search-results"></div>
+      </div>
+    </div>
+
+    <!-- Aperçu des données -->
+    <div class="preview-card" id="preview-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+        <div>
+          <h3 style="margin:0" id="preview-title">—</h3>
+          <div style="font-size:.8rem;color:var(--mut);margin-top:4px" id="preview-sub">—</div>
+        </div>
+        <span class="badge-consent" id="preview-rgpd" style="padding:4px 12px;border-radius:8px;font-size:.75rem">—</span>
+      </div>
+
+      <!-- Identité -->
+      <div class="preview-section">
+        <h4>Identité &amp; coordonnées</h4>
+        <div class="preview-grid" id="preview-identity"></div>
+      </div>
+
+      <!-- Consentements -->
+      <div class="preview-section">
+        <h4>Consentements RGPD</h4>
+        <div id="preview-consents"></div>
+      </div>
+
+      <!-- Contrats -->
+      <div class="preview-section">
+        <h4>Contrats (<span id="preview-contracts-count">0</span>)</h4>
+        <div id="preview-contracts"></div>
+      </div>
+
+      <!-- Interactions -->
+      <div class="preview-section">
+        <h4>Historique des échanges (<span id="preview-interactions-count">0</span>)</h4>
+        <div id="preview-interactions"></div>
+      </div>
+
+      <!-- Barre d'export -->
+      <div class="export-bar">
+        <button class="btn btn-gold" onclick="exportJSON()">⬇️ Exporter JSON</button>
+        <button class="btn btn-out"  onclick="exportPDF()">⬇️ Exporter PDF lisible</button>
+        <div style="font-size:.75rem;color:var(--mut);align-self:center;margin-left:auto" id="export-status"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser  = null;
+let currentAdmin = null;
+let allContacts  = [];
+let selected     = null;
+let selectedContracts    = [];
+let selectedInteractions = [];
+
+async function doLogin() {
+  const { error } = await sb.auth.signInWithPassword({ email: document.getElementById('l-email').value.trim(), password: document.getElementById('l-pass').value });
+  if (error) { document.getElementById('login-err').textContent = error.message; return; }
+  init();
+}
+async function doLogout() { await sb.auth.signOut(); location.reload(); }
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { document.getElementById('login-screen').style.display = ''; document.getElementById('app').style.display = 'none'; return; }
+  currentUser = session.user;
+  const { data: prof } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+  if (!prof?.is_admin) { alert('Accès réservé aux administrateurs.'); document.getElementById('login-screen').style.display = ''; return; }
+  currentAdmin = prof;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  const { data } = await sb.from('contacts').select('id,nom,prenom,email,entreprise,telephone').order('nom');
+  allContacts = data || [];
+}
+
+function searchContacts(q) {
+  const res = document.getElementById('search-results');
+  if (!q.trim()) { res.classList.remove('open'); return; }
+  const lq = q.toLowerCase();
+  const matches = allContacts.filter(c =>
+    (c.nom       || '').toLowerCase().includes(lq) ||
+    (c.prenom    || '').toLowerCase().includes(lq) ||
+    (c.entreprise|| '').toLowerCase().includes(lq) ||
+    (c.email     || '').toLowerCase().includes(lq)
+  ).slice(0, 8);
+  if (!matches.length) { res.innerHTML = '<div class="search-result-item" style="color:var(--mut)">Aucun résultat</div>'; res.classList.add('open'); return; }
+  res.innerHTML = matches.map(c => `
+    <div class="search-result-item" onclick="selectContact('${c.id}')">
+      <div class="name">${esc(c.nom || '')} ${esc(c.prenom || '')}</div>
+      <div class="sub">${esc(c.entreprise || '')}${c.email ? ' · ' + esc(c.email) : ''}</div>
+    </div>`).join('');
+  res.classList.add('open');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) document.getElementById('search-results').classList.remove('open');
+});
+
+async function selectContact(id) {
+  document.getElementById('search-results').classList.remove('open');
+  document.getElementById('preview-card').classList.remove('show');
+
+  const { data: c } = await sb.from('contacts').select('*').eq('id', id).maybeSingle();
+  if (!c) return;
+  selected = c;
+
+  const [{ data: contracts }, { data: interactions }] = await Promise.all([
+    sb.from('contracts').select('*').eq('contact_id', id).order('created_at', { ascending: false }),
+    sb.from('interactions').select('*').eq('contact_id', id).order('date', { ascending: false }),
+  ]);
+  selectedContracts    = contracts    || [];
+  selectedInteractions = interactions || [];
+
+  document.getElementById('contact-search').value = [c.nom, c.prenom].filter(Boolean).join(' ');
+
+  // Titre
+  document.getElementById('preview-title').textContent = [c.nom, c.prenom].filter(Boolean).join(' ') || '—';
+  document.getElementById('preview-sub').textContent   = [c.entreprise, c.email].filter(Boolean).join(' · ') || '—';
+  const rgpdEl = document.getElementById('preview-rgpd');
+  rgpdEl.textContent  = c.rgpd_ko ? 'RGPD KO' : 'RGPD OK';
+  rgpdEl.className    = 'badge-consent ' + (c.rgpd_ko ? 'badge-nok' : 'badge-ok');
+
+  // Identité
+  const fields = [
+    ['Nom',        c.nom],
+    ['Prénom',     c.prenom],
+    ['Email',      c.email],
+    ['Téléphone',  c.telephone],
+    ['LinkedIn',   c.linkedin],
+    ['Entreprise', c.entreprise],
+    ['SIRET',      c.siret],
+    ['Adresse',    c.adresse],
+    ['CP / Ville', c.code_postal_ville],
+    ['Activités',  (c.activites||[]).join(', ') || null],
+    ['Notes',      c.notes],
+    ['Statut',     c.statut],
+    ['Créé le',    c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : null],
+  ].filter(([,v]) => v);
+  document.getElementById('preview-identity').innerHTML = fields.map(([l,v]) => `
+    <div class="preview-field"><div class="lbl">${l}</div><div class="val">${esc(v)}</div></div>`).join('');
+
+  // Consentements
+  document.getElementById('preview-consents').innerHTML = [
+    ['Email marketing',    c.consentement_email],
+    ['Téléphone',          c.consentement_telephone],
+    ['Courrier',           c.consentement_courrier],
+  ].map(([l,v]) => `
+    <div class="consent-row">
+      <span class="${v ? 'consent-ok' : 'consent-nok'}">${v ? '✅' : '❌'}</span>
+      <span>${l}</span>
+      <span class="badge-consent ${v ? 'badge-ok' : 'badge-nok'}">${v ? 'Accordé' : 'Non accordé'}</span>
+    </div>`).join('');
+
+  // Contrats
+  document.getElementById('preview-contracts-count').textContent = selectedContracts.length;
+  document.getElementById('preview-contracts').innerHTML = selectedContracts.length
+    ? selectedContracts.map(ct => `
+        <div class="contract-row">
+          <strong>${esc(ct.type||'—')}</strong> · ${esc(ct.formule||'—')} · <strong>${ct.montant ? ct.montant.toLocaleString('fr-FR') + ' € HT' : '—'}</strong>
+          <span style="float:right;font-size:.75rem;color:var(--mut)">${esc(ct.statut||'—')}</span><br>
+          <span style="font-size:.75rem;color:var(--mut)">Créé ${ct.created_at ? new Date(ct.created_at).toLocaleDateString('fr-FR') : '—'}
+          ${ct.signed_at ? '· Signé ' + new Date(ct.signed_at).toLocaleDateString('fr-FR') : ''}</span>
+        </div>`).join('')
+    : '<div style="color:var(--mut);font-size:.83rem">Aucun contrat.</div>';
+
+  // Interactions
+  document.getElementById('preview-interactions-count').textContent = selectedInteractions.length;
+  document.getElementById('preview-interactions').innerHTML = selectedInteractions.length
+    ? selectedInteractions.slice(0, 10).map(i => `
+        <div class="interaction-row">
+          <span style="color:var(--mut);font-size:.75rem">${i.date ? new Date(i.date).toLocaleDateString('fr-FR') : '—'} · ${esc(i.type||'')}</span>
+          ${i.objet ? ' — ' + esc(i.objet) : ''}
+        </div>`).join('') + (selectedInteractions.length > 10 ? `<div style="color:var(--mut);font-size:.75rem;margin-top:6px">… et ${selectedInteractions.length - 10} autre(s)</div>` : '')
+    : '<div style="color:var(--mut);font-size:.83rem">Aucun échange enregistré.</div>';
+
+  document.getElementById('preview-card').classList.add('show');
+  document.getElementById('export-status').textContent = '';
+}
+
+function buildExportData() {
+  const c = selected;
+  return {
+    metadata: {
+      objet:           'Export portabilité données personnelles — RGPD art. 20',
+      date_export:     new Date().toISOString(),
+      exporte_par:     currentAdmin.prenom + ' ' + currentAdmin.nom + ' (' + currentUser.email + ')',
+      contact_id:      c.id,
+      responsable_traitement: 'S@FE SASU — SIRET 104 699 558 00011 — contact@safe-digitalisation.fr',
+    },
+    identite: {
+      nom: c.nom, prenom: c.prenom, email: c.email, telephone: c.telephone,
+      linkedin: c.linkedin, entreprise: c.entreprise, siret: c.siret,
+      adresse: c.adresse, code_postal_ville: c.code_postal_ville,
+      activites: c.activites, notes: c.notes, statut: c.statut,
+      date_creation_fiche: c.created_at,
+    },
+    consentements: {
+      email_marketing:   c.consentement_email     || false,
+      telephone:         c.consentement_telephone  || false,
+      courrier:          c.consentement_courrier   || false,
+      statut_rgpd:       c.rgpd_ko ? 'Non conforme' : 'Conforme',
+    },
+    contrats: selectedContracts.map(ct => ({
+      type: ct.type, formule: ct.formule, montant: ct.montant,
+      recurrence: ct.recurrence, statut: ct.statut,
+      date_creation: ct.created_at, date_signature: ct.signed_at,
+    })),
+    echanges: selectedInteractions.map(i => ({
+      type: i.type, date: i.date, objet: i.objet, contenu: i.contenu,
+    })),
+    pipeline: {
+      colonne:   c.kanban_col      || null,
+      priorite:  c.priority        || null,
+      checklist: c.kanban_checklist || [],
+    },
+  };
+}
+
+async function logExport() {
+  const c = selected;
+  try {
+    await sb.from('audit_logs').insert({
+      user_id: currentUser.id, user_role: 'Administrateur',
+      action: 'export_portabilite_contact', module: 'RGPD',
+      entity_type: 'contact', entity_id: c.id,
+      donnees_concernees: 'identité, coordonnées, consentements, contrats, interactions',
+      criticite: 'Critique', resultat: 'Succès',
+      details: {
+        contact_nom: [c.nom, c.prenom].filter(Boolean).join(' '),
+        entreprise: c.entreprise,
+        nb_contrats: selectedContracts.length,
+        nb_echanges: selectedInteractions.length,
+      },
+    });
+  } catch(e) { console.warn('[RGPD] log export portabilité :', e); }
+}
+
+async function exportJSON() {
+  if (!selected) return;
+  const data = buildExportData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const nom  = [selected.nom, selected.prenom].filter(Boolean).join('_').replace(/\s/g,'_').toLowerCase() || selected.id;
+  a.href     = url;
+  a.download = `portabilite_${nom}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  await logExport();
+  document.getElementById('export-status').textContent = '✅ JSON exporté — action tracée dans le journal RGPD';
+}
+
+async function exportPDF() {
+  if (!selected) return;
+  const { jsPDF } = window.jspdf;
+  const doc  = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const c    = selected;
+  const navy = [10, 22, 40];
+  const gold = [245, 158, 11];
+  const mut  = [100, 116, 139];
+  const M    = 18;
+  let y      = 0;
+
+  // Header
+  doc.setFillColor(...navy); doc.rect(0, 0, 210, 38, 'F');
+  doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(245,158,11);
+  doc.text('S@FE SASU', M, 16);
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(255,255,255);
+  doc.text('Export portabilité des données personnelles — RGPD art. 20', M, 24);
+  doc.text('SIRET 104 699 558 00011 · contact@safe-digitalisation.fr', M, 30);
+  y = 48;
+
+  const section = (title) => {
+    if (y > 260) { doc.addPage(); y = 18; }
+    doc.setFillColor(...navy); doc.rect(M - 2, y - 4, 174, 8, 'F');
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...gold);
+    doc.text(title.toUpperCase(), M, y + 1); y += 10;
+    doc.setTextColor(30, 40, 60); doc.setFont('helvetica','normal');
+  };
+
+  const row = (label, value) => {
+    if (!value && value !== false) return;
+    if (y > 270) { doc.addPage(); y = 18; }
+    doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.setTextColor(...mut);
+    doc.text(String(label), M, y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(20, 30, 50);
+    const lines = doc.splitTextToSize(String(value), 120);
+    doc.text(lines, 70, y);
+    y += Math.max(5.5, lines.length * 4.5);
+  };
+
+  // Métadonnées
+  section('Informations sur cet export');
+  row('Date de l\'export',     new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }));
+  row('Exporté par',           currentAdmin.prenom + ' ' + currentAdmin.nom);
+  row('Responsable traitement','S@FE SASU · contact@safe-digitalisation.fr');
+  row('Base légale',           'RGPD art. 20 — Droit à la portabilité des données');
+  y += 4;
+
+  // Identité
+  section('Identité & coordonnées');
+  row('Nom / Prénom',   [c.nom, c.prenom].filter(Boolean).join(' ') || '—');
+  row('E-mail',         c.email);
+  row('Téléphone',      c.telephone);
+  row('LinkedIn',       c.linkedin);
+  row('Entreprise',     c.entreprise);
+  row('SIRET',          c.siret);
+  row('Adresse',        [c.adresse, c.code_postal_ville].filter(Boolean).join(', '));
+  row('Activités',      (c.activites||[]).join(', ') || '—');
+  row('Notes',          c.notes);
+  row('Statut CRM',     c.statut);
+  row('Fiche créée le', c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '—');
+  y += 4;
+
+  // Consentements
+  section('Consentements RGPD');
+  row('Email marketing',  c.consentement_email     ? 'Accordé' : 'Non accordé');
+  row('Téléphone',        c.consentement_telephone  ? 'Accordé' : 'Non accordé');
+  row('Courrier',         c.consentement_courrier   ? 'Accordé' : 'Non accordé');
+  row('Statut conformité',c.rgpd_ko ? 'Non conforme' : 'Conforme');
+  y += 4;
+
+  // Contrats
+  section(`Contrats (${selectedContracts.length})`);
+  if (!selectedContracts.length) { doc.setFontSize(8.5); doc.setTextColor(...mut); doc.text('Aucun contrat.', M, y); y += 6; }
+  selectedContracts.forEach((ct, i) => {
+    if (y > 260) { doc.addPage(); y = 18; }
+    doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.setTextColor(20,30,50);
+    doc.text(`${i+1}. ${ct.type || '—'} — ${ct.formule || '—'}`, M, y); y += 5;
+    row('Montant',    ct.montant ? ct.montant.toLocaleString('fr-FR') + ' € HT' : '—');
+    row('Récurrence', ct.recurrence);
+    row('Statut',     ct.statut);
+    row('Créé le',    ct.created_at ? new Date(ct.created_at).toLocaleDateString('fr-FR') : '—');
+    row('Signé le',   ct.signed_at  ? new Date(ct.signed_at).toLocaleDateString('fr-FR')  : '—');
+    y += 2;
+  });
+
+  // Interactions
+  section(`Historique des échanges (${selectedInteractions.length})`);
+  if (!selectedInteractions.length) { doc.setFontSize(8.5); doc.setTextColor(...mut); doc.text('Aucun échange.', M, y); y += 6; }
+  selectedInteractions.forEach((i) => {
+    if (y > 265) { doc.addPage(); y = 18; }
+    const dateStr = i.date ? new Date(i.date).toLocaleDateString('fr-FR') : '—';
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(20,30,50);
+    doc.text(`${dateStr} · ${i.type || '—'}${i.objet ? ' — ' + i.objet : ''}`, M, y); y += 4;
+    if (i.contenu) {
+      doc.setFont('helvetica','normal'); doc.setTextColor(...mut);
+      const lines = doc.splitTextToSize(String(i.contenu), 170);
+      doc.text(lines.slice(0,3), M, y);
+      y += Math.min(3, lines.length) * 3.8 + 1;
+    }
+  });
+
+  // Footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p);
+    doc.setFillColor(...navy); doc.rect(0, 288, 210, 12, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(255,255,255);
+    doc.text('S@FE SASU · Export RGPD art. 20 · Confidentiel', M, 295);
+    doc.text(`Page ${p}/${pageCount}`, 192, 295, { align: 'right' });
+  }
+
+  const nom = [c.nom, c.prenom].filter(Boolean).join('_').replace(/\s/g,'_').toLowerCase() || c.id;
+  doc.save(`portabilite_${nom}_${new Date().toISOString().slice(0,10)}.pdf`);
+  await logExport();
+  document.getElementById('export-status').textContent = '✅ PDF exporté — action tracée dans le journal RGPD';
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+init();
+</script>
+</body>
+</html>
