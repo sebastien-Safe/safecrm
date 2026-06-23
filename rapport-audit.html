@@ -1243,10 +1243,10 @@
       </tr>
       <tr>
         <td>P2-4</td>
-        <td><strong>Minifier et bundler les assets</strong> — intégrer Vite ou esbuild pour réduire <code>app.js</code> de 244 KB à ~60 KB (Brotli)</td>
-        <td>—</td>
-        <td class="effort">1 j</td>
-        <td><span class="badge-partial">⏳ En attente</span></td>
+        <td><strong>Minifier et bundler les assets</strong> — <code>package.json</code> + <code>build.mjs</code> (esbuild) : minification des 30 fichiers JS + 2 CSS vers <code>dist/</code>. GitHub Actions <code>.github/workflows/deploy.yml</code> : build automatique sur push main → déploiement Pages. <strong>Action requise :</strong> changer la source GitHub Pages de "Branch: main" à "GitHub Actions" dans les settings du dépôt.</td>
+        <td><code>package.json</code>, <code>build.mjs</code>, <code>.github/workflows/deploy.yml</code></td>
+        <td class="effort">3 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">Core Web Vitals, WCAG 2.1</span></td>
       </tr>
       <tr>
