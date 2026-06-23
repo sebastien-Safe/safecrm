@@ -635,7 +635,7 @@ function renderDashboard() {
     <div class="mini-item">
       <div>
         <div class="t">${escapeHtml(c.nom)}${c.entreprise ? ' — ' + escapeHtml(c.entreprise) : ''}</div>
-        <div class="s">${(c.activites || []).join(', ') || '—'}</div>
+        <div class="s">${(c.activites || []).map(a => escapeHtml(a)).join(', ') || '—'}</div>
       </div>
       <span class="badge ${CONTACT_STATUT_BADGE[statut] || 'badge-gray'}">${escapeHtml(statut)}</span>
     </div>`;
@@ -845,6 +845,14 @@ function openProfileModal() {
   if (document.getElementById('profile-adresse'))   document.getElementById('profile-adresse').value   = state.profile?.adresse    || '';
   if (document.getElementById('profile-rcpro'))        document.getElementById('profile-rcpro').value        = state.profile?.rcpro_numero  || '';
   if (document.getElementById('profile-siret'))        document.getElementById('profile-siret').value        = state.profile?.siret         || '';
+  if (document.getElementById('profile-code-postal'))  document.getElementById('profile-code-postal').value  = state.profile?.code_postal   || '';
+  const _pvEl = document.getElementById('profile-ville');
+  if (_pvEl) {
+    const _sv = state.profile?.ville || '';
+    _pvEl.innerHTML = _sv
+      ? `<option value="${escapeHtml(_sv)}">${escapeHtml(_sv)}</option>`
+      : '<option value="">— Saisissez un code postal —</option>';
+  }
   if (document.getElementById('profile-region'))       document.getElementById('profile-region').value       = state.profile?.region        || '';
   if (document.getElementById('profile-departement'))  document.getElementById('profile-departement').value  = state.profile?.departement   || '';
   if (document.getElementById('profile-secteur'))      document.getElementById('profile-secteur').value      = state.profile?.secteur       || '';
@@ -936,6 +944,8 @@ async function saveProfile() {
   const adresse     = (document.getElementById('profile-adresse')?.value||'').trim() || null;
   const rcpro       = (document.getElementById('profile-rcpro')?.value||'').trim() || null;
   const siret       = (document.getElementById('profile-siret')?.value||'').trim() || null;
+  const code_postal = (document.getElementById('profile-code-postal')?.value||'').trim() || null;
+  const ville       = (document.getElementById('profile-ville')?.value||'').trim() || null;
   const region      = (document.getElementById('profile-region')?.value||'').trim() || null;
   const departement = (document.getElementById('profile-departement')?.value||'').trim() || null;
   const secteur     = (document.getElementById('profile-secteur')?.value||'').trim() || null;
@@ -965,13 +975,15 @@ const { error } = await sb.from('profiles').upsert({
   nom,
   telephone,
   adresse,
+  code_postal,
+  ville,
   siret,
   rcpro_numero: rcpro,
   photo_url,
   region,
   departement,
   secteur,
-  profil_completed: !!(prenom && nom && telephone && adresse && siret)
+  profil_completed: !!(prenom && nom && telephone && adresse && code_postal && ville && siret)
 });  if (error) { $('#profile-error').textContent = 'Erreur : ' + error.message; return; }
 
   if (typeof logRgpd === 'function') await logRgpd('profil_modifie', 'Profil', {
@@ -1478,7 +1490,8 @@ function _resetResultatsFilters() {
 function _buildSecteurCard(c) {
   const dci = c.dci;
   const nom = [dci.prenom, dci.nom].filter(Boolean).join(' ') || '—';
-  const geo = [dci.region, dci.departement, dci.secteur].filter(Boolean).join(' · ') || '<span class="mut" style="font-size:.75rem">Géographie non renseignée</span>';
+  const _geoRaw = [dci.region, dci.departement, dci.secteur].filter(Boolean).join(' · ');
+  const geo = _geoRaw ? escapeHtml(_geoRaw) : '<span class="mut" style="font-size:.75rem">Géographie non renseignée</span>';
 
   // Badge statut commission
   let commBadge = '';
@@ -3268,6 +3281,57 @@ function exportRegistrePDF() {
   });
 }
 
+function initProfileAddressListeners() {
+  const cpInput  = document.getElementById('profile-code-postal');
+  const villeEl  = document.getElementById('profile-ville');
+  const regionEl = document.getElementById('profile-region');
+  const deptEl   = document.getElementById('profile-departement');
+  if (!cpInput || !villeEl) return;
+
+  let _communes = [];
+
+  function _applyGeo(commune) {
+    if (regionEl) regionEl.value = commune.region?.nom || '';
+    if (deptEl)   deptEl.value   = commune.departement
+      ? commune.codeDepartement + ' — ' + commune.departement.nom
+      : commune.codeDepartement || '';
+  }
+
+  cpInput.addEventListener('input', async function () {
+    const cp = this.value.trim();
+    villeEl.innerHTML = '<option value="">— Saisissez un code postal —</option>';
+    if (regionEl) regionEl.value = '';
+    if (deptEl)   deptEl.value   = '';
+    _communes = [];
+    if (cp.length !== 5 || !/^\d{5}$/.test(cp)) return;
+
+    villeEl.innerHTML = '<option value="">Recherche…</option>';
+    try {
+      const resp = await fetch(
+        'https://geo.api.gouv.fr/communes?codePostal=' + encodeURIComponent(cp) +
+        '&fields=nom,codeDepartement,departement,region&format=json'
+      );
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      _communes = await resp.json();
+      if (!Array.isArray(_communes) || !_communes.length) {
+        villeEl.innerHTML = '<option value="">Aucune commune trouvée</option>';
+        return;
+      }
+      villeEl.innerHTML = _communes
+        .map(c => `<option value="${escapeHtml(c.nom)}">${escapeHtml(c.nom)}</option>`)
+        .join('');
+      _applyGeo(_communes[0]);
+    } catch (e) {
+      villeEl.innerHTML = '<option value="">Erreur — réessayez</option>';
+    }
+  });
+
+  villeEl.addEventListener('change', function () {
+    const c = _communes.find(x => x.nom === this.value);
+    if (c) _applyGeo(c);
+  });
+}
+
 function bindEvents() {
   // Login / logout
   $('#login-btn').addEventListener('click', login);
@@ -3336,6 +3400,7 @@ function bindEvents() {
   $('#profile-save-btn').addEventListener('click', saveProfile);
   $('#profile-photo-input').addEventListener('change', previewProfilePhoto);
   $('#password-save-btn').addEventListener('click', changePassword);
+  initProfileAddressListeners();
 
   // Objectifs
   $('#save-jours-btn').addEventListener('click', saveJoursTravailles);

@@ -1180,10 +1180,16 @@
       </tr>
       <tr>
         <td>P1-7</td>
-        <td><strong>Vérifier et compléter la couverture escapeHtml</strong> — audit systématique des occurrences d'<code>innerHTML</code> sans <code>escapeHtml</code> dans <code>app.js</code></td>
-        <td><code>assets/app.js</code></td>
+        <td><strong>Couverture escapeHtml complétée — 3 XSS corrigées</strong><br>
+          Audit de 72 occurrences <code>innerHTML</code> dans <code>app.js</code> + 17 fichiers JS. Vulnérabilités confirmées et corrigées :<br>
+          (A) <code>activites.join(', ')</code> → <code>.map(a =&gt; escapeHtml(a)).join(', ')</code> ;<br>
+          (C) <code>_buildSecteurCard()</code> : <code>geo</code> (region+dept+secteur) injecté brut → séparation <code>geoRaw</code> + <code>escapeHtml</code>.<br>
+          (C) Éliminée structurellement : <code>region</code> et <code>departement</code> deviennent lecture seule (auto-remplis via <code>geo.api.gouv.fr</code>).<br>
+          Bonus UX : formulaire profil migré vers code postal + ville (select) identique à la fiche contact. Migration SQL : <code>-schema-v29.sql</code> (<code>ADD COLUMN code_postal, ville</code> sur <code>profiles</code>).
+        </td>
+        <td><code>assets/app.js</code>, <code>index.html</code>, <code>supabase/-schema-v29.sql</code></td>
         <td class="effort">3 h</td>
-        <td><span class="badge-partial">⏳ En attente</span></td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">OWASP A03 XSS</span></td>
       </tr>
       <tr>

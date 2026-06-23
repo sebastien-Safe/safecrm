@@ -1237,14 +1237,24 @@
     <div class="field"><label>Prénom *</label><input id="profile-prenom" type="text" placeholder="Votre prénom"></div>
     <div class="field"><label>Nom *</label><input id="profile-nom" type="text" placeholder="Nom de famille"></div>
     <div class="field"><label>Téléphone *</label><input id="profile-telephone" type="tel" placeholder="06 XX XX XX XX"></div>
-    <div class="field"><label>Adresse *</label><input id="profile-adresse" type="text" placeholder="Adresse complète"></div>
+    <div class="field"><label>Adresse *</label><input id="profile-adresse" type="text" placeholder="N° et nom de rue"></div>
+    <div class="field-row">
+      <div class="field" style="flex:0 0 130px">
+        <label>Code postal *</label>
+        <input id="profile-code-postal" type="text" maxlength="5" placeholder="75001" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Ville *</label>
+        <select id="profile-ville"><option value="">— Saisissez un code postal —</option></select>
+      </div>
+    </div>
     <div class="field"><label>SIRET *</label><input id="profile-siret" type="text" placeholder="14 chiffres"></div>
     <div class="field"><label>RC Pro</label><input id="profile-rcpro" type="text" placeholder="Référence assurance RC Pro"></div>
     <div style="border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:8px">
-      <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#64748b;margin-bottom:10px">📍 Géographie commerciale</div>
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#64748b;margin-bottom:10px">📍 Géographie — remplie automatiquement</div>
       <div class="field-row">
-        <div class="field"><label>Région</label><input id="profile-region" type="text" placeholder="Ex : Île-de-France"></div>
-        <div class="field"><label>Département</label><input id="profile-departement" type="text" placeholder="Ex : Seine-et-Marne (77)"></div>
+        <div class="field"><label>Région</label><input id="profile-region" type="text" readonly style="opacity:.6;cursor:default" placeholder="Auto via code postal"></div>
+        <div class="field"><label>Département</label><input id="profile-departement" type="text" readonly style="opacity:.6;cursor:default" placeholder="Auto via code postal"></div>
       </div>
       <div class="field"><label>Secteur commercial</label><input id="profile-secteur" type="text" placeholder="Ex : Secteur Est — Grande couronne"></div>
     </div>
