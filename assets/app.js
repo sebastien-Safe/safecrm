@@ -203,9 +203,26 @@ async function sendPasswordReset() {
   $('#forgot-error').textContent = '';
   $('#forgot-success').style.display = 'none';
   if (!email) { $('#forgot-error').textContent = 'Merci de renseigner votre e-mail.'; return; }
-  const redirectTo = window.location.origin + window.location.pathname;
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
-  if (error) { $('#forgot-error').textContent = 'Erreur : ' + error.message; return; }
+
+  $('#forgot-error').textContent = 'Envoi en cours…';
+  try {
+    const redirectTo = window.location.origin + window.location.pathname;
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-password-reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, redirectTo }),
+    });
+    const body = await resp.json().catch(() => ({}));
+    if (!resp.ok && body.error !== undefined) {
+      $('#forgot-error').textContent = 'Erreur lors de l\'envoi. Veuillez réessayer.';
+      return;
+    }
+  } catch (e) {
+    $('#forgot-error').textContent = 'Erreur réseau. Vérifiez votre connexion.';
+    return;
+  }
+
+  $('#forgot-error').textContent = '';
   if (typeof logRgpd === 'function') logRgpd('mot_de_passe_reinitialise', 'Sécurité', {
     criticite: 'Attention', donnees: 'email', details: { email },
   });
