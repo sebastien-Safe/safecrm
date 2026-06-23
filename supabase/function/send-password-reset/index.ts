@@ -4,7 +4,7 @@ const TEMPLATE_RESET        = 10; // Demande de réinitialisation
 const TEMPLATE_CONFIRMATION = 11; // Confirmation changement réussi — ⚠️ à mettre à jour après création dans Brevo
 
 const CORS = {
-  'Access-Control-Allow-Origin':  '*',
+  'Access-Control-Allow-Origin':  'https://crm.safe-digitalisation.fr',
   'Access-Control-Allow-Headers': 'content-type, authorization',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
