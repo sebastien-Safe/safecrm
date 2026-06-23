@@ -204,7 +204,7 @@ async function envoyerFacture(sb: ReturnType<typeof createClient>, opts: {
   });
 
   // Envoi Brevo
-  const BREVO = Deno.env.get("BREBO");
+  const BREVO = Deno.env.get("BREVO");
   if (!BREVO) return;
 
   const clientNom    = contact.entreprise || `${contact.prenom || ""} ${contact.nom || ""}`.trim();
@@ -380,7 +380,7 @@ serve(async (req) => {
           next_payment_attempt: invoice.next_payment_attempt,
         });
         // Email client : paiement refusé
-        const BREVO = Deno.env.get("BREBO");
+        const BREVO = Deno.env.get("BREVO");
         if (BREVO && ct.contact_id) {
           const [{ data: contact }, commercial] = await Promise.all([
             sb.from("contacts").select("nom, prenom, entreprise, email").eq("id", ct.contact_id).maybeSingle(),
