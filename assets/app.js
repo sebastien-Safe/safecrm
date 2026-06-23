@@ -584,14 +584,20 @@ function renderDashboard() {
   // Derniers contacts
   const recent = state.contacts.slice(0, 5);
   const recentEl = $('#recent-contacts-list');
-  recentEl.innerHTML = recent.length ? recent.map(c => `
+  const hasActiveContract = id => (state.contracts || []).some(
+    ct => ct.contact_id === id && !['Terminé','Résilié'].includes(ct.statut)
+  );
+  recentEl.innerHTML = recent.length ? recent.map(c => {
+    const statut = hasActiveContract(c.id) ? c.statut : 'Prospect';
+    return `
     <div class="mini-item">
       <div>
         <div class="t">${escapeHtml(c.nom)}${c.entreprise ? ' — ' + escapeHtml(c.entreprise) : ''}</div>
         <div class="s">${(c.activites || []).join(', ') || '—'}</div>
       </div>
-      <span class="badge ${CONTACT_STATUT_BADGE[c.statut] || 'badge-gray'}">${escapeHtml(c.statut)}</span>
-    </div>`).join('') : '<p class="empty">Aucun contact pour le moment.</p>';
+      <span class="badge ${CONTACT_STATUT_BADGE[statut] || 'badge-gray'}">${escapeHtml(statut)}</span>
+    </div>`;
+  }).join('') : '<p class="empty">Aucun contact pour le moment.</p>';
 
   // Pop-up des messages non lus (à la première ouverture du dashboard)
   if (!state._messagesShown && state.unreadMessages.length) {
