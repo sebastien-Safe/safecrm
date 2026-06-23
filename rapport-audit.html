@@ -241,8 +241,8 @@
       <div class="label">Score global /100</div>
     </div>
     <div class="score-card danger">
-      <div class="num" style="color:#43a047">4/5</div>
-      <div class="label">P0 corrigés (4a+4b en cours)</div>
+      <div class="num" style="color:#43a047">5/5</div>
+      <div class="label">P0 corrigés (4b reporté P1)</div>
     </div>
     <div class="score-card warn">
       <div class="num">9</div>
@@ -1050,6 +1050,10 @@
       <span class="fix-commit">65cb0c3</span>
       <div><strong>P0-4a — Scripts inline externalisés</strong> — 3 blocs <code>&lt;script&gt;</code> inline déplacés vers <code>assets/app-init.js</code>. <em>Phase 4b (79 handlers onclick) reportée en P1 — trop risquée sans refactor progressif.</em></div>
     </div>
+    <div class="fix-entry">
+      <span class="fix-commit">82b18b6</span>
+      <div><strong>P0-5 — RLS safe_connectors corrigé</strong> — 4 policies granulaires : SELECT ouvert (guard modules), INSERT/UPDATE/DELETE admins uniquement. Log restreint aux admins. <em>Migration v28 appliquée et vérifiée en base — 6 policies actives.</em></div>
+    </div>
   </div>
 
   <table class="action-table" style="margin-bottom:24px">
@@ -1099,10 +1103,10 @@
       </tr>
       <tr>
         <td>P0-5</td>
-        <td><strong>Corriger la policy RLS <code>safe_connectors</code></strong> — remplacer <code>WITH CHECK (true)</code> par <code>WITH CHECK (user_id = auth.uid())</code></td>
-        <td><code>supabase/-schema-v26.sql</code> + migration v28</td>
+        <td><strong>Correction RLS <code>safe_connectors</code></strong> — SELECT ouvert à tous, INSERT/UPDATE/DELETE restreints aux admins. Idem sur <code>safe_connectors_log</code>. Migration v28 appliquée.</td>
+        <td><code>supabase/-schema-v28.sql</code></td>
         <td class="effort">20 min</td>
-        <td><span class="badge-pending">🔜 En cours</span></td>
+        <td><span class="badge-ok">✅ Corrigé + en base</span></td>
         <td><span class="action-ref">RGPD Art.25, ANSSI RLS</span></td>
       </tr>
     </tbody>
