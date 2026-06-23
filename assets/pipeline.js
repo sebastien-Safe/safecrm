@@ -194,7 +194,7 @@ function _plCardHTML(contact) {
        draggable="${isAdmin()}"
        ondragstart="_plDragStart(event,'${contact.id}')"
        ondragend="_plDragEnd(event)"
-       style="${isAdmin() ? '' : 'cursor:default'}">`
+       style="${isAdmin() ? '' : 'cursor:default'}">
     <div class="pcard-priority-stripe" style="background:${prio.color}"></div>
 
     <div class="pcard-head" style="padding-left:6px">
