@@ -1,5 +1,5 @@
 // deno-lint-ignore-file
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2?target=denonext";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4?target=denonext";
 
 const cors = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",

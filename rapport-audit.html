@@ -1214,73 +1214,95 @@
   <h3>🟡 P2 — Améliorations (à planifier sur 90 jours)</h3>
   <table class="action-table" style="margin-bottom:24px">
     <thead>
-      <tr><th>#</th><th>Action</th><th>Effort</th><th>Référence</th></tr>
+      <tr><th>#</th><th>Action</th><th>Fichiers</th><th>Effort</th><th>Statut</th><th>Référence</th></tr>
     </thead>
     <tbody>
       <tr>
         <td>P2-1</td>
-        <td><strong>Épingler les versions des imports Deno</strong> — passer de <code>stripe@14</code> à <code>stripe@14.5.0</code> et ajouter un <code>deno.lock</code></td>
+        <td><strong>Épingler les versions des imports Deno</strong> — <code>stripe@14</code> → <code>stripe@14.5.0</code>, <code>supabase-js@2</code> → <code>supabase-js@2.49.4</code> dans les 13 Edge Functions + <code>import_map.json</code> centralisé</td>
+        <td><code>supabase/functions/</code> (13 fichiers) · <code>import_map.json</code></td>
         <td class="effort">1 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">OWASP A06, Supply Chain</span></td>
       </tr>
       <tr>
         <td>P2-2</td>
         <td><strong>Accélérer l'extraction modulaire de <code>app.js</code></strong> — continuer vers <code>assets/app/journal.js</code>, <code>assets/app/kanban.js</code>, etc. Objectif &lt;1 500 lignes par module</td>
+        <td>—</td>
         <td class="effort">3-5 j</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">Maintenabilité, OWASP A04</span></td>
       </tr>
       <tr>
         <td>P2-3</td>
         <td><strong>Documenter les droits RGPD dans l'interface</strong> — ajouter une section "Mes données" permettant export CSV et demande d'effacement</td>
+        <td>—</td>
         <td class="effort">2 j</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">RGPD Art.15-20</span></td>
       </tr>
       <tr>
         <td>P2-4</td>
         <td><strong>Minifier et bundler les assets</strong> — intégrer Vite ou esbuild pour réduire <code>app.js</code> de 244 KB à ~60 KB (Brotli)</td>
+        <td>—</td>
         <td class="effort">1 j</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">Core Web Vitals, WCAG 2.1</span></td>
       </tr>
       <tr>
         <td>P2-5</td>
         <td><strong>Enforcer TOTP côté serveur</strong> — vérifier le niveau d'assurance (<code>aal2</code>) du JWT dans les RLS critiques ou dans les Edge Functions sensibles</td>
+        <td>—</td>
         <td class="effort">4 h</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">ANSSI MFA, Supabase AAL</span></td>
       </tr>
       <tr>
         <td>P2-6</td>
         <td><strong>Ajouter ARIA sur les modales</strong> — <code>role="dialog"</code>, <code>aria-modal</code>, <code>aria-labelledby</code>, focus trap</td>
+        <td>—</td>
         <td class="effort">1 j</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">WCAG 2.1 AA — 4.1.2</span></td>
       </tr>
       <tr>
         <td>P2-7</td>
         <td><strong>Externaliser les templates Brevo en variables d'env</strong> — remplacer les IDs hardcodés par <code>Deno.env.get("BREVO_TEMPLATE_INVOICE")</code></td>
+        <td>—</td>
         <td class="effort">1 h</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">Maintenabilité</span></td>
       </tr>
       <tr>
         <td>P2-8</td>
-        <td><strong>Documenter les Edge Functions</strong> — ajouter un <code>README.md</code> dans <code>supabase/function/</code> décrivant chaque fonction (contrat d'API, auth requise, events Stripe gérés)</td>
+        <td><strong>Documenter les Edge Functions</strong> — ajouter un <code>README.md</code> dans <code>supabase/functions/</code> décrivant chaque fonction (contrat d'API, auth requise, events Stripe gérés)</td>
+        <td>—</td>
         <td class="effort">3 h</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">Maintenabilité, NIS2</span></td>
       </tr>
       <tr>
         <td>P2-9</td>
         <td><strong>Adopter Supabase CLI pour les migrations</strong> — convertir les 27 fichiers manuels en migrations Supabase CLI (<code>supabase/migrations/</code>) pour activer la gestion versionée</td>
+        <td>—</td>
         <td class="effort">1 j</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">Best practices Supabase</span></td>
       </tr>
       <tr>
         <td>P2-10</td>
-        <td><strong>TVA en variable d'environnement</strong> — extraire <code>120</code> (= HT × 1.2) vers <code>Deno.env.get("TVA_MULTIPLIER")</code> dans <code>creaye-checkout</code></td>
+        <td><strong>TVA en variable d'environnement</strong> — extraire <code>120</code> (= HT × 1.2) vers <code>Deno.env.get("TVA_MULTIPLIER")</code> dans <code>create-checkout</code></td>
+        <td>—</td>
         <td class="effort">30 min</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">Légal, Maintenabilité</span></td>
       </tr>
       <tr>
         <td>P2-11</td>
         <td><strong>Consolider les fichiers PDF</strong> — vérifier <code>assets/contract-pdf.js</code> vs <code>assets/contracts/contracts-pdf.js</code> et supprimer le doublon</td>
+        <td>—</td>
         <td class="effort">1 h</td>
+        <td><span class="badge-partial">⏳ En attente</span></td>
         <td><span class="action-ref">Maintenabilité</span></td>
       </tr>
     </tbody>
