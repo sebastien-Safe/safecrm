@@ -196,9 +196,7 @@
   <a href="#suivi"><span class="toc-dot"></span><span class="toc-label">Suivi client</span></a>
   <a href="#rgpd"><span class="toc-dot"></span><span class="toc-label">RGPD</span></a>
   <a href="#commissions"><span class="toc-dot"></span><span class="toc-label">Commissions</span></a>
-  <a href="#mandat"><span class="toc-dot"></span><span class="toc-label">Mandat & signature</span></a>
   <a href="#facturation"><span class="toc-dot"></span><span class="toc-label">Facturation</span></a>
-  <a href="#optimiser"><span class="toc-dot"></span><span class="toc-label">Optimiser mes commissions</span></a>
 </nav>
 
 <!-- HERO -->
@@ -215,14 +213,15 @@
 <!-- VUES -->
 <section class="section" id="vues">
   <div class="section-label">Navigation</div>
-  <h2>Cinq vues, un seul outil.</h2>
-  <p class="section-intro">Le menu latéral donne accès aux cinq espaces du CRM. Un clic sur n'importe quelle ligne ouvre la fiche correspondante.</p>
+  <h2>Six vues, un seul outil.</h2>
+  <p class="section-intro">Le menu latéral donne accès aux six espaces du CRM. Un clic sur n'importe quelle ligne ouvre la fiche correspondante.</p>
   <div class="cards">
     <div class="card"><span class="card-icon">🏠</span><h3>Tableau de bord</h3><p>Vue d'ensemble : alertes échéances, statistiques clés, objectifs du mois et accès rapide aux fiches.</p></div>
     <div class="card"><span class="card-icon">👥</span><h3>Contacts</h3><p>Base prospects et clients. Chaque fiche centralise coordonnées, consentements, contrats, tâches et historique des échanges.</p></div>
     <div class="card"><span class="card-icon">📄</span><h3>Contrats</h3><p>Création, suivi, bon de commande PDF, tunnel de paiement Stripe et gestion des abonnements.</p></div>
     <div class="card"><span class="card-icon">✅</span><h3>Tâches</h3><p>Actions à réaliser, classées par priorité et échéance, liées à un contact ou un contrat.</p></div>
     <div class="card"><span class="card-icon">📊</span><h3>Résultats</h3><p>Suivi de vos performances : entrées en contact, CA généré, commissions, objectifs et bordereau mensuel.</p></div>
+    <div class="card"><span class="card-icon">📋</span><h3>Journal d'activité</h3><p>Historique de vos 100 dernières actions dans le CRM. Les administrateurs voient les actions de toute l'équipe avec un filtre par utilisateur.</p></div>
   </div>
 </section>
 
@@ -315,8 +314,9 @@
     <div class="flow-item">
       <div class="flow-num">1</div>
       <div class="flow-body">
-        <h4>Vérifications automatiques</h4>
-        <p>Le CRM vérifie que le contact a un email renseigné et affiche un récapitulatif (nom, produit, montant) pour confirmation avant de générer le lien.</p>
+        <h4>Confirmation obligatoire avant envoi</h4>
+        <p>Un clic sur <strong style="color:#fff">📧 Envoyer au client</strong> ouvre une fenêtre de confirmation avec le récapitulatif complet (contact, produit, montant). Vous devez cliquer sur <strong style="color:#fff">Oui, envoyer</strong> pour déclencher l'envoi — le bouton <strong style="color:#fff">Non, annuler</strong> referme la fenêtre sans rien envoyer.</p>
+        <div class="info" style="margin-top:10px">Cette étape évite tout envoi accidentel. Le contact n'est déplacé dans la colonne <em>Devis envoyé</em> que si vous confirmez.</div>
       </div>
     </div>
     <div class="flow-item">
@@ -597,82 +597,6 @@
 
 <div class="divider"></div>
 
-<!-- ── MANDAT ── -->
-<section class="section" id="mandat">
-  <div class="section-label">Votre contrat</div>
-  <h2>Signature du mandat d'agent commercial.</h2>
-  <p class="section-intro">À votre première connexion au CRM, vous devez lire et signer votre contrat de mandat avant d'accéder à l'interface. Cette étape est obligatoire et ne se fait qu'une seule fois.</p>
-
-  <div class="flow">
-    <div class="flow-item">
-      <div class="flow-num">1</div>
-      <div class="flow-body">
-        <h4>Lecture du contrat</h4>
-        <p>Le contrat de mandat d'agent commercial S@FE s'affiche dans son intégralité. Lisez-le attentivement — il définit vos droits, vos obligations, votre territoire, vos commissions et les conditions de résiliation.</p>
-        <div class="info-block gold" style="margin-top:10px">
-          <strong>Ce que couvre le contrat</strong> — Objet du mandat, non-exclusivité territoriale, durée indéterminée, obligations réciproques, RC Pro, rémunération sur facture, confidentialité 3 ans, accès CRM, droit applicable (Tribunal de Commerce de Paris).
-        </div>
-      </div>
-    </div>
-    <div class="flow-item">
-      <div class="flow-num">2</div>
-      <div class="flow-body">
-        <h4>Vos informations</h4>
-        <p>Renseignez les champs obligatoires qui figureront dans votre contrat :</p>
-        <div class="screen" style="margin-top:10px">
-          <div class="screen-header">Champs à compléter</div>
-          <div class="screen-row"><span class="screen-label">Prénom / Nom *</span><span class="screen-value">Votre identité telle qu'elle figurera sur le contrat.</span></div>
-          <div class="screen-row"><span class="screen-label">Adresse complète *</span><span class="screen-value">Adresse professionnelle ou personnelle.</span></div>
-          <div class="screen-row"><span class="screen-label">Code postal + Ville *</span><span class="screen-value">Obligatoires pour la validité du contrat.</span></div>
-          <div class="screen-row"><span class="screen-label">Région *</span><span class="screen-value">Zone d'intervention principale — indicatif, sans exclusivité.</span></div>
-          <div class="screen-row"><span class="screen-label">SIRET / SIREN</span><span class="screen-value">Si vous êtes immatriculé (micro-entrepreneur, société).</span></div>
-          <div class="screen-row"><span class="screen-label">N° RSAC</span><span class="screen-value">Si déjà immatriculé au Registre Spécial des Agents Commerciaux. Le contrat peut servir à appuyer votre demande d'immatriculation si vous ne l'êtes pas encore.</span></div>
-          <div class="screen-row"><span class="screen-label">RC Pro</span><span class="screen-value">Cochez si vous avez une assurance Responsabilité Civile Professionnelle et renseignez l'assureur, le numéro de police (RC PRO)  et la date d'échéance. Fortement recommandée — sans RC Pro, une clause de responsabilité exclusive s'applique.</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="flow-item">
-      <div class="flow-num">3</div>
-      <div class="flow-body">
-        <h4>Signature manuscrite</h4>
-        <p>Signez dans le cadre prévu avec votre souris ou votre doigt (mobile/tablette). La signature est capturée et associée au contenu exact du contrat via un <strong style="color:#fff">hash SHA-256</strong> — toute modification ultérieure invaliderait la signature.</p>
-        <div class="info-block" style="margin-top:10px">
-          <strong>Valeur probatoire</strong> — La signature est horodatée, associée à votre adresse IP, votre navigateur et un code OTP vérifié par email. Elle constitue une preuve de consentement électronique opposable.
-        </div>
-      </div>
-    </div>
-    <div class="flow-item">
-      <div class="flow-num">4</div>
-      <div class="flow-body">
-        <h4>Confirmation par code OTP</h4>
-        <p>Un code à 6 chiffres est envoyé à votre adresse email. Saisissez-le dans le délai de <strong style="color:#fff">15 minutes</strong>. Ce code confirme que vous êtes bien le titulaire de l'adresse email associée au compte.</p>
-        <p style="margin-top:6px">Si vous ne recevez pas le code, vérifiez vos spams ou cliquez sur <strong style="color:#fff">Renvoyer un code</strong>.</p>
-      </div>
-    </div>
-    <div class="flow-item">
-      <div class="flow-num">5</div>
-      <div class="flow-body">
-        <h4>Contrat signé — accès au CRM</h4>
-        <p>Votre contrat est enregistré avec un numéro de référence <strong style="color:#fff">SAFE-AC-2026-XXX</strong> généré automatiquement. Vous accédez immédiatement au CRM. Le contrat est conservé dans la base S@FE.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="info-block warn" style="margin-top:24px">
-    <strong>RSAC obligatoire</strong> — Le contrat prend pleinement effet à réception par S@FE de votre extrait d'immatriculation au RSAC. Si vous n'êtes pas encore immatriculé, le contrat signé peut être présenté au greffe du tribunal de commerce compétent pour appuyer votre demande. Contactez S@FE pour obtenir un exemplaire.
-  </div>
-
-  <div class="info-block" style="margin-top:12px">
-    <strong>Renouvellement de la grille tarifaire</strong> — En cas de modification des taux de commission, vous recevrez une notification dans le CRM. Une re-signature de l'annexe grille sera requise avant de continuer à utiliser le CRM. Le préavis est de 15 jours.
-  </div>
-
-  <div class="info-block ok" style="margin-top:12px">
-    <strong>Résiliation et accès CRM</strong> — En cas de résiliation du contrat, quelle qu'en soit la cause, votre accès au CRM est révoqué à la date d'effet. Vos contacts restent la propriété de S@FE conformément aux clauses de confidentialité.
-  </div>
-</section>
-
-<div class="divider"></div>
-
 <!-- ── FACTURATION ── -->
 <section class="section" id="facturation">
   <div class="section-label">Rémunération</div>
@@ -699,7 +623,7 @@
       <div class="flow-body">
         <h4>Alerte sur votre dashboard</h4>
         <p>Le dernier jour ouvré du mois, une alerte <strong style="color:#fff">💶 Rappel : émettez votre facture de commissions</strong> apparaît sur votre tableau de bord. Elle indique le montant estimé de vos commissions et un bouton pour préparer votre email.</p>
-        <div class="info-block gold" style="margin-top:10px">
+        <div class="info gold" style="margin-top:10px">
           <strong>Montant estimé</strong> — Le montant affiché est calculé automatiquement depuis vos contrats dans le CRM. Il est indicatif : c'est votre facture qui fait foi.
         </div>
       </div>
@@ -739,147 +663,13 @@
     </div>
   </div>
 
-  <div class="info-block warn" style="margin-top:24px">
+  <div class="info warn" style="margin-top:24px">
     <strong>Impayé client</strong> — En cas d'impayé du client, la commission correspondante est suspendue jusqu'à encaissement. Elle vous sera versée dans le mois suivant le règlement du client.
   </div>
 
-  <div class="info-block" style="margin-top:12px">
+  <div class="info" style="margin-top:12px">
     <strong>Pas de commissions ce mois ?</strong> — Si vous n'avez ni contrat signé ni abonnement actif dans votre portefeuille, aucun relevé n'est généré et aucune facture n'est attendue.
   </div>
-</section>
-
-<div class="divider"></div>
-
-<section class="section" id="optimiser">
-  <div class="section-label">Stratégie commerciale</div>
-  <h2>Optimiser mes commissions.</h2>
-  <a href="/simulateur.html" target="_blank"
-    style="display:inline-flex;align-items:center;gap:8px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:#f59e0b;font-weight:600;font-size:.82rem;padding:8px 16px;border-radius:8px;text-decoration:none;margin-bottom:20px">
-    &#128200; Ouvrir le simulateur de commissions &rarr;
-  </a>
-  <p class="section-intro">Le CRM S@FE intègre deux outils d'intelligence commerciale directement dans votre tableau de bord : les opportunités de montée en gamme et les alertes de risque de résiliation. Voici comment en tirer le meilleur parti.</p>
-
-  <div class="flow">
-
-    <div class="flow-item">
-      <div class="flow-num">1</div>
-      <div class="flow-body">
-        <h4>Privilégier les contrats récurrents</h4>
-        <p>Un abonnement mensuel génère des commissions indéfiniment sans effort supplémentaire. Un paiement unique ne rapporte qu'une fois.</p>
-        <div class="screen" style="margin-top:10px">
-          <div class="screen-header">Comparaison sur 12 mois — même client</div>
-          <div class="screen-row">
-            <span class="screen-label">Audit Cyber 490 € (unique)</span>
-            <span class="screen-value"><strong style="color:#fff">73 € une seule fois</strong> — commission à la signature</span>
-          </div>
-          <div class="screen-row">
-            <span class="screen-label">SEO Expert 249 €/mois</span>
-            <span class="screen-value"><strong style="color:#fff">37 € × 12 = 444 €</strong> — sans renouveler le contrat</span>
-          </div>
-          <div class="screen-row">
-            <span class="screen-label">DPO externalisé 189 €/mois</span>
-            <span class="screen-value"><strong style="color:#fff">28 € × 12 = 336 €</strong> — totalement automatique</span>
-          </div>
-        </div>
-        <div class="info-block" style="margin-top:10px">
-          <strong>Règle d'or</strong> — Construisez d'abord un portefeuille récurrent stable avant de chasser les signatures ponctuelles. 10 abonnements SEO Pro actifs = 179 € passifs chaque mois.
-        </div>
-      </div>
-    </div>
-
-    <div class="flow-item">
-      <div class="flow-num">2</div>
-      <div class="flow-body">
-        <h4>Utiliser le bloc "Potentiel de montée en gamme"</h4>
-        <p>Votre tableau de bord affiche automatiquement la liste de vos clients actifs qui n'ont pas encore souscrit à toutes les gammes S@FE. Chaque gamme manquante est une opportunité directe — la relation commerciale est déjà établie, la confiance aussi.</p>
-        <div class="screen" style="margin-top:10px">
-          <div class="screen-header">Exemple — client avec SEO uniquement</div>
-          <div class="screen-row">
-            <span class="screen-label">Gammes actives</span>
-            <span class="screen-value">SEO Expert 249 €/mois</span>
-          </div>
-          <div class="screen-row">
-            <span class="screen-label">À proposer</span>
-            <span class="screen-value">RGPD · Cybersécurité · DPO</span>
-          </div>
-          <div class="screen-row">
-            <span class="screen-label">Gain potentiel</span>
-            <span class="screen-value"><strong style="color:#fff">+28 à +57 €/mois supplémentaires</strong> en ajoutant DPO ou RGPD</span>
-          </div>
-        </div>
-        <p style="margin-top:8px">Cliquez sur un badge "À proposer" pour ouvrir directement la fiche du client et créer une interaction de suivi.</p>
-      </div>
-    </div>
-
-    <div class="flow-item">
-      <div class="flow-num">3</div>
-      <div class="flow-body">
-        <h4>Surveiller le bloc "Risque de résiliation"</h4>
-        <p>Un client sans contact depuis 60 jours est un client qui risque de partir. Le CRM vous alerte automatiquement et colore l'urgence : orange à 90 jours, rouge à 120 jours.</p>
-        <div class="info-block warn" style="margin-top:10px">
-          <strong>Coût d'une résiliation</strong> — Vous perdez la commission récurrente mensuelle ET vous devez trouver un nouveau client pour la compenser. Conserver un client coûte 5 fois moins cher que d'en acquérir un nouveau.
-        </div>
-        <p style="margin-top:8px">Le bouton <strong style="color:#fff">📞 Relancer</strong> ouvre directement la fiche. Enregistrez systématiquement l'interaction — cela remet le compteur à zéro et fait disparaître l'alerte.</p>
-      </div>
-    </div>
-
-    <div class="flow-item">
-      <div class="flow-num">4</div>
-      <div class="flow-body">
-        <h4>Viser les formules hautes gamme</h4>
-        <p>Dans chaque gamme, la différence de commission entre la formule basse et la formule haute est significative — pour un effort de vente identique.</p>
-        <div class="screen" style="margin-top:10px">
-          <div class="screen-header">Écart de commission selon la formule</div>
-          <div class="screen-row">
-            <span class="screen-label">SEO Starter → Expert</span>
-            <span class="screen-value">11 € → <strong style="color:#fff">37 €/mois</strong> — ×3,4 pour le même client</span>
-          </div>
-          <div class="screen-row">
-            <span class="screen-label">Cyber Essentiel → Expert</span>
-            <span class="screen-value">73 € → <strong style="color:#fff">298 € à la signature</strong> — ×4 en une fois</span>
-          </div>
-          <div class="screen-row">
-            <span class="screen-label">RGPD Audit → DPO mensuel</span>
-            <span class="screen-value">Commission unique → <strong style="color:#fff">28 €/mois récurrents</strong></span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="flow-item">
-      <div class="flow-num">5</div>
-      <div class="flow-body">
-        <h4>Relancer vite, ne pas laisser traîner</h4>
-        <p>Un devis envoyé sans relance a 80% de chances d'être oublié. Créez une tâche de relance dès l'envoi du bon de commande — le CRM vous alerte à l'échéance.</p>
-        <div class="info-block" style="margin-top:10px">
-          <strong>Rythme recommandé</strong> — J+3 après envoi du devis : appel de confirmation. J+7 : relance email. J+14 : proposition d'alternative ou clôture du dossier. Un prospect qui ne répond pas à J+14 est statistiquement perdu — passez au suivant.
-        </div>
-      </div>
-    </div>
-
-    <div class="flow-item">
-      <div class="flow-num">6</div>
-      <div class="flow-body">
-        <h4>Suivre son palier e-Facturation</h4>
-        <p>Le service de facturation électronique S@FE est dégressif selon votre CA mensuel — et gratuit au-delà de 6 000 €. C'est un indicateur indirect de votre performance : atteindre le palier Elite (gratuit) signifie que vous générez plus de 700 € de commissions mensuelles récurrentes.</p>
-        <div class="screen" style="margin-top:10px">
-          <div class="screen-header">Paliers e-Facturation — rappel</div>
-          <div class="screen-row"><span class="screen-label">0 — 500 € CA</span><span class="screen-value">10 €/mois déduits du relevé</span></div>
-          <div class="screen-row"><span class="screen-label">501 — 1 000 €</span><span class="screen-value">7 €/mois</span></div>
-          <div class="screen-row"><span class="screen-label">1 001 — 2 000 €</span><span class="screen-value">5 €/mois</span></div>
-          <div class="screen-row"><span class="screen-label">2 001 — 4 000 €</span><span class="screen-value">3 €/mois</span></div>
-          <div class="screen-row"><span class="screen-label">4 001 — 6 000 €</span><span class="screen-value">1 €/mois</span></div>
-          <div class="screen-row"><span class="screen-label" style="color:#22c55e">+ 6 000 € — Elite</span><span class="screen-value" style="color:#22c55e"><strong>Gratuit</strong></span></div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="info-block ok" style="margin-top:24px">
-    <strong>Objectif réaliste à 6 mois</strong> — 15 abonnements actifs toutes gammes confondues à une moyenne de 149 €/mois = 2 235 € de CA mensuel → ~270 € de commissions récurrentes passives par mois, palier Confirmé, service e-Facturation à 5 €/mois.
-  </div>
-
 </section>
 
 <div class="divider"></div>
