@@ -512,7 +512,6 @@ function checkUndocumentedViews() {
 // ============================================================
 function initHelp() {
   checkUndocumentedViews();
-  maybeStartWelcomeTutorial();
 }
 
 // ============================================================
