@@ -495,12 +495,15 @@ async function sendOrderLink() {
   const contact = state.contacts.find(c => c.id === contract.contact_id);
   if (!contact) { alert('Contact lié introuvable.'); return; }
 
-  if (!confirm(
-    `Créer un lien de paiement pour ${contact.nom || '—'} (${contact.email}) ?\n\n` +
-    `Produit : ${contract.type || '—'} — ${contract.formule || '—'}\n` +
-    `Montant : ${Number(contract.montant || 0).toFixed(2)} € HT${contract.recurrence === 'Mensuel' ? ' / mois' : ''}\n\n` +
-    `Un lien sera généré. Le contrat doit rester en statut "Devis envoyé" pour que le client puisse y accéder.`
-  )) return;
+  const confirmed = await _confirmSendDevis({
+    nom:       [contact.prenom, contact.nom].filter(Boolean).join(' ') || contact.nom || '—',
+    email:     contact.email || '—',
+    type:      contract.type || '—',
+    formule:   contract.formule || '',
+    montant:   Number(contract.montant || 0).toFixed(2),
+    recurrence: contract.recurrence,
+  });
+  if (!confirmed) return;
 
   // L'UUID du contrat sert de token — les données client sont chargées par la page via get-order-data (RGPD : aucune donnée personnelle dans l'URL)
   const orderUrl = `${location.origin}/order.html?id=${contract.id}`;

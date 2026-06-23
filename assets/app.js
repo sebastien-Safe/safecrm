@@ -967,6 +967,35 @@ function closeProfileModal() {
   $('#profile-modal').classList.remove('show');
 }
 
+// Modale de confirmation avant envoi de devis — retourne une Promise<boolean>
+function _confirmSendDevis({ nom, email, type, formule, montant, recurrence }) {
+  return new Promise(resolve => {
+    const modal   = document.getElementById('send-confirm-modal');
+    const details = document.getElementById('send-confirm-details');
+    const btnYes  = document.getElementById('send-confirm-yes');
+    const btnNo   = document.getElementById('send-confirm-no');
+    if (!modal || !btnYes || !btnNo) { resolve(true); return; }
+
+    details.innerHTML =
+      `<div><span style="color:#64748b">Client :</span> <strong style="color:#f1f5f9">${escapeHtml(nom)}</strong> <span style="color:#475569">(${escapeHtml(email)})</span></div>` +
+      `<div><span style="color:#64748b">Produit :</span> ${escapeHtml(type)}${formule ? ' — ' + escapeHtml(formule) : ''}</div>` +
+      `<div><span style="color:#64748b">Montant :</span> <strong style="color:#f59e0b">${escapeHtml(montant)} € HT${recurrence === 'Mensuel' ? ' / mois' : ''}</strong></div>`;
+
+    modal.classList.add('show');
+
+    const close = (result) => {
+      modal.classList.remove('show');
+      btnYes.removeEventListener('click', onYes);
+      btnNo.removeEventListener('click', onNo);
+      resolve(result);
+    };
+    const onYes = () => close(true);
+    const onNo  = () => close(false);
+    btnYes.addEventListener('click', onYes);
+    btnNo.addEventListener('click', onNo);
+  });
+}
+
 function previewProfilePhoto(e) {
   const file = e.target.files[0];
   if (!file) return;
