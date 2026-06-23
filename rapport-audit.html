@@ -1259,10 +1259,10 @@
       </tr>
       <tr>
         <td>P2-6</td>
-        <td><strong>Ajouter ARIA sur les modales</strong> — <code>role="dialog"</code>, <code>aria-modal</code>, <code>aria-labelledby</code>, focus trap</td>
-        <td>—</td>
-        <td class="effort">1 j</td>
-        <td><span class="badge-partial">⏳ En attente</span></td>
+        <td><strong>Ajouter ARIA sur les modales</strong> — <code>initModalAria()</code> via <code>MutationObserver</code> sur les 23 modales : <code>role="dialog"</code>, <code>aria-modal="true"</code>, <code>aria-labelledby</code> auto sur le premier titre h2/h3/h4, focus trap Tab/Shift-Tab, restauration du focus à la fermeture. <code>violation-modal</code> migré vers classe <code>.show</code>.</td>
+        <td><code>assets/app.js</code>, <code>index.html</code></td>
+        <td class="effort">3 h</td>
+        <td><span class="badge-ok">✅ Corrigé</span></td>
         <td><span class="action-ref">WCAG 2.1 AA — 4.1.2</span></td>
       </tr>
       <tr>

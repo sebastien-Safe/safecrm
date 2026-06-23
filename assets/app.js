@@ -3392,11 +3392,11 @@ function openViolationModal() {
   const today = new Date().toISOString().slice(0, 10);
   const dateEl = document.getElementById('violation-date');
   if (dateEl && !dateEl.value) dateEl.value = today;
-  document.getElementById('violation-modal').style.display = 'flex';
+  document.getElementById('violation-modal').classList.add('show');
 }
 
 function closeViolationModal() {
-  document.getElementById('violation-modal').style.display = 'none';
+  document.getElementById('violation-modal').classList.remove('show');
 }
 
 async function submitViolation() {
@@ -3460,8 +3460,57 @@ async function submitViolation() {
   }
 }
 
+function initModalAria() {
+  const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  let _trap = null;
+  let _lastFocus = null;
+
+  function trapFocus(box, e) {
+    if (e.key !== 'Tab') return;
+    const els = [...box.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null);
+    if (!els.length) return;
+    const first = els[0], last = els[els.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  }
+
+  function onShow(modal) {
+    const box = modal.querySelector('.box,.modal-box');
+    if (!box) return;
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    const heading = box.querySelector('h2,h3,h4');
+    if (heading) {
+      if (!heading.id) heading.id = modal.id + '-aria-title';
+      box.setAttribute('aria-labelledby', heading.id);
+    }
+    _lastFocus = document.activeElement;
+    const first = box.querySelector(FOCUSABLE);
+    if (first) setTimeout(() => first.focus(), 50);
+    if (_trap) document.removeEventListener('keydown', _trap);
+    _trap = (e) => trapFocus(box, e);
+    document.addEventListener('keydown', _trap);
+  }
+
+  function onHide() {
+    if (_trap) { document.removeEventListener('keydown', _trap); _trap = null; }
+    if (_lastFocus?.focus) { _lastFocus.focus(); _lastFocus = null; }
+  }
+
+  $all('.modal').forEach(modal => {
+    new MutationObserver(() => {
+      if (modal.classList.contains('show')) onShow(modal);
+      else onHide();
+    }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+  });
+}
+
 function bindEvents() {
   initErrorMonitoring();
+  initModalAria();
 
   // Login / logout
   $('#login-btn').addEventListener('click', login);
