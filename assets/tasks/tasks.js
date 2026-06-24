@@ -23,8 +23,11 @@ function taskCardHtml(t) {
   if (t.statut === 'En cours') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|Terminé">→ Terminé</button>`;
   if (t.statut === 'Terminé') nextBtn = `<button class="btn btn-out btn-sm" data-task-status="${t.id}|À faire">↺ Réouvrir</button>`;
   const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
+  const mapsUrl = t.type_tache === 'RDV terrain' && t.rdv_lieu
+    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(t.rdv_lieu)}&travelmode=driving`
+    : null;
   const rdvLine = isRdv && (t.rdv_date || t.rdv_heure || t.rdv_lieu)
-    ? `<div class="meta" style="margin-top:6px"><span>📍 ${formatDate(t.rdv_date)}${t.rdv_heure ? ' à ' + t.rdv_heure.slice(0,5) : ''}${t.rdv_lieu ? ' — ' + escapeHtml(t.rdv_lieu) : ''}</span></div>`
+    ? `<div class="meta" style="margin-top:6px"><span>📍 ${formatDate(t.rdv_date)}${t.rdv_heure ? ' à ' + t.rdv_heure.slice(0,5) : ''}${t.rdv_lieu ? ' — ' + escapeHtml(t.rdv_lieu) : ''}</span>${mapsUrl ? ` <a href="${mapsUrl}" target="_blank" rel="noopener" class="btn btn-out btn-sm" style="padding:2px 8px;font-size:.72rem;margin-left:6px" title="Itinéraire Google Maps">🗺️</a>` : ''}</div>`
     : '';
   return `
     <div class="kanban-card">

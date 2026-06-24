@@ -55,6 +55,15 @@
 }
 .pipeline-btn-add:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(37,99,235,.4); }
 
+.pipeline-btn-contacts {
+  display:inline-flex; align-items:center; gap:5px;
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
+  border-radius:8px; padding:6px 13px;
+  color:#cbd5e1; font-family:'Sora',sans-serif; font-size:.82rem;
+  font-weight:600; cursor:pointer; transition:.15s;
+}
+.pipeline-btn-contacts:hover { background:rgba(255,255,255,.14); color:#fff; }
+
 .pipeline-board {
   display:flex; gap:14px;
   padding:0 20px 20px;

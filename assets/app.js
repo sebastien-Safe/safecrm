@@ -5100,9 +5100,16 @@ function _renderDayPanel(iso, events) {
       const late  = isOverdue(t.echeance || t.rdv_date, t.statut);
       const cls   = late ? 'overdue' : isRdv ? 'rdv' : 'task';
       const meta  = [t.type_tache, t.rdv_heure ? t.rdv_heure.slice(0,5) : null, t.rdv_lieu].filter(Boolean).join(' · ');
+      const mapsUrl = t.type_tache === 'RDV terrain' && t.rdv_lieu
+        ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(t.rdv_lieu)}&travelmode=driving`
+        : null;
       return `<div class="agenda-ev-item" onclick="openTaskModal('${t.id}')">
         <div class="agenda-ev-dot ${cls}"></div>
-        <div><div class="agenda-ev-title">${escapeHtml(t.titre)}</div>${meta ? `<div class="agenda-ev-meta">${escapeHtml(meta)}</div>` : ''}</div>
+        <div style="flex:1">
+          <div class="agenda-ev-title">${escapeHtml(t.titre)}</div>
+          ${meta ? `<div class="agenda-ev-meta">${escapeHtml(meta)}</div>` : ''}
+        </div>
+        ${mapsUrl ? `<a href="${mapsUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="btn btn-out btn-sm" style="padding:3px 9px;font-size:.75rem;align-self:center;white-space:nowrap" title="Itinéraire Google Maps">🗺️ Itinéraire</a>` : ''}
       </div>`;
     }).join('') + `<button class="btn btn-out btn-sm" style="margin-top:12px;width:100%" onclick="openTaskModal(null,{type_tache:'RDV terrain',rdv_date:'${iso}'})">+ Programmer un RDV ce jour</button>`;
   }
