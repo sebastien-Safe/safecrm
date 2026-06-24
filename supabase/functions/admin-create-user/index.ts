@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "@supabase/supabase-js";
 
 const H = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",

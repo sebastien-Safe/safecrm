@@ -1,6 +1,6 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-import Stripe from "npm:stripe@14";
-import { PDFDocument, rgb, StandardFonts } from "npm:pdf-lib";
+import { createClient } from "@supabase/supabase-js";
+import Stripe from "stripe";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
 // ── Signature commerciale : role → titre affiché ──────────────────────────
 const ROLE_TITRE: Record<string, string> = {

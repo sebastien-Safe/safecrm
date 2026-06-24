@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "@supabase/supabase-js";
 
 const TEMPLATE_RESET        = 10; // Demande de réinitialisation
 const TEMPLATE_CONFIRMATION = 11; // Confirmation changement réussi — ⚠️ à mettre à jour après création dans Brevo

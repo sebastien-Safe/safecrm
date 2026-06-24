@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "@supabase/supabase-js";
 
 function toICalDate(iso: string): string {
   return iso.replace(/-/g, "").slice(0, 8);

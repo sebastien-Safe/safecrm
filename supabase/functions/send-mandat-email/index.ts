@@ -1,5 +1,5 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-import { encodeBase64 } from "jsr:@std/encoding@^1.0.0/base64";
+import { createClient } from "@supabase/supabase-js";
+import { encodeBase64 } from "@std/encoding/base64";
 
 const CORS = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",
