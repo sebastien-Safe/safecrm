@@ -201,10 +201,10 @@ COMMENT ON TABLE tournees IS
   'Tournées de prospection terrain. Base légale : Art.6(1)(f) RGPD — intérêt légitime. Conservation : 1 an (expires_at). Données publiques B2B uniquement.';
 
 COMMENT ON TABLE tournee_etapes IS
-  'Étapes d'une tournée. label + adresse = données publiques entreprise. contact_id renseigné UNIQUEMENT après consentement. source = traçabilité origine (crm/sirene/google_places).';
+  'Étapes d''une tournée. label + adresse = données publiques entreprise. contact_id renseigné UNIQUEMENT après consentement. source = traçabilité origine (crm/sirene/google_places).';
 
 COMMENT ON COLUMN tournee_etapes.contact_id IS
-  'NULL tant que le consentement n'est pas obtenu. Lien créé manuellement après la visite.';
+  'NULL tant que le consentement n''est pas obtenu. Lien créé manuellement après la visite.';
 
 COMMENT ON COLUMN tournee_etapes.notes IS
   'Notes libres post-visite. Ne pas y copier de données issues de Google Places (obligation CGU EEE).';
