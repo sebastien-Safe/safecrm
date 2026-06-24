@@ -1,0 +1,11 @@
+{
+  "importMap": "./import_map.json",
+  "lint": {
+    "rules": {
+      "exclude": ["no-external-import"]
+    }
+  },
+  "compilerOptions": {
+    "strict": true
+  }
+}

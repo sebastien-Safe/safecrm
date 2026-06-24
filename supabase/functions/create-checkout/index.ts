@@ -33,9 +33,9 @@ serve(async (req) => {
   const sb = createClient(SU, SR);
   const stripe = new Stripe(SK, { apiVersion: "2024-04-10" });
 
-  let body: any;
+  let body: { contract_id?: string };
   try {
-    body = await req.json();
+    body = await req.json() as { contract_id?: string };
   } catch {
     return json({ error: "bad_json" }, 400);
   }
@@ -66,7 +66,7 @@ serve(async (req) => {
   try {
     let ss;
     if (r) {
-      const li: any[] = [
+      const li: Stripe.Checkout.SessionCreateParams.LineItem[] = [
         {
           price_data: {
             currency: "eur",
@@ -113,9 +113,9 @@ serve(async (req) => {
       });
     }
     return json({ url: ss.url });
-  } catch (e: any) {
+  } catch (e) {
     return json(
-      { error: "stripe_error", details: e.message },
+      { error: "stripe_error", details: e instanceof Error ? e.message : String(e) },
       502
     );
   }
