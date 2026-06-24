@@ -235,13 +235,13 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
     <div class="kpi"><div class="kpi-val">~90K</div><div class="kpi-label">Lignes de code source</div></div>
     <div class="kpi"><div class="kpi-val">161</div><div class="kpi-label">Fichiers source</div></div>
     <div class="kpi"><div class="kpi-val">28</div><div class="kpi-label">Tables PostgreSQL</div></div>
-    <div class="kpi"><div class="kpi-val">13</div><div class="kpi-label">Edge Functions Deno</div></div>
+    <div class="kpi"><div class="kpi-val">18</div><div class="kpi-label">Edge Functions Deno</div></div>
   </div>
   <div class="kpi-row">
     <div class="kpi"><div class="kpi-val">5</div><div class="kpi-label">Modules IA métier</div></div>
     <div class="kpi"><div class="kpi-val">4</div><div class="kpi-label">Connecteurs IA</div></div>
     <div class="kpi"><div class="kpi-val">12</div><div class="kpi-label">Types d'emails auto.</div></div>
-    <div class="kpi"><div class="kpi-val">29</div><div class="kpi-label">Versions de schéma SQL</div></div>
+    <div class="kpi"><div class="kpi-val">32</div><div class="kpi-label">Versions de schéma SQL</div></div>
   </div>
 
   <p style="margin-top:20px"><strong>S@FE CRM</strong> est un logiciel SaaS de gestion commerciale et de conformité réglementaire, développé et édité par <strong>S@FE SASU</strong> (SIRET : 104 699 558 00011). Le produit cible les PME françaises soumises aux obligations RGPD, NIS2 et aux exigences de l'ANSSI.</p>
@@ -251,7 +251,7 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
   <div class="cards">
     <div class="card">
       <div class="card-title">🏗 Architecture industrielle</div>
-      <div class="card-body">SPA Vanilla JS modulaire (65 fichiers JS / 19 164 lignes), backend Supabase 100% serverless, 13 Edge Functions Deno 2.x, schéma PostgreSQL en 29 versions migratoires successives.</div>
+      <div class="card-body">SPA Vanilla JS modulaire (68 fichiers JS / ~19 500 lignes), backend Supabase 100% serverless, 18 Edge Functions Deno 2.x, schéma PostgreSQL en 32 versions migratoires successives.</div>
     </div>
     <div class="card">
       <div class="card-title">🔒 Sécurité de niveau entreprise</div>
@@ -385,7 +385,7 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
                     │  └──────────────────┘   │
                     │  ┌──────────────────┐   │
                     │  │  Edge Functions  │   │
-                    │  │  13 × Deno 2.x   │   │
+                    │  │  18 × Deno 2.x   │   │
                     │  └────────┬─────────┘   │
                     │  ┌────────▼─────────┐   │
                     │  │  Storage         │   │
@@ -479,7 +479,7 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
 │   ├── mandat.html            → Mandat DCI signature OTP
 │   └── grille.html            → Grille commissions
 ├── <span class="hi2">supabase/</span>
-│   ├── <span class="hi2">functions/</span>             → 13 Edge Functions Deno
+│   ├── <span class="hi2">functions/</span>             → 18 Edge Functions Deno
 │   │   ├── call-ia/           ├── send-crm-email/
 │   │   ├── stripe-webhook/    ├── send-mandat-email/
 │   │   ├── create-checkout/   ├── send-clause-email/
