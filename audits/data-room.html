@@ -435,7 +435,7 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
       <tr><td>IA Priorité 4</td><td>Mistral — mistral-small</td><td>—</td><td>Fallback EU souverain</td></tr>
       <tr><td>Adresse</td><td>API Adresse Gouv</td><td>—</td><td>Autocomplétion adresse française</td></tr>
       <tr><td>PWA</td><td>Service Worker + manifest.json</td><td>—</td><td>Installation, mode offline</td></tr>
-      <tr><td>CI/CD</td><td>GitHub Actions</td><td>—</td><td>Lint + type-check Deno Edge Functions</td></tr>
+      <tr><td>CI/CD</td><td>GitHub Actions</td><td>—</td><td>Lint + type-check + <strong>deno test + vitest</strong> sur chaque push</td></tr>
       <tr><td>Import map</td><td>deno.json (supabase/functions/)</td><td>—</td><td>Aliases npm:/jsr: pour Deno 2.x</td></tr>
     </tbody>
   </table></div>
@@ -449,7 +449,7 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
 │   ├── style.css              (484 lignes)
 │   ├── pipeline.js / .css     (vue Kanban)
 │   ├── config.js              (config Supabase)
-│   ├── <span class="hi2">app/</span>                   → Modules auth, navigation, helpers
+│   ├── <span class="hi2">app/</span>                   → Modules auth, navigation, helpers (+ helpers-pure.js)
 │   ├── <span class="hi2">contacts/</span>              → 6 fichiers JS contacts
 │   ├── <span class="hi2">contracts/</span>             → 7 fichiers JS contrats
 │   ├── <span class="hi2">dpo/</span>                   → Guards + CRM DPO
@@ -491,15 +491,17 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
 ├── index.html                 → SPA principale
 ├── manifest.json              → PWA
 ├── sw.js                      → Service Worker
-└── .github/workflows/         → CI/CD deno-check.yml</div>
+├── <span class="hi2">tests/</span>                     → Tests unitaires Vitest (helpers-pure)
+│   └── helpers.test.js        (24 cas de test)
+└── .github/workflows/         → CI/CD deno-check.yml (lint + type-check + tests)</div>
 
   <h3>Métriques de volume de code <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
   <div class="tbl"><table>
     <thead><tr><th>Type de fichier</th><th>Nb fichiers</th><th>Lignes de code</th><th>Poids relatif</th></tr></thead>
     <tbody>
       <tr><td>HTML (templates + vues)</td><td>41</td><td>63 780</td><td>68,7%</td></tr>
-      <tr><td>JavaScript (ES2022)</td><td>65</td><td>19 164</td><td>20,6%</td></tr>
-      <tr><td>TypeScript (Edge Functions)</td><td>16</td><td>2 829</td><td>3,0%</td></tr>
+      <tr><td>JavaScript (ES2022 + tests Vitest)</td><td>68</td><td>~19 500</td><td>20,5%</td></tr>
+      <tr><td>TypeScript (Edge Functions + tests)</td><td>18</td><td>~3 000</td><td>3,0%</td></tr>
       <tr><td>SQL (schémas + migrations)</td><td>31</td><td>4 711</td><td>5,1%</td></tr>
       <tr><td>CSS</td><td>8</td><td>~2 400</td><td>2,6%</td></tr>
       <tr class="hi-navy" style="background:var(--navy)"><td><strong style="color:#fff">TOTAL</strong></td><td><strong style="color:var(--gold)">161</strong></td><td><strong style="color:var(--gold)">~92 884</strong></td><td><strong style="color:var(--gold)">100%</strong></td></tr>
@@ -947,15 +949,15 @@ Frontend (Module SEO/DPO/Cyber)
   <div class="score-row"><span class="score-label">Documentation interne</span><div class="score-bar"><div class="score-fill" style="width:90%;background:var(--green)"></div></div><span class="score-val">90/100</span></div>
   <div class="score-row"><span class="score-label">Maintenabilité</span><div class="score-bar"><div class="score-fill" style="width:80%;background:var(--green)"></div></div><span class="score-val">80/100</span></div>
   <div class="score-row"><span class="score-label">Cohérence nommage</span><div class="score-bar"><div class="score-fill" style="width:78%;background:var(--blue)"></div></div><span class="score-val">78/100</span></div>
-  <div class="score-row"><span class="score-label">Couverture tests</span><div class="score-bar"><div class="score-fill" style="width:25%;background:var(--red)"></div></div><span class="score-val">25/100</span></div>
+  <div class="score-row"><span class="score-label">Couverture tests</span><div class="score-bar"><div class="score-fill" style="width:48%;background:var(--blue)"></div></div><span class="score-val">48/100</span></div>
   <div class="score-row"><span class="score-label">Gestion des erreurs</span><div class="score-bar"><div class="score-fill" style="width:75%;background:var(--blue)"></div></div><span class="score-val">75/100</span></div>
   <div class="score-row"><span class="score-label">Sécurité du code</span><div class="score-bar"><div class="score-fill" style="width:88%;background:var(--green)"></div></div><span class="score-val">88/100</span></div>
   <div class="score-row"><span class="score-label">Performance (serverless)</span><div class="score-bar"><div class="score-fill" style="width:85%;background:var(--green)"></div></div><span class="score-val">85/100</span></div>
   <div class="score-row"><span class="score-label">Scalabilité architecture</span><div class="score-bar"><div class="score-fill" style="width:90%;background:var(--green)"></div></div><span class="score-val">90/100</span></div>
 
   <div style="margin-top:16px;background:var(--navy);border-radius:12px;padding:20px;text-align:center">
-    <div style="font-size:2rem;font-weight:900;color:var(--gold)">79/100</div>
-    <div style="font-size:.8rem;color:var(--txt3);margin-top:4px">Score qualité global — Niveau "Production Ready"</div>
+    <div style="font-size:2rem;font-weight:900;color:var(--gold)">82/100</div>
+    <div style="font-size:.8rem;color:var(--txt3);margin-top:4px">Score qualité global — Niveau "Production Ready" <span style="color:#4ade80;font-size:.72rem">(+3 pts vs v1 · tests unitaires livrés)</span></div>
   </div>
 
   <h3>Forces identifiées</h3>
@@ -963,7 +965,8 @@ Frontend (Module SEO/DPO/Cyber)
     <li><strong>Zéro framework frontend :</strong> maintenabilité maximale, aucune dette liée à l'obsolescence d'un framework</li>
     <li><strong>Modularité par domaine :</strong> chaque fonctionnalité est isolée dans son propre fichier JS (contracts.js, dpo-assistant.js…)</li>
     <li><strong>Versionning SQL rigoureux :</strong> 29 migrations numérotées et horodatées, évolution schéma traçable</li>
-    <li><strong>CI/CD Deno :</strong> lint + type-check automatique sur chaque push via GitHub Actions</li>
+    <li><strong>CI/CD Deno :</strong> lint + type-check + <strong>tests unitaires automatiques</strong> sur chaque push via GitHub Actions (2 jobs : deno test + vitest)</li>
+    <li><strong>Tests unitaires :</strong> 14 cas Deno.test (Edge Functions) + 24 cas Vitest (logique JS pure) — 38 tests au total, 100% passent</li>
     <li><strong>Documentation exhaustive :</strong> documentation-crm.html (1 943 lignes), registre traitements, AIPD, DPA</li>
     <li><strong>Séparation claire BDD/logique :</strong> Edge Functions TypeScript typées, import map centralisé</li>
   </ul>
@@ -972,7 +975,7 @@ Frontend (Module SEO/DPO/Cyber)
   <div class="tbl"><table>
     <thead><tr><th>Point</th><th>Impact</th><th>Effort</th><th>Recommandation</th></tr></thead>
     <tbody>
-      <tr><td>Absence de tests automatisés</td><td><span class="badge b-err">Élevé</span></td><td>Moyen</td><td>Ajouter Vitest (frontend) + Deno.test (Edge Fn) <span class="fact-tag ft-r">RECO</span></td></tr>
+      <tr><td>Couverture tests partielle (logique pure uniquement)</td><td><span class="badge b-warn">Moyen</span></td><td>Moyen</td><td>38 tests livrés (Vitest + Deno.test) <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span> · Étendre avec Playwright E2E <span class="fact-tag ft-r">RECO</span></td></tr>
       <tr><td>app.js monolithique (5 301 lignes)</td><td><span class="badge b-warn">Moyen</span></td><td>Élevé</td><td>Finaliser l'extraction en cours vers assets/app/ <span class="fact-tag ft-r">RECO</span></td></tr>
       <tr><td>RLS USING(true) sur tables auxiliaires</td><td><span class="badge b-warn">Moyen</span></td><td>Faible</td><td>Renforcer 21 tables avec politique role-based <span class="fact-tag ft-r">RECO</span></td></tr>
       <tr><td>Pas de Content Security Policy (CSP)</td><td><span class="badge b-warn">Moyen</span></td><td>Faible</td><td>Ajouter header CSP strict via meta ou serveur <span class="fact-tag ft-r">RECO</span></td></tr>
@@ -1432,7 +1435,7 @@ Frontend (Module SEO/DPO/Cyber)
   <h3>Court terme (0 – 6 mois) <span class="fact-tag ft-r">RECOMMANDATION</span></h3>
   <ul>
     <li>Dépôt INPI marque "S@FE" + protection logicielle (APP/INPI)</li>
-    <li>Mise en place tests automatisés (Vitest + Deno.test) — réduction dette technique</li>
+    <li><span style="text-decoration:line-through;color:var(--txt3)">Mise en place tests automatisés (Vitest + Deno.test)</span> <span class="badge b-ok" style="font-size:.7rem">✓ Livré — 38 tests, CI intégré</span></li>
     <li>Finalisation extraction app.js → modules dans assets/app/</li>
     <li>Pentest externe documenté (certification ANSSI ou prestataire PASSI)</li>
     <li>Activation Dependabot GitHub pour suivi dépendances npm</li>
@@ -1501,7 +1504,8 @@ Frontend (Module SEO/DPO/Cyber)
     <tbody>
       <tr><td>/</td><td>index.html, manifest.json, sw.js, admin-docs.html, guide.html, order.html, simulateur.html, clause.html, clause-public.html, mandat.html, automatisation-modules.html</td><td>HTML / JSON / JS</td><td>SPA principale, PWA, outils admin</td></tr>
       <tr><td>/assets/</td><td>app.js, app-init.js, style.css, pipeline.js, pipeline.css, config.js</td><td>JS / CSS</td><td>Cœur application</td></tr>
-      <tr><td>/assets/app/</td><td>authentification.js, chargement-des-donnees.js, contacts.js, contrats.js, helpers.js, navgation.js, taches/</td><td>JS</td><td>Modules extractés de app.js</td></tr>
+      <tr><td>/assets/app/</td><td>authentification.js, chargement-des-donnees.js, contacts.js, contrats.js, helpers.js, <strong>helpers-pure.js</strong>, navgation.js, taches/</td><td>JS</td><td>Modules extractés de app.js + fonctions pures exportées (testables)</td></tr>
+      <tr><td>/tests/</td><td><strong>helpers.test.js</strong></td><td>JS (Vitest)</td><td>24 cas de test — fonctions pures frontend</td></tr>
       <tr><td>/assets/contacts/</td><td>contacts.js, contacts.service.js, contacts-ui.js, contacts-address.js, contacts-interactions.js, contacts-transfer.js, index.js</td><td>JS</td><td>Gestion contacts</td></tr>
       <tr><td>/assets/contracts/</td><td>contracts.js, contracts.service.js, contracts-ui.js, contracts-formulas.js, contracts-notifications.js, contracts-pdf.js, contracts-stripe.js, index.js</td><td>JS</td><td>Gestion contrats + Stripe</td></tr>
       <tr><td>/assets/dpo/</td><td>connectors-guard.js, dpo-client-crm.js</td><td>JS</td><td>Guards DPO + CRM client</td></tr>
@@ -1516,7 +1520,7 @@ Frontend (Module SEO/DPO/Cyber)
       <tr><td>/modules/Social/</td><td>6 fichiers JS + 1 HTML</td><td>JS / HTML</td><td>Module social media</td></tr>
       <tr><td>/prospection-terrain/</td><td>index.html + 4 mission-*.html + favicon.svg</td><td>HTML</td><td>Espace terrain PIN</td></tr>
       <tr><td>/Force-de-vente/</td><td>index.html, session.html, mandat.html, grille.html</td><td>HTML</td><td>Espace agents DCI</td></tr>
-      <tr><td>/supabase/functions/</td><td>13 × index.ts + deno.json</td><td>TypeScript</td><td>Edge Functions serverless</td></tr>
+      <tr><td>/supabase/functions/</td><td>13 × index.ts + deno.json + <strong>call-ia/lib.ts</strong> + <strong>call-ia/lib.test.ts</strong></td><td>TypeScript</td><td>Edge Functions serverless + logique pure testable (14 cas Deno.test)</td></tr>
       <tr><td>/supabase/</td><td>-schema.sql + -schema-v2.sql à -schema-v29.sql</td><td>SQL</td><td>Migrations base de données</td></tr>
       <tr><td>/docs/legal/</td><td>AIPD_CallIA.md, REGISTRE_DPA.md, REGISTRE_TRAITEMENTS.md</td><td>Markdown</td><td>Documentation conformité</td></tr>
       <tr><td>/legal/stripe/</td><td>DPA PDF + 4 HTML + logs</td><td>HTML / PDF</td><td>Contrats sous-traitants</td></tr>
@@ -1574,7 +1578,7 @@ Frontend (Module SEO/DPO/Cyber)
 <hr class="divider">
 <div style="text-align:center;padding:40px 0;color:var(--txt3);font-size:.78rem">
   <div style="font-size:1.2rem;font-weight:900;color:var(--gold);margin-bottom:8px">S<span style="color:var(--navy)">@</span>FE CRM</div>
-  <p>Data Room — Document de Valorisation · Version 2026-DR-V1 · 24 juin 2026</p>
+  <p>Data Room — Document de Valorisation · Version 2026-DR-V2 · 24 juin 2026</p>
   <p>S@FE SASU · SIRET 104 699 558 00011 · DPO : dpo@safe-digitalisation.fr</p>
   <p style="margin-top:12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 20px;display:inline-block;color:#991b1b;font-weight:700">
     🔒 CONFIDENTIEL — RESTRICTED<br>Ce document ne peut être communiqué qu'après signature d'un accord de confidentialité (NDA).
