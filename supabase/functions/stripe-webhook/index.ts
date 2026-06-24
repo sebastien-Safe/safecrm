@@ -339,7 +339,7 @@ serve(async (req) => {
           await log("paiement_recouvre", ct.id, { invoice_id: invoice.id, amount_paid: invoice.amount_paid });
         } else {
           await log("renouvellement_confirme", ct.id, {
-            invoice_id: invoice.id, amount_paid: invoice.amount_paid, period_end: (invoice as any).period_end,
+            invoice_id: invoice.id, amount_paid: invoice.amount_paid, period_end: (invoice as Stripe.Invoice & { period_end?: number }).period_end,
           });
         }
         // Facture pour tous les paiements d'abonnement (1er + renouvellements)
@@ -420,7 +420,7 @@ serve(async (req) => {
   // ── 4. customer.subscription.updated ────────────────────────────────
   if (event.type === "customer.subscription.updated") {
     const sub  = event.data.object as Stripe.Subscription;
-    const prev = (event.data as any).previous_attributes as Partial<Stripe.Subscription>;
+    const prev = event.data.previous_attributes as Partial<Stripe.Subscription>;
     const ct   = await contractBySubId(sub.id);
     if (ct && prev?.cancel_at_period_end !== undefined) {
       const periodEnd = sub.current_period_end
