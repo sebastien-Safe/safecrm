@@ -1,7 +1,6 @@
 // On cible "denonext" pour que esm.sh s'adapte à Deno v2
-import { serve } from "std/http/server";
-import { createClient } from "@supabase/supabase-js";
-import Stripe from "stripe";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import Stripe from "npm:stripe@14";
 
 const H = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",
@@ -16,7 +15,7 @@ function json(b: unknown, s = 200) {
   );
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: H });
   }

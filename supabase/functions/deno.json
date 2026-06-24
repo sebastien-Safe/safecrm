@@ -1,11 +1,4 @@
 {
-  "imports": {
-    "std/http/server":    "https://deno.land/std@0.224.0/http/server.ts",
-    "std/encoding/base64": "https://deno.land/std@0.224.0/encoding/base64.ts",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.49.4?target=denonext",
-    "stripe":   "https://esm.sh/stripe@14.5.0?target=denonext",
-    "pdf-lib":  "https://esm.sh/pdf-lib@1.17.1"
-  },
   "compilerOptions": {
     "strict": true
   }

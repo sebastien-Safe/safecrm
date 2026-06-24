@@ -1,5 +1,4 @@
-import { serve } from "std/http/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const CORS = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",
@@ -17,7 +16,7 @@ const PROVIDERS: Record<string, { url: string; model: string; keyEnv: string; fo
 // Ordre de priorité si plusieurs connecteurs actifs
 const PRIORITY = ["groq", "grok", "anthropic", "mistral"];
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST")   return new Response("not allowed", { status: 405 });
 
@@ -56,7 +55,7 @@ serve(async (req) => {
     if (!rows?.length) return json({ error: "Aucun connecteur IA actif" }, 403);
 
     for (const key of PRIORITY) {
-      if (rows.find(r => r.service_key === key)) { service_key = key; break; }
+      if ((rows as Array<{ service_key: string }>).find(r => r.service_key === key)) { service_key = key; break; }
     }
   }
 

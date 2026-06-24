@@ -1,6 +1,5 @@
-import { serve } from "std/http/server";
-import { createClient } from "@supabase/supabase-js";
-import { encodeBase64 } from "std/encoding/base64";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { encodeBase64 } from "jsr:@std/encoding@^1.0.0/base64";
 
 const CORS = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",
@@ -21,7 +20,7 @@ const STATIC_DOCS = [
   { name: "Fiche RGPD & DPO Externalise.pdf",      file: "fiche-rgpd-conformite.pdf" },
 ];
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return new Response("not allowed", { status: 405 });
 

@@ -1,7 +1,6 @@
-import { serve } from "std/http/server";
-import { createClient } from "@supabase/supabase-js";
-import Stripe from "stripe";
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import Stripe from "npm:stripe@14";
+import { PDFDocument, rgb, StandardFonts } from "npm:pdf-lib";
 
 // ── Signature commerciale : role → titre affiché ──────────────────────────
 const ROLE_TITRE: Record<string, string> = {
@@ -248,7 +247,7 @@ async function envoyerFacture(sb: ReturnType<typeof createClient>, opts: {
 // ═════════════════════════════════════════════════════════════════════════
 // WEBHOOK PRINCIPAL
 // ═════════════════════════════════════════════════════════════════════════
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("not allowed", { status: 405 });
 
   const STRIPE_KEY     = Deno.env.get("STRIPE_SECRET_KEY")!;

@@ -1,5 +1,4 @@
-import { serve } from "std/http/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const CORS = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",
@@ -14,7 +13,7 @@ const ROLE_TITRE: Record<string, string> = {
   niveau_2:    "Votre interlocuteur attitré",
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return new Response("not allowed", { status: 405 });
 

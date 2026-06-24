@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 function toICalDate(iso: string): string {
   return iso.replace(/-/g, "").slice(0, 8);
@@ -21,7 +20,7 @@ function uid(taskId: string, domain: string): string {
   return `task-${taskId}@${domain}`;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const url = new URL(req.url);
   const userId = url.searchParams.get("uid");
   const token  = url.searchParams.get("tok");

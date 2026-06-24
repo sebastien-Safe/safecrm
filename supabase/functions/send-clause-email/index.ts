@@ -1,4 +1,3 @@
-import { serve } from "std/http/server";
 
 const CORS = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",
@@ -13,7 +12,7 @@ const TEMPLATE: Record<string, number> = {
   public:        Number(Deno.env.get("BREVO_TEMPLATE_CLAUSE_PUBLIC") ?? 6),
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return new Response("not allowed", { status: 405 });
 
