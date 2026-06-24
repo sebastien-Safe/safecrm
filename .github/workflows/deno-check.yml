@@ -33,6 +33,6 @@ jobs:
         run: |
           find supabase/functions -name "index.ts" | while read f; do
             echo "→ deno check $f"
-            deno check "$f" || exit 1
+            deno check --config supabase/functions/deno.json "$f" || exit 1
           done
           echo "✅ Type-check OK"

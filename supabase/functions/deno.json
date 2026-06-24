@@ -4,8 +4,5 @@
     "stripe":                "npm:stripe@14",
     "pdf-lib":               "npm:pdf-lib",
     "@std/encoding/base64":  "jsr:@std/encoding@^1.0.0/base64"
-  },
-  "compilerOptions": {
-    "strict": true
   }
 }
