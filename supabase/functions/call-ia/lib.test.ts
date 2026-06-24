@@ -1,4 +1,4 @@
-import { assertEquals, assertExists, assert } from "jsr:@std/assert";
+import { assertEquals, assertExists, assert } from "@std/assert";
 import { PROVIDERS, PRIORITY, selectProvider } from "./lib.ts";
 
 // ── PROVIDERS ────────────────────────────────────────────────────────────────
