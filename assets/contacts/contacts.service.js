@@ -24,6 +24,8 @@ async function saveContact() {
     email: $('#c-email').value.trim() || null,
     telephone: $('#c-telephone').value.trim() || null,
     adresse: $('#c-adresse').value.trim() || null,
+    code_postal: $('#c-code-postal').value.trim() || null,
+    ville: $('#c-ville').value.trim() || null,
     code_postal_ville: $('#c-code-postal-ville').value.trim() || null,
     forme_juridique: $('#c-forme-juridique').value.trim() || null,
     siret: $('#c-siret').value.trim() || null,

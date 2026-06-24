@@ -63,16 +63,17 @@ function openContactModal(id = null) {
   if ($('#c-linkedin')) $('#c-linkedin').value = c?.linkedin || '';
   $('#c-telephone').value = c?.telephone || '';
   $('#c-adresse').value = c?.adresse || '';
-  const cpv = c?.code_postal_ville || '';
-  const cpMatch = cpv.match(/^(\d{5})\s*(.*)$/);
-  $('#c-code-postal').value = cpMatch ? cpMatch[1] : '';
+  const cp   = c?.code_postal || (c?.code_postal_ville || '').match(/^(\d{5})/)?.[1] || '';
+  const vil  = c?.ville       || (c?.code_postal_ville || '').replace(/^\d{5}\s*/, '') || '';
+  $('#c-code-postal').value = cp;
   const villeSelect = $('#c-ville');
-  if (cpMatch && cpMatch[2]) {
-    villeSelect.innerHTML = `<option value="${escapeHtml(cpMatch[2])}">${escapeHtml(cpMatch[2])}</option>`;
-    villeSelect.value = cpMatch[2];
+  if (vil) {
+    villeSelect.innerHTML = `<option value="${escapeHtml(vil)}">${escapeHtml(vil)}</option>`;
+    villeSelect.value = vil;
   } else {
     villeSelect.innerHTML = '<option value="">Saisissez un code postal</option>';
   }
+  $('#c-code-postal-ville').value = (cp && vil) ? `${cp} ${vil}` : (cp || vil);
   $('#c-forme-juridique').value = c?.forme_juridique || '';
   $('#c-siret').value = c?.siret || '';
   $('#c-source').value = c?.source || state.profile?.prenom || '';
@@ -104,6 +105,27 @@ function openContactModal(id = null) {
   const canTransfer = c && editable && !c.rgpd_ko;
   const transferBtn = $('#contact-transfer-btn');
   if (transferBtn) transferBtn.style.display = canTransfer ? 'inline-flex' : 'none';
+
+  // Bouton "Programmer un RDV" — visible uniquement sur une fiche existante
+  const rdvBtn = $('#contact-rdv-btn');
+  if (rdvBtn) {
+    if (c) {
+      const adresse  = [c.adresse, c.code_postal, c.ville].filter(Boolean).join(', ');
+      const titre    = `RDV terrain — ${c.nom}${c.entreprise ? ' (' + c.entreprise + ')' : ''}`;
+      rdvBtn.style.display = 'inline-flex';
+      rdvBtn.onclick = () => {
+        closeContactModal();
+        openTaskModal(null, {
+          type_tache: 'RDV terrain',
+          titre,
+          rdv_lieu: adresse,
+          contact_id: c.id,
+        });
+      };
+    } else {
+      rdvBtn.style.display = 'none';
+    }
+  }
 
   if (id) {
     renderInteractions(id);
