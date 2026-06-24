@@ -1628,13 +1628,13 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <thead><tr><th>Rôle</th><th>MFA obligatoire</th><th>Comportement si absent</th></tr></thead>
     <tbody>
       <tr><td><span class="badge b-admin">super_admin</span></td><td>✅ Oui</td><td>Enrôlement forcé à la connexion, non annulable</td></tr>
-      <tr><td><span class="badge b-admin">admin_candy</span></td><td>✅ Oui</td><td>Enrôlement forcé à la connexion, non annulable</td></tr>
+      <tr><td><span class="badge b-admin">admin</span> (<code>is_admin = true</code>)</td><td>✅ Oui</td><td>Enrôlement forcé à la connexion, non annulable</td></tr>
       <tr><td><span class="badge b-dci">dci</span></td><td>✅ Oui</td><td>Enrôlement forcé à la connexion, non annulable</td></tr>
       <tr><td><span class="badge b-all">user (Niveau 1)</span></td><td>⚪ Optionnel</td><td>Accès accordé sans MFA, activation possible depuis le profil</td></tr>
     </tbody>
   </table>
   </div>
-  <p>Constante de configuration : <code>TOTP_REQUIRED_ROLES = ['admin_candy', 'super_admin', 'dci']</code>. Appareil de confiance mémorisé 2h (<code>safe_totp_trust_{uid}</code> en localStorage). Chaque événement TOTP est logué dans <code>totp_audit</code>.</p>
+  <p>MFA obligatoire pour les rôles sensibles (admin, dci). Appareil de confiance mémorisé 2h (<code>safe_totp_trust_{uid}</code> en localStorage). Chaque événement TOTP est logué dans <code>totp_audit</code>.</p>
 
   <h3>Registre des fournisseurs tiers — table <code>fournisseurs</code></h3>
   <p>Accessible depuis Administration → ⚙️ Réglages. Réservé aux administrateurs. Implémente l'obligation de cartographie des sous-traitants (RGPD art. 28 et NIS2 supply chain).</p>

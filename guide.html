@@ -156,13 +156,15 @@
     const { data: profile } = await sb.from('profiles')
       .select('role, prenom').eq('id', session.user.id).maybeSingle();
     const role  = profile?.role || 'user';
-    const order = ['user','dci','admin_candy','super_admin'];
-    const level = order.indexOf(role);
+    const order = ['user','dci','admin','super_admin'];
+    const order2 = ['user','dci','admin_candy','super_admin']; // compat. DB
+    const level = Math.max(order.indexOf(role), order2.indexOf(role));
 
     // Personnaliser le titre du guide
     const roleLabels = {
       'user':        'Guide Utilisateur (Niveau 1)',
       'dci':         'Guide DCI (Niveau 2)',
+      'admin':       'Guide Administrateur (Niveau 3)',
       'admin_candy': 'Guide Administrateur (Niveau 3)',
       'super_admin': 'Guide Super Admin (Niveau 4)',
     };
