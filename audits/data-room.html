@@ -1570,6 +1570,46 @@ Frontend (Module SEO/DPO/Cyber)
   </table></div>
 </div>
 
+<!-- ═══════════════════════ PARTIE 19b — RSE & ÉCO-RESPONSABILITÉ ═══════════════════════ -->
+<div class="sec pb" id="p19b">
+  <div class="sec-hdr">
+    <div class="sec-num" style="background:linear-gradient(135deg,#16a34a,#15803d)">🌿</div>
+    <div class="sec-title">RSE — Éco-responsabilité des tournées commerciales</div>
+  </div>
+
+  <p>S@FE intègre nativement des mécanismes de limitation de l'empreinte carbone dans le module Prospection Terrain. Cette démarche s'inscrit dans un engagement RSE volontaire, sans certification externe à ce stade.</p>
+
+  <h3>Plafonds kilométriques par niveau d'utilisateur</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Niveau</th><th>Rôle CRM</th><th>Limite/tournée</th><th>Périmètre</th><th>CO₂ max estimé</th></tr></thead>
+    <tbody>
+      <tr><td><strong>NIV1</strong></td><td><code>user</code></td><td><strong>100 km</strong></td><td>Départemental</td><td>~12 kg CO₂</td></tr>
+      <tr><td><strong>NIV2</strong></td><td><code>dci</code></td><td><strong>200 km</strong></td><td>Régional</td><td>~24 kg CO₂</td></tr>
+      <tr><td><strong>Admin</strong></td><td><code>is_admin</code></td><td>Illimité</td><td>—</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+
+  <p style="font-size:.82rem;color:#94a3b8;margin-top:6px">Facteur CO₂ retenu : <strong>120 g/km</strong> (voiture essence, référentiel ADEME 2024).</p>
+
+  <h3 style="margin-top:20px">Mécanisme de dépassement volontaire (friction intentionnelle)</h3>
+  <p>Si un commercial souhaite dépasser sa limite, il doit traverser <strong>4 étapes de sensibilisation</strong> avant de pouvoir forcer le calcul. Ce mécanisme de friction intentionnelle rend le dépassement possible mais non anodin.</p>
+  <div class="cards">
+    <div class="card"><div class="card-title">Étape 1 — Alerte</div><div class="card-body">Message d'information : distance calculée, CO₂ estimé, limite du rôle. Bouton "Je comprends" requis.</div></div>
+    <div class="card"><div class="card-title">Étape 2 — Impact</div><div class="card-body">Équivalence concrète du CO₂ excédentaire (arbres à planter, km en train équivalent). Checkbox "J'ai lu l'impact" requise.</div></div>
+    <div class="card"><div class="card-title">Étape 3 — Alternatives</div><div class="card-body">Suggestions : réduire le rayon, scinder en 2 tournées, regrouper les prochaines visites. Bouton "J'ai considéré les alternatives".</div></div>
+    <div class="card"><div class="card-title">Étape 4 — Confirmation</div><div class="card-body">Bouton rouge "Forcer quand même — Je dépasse la limite éco". Le dépassement est tracé dans la base (<code>force_depassement = true</code>).</div></div>
+  </div>
+
+  <h3 style="margin-top:20px">Maximum 5 étapes par tournée</h3>
+  <p>Contrainte structurelle enforced en base de données (<code>CHECK nb_etapes &lt;= 5</code>) et dans l'interface. Limite la durée des tournées et réduit l'épuisement des commerciaux.</p>
+
+  <h3 style="margin-top:20px">Traçabilité et bilan éco</h3>
+  <div class="cards">
+    <div class="card"><div class="card-title">📊 Vue tournees_eco_bilan</div><div class="card-body">Vue SQL agrégée par commercial et par mois : km totaux, CO₂ total (kg), nombre de dépassements forcés. Accessible depuis le panel admin.</div></div>
+    <div class="card"><div class="card-title">🗄️ Colonnes tracées</div><div class="card-body"><code>distance_totale_km</code> · <code>score_co2_kg</code> (calculé automatiquement) · <code>limite_depassee</code> · <code>force_depassement</code> · <code>nb_etapes</code></div></div>
+  </div>
+</div>
+
 <!-- ═══════════════════════ PARTIE 19 — INFORMATIONS À COMPLÉTER ═══════════════════════ -->
 <div class="sec pb" id="p19">
   <div class="sec-hdr">

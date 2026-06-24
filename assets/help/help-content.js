@@ -294,11 +294,31 @@ const HELP_VIEWS_DATA = {
       {
         title: '🗺️ Lancer l\'itinéraire — Tournée optimisée',
         items: [
-          'Sélectionnez les contacts à visiter (minimum 2, avec adresse complète)',
+          'Sélectionnez les contacts à visiter (minimum 2, maximum 5 — limite éco S@FE)',
           'L\'algorithme TSP calcule l\'ordre de visites le plus court',
           'Créneaux horaires générés automatiquement : 60 km/h moyen, 1 h par RDV, départ à l\'heure choisie',
-          'La carte Leaflet affiche l\'itinéraire numéroté avec polyline',
-          'Cliquez "Créer tous les RDV" pour insérer les tâches dans le CRM en un clic',
+          'La carte Leaflet affiche l\'itinéraire numéroté avec la distance totale et le score CO₂ estimé',
+          'La tournée est enregistrée dans l\'agenda (section "Tournées") avec toutes ses étapes',
+        ],
+      },
+      {
+        title: '🌿 Limite éco-responsable par tournée',
+        items: [
+          'NIV1 (commercial) : 100 km maximum par tournée — périmètre départemental',
+          'NIV2 (DCI) : 200 km maximum par tournée — périmètre régional',
+          'Administrateur : aucune limite imposée',
+          'Score CO₂ affiché en fin de calcul : distance × 120 g/km (référentiel ADEME 2024)',
+          'Maximum 5 étapes par tournée (contrainte structurelle, non contournable)',
+        ],
+      },
+      {
+        title: '⚠️ Dépasser la limite kilométrique',
+        items: [
+          'Si votre tournée dépasse votre limite, 4 étapes de sensibilisation s\'affichent avant de pouvoir forcer',
+          'Étape 1 : prise de connaissance de la distance et du CO₂ excédentaire',
+          'Étape 2 : équivalence concrète de l\'impact carbone (arbres, km train)',
+          'Étape 3 : alternatives proposées (réduire le rayon, scinder en 2 tournées)',
+          'Étape 4 : confirmation explicite "Forcer quand même" — le dépassement est tracé et visible par l\'admin',
         ],
       },
       {
@@ -336,12 +356,15 @@ const HELP_VIEWS_DATA = {
       { title: 'Accéder à l\'espace terrain', content: 'Depuis la sidebar CRM : cliquez sur 🥾 Prospection terrain → saisissez le code PIN 4 chiffres pour accéder à l\'espace.' },
       { title: 'Préparer ma cible', content: 'Sidebar → 🚀 Démarrage → choisissez un secteur (ou tapez un mot-clé) → renseignez votre ville de départ → choisissez un rayon → cliquez "Rechercher". Les établissements s\'affichent triés par distance.' },
       { title: 'Ajouter un établissement à la tournée', content: 'Cliquez "+ Tournée" à côté de l\'établissement. Une fiche prospect est créée dans le CRM. La fiche est marquée "À compléter" jusqu\'à votre prochaine visite.' },
-      { title: 'Lancer l\'itinéraire', content: 'Sidebar → 🗺️ Lancer l\'itinéraire → sélectionnez vos contacts → choisissez l\'heure de départ → cliquez "Calculer". L\'ordre optimal et les créneaux s\'affichent. Cliquez "Créer tous les RDV".' },
+      { title: 'Lancer l\'itinéraire', content: 'Sidebar → 🗺️ Lancer l\'itinéraire → sélectionnez vos contacts (max 5) → choisissez l\'heure de départ → cliquez "Calculer". L\'ordre optimal, les créneaux, la distance totale et le score CO₂ s\'affichent. Cliquez "Enregistrer dans l\'agenda".' },
+      { title: 'Dépasser la limite éco', content: 'Si votre tournée dépasse votre limite (100 km NIV1 · 200 km NIV2), 4 écrans de sensibilisation carbone s\'affichent avant de pouvoir forcer. Le dépassement est tracé et visible par l\'administrateur.' },
       { title: 'Capturer le consentement après audit', content: 'En fin d\'audit : renseignez le nom de l\'entreprise, le nom du signataire et l\'email → cochez "Consentement oral obtenu" → cliquez "Envoyer le rapport". La fiche prospect qualifié est créée dans le CRM uniquement à cette étape.' },
       { title: 'Compléter une fiche après visite', content: 'CRM → Pipeline → ouvrez la carte avec le badge ⚠️ À compléter → cliquez "Modifier le contact" → renseignez email, téléphone, consentements → enregistrez. Le badge disparaît et vous pouvez créer un contrat.' },
     ],
     errors: [
       { q: 'Aucun résultat ne s\'affiche', a: 'Vérifiez que le point de départ est reconnu (essayez "Lyon 69000" plutôt que "Lyon"). Augmentez le rayon. L\'API SIRENE peut être lente — attendez quelques secondes.' },
+      { q: 'Je ne peux pas ajouter plus de 5 étapes', a: 'La limite de 5 étapes par tournée est une contrainte éco-responsable fixée par S@FE. Elle n\'est pas contournable. Créez une deuxième tournée si nécessaire.' },
+      { q: 'Pourquoi dois-je cliquer 4 fois pour dépasser la limite ?', a: 'Ce mécanisme de sensibilisation est volontaire : chaque déplacement supplémentaire génère du CO₂. Les 4 étapes vous permettent de mesurer l\'impact réel avant de confirmer. Le dépassement reste possible mais tracé.' },
       { q: 'Le bouton "Créer un contrat" est grisé', a: 'La fiche est marquée "À compléter". Ouvrez la fiche contact, renseignez au minimum email, téléphone et cochez les consentements, puis enregistrez.' },
       { q: 'La géolocalisation ne fonctionne pas', a: 'Autorisez l\'accès à la position dans les paramètres de votre navigateur. En cas de refus, saisissez votre ville manuellement.' },
       { q: 'Un contact n\'apparaît pas dans la liste Tournée', a: 'La tournée n\'affiche que les contacts avec une adresse complète (rue + code postal ou ville). Complétez l\'adresse dans la fiche contact.' },

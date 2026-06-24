@@ -1663,7 +1663,18 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <li><strong>🔒 Garde-fous RGPD Places API</strong> : bannière permanente "Données Google — Lecture seule" sur les résultats · formulaire de consentement entièrement vierge (aucun pré-remplissage) · attribution "Propulsé par Google" obligatoire · Google Maps Platform déclaré sous-traitant au registre Art.30.</li>
     <li><strong>✅ Capture consentement post-audit</strong> : en fin d'audit gratuit (RGPD · SEO · Cyber), saisie obligatoire : nom entreprise · nom signataire · email · case "Consentement oral obtenu" cochée. Sans consentement, le rapport ne part pas et aucune fiche n'est créée dans le CRM.</li>
     <li><strong>⚠️ Garde-fou "À compléter"</strong> : toute fiche créée apparaît dans le pipeline kanban avec un badge orange "À compléter". Création de contrat bloquée jusqu'à complétion manuelle (nom, email, téléphone, consentements).</li>
-    <li><strong>🗺️ Lancer l'itinéraire — Tournée optimisée</strong> : sélection de contacts avec adresse, calcul TSP nearest-neighbor, créneaux horaires automatiques (60 km/h · 60 min/RDV), création groupée des tâches en 1 clic.</li>
+    <li><strong>🗺️ Lancer l'itinéraire — Tournée optimisée</strong> : sélection de contacts et/ou cibles Google Places (max 5 étapes), calcul TSP nearest-neighbor, créneaux horaires automatiques (60 km/h · 60 min/RDV). La tournée est enregistrée dans l'agenda CRM avec ses étapes ordonnées (tables <code>tournees</code> + <code>tournee_etapes</code>).</li>
+    <li><strong>🌿 Éco-responsabilité — Limites kilométriques RSE</strong> :
+      <ul style="margin-top:6px">
+        <li>NIV1 (<code>role=user</code>) : <strong>100 km/tournée</strong> max — périmètre départemental (~12 kg CO₂)</li>
+        <li>NIV2 (<code>role=dci</code>) : <strong>200 km/tournée</strong> max — périmètre régional (~24 kg CO₂)</li>
+        <li>Admin : illimité</li>
+        <li>Score CO₂ calculé automatiquement : <code>distance_totale_km × 0,120</code> (ADEME 2024, colonne générée <code>score_co2_kg</code>)</li>
+        <li>Maximum <strong>5 étapes</strong> par tournée — contrainte enforced en base (<code>CHECK nb_etapes &lt;= 5</code>)</li>
+        <li>Dépassement volontaire : 4 écrans de sensibilisation carbone obligatoires avant confirmation — tracé en base (<code>force_depassement = true</code>)</li>
+        <li>Vue SQL <code>tournees_eco_bilan</code> : bilan mensuel par commercial (km, CO₂, dépassements forcés)</li>
+      </ul>
+    </li>
     <li><strong>Dashboard missions</strong> : audit multi-missions intégré (RGPD · SEO · Cyber · Social · Click&amp;Collect) + 3 audits individuels rapides.</li>
   </ul>
 </div>
