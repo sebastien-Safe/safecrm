@@ -496,10 +496,16 @@
           <h2>Contacts</h2>
           <p>Prospects et clients, toutes activités confondues</p>
         </div>
-        <button class="btn btn-pri" id="btn-new-contact">+ Nouveau contact</button>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div style="position:relative">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mut);pointer-events:none">🔍</span>
+            <input type="text" id="contacts-search" placeholder="Rechercher nom, entreprise, e-mail…"
+              style="padding:8px 12px 8px 32px;border:1px solid var(--line);border-radius:8px;background:var(--navy-2);color:var(--txt);font-size:.85rem;width:260px;outline:none">
+          </div>
+          <button class="btn btn-pri" id="btn-new-contact">+ Nouveau contact</button>
+        </div>
       </div>
       <div class="filters">
-        <input type="text" id="contacts-search" placeholder="Rechercher (nom, entreprise, e-mail…)">
         <select id="contacts-filter-activite">
           <option value="">Toutes activités</option>
           <option value="Digitalisation">Digitalisation</option><option value="RGPD">RGPD</option><option value="Assurance">Assurance</option><option value="Click &amp; Collect">Click &amp; Collect</option><option value="Autre">Autre</option>
