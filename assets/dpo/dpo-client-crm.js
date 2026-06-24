@@ -42,7 +42,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <span style="font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
             color:rgba(255,255,255,.35);font-family:var(--ff-mono)">Score RGPD</span>
-          <a href="/work/DPO/module-dpo-clients.html#${contactId}"
+          <a href="/modules/DPO/module-dpo-clients.html#${contactId}"
             style="font-size:.72rem;color:var(--gold);text-decoration:none;
             font-family:var(--ff-mono);opacity:.8"
             target="_blank" rel="noopener">⚖️ Ouvrir DPO →</a>
@@ -60,7 +60,7 @@
             font-family:var(--ff-mono)">Dernier audit : ${new Date(lastAudit).toLocaleDateString('fr-FR')}</div>` : ''}
         ` : `
           <div style="font-size:.76rem;color:rgba(255,255,255,.3);font-family:var(--ff-mono);font-style:italic">
-            Aucun suivi DPO — <a href="/work/DPO/module-dpo-clients.html"
+            Aucun suivi DPO — <a href="/modules/DPO/module-dpo-clients.html"
               style="color:var(--gold);text-decoration:none" target="_blank">Démarrer →</a>
           </div>`}
       </div>`;

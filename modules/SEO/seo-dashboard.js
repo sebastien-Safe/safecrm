@@ -63,7 +63,7 @@ async function loadDashboard() {
               </div>
               <span id="conn-status-${key}" class="badge badge-gray">Chargement…</span>
             </div>`).join('')}
-          <a href="/work/connecteurs.html" class="btn btn-ghost btn-sm" style="margin-top:4px">
+          <a href="/modules/connecteurs.html" class="btn btn-ghost btn-sm" style="margin-top:4px">
             🔌 Gérer les connecteurs →
           </a>
         </div>

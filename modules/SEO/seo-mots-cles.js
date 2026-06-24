@@ -44,7 +44,7 @@ async function loadMotsCles() {
       <div style="background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);
         border-radius:var(--r-sm);padding:9px 14px;margin-bottom:14px;font-size:.77rem;color:var(--mut-2);
         display:flex;align-items:center;justify-content:space-between;font-family:var(--ff-mono)">
-        <span>🔍 Positions saisies manuellement. <a href="/work/connecteurs.html" style="color:var(--gold)">Activer Google Search Console</a> pour les importer automatiquement.</span>
+        <span>🔍 Positions saisies manuellement. <a href="/modules/connecteurs.html" style="color:var(--gold)">Activer Google Search Console</a> pour les importer automatiquement.</span>
       </div>
 
       <div class="card">

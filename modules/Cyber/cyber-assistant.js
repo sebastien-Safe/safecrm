@@ -83,7 +83,7 @@ async function loadCyberAssistant() {
           </div>`).join('')}
       </div>
       ${!anyActive ? `
-        <a href="/work/connecteurs.html" class="btn btn-ghost" style="margin-bottom:8px">
+        <a href="/modules/connecteurs.html" class="btn btn-ghost" style="margin-bottom:8px">
           🔌 Configurer un connecteur IA →
         </a>` : ''}
     </div>
@@ -138,7 +138,7 @@ async function sendCyberMessage() {
 
   const activeKey = await getActiveIAConnector();
   if (!activeKey) {
-    output.innerHTML = '<span style="color:var(--alert)">Aucun connecteur IA actif. <a href="/work/connecteurs.html" style="color:var(--gold)">Configurer →</a></span>';
+    output.innerHTML = '<span style="color:var(--alert)">Aucun connecteur IA actif. <a href="/modules/connecteurs.html" style="color:var(--gold)">Configurer →</a></span>';
     return;
   }
 

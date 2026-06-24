@@ -9,7 +9,7 @@
 <link rel="shortcut icon" href="/work/favicon.svg">
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/plexsans-400.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/sora-800.woff2" crossorigin>
-<link rel="stylesheet" href="/work/shared.css">
+<link rel="stylesheet" href="/modules/shared.css">
 <style>
 :root{
   --navy:#0a1628; --navy-mid:#142240; --blue:#1a3a6e;
@@ -292,10 +292,10 @@ select option{background:var(--navy-mid)}
 
       <div class="sidebar-section" style="margin-top:8px;border-top:1px solid var(--line);padding-top:12px">
         <div class="sidebar-section-label" style="padding:0 12px;margin-bottom:6px">Sécurité</div>
-        <a class="sidebar-item" href="/work/incidents-nis2.html"><span class="ico">🛡️</span> Incidents NIS2</a>
+        <a class="sidebar-item" href="/modules/Cyber/incidents-nis2.html"><span class="ico">🛡️</span> Incidents NIS2</a>
         <a class="sidebar-item" href="/" onclick="sessionStorage.setItem('safe_work_goto','rgpd');"><span class="ico">📒</span> Journal RGPD</a>
         <a class="sidebar-item" href="/" onclick="sessionStorage.setItem('safe_work_goto','securite');"><span class="ico">🔒</span> Sécurité</a>
-        <a class="sidebar-item" href="/work/portabilite.html"><span class="ico">⬇️</span> Portabilité RGPD</a>
+        <a class="sidebar-item" href="/modules/DPO/portabilite.html"><span class="ico">⬇️</span> Portabilité RGPD</a>
       </div>
 
       <div class="sidebar-section" style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line)">
@@ -367,7 +367,7 @@ select option{background:var(--navy-mid)}
             <div class="lbl">Journal sécurité</div>
             <div style="font-size:.72rem;color:var(--mut);margin-top:6px">Admin → Sécurité · connexions</div>
           </a>
-          <a href="/work/incidents-nis2.html" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(245,158,11,.3)">
+          <a href="/modules/Cyber/incidents-nis2.html" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(245,158,11,.3)">
             <div class="val" style="font-size:1.4rem">🛡️</div>
             <div class="lbl">Incidents NIS2</div>
             <div style="font-size:.72rem;color:var(--mut);margin-top:6px">Déclarer · timeline · ANSSI</div>
@@ -377,7 +377,7 @@ select option{background:var(--navy-mid)}
             <div class="lbl">Registre fournisseurs</div>
             <div style="font-size:.72rem;color:var(--mut);margin-top:6px">Admin → Réglages · RGPD art. 28</div>
           </a>
-          <a href="/work/portabilite.html" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(59,130,246,.3)" title="Export données personnelles — RGPD art. 20">
+          <a href="/modules/DPO/portabilite.html" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(59,130,246,.3)" title="Export données personnelles — RGPD art. 20">
             <div class="val" style="font-size:1.4rem">⬇️</div>
             <div class="lbl">Portabilité des données</div>
             <div style="font-size:.72rem;color:var(--mut);margin-top:6px">RGPD art. 20 · export JSON + PDF</div>
@@ -759,37 +759,37 @@ const _MODULES_DEF = [
     key:'dpo', name:'DPO Clients RGPD', icon:'⚖️', color:'#f59e0b', pct:100,
     done:['Registre traitements','Consentements','Demandes RGPD','Documents','Violations','Audit & Score','Assistant IA (Grok / Claude / Mistral)','Envoi rapport par email au client'],
     todo:[],
-    href:'/work/DPO/module-dpo-clients.html',
+    href:'/modules/DPO/module-dpo-clients.html',
   },
   {
     key:'cyber', name:'Cybersécurité', icon:'🛡', color:'#06b6d4', pct:100,
     done:['Audit 23 pts ANSSI/CIS','Incidents','Plan d\'action','Assistant IA (Grok / Claude / Mistral)','Rapport PDF brandé (export + email client)','Alertes email auto incidents graves/critiques'],
     todo:[],
-    href:'/work/Cyber/module-cyber-clients.html',
+    href:'/modules/Cyber/module-cyber-clients.html',
   },
   {
     key:'seo', name:'SEO Clients', icon:'🔍', color:'#10b981', pct:97,
     done:['Suivi mots-clés','Audit 25 points','Rapport PDF mensuel','Assistant IA (Grok / Claude / Mistral)','Envoi rapport par email au client'],
     todo:['Import positions GSC/SE Ranking','Alertes chute de positions'],
-    href:'/work/SEO/module-seo-clients.html',
+    href:'/modules/SEO/module-seo-clients.html',
   },
   {
     key:'connecteurs', name:'Connecteurs', icon:'🔌', color:'#3b82f6', pct:95,
     done:['Gestion centralisée','Activation sécurisée','Logs historique','Mode simulation','Edge Function call-ia','Multi-IA Groq → Grok → Claude → Mistral'],
     todo:['Webhooks entrants'],
-    href:'/work/connecteurs.html',
+    href:'/modules/connecteurs.html',
   },
   {
     key:'social', name:'Social', icon:'📱', color:'#8b5cf6', pct:85,
     done:['Posts multi-réseaux','Calendrier éditorial','Rapport PDF mensuel','Dashboard stats','Génération posts IA'],
     todo:['Import auto réseaux','Planification Buffer/Meta'],
-    href:'/work/Social/module-social-clients.html',
+    href:'/modules/Social/module-social-clients.html',
   },
   {
     key:'clickcollect', name:'Click & Collect', icon:'🛒', color:'#ec4899', pct:80,
     done:['Catalogue produits','Gestion commandes','Workflow statuts','Rapport PDF mensuel'],
     todo:['Paiement en ligne','Notifications client'],
-    href:'/work/ClickCollect/module-clickcollect-clients.html',
+    href:'/modules/ClickCollect/module-clickcollect-clients.html',
   },
 ];
 

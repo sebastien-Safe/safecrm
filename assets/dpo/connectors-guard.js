@@ -88,7 +88,7 @@
         ${!errorMsg ? `<div style="font-family:var(--ff-mono,monospace);font-size:.74rem;
           color:rgba(245,158,11,.8);margin-bottom:10px">Statut actuel : ${statusLabel}</div>` : ''}
         ${context ? `<div style="font-size:.8rem;color:rgba(255,255,255,.45);margin-bottom:12px">${context}</div>` : ''}
-        <a href="/work/connecteurs.html"
+        <a href="/modules/connecteurs.html"
           style="display:inline-block;font-family:var(--ff-disp,sans-serif);font-weight:700;
           font-size:.82rem;padding:8px 18px;border-radius:10px;
           background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0a1628;text-decoration:none">

@@ -67,7 +67,7 @@ async function loadAssistant() {
             et demande explicitement l'autorisation administrateur.
           </p>
         </div>
-        <a href="/work/connecteurs.html"
+        <a href="/modules/connecteurs.html"
           class="btn btn-ghost" style="margin-bottom:10px">
           🔌 Configurer un connecteur IA →
         </a>`}
@@ -183,7 +183,7 @@ async function sendAssistantMessage() {
   if (!activeKey) {
     output.innerHTML =
       '<span style="color:var(--alert)">Aucun connecteur IA actif. ' +
-      '<a href="/work/connecteurs.html" style="color:var(--gold)">Configurer →</a></span>';
+      '<a href="/modules/connecteurs.html" style="color:var(--gold)">Configurer →</a></span>';
     return;
   }
 
