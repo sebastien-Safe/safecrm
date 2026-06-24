@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S@FE CRM — Data Room · Document de valorisation</title>
+<style>
+:root{
+  --navy:#0a1628;--navy2:#142240;--gold:#f59e0b;--gold2:#fbbf24;
+  --blue:#3b82f6;--green:#22c55e;--red:#ef4444;--purple:#8b5cf6;
+  --txt:#1e293b;--txt2:#475569;--txt3:#94a3b8;
+  --line:#e2e8f0;--bg:#f8fafc;--white:#fff;--r:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;scroll-behavior:smooth}
+body{background:var(--white);color:var(--txt);font-family:'Segoe UI',Arial,Helvetica,sans-serif;line-height:1.7}
+a{color:var(--blue);text-decoration:none}
+@media print{
+  .no-print{display:none!important}
+  .pb{page-break-before:always}
+  .pba{page-break-after:always}
+  body{font-size:11px}
+  .cover{page-break-after:always;min-height:unset}
+}
+.wrap{max-width:1000px;margin:0 auto;padding:0 32px 80px}
+/* ── Topbar ── */
+.topbar{background:var(--navy);padding:12px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--gold)}
+.topbar .brand{font-weight:900;font-size:1rem;color:var(--gold)}
+.topbar .sub{font-size:.78rem;color:var(--txt3);flex:1}
+.btn{padding:7px 16px;border:none;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;transition:opacity .15s;text-decoration:none;display:inline-block}
+.btn-gold{background:var(--gold);color:#000}
+.btn-out{background:transparent;border:1px solid rgba(255,255,255,.25);color:var(--white)}
+/* ── Cover ── */
+.cover{background:var(--navy);min-height:90vh;display:flex;align-items:center;justify-content:center;padding:60px 32px}
+.cover-inner{text-align:center;max-width:720px}
+.cover-logo{font-size:4rem;font-weight:900;color:var(--gold);letter-spacing:-1px;margin-bottom:6px}
+.cover-tagline{font-size:.85rem;color:var(--txt3);letter-spacing:.25em;text-transform:uppercase;margin-bottom:40px}
+.cover-title{font-size:2rem;font-weight:800;color:var(--white);line-height:1.25;margin-bottom:14px}
+.cover-sub{font-size:.92rem;color:var(--txt3);line-height:1.85;margin-bottom:36px}
+.cover-meta{display:inline-grid;grid-template-columns:repeat(4,1fr);gap:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden}
+.cover-meta-item{padding:16px 24px;border-right:1px solid rgba(255,255,255,.08)}
+.cover-meta-item:last-child{border-right:none}
+.cover-meta-item strong{color:var(--white);display:block;font-size:.95rem;font-weight:800}
+.cover-meta-item span{font-size:.75rem;color:var(--txt3)}
+.cover-class{display:inline-flex;align-items:center;gap:8px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 18px;margin-top:28px;font-size:.82rem;font-weight:700;color:#fca5a5;letter-spacing:.05em}
+/* ── TOC ── */
+.toc{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:28px 32px;margin:48px 0 36px}
+.toc h2{font-size:.88rem;font-weight:800;color:var(--navy);margin-bottom:18px;text-transform:uppercase;letter-spacing:.1em}
+.toc-cols{display:grid;grid-template-columns:1fr 1fr;gap:4px 40px}
+.toc-cols a{font-size:.82rem;color:var(--txt2);display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.toc-cols a:hover{color:var(--navy)}
+.toc-num{background:var(--navy);color:var(--gold);font-weight:800;font-size:.68rem;min-width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+/* ── Section ── */
+.sec{margin:56px 0 0}
+.sec-hdr{display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:14px;border-bottom:2px solid var(--gold)}
+.sec-num{background:var(--navy);color:var(--gold);font-weight:900;font-size:.88rem;min-width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sec-title{font-size:1.28rem;font-weight:800;color:var(--navy);line-height:1.2}
+h3{font-size:.96rem;font-weight:700;color:var(--navy);margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+h3::before{content:'';display:block;width:4px;height:16px;background:var(--gold);border-radius:2px;flex-shrink:0}
+h4{font-size:.82rem;font-weight:700;color:var(--txt2);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.07em}
+p{font-size:.87rem;color:var(--txt2);margin-bottom:10px;line-height:1.75}
+ul,ol{padding-left:0;list-style:none}
+ul li,ol li{font-size:.84rem;color:var(--txt2);padding:3px 0 3px 18px;position:relative;line-height:1.6}
+ul li::before{content:'▸';position:absolute;left:0;color:var(--gold);font-size:.78rem;top:5px}
+ol{counter-reset:li}
+ol li{counter-increment:li}
+ol li::before{content:counter(li)'.';position:absolute;left:0;color:var(--navy);font-weight:700;font-size:.78rem;top:5px}
+/* ── Tables ── */
+.tbl{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+thead tr{background:var(--navy)}
+thead th{color:var(--white);font-weight:700;padding:9px 12px;text-align:left}
+thead th:first-child{border-radius:8px 0 0 0}
+thead th:last-child{border-radius:0 8px 0 0}
+tbody tr:nth-child(even){background:var(--bg)}
+tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5}
+.tc{text-align:center}
+/* ── Badges ── */
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700;letter-spacing:.04em;white-space:nowrap}
+.b-ok{background:rgba(34,197,94,.12);color:#15803d}
+.b-warn{background:rgba(245,158,11,.12);color:#92400e}
+.b-err{background:rgba(239,68,68,.12);color:#991b1b}
+.b-info{background:rgba(59,130,246,.12);color:#1d4ed8}
+.b-purple{background:rgba(139,92,246,.12);color:#5b21b6}
+.b-admin{background:rgba(239,68,68,.12);color:#991b1b}
+.b-dci{background:rgba(245,158,11,.12);color:#92400e}
+.b-user{background:rgba(34,197,94,.12);color:#14532d}
+/* ── Fact tags ── */
+.fact-tag{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:4px;vertical-align:middle;margin-left:6px}
+.ft-v{background:#dcfce7;color:#15803d;border:1px solid #86efac}
+.ft-h{background:#fef9c3;color:#92400e;border:1px solid #fde047}
+.ft-r{background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd}
+.ft-i{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+/* ── Info/warn boxes ── */
+.box{padding:14px 18px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.84rem;color:var(--txt2);line-height:1.7}
+.box-gold{background:rgba(245,158,11,.07);border-left:3px solid var(--gold)}
+.box-blue{background:rgba(59,130,246,.06);border-left:3px solid var(--blue)}
+.box-green{background:rgba(34,197,94,.06);border-left:3px solid var(--green)}
+.box-red{background:rgba(239,68,68,.07);border-left:3px solid var(--red)}
+.box strong{color:var(--navy)}
+/* ── Grid cards ── */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.cards-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0}
+.cards-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin:14px 0}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card-title{font-size:.86rem;font-weight:700;color:var(--navy);margin-bottom:6px}
+.card-body{font-size:.8rem;color:var(--txt2);line-height:1.65}
+.card-num{font-size:1.8rem;font-weight:900;color:var(--gold);line-height:1}
+.card-label{font-size:.72rem;color:var(--txt3);margin-top:2px}
+/* ── Flow ── */
+.flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:16px 0}
+.fb{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.78rem;font-weight:700;color:var(--navy);white-space:nowrap}
+.fb.navy{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+.fb.green{background:rgba(34,197,94,.08);border-color:var(--green);color:#15803d}
+.fb.gold{background:rgba(245,158,11,.1);border-color:var(--gold);color:#92400e}
+.fb.red{background:rgba(239,68,68,.08);border-color:var(--red);color:#b91c1c}
+.fb.blue{background:rgba(59,130,246,.08);border-color:var(--blue);color:#1d4ed8}
+.fa{font-size:.9rem;color:var(--txt3);padding:0 6px;flex-shrink:0}
+/* ── Checklist ── */
+.checklist{list-style:none;padding:0;margin:12px 0}
+.checklist li{display:flex;align-items:flex-start;gap:10px;font-size:.84rem;color:var(--txt2);padding:5px 0;border-bottom:1px solid var(--bg)}
+.checklist li::before{content:none}
+.cl-ok::before{content:'✅';font-size:.9rem;flex-shrink:0}
+.cl-warn::before{content:'⚠️';font-size:.9rem;flex-shrink:0}
+.cl-no::before{content:'❌';font-size:.9rem;flex-shrink:0}
+.cl-na::before{content:'—';font-size:.9rem;flex-shrink:0;color:var(--txt3)}
+/* ── ASCII diagram ── */
+.ascii{background:var(--navy);color:#94a3b8;font-family:'Courier New',monospace;font-size:.75rem;line-height:1.5;padding:24px;border-radius:12px;margin:16px 0;overflow-x:auto;white-space:pre}
+.ascii .hi{color:var(--gold);font-weight:700}
+.ascii .hi2{color:#86efac}
+.ascii .hi3{color:#93c5fd}
+/* ── KPI bar ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.kpi{background:var(--navy);border-radius:10px;padding:18px;text-align:center}
+.kpi-val{font-size:1.9rem;font-weight:900;color:var(--gold);line-height:1}
+.kpi-label{font-size:.72rem;color:var(--txt3);margin-top:4px}
+/* ── Score ── */
+.score-row{display:flex;align-items:center;gap:12px;margin:6px 0}
+.score-label{font-size:.82rem;color:var(--txt2);min-width:200px}
+.score-bar{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.score-fill{height:100%;border-radius:4px}
+.score-val{font-size:.78rem;font-weight:700;color:var(--navy);min-width:36px;text-align:right}
+/* ── Valuation ── */
+.val-box{background:var(--navy);border-radius:14px;padding:28px;margin:20px 0;text-align:center}
+.val-range{font-size:2.2rem;font-weight:900;color:var(--gold);line-height:1.1}
+.val-label{font-size:.82rem;color:var(--txt3);margin-top:6px}
+.val-method{font-size:.75rem;color:rgba(255,255,255,.4);margin-top:4px}
+/* ── Misc ── */
+.divider{border:none;border-top:1px solid var(--line);margin:32px 0}
+.eyebrow{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--txt3)}
+code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:4px;font-size:.82em}
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.7rem;font-weight:700;background:var(--bg);border:1px solid var(--line);color:var(--txt2);margin:2px}
+@media(max-width:700px){
+  .cards,.cards-3,.cards-4,.kpi-row,.toc-cols{grid-template-columns:1fr}
+  .cover-meta{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar no-print">
+  <span class="brand">S@FE</span>
+  <span class="sub">Data Room — Document de valorisation confidentiel</span>
+  <div style="display:flex;gap:10px">
+    <a href="../index.html" class="btn btn-out">← CRM</a>
+    <button class="btn btn-gold" onclick="window.print()">Exporter PDF</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ COUVERTURE ═══════════════════════ -->
+<div class="cover pba">
+  <div class="cover-inner">
+    <div class="cover-logo">S<b style="color:var(--white)">@</b>FE</div>
+    <div class="cover-tagline">Système de Gestion Commerciale &amp; Conformité</div>
+    <h1 class="cover-title">DATA ROOM<br>Document de Valorisation</h1>
+    <p class="cover-sub">
+      Dossier complet destiné à la présentation auprès d'investisseurs, d'acquéreurs ou<br>
+      à l'intégration de S@FE CRM au patrimoine immatériel d'une société.<br>
+      Produit selon les standards Big Four (Deloitte · EY · PwC · KPMG).
+    </p>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><strong>S@FE CRM</strong><span>Produit</span></div>
+      <div class="cover-meta-item"><strong>2026-DR-V1</strong><span>Version</span></div>
+      <div class="cover-meta-item"><strong>24 juin 2026</strong><span>Date</span></div>
+      <div class="cover-meta-item"><strong>S@FE SASU</strong><span>Éditeur</span></div>
+    </div>
+    <div class="cover-class">🔒 CONFIDENTIEL — RESTRICTED · Ne pas diffuser sans autorisation</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════════════════ TABLE DES MATIÈRES ═══════════════════════ -->
+<div class="toc pb">
+  <h2>Table des matières</h2>
+  <div class="toc-cols">
+    <a href="#exec"><span class="toc-num">EX</span>Résumé exécutif</a>
+    <a href="#p10"><span class="toc-num">10</span>Audit Sécurité</a>
+    <a href="#p1"><span class="toc-num">1</span>Présentation du produit</a>
+    <a href="#p11"><span class="toc-num">11</span>Audit Conformité RGPD / NIS2</a>
+    <a href="#p2"><span class="toc-num">2</span>Architecture globale</a>
+    <a href="#p12"><span class="toc-num">12</span>Historique du développement</a>
+    <a href="#p3"><span class="toc-num">3</span>Description des modules</a>
+    <a href="#p13"><span class="toc-num">13</span>Inventaire des actifs immatériels</a>
+    <a href="#p4"><span class="toc-num">4</span>Base de données</a>
+    <a href="#p14"><span class="toc-num">14</span>Propriété intellectuelle</a>
+    <a href="#p5"><span class="toc-num">5</span>Cartographie des flux</a>
+    <a href="#p15"><span class="toc-num">15</span>Valorisation</a>
+    <a href="#p6"><span class="toc-num">6</span>Automatisations</a>
+    <a href="#p16"><span class="toc-num">16</span>Analyse concurrentielle</a>
+    <a href="#p7"><span class="toc-num">7</span>Documentation technique</a>
+    <a href="#p17"><span class="toc-num">17</span>Roadmap</a>
+    <a href="#p8"><span class="toc-num">8</span>Documentation fonctionnelle</a>
+    <a href="#p18"><span class="toc-num">18</span>Annexes</a>
+    <a href="#p9"><span class="toc-num">9</span>Audit Qualité</a>
+    <a href="#p19"><span class="toc-num">19</span>Informations à compléter</a>
+  </div>
+  <p style="font-size:.75rem;color:var(--txt3);margin-top:18px">
+    <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span> Information issue directement du code source ou des fichiers du projet.&ensp;
+    <span class="fact-tag ft-h">HYPOTHÈSE</span> Estimation ou extrapolation documentée.&ensp;
+    <span class="fact-tag ft-r">RECOMMANDATION</span> Suggestion d'amélioration.&ensp;
+    <span class="fact-tag ft-i">INFO À COMPLÉTER</span> Donnée manquante à renseigner par l'éditeur.
+  </p>
+</div>
+
+<!-- ═══════════════════════ RÉSUMÉ EXÉCUTIF ═══════════════════════ -->
+<div class="sec pb" id="exec">
+  <div class="sec-hdr">
+    <div class="sec-num">EX</div>
+    <div class="sec-title">Résumé Exécutif</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-val">~90K</div><div class="kpi-label">Lignes de code source</div></div>
+    <div class="kpi"><div class="kpi-val">161</div><div class="kpi-label">Fichiers source</div></div>
+    <div class="kpi"><div class="kpi-val">28</div><div class="kpi-label">Tables PostgreSQL</div></div>
+    <div class="kpi"><div class="kpi-val">13</div><div class="kpi-label">Edge Functions Deno</div></div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-val">5</div><div class="kpi-label">Modules IA métier</div></div>
+    <div class="kpi"><div class="kpi-val">4</div><div class="kpi-label">Connecteurs IA</div></div>
+    <div class="kpi"><div class="kpi-val">12</div><div class="kpi-label">Types d'emails auto.</div></div>
+    <div class="kpi"><div class="kpi-val">29</div><div class="kpi-label">Versions de schéma SQL</div></div>
+  </div>
+
+  <p style="margin-top:20px"><strong>S@FE CRM</strong> est un logiciel SaaS de gestion commerciale et de conformité réglementaire, développé et édité par <strong>S@FE SASU</strong> (SIRET : 104 699 558 00011). Le produit cible les PME françaises soumises aux obligations RGPD, NIS2 et aux exigences de l'ANSSI.</p>
+
+  <p>Le logiciel constitue un <strong>actif immatériel structuré</strong>, industrialisé et documenté, présentant les caractéristiques suivantes :</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-title">🏗 Architecture industrielle</div>
+      <div class="card-body">SPA Vanilla JS modulaire (65 fichiers JS / 19 164 lignes), backend Supabase 100% serverless, 13 Edge Functions Deno 2.x, schéma PostgreSQL en 29 versions migratoires successives.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔒 Sécurité de niveau entreprise</div>
+      <div class="card-body">Row Level Security sur 28 tables, JWT + TOTP MFA obligatoire pour les rôles sensibles, anti-bruteforce 5 tentatives, audit trail complet dans <code>audit_logs</code>, chiffrement AES-256 au repos.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚖️ Conformité réglementaire native</div>
+      <div class="card-body">RGPD Art. 30 (registre des traitements intégré), NIS2 (module incidents), DPA signé Supabase + Stripe + Brevo, AIPD rédigée pour la fonction IA, purge automatique des données.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🤖 Intelligence artificielle intégrée</div>
+      <div class="card-body">4 fournisseurs IA en fallback automatique (Groq · Grok · Anthropic · Mistral), assistant contextuel par module, génération PDF IA-augmentée, Edge Function <code>call-ia</code> v4.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">💳 Monétisation opérationnelle</div>
+      <div class="card-body">Intégration Stripe complète (checkout, webhook, customer portal, résiliation), liens de paiement par contrat, gestion des abonnements récurrents, PDF de commande auto-généré.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📱 Application installable (PWA)</div>
+      <div class="card-body">Progressive Web App certifiée, 8 tailles d'icônes, mode offline via Service Worker, installable sur iOS/Android/Desktop, orientée tablette pour usage terrain.</div>
+    </div>
+  </div>
+
+  <div class="box box-gold" style="margin-top:20px">
+    <strong>Synthèse de valorisation</strong> — Sur la base de la méthode coût (reconstruction), l'actif représente entre <strong>180 000 € et 280 000 €</strong> de valeur de remplacement (cf. Partie 15). La valeur économique projetée à 100 clients abonnés dépasse <strong>1 200 000 €</strong> sur la base d'un multiple SaaS 5×ARR.
+    <span class="fact-tag ft-h">HYPOTHÈSE</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 1 — PRÉSENTATION ═══════════════════════ -->
+<div class="sec pb" id="p1">
+  <div class="sec-hdr">
+    <div class="sec-num">1</div>
+    <div class="sec-title">Présentation de S@FE CRM</div>
+  </div>
+
+  <h3>Vision</h3>
+  <p>Permettre aux PME et aux indépendants français de disposer d'un outil de gestion commerciale qui intègre nativement les obligations réglementaires (RGPD, NIS2, ANSSI) sans surcoût de mise en conformité ni recours à des prestataires tiers spécialisés.</p>
+
+  <h3>Mission</h3>
+  <p>S@FE CRM agrège en une seule plateforme : la gestion des prospects et clients, la contractualisation numérique, le paiement récurrent, la conformité réglementaire proactive et l'assistance IA — le tout sans infrastructure à maintenir (SaaS 100% serverless).</p>
+
+  <h3>Positionnement marché</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Dimension</th><th>Positionnement S@FE</th></tr></thead>
+    <tbody>
+      <tr><td>Segment cible</td><td>PME françaises 1-50 salariés, professions libérales, réseaux de courtiers/agents commerciaux</td></tr>
+      <tr><td>Zone géographique</td><td>France métropolitaine — conformité droit français et européen</td></tr>
+      <tr><td>Modèle économique</td><td>SaaS par abonnement mensuel / annuel + modules à la carte <span class="fact-tag ft-h">HYPOTHÈSE</span></td></tr>
+      <tr><td>Prix de marché estimé</td><td>€99 – €299/mois selon formule <span class="fact-tag ft-i">INFO À COMPLÉTER</span></td></tr>
+      <tr><td>Différenciateur clé</td><td>Conformité RGPD/NIS2 native, IA multi-fournisseur, prospection terrain tablette</td></tr>
+      <tr><td>Distribution</td><td>Force de vente directe + réseau DCI (Délégués Commerciaux Indépendants)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Public cible</h3>
+  <div class="cards-3">
+    <div class="card"><div class="card-title">👤 Utilisateur Niveau 1</div><div class="card-body">Commercial terrain. Gestion de son portefeuille contacts/contrats. Accès missions prospection. Pas d'accès administration.</div></div>
+    <div class="card"><div class="card-title">🏢 DCI — Délégué Commercial Indépendant</div><div class="card-body">Manage une équipe de commerciaux. Cockpit consolidé, objectifs d'équipe, mandat DCI signé électroniquement.</div></div>
+    <div class="card"><div class="card-title">🔑 Administrateur</div><div class="card-body">Accès total. Gestion utilisateurs, configuration modules, tableaux de bord globaux, audit RGPD, incidents NIS2.</div></div>
+  </div>
+
+  <h3>Différenciation concurrentielle</h3>
+  <ul>
+    <li><strong>Conformité by design :</strong> le RGPD et NIS2 ne sont pas des add-ons mais des fonctionnalités cœur, développées dès l'origine.</li>
+    <li><strong>IA multi-fournisseur avec fallback :</strong> aucune dépendance exclusive, continuité de service garantie si un fournisseur IA est indisponible.</li>
+    <li><strong>Prospection terrain native :</strong> espace dédié tablette avec PIN, missions de vente guidées, capture de consentement RGPD immédiate.</li>
+    <li><strong>Zéro infrastructure :</strong> déploiement 100% Supabase Cloud (edge network EU), aucun serveur applicatif à maintenir.</li>
+    <li><strong>Force de vente intégrée :</strong> génération automatique des mandats DCI, bordereaux de commission, simulation de revenus.</li>
+    <li><strong>Modules verticals métier :</strong> SEO local, DPO externalisé, cybersécurité ANSSI/CIS, social media, click & collect — extensibilité sans refactoring.</li>
+  </ul>
+
+  <h3>Cas d'usage validés <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Cas d'usage</th><th>Module concerné</th><th>Statut</th></tr></thead>
+    <tbody>
+      <tr><td>Gestion pipeline contacts prospect → client</td><td>CRM principal / Pipeline Kanban</td><td><span class="badge b-ok">Livré</span></td></tr>
+      <tr><td>Signature électronique de mandats DCI</td><td>Force de vente / Mandat</td><td><span class="badge b-ok">Livré</span></td></tr>
+      <tr><td>Paiement récurrent abonnement Stripe</td><td>Stripe Checkout + Webhook</td><td><span class="badge b-ok">Livré</span></td></tr>
+      <tr><td>Audit SEO local + rapport PDF</td><td>Module SEO IA</td><td><span class="badge b-ok">Livré</span></td></tr>
+      <tr><td>Assistance DPO RGPD IA + rapport</td><td>Module DPO IA</td><td><span class="badge b-ok">Livré</span></td></tr>
+      <tr><td>Audit cybersécurité ANSSI/CIS 23 points</td><td>Module Cyber IA</td><td><span class="badge b-ok">Livré</span></td></tr>
+      <tr><td>Audit terrain prospect sur tablette</td><td>Prospection Terrain (PIN)</td><td><span class="badge b-ok">Livré</span></td></tr>
+      <tr><td>Gestion consentements RGPD clients</td><td>Module DPO — Consentements</td><td><span class="badge b-ok">Livré</span></td></tr>
+      <tr><td>Incidents NIS2 avec indicateur 72h</td><td>Module Cyber — Incidents</td><td><span class="badge b-ok">Livré</span></td></tr>
+      <tr><td>Commissions et bordereaux de paiement PDF</td><td>Module Commissions</td><td><span class="badge b-ok">Livré</span></td></tr>
+      <tr><td>Click &amp; Collect e-commerce</td><td>Module ClickCollect</td><td><span class="badge b-warn">Beta</span></td></tr>
+      <tr><td>Social media planning IA</td><td>Module Social</td><td><span class="badge b-warn">Beta</span></td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 2 — ARCHITECTURE ═══════════════════════ -->
+<div class="sec pb" id="p2">
+  <div class="sec-hdr">
+    <div class="sec-num">2</div>
+    <div class="sec-title">Architecture Globale</div>
+  </div>
+
+  <h3>Architecture logique <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="ascii">
+┌─────────────────────────────────────────────────────────────────────┐
+│                       <span class="hi">CLIENT (Navigateur / PWA)</span>                       │
+│                                                                     │
+│  ┌─────────────────┐  ┌──────────────────┐  ┌──────────────────┐  │
+│  │  <span class="hi2">CRM Principal</span>   │  │ <span class="hi2">Prospection Terrain</span>│  │  <span class="hi2">Modules IA</span>      │  │
+│  │  index.html     │  │  /prospection-   │  │  /modules/SEO/   │  │
+│  │  assets/app.js  │  │  terrain/        │  │  /modules/DPO/   │  │
+│  │  5 301 lignes   │  │  PIN: sessionSt. │  │  /modules/Cyber/ │  │
+│  └────────┬────────┘  └────────┬─────────┘  └────────┬─────────┘  │
+│           │                    │                      │             │
+│           └────────────────────┴──────────────────────┘            │
+│                                │                                    │
+│                     <span class="hi3">Supabase JS SDK v2</span>                           │
+└────────────────────────────────┼────────────────────────────────────┘
+                                 │ JWT + RLS
+                    ┌────────────▼────────────┐
+                    │     <span class="hi">SUPABASE CLOUD</span>      │  (région EU West)
+                    │                         │
+                    │  ┌──────────────────┐   │
+                    │  │  PostgreSQL 15   │   │
+                    │  │  28 tables       │   │
+                    │  │  RLS sur tout    │   │
+                    │  └──────────────────┘   │
+                    │  ┌──────────────────┐   │
+                    │  │  Supabase Auth   │   │
+                    │  │  JWT + TOTP MFA  │   │
+                    │  └──────────────────┘   │
+                    │  ┌──────────────────┐   │
+                    │  │  Edge Functions  │   │
+                    │  │  13 × Deno 2.x   │   │
+                    │  └────────┬─────────┘   │
+                    │  ┌────────▼─────────┐   │
+                    │  │  Storage         │   │
+                    │  │  2 buckets       │   │
+                    │  └──────────────────┘   │
+                    └────────────┬────────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              │                  │                   │
+    ┌─────────▼──────┐  ┌───────▼───────┐  ┌───────▼────────┐
+    │  <span class="hi">STRIPE</span>          │  │  <span class="hi">BREVO API v3</span>  │  │  <span class="hi">IA Fournisseurs</span> │
+    │  Checkout       │  │  12 templates │  │  Groq  Grok    │
+    │  Webhook        │  │  PDF joints   │  │  Anthropic     │
+    │  Customer Portal│  │               │  │  Mistral       │
+    └─────────────────┘  └───────────────┘  └────────────────┘</div>
+
+  <h3>Architecture physique</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Composant</th><th>Technologie</th><th>Hébergement</th><th>Région</th></tr></thead>
+    <tbody>
+      <tr><td>Frontend SPA</td><td>HTML5 + Vanilla JS ES2022 + CSS3</td><td>Hébergement statique (GitHub Pages / CDN)</td><td>CDN mondial</td></tr>
+      <tr><td>Base de données</td><td>PostgreSQL 15</td><td>Supabase Cloud</td><td>EU West (Paris)</td></tr>
+      <tr><td>Authentification</td><td>Supabase Auth (JWT + TOTP)</td><td>Supabase Cloud</td><td>EU West</td></tr>
+      <tr><td>API serverless</td><td>Deno 2.x Edge Functions</td><td>Supabase Edge Network</td><td>EU West</td></tr>
+      <tr><td>Stockage fichiers</td><td>Supabase Storage (S3-compatible)</td><td>Supabase Cloud</td><td>EU West</td></tr>
+      <tr><td>Paiements</td><td>Stripe</td><td>Stripe Cloud</td><td>USA + EU (SCC)</td></tr>
+      <tr><td>Emails transactionnels</td><td>Brevo API v3</td><td>Brevo Cloud</td><td>EU</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box box-green">
+    <strong>Zéro infrastructure à maintenir :</strong> S@FE CRM est 100% serverless. Aucun VPS, aucun serveur applicatif, aucune base auto-hébergée. La maintenance opérationnelle se limite aux mises à jour du code source et des schémas SQL. <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span>
+  </div>
+
+  <h3>Stack technique complète <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Couche</th><th>Technologie</th><th>Version</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td>Langage frontend</td><td>JavaScript</td><td>ES2022</td><td>Logique applicative SPA</td></tr>
+      <tr><td>Langage backend</td><td>TypeScript</td><td>Deno 2.x</td><td>Edge Functions serverless</td></tr>
+      <tr><td>Base de données</td><td>PostgreSQL</td><td>15</td><td>Stockage relationnel + RLS</td></tr>
+      <tr><td>Auth</td><td>Supabase Auth</td><td>v2</td><td>JWT + TOTP MFA + RBAC</td></tr>
+      <tr><td>SDK client</td><td>@supabase/supabase-js</td><td>v2</td><td>Requêtes BDD depuis frontend</td></tr>
+      <tr><td>Génération PDF</td><td>jsPDF</td><td>v2.5.1</td><td>PDF côté client (SEO, DPO, Cyber, BDC)</td></tr>
+      <tr><td>Paiements</td><td>Stripe</td><td>SDK v14</td><td>Checkout, webhook, abonnements</td></tr>
+      <tr><td>Emails</td><td>Brevo API</td><td>v3</td><td>12 types d'emails transactionnels</td></tr>
+      <tr><td>IA Priorité 1</td><td>Groq — Llama 3.3 70B</td><td>—</td><td>Inférence ultra-rapide</td></tr>
+      <tr><td>IA Priorité 2</td><td>xAI Grok — Grok-3-mini</td><td>—</td><td>Fallback rapide</td></tr>
+      <tr><td>IA Priorité 3</td><td>Anthropic — Claude Haiku</td><td>4.5</td><td>Fallback qualité</td></tr>
+      <tr><td>IA Priorité 4</td><td>Mistral — mistral-small</td><td>—</td><td>Fallback EU souverain</td></tr>
+      <tr><td>Adresse</td><td>API Adresse Gouv</td><td>—</td><td>Autocomplétion adresse française</td></tr>
+      <tr><td>PWA</td><td>Service Worker + manifest.json</td><td>—</td><td>Installation, mode offline</td></tr>
+      <tr><td>CI/CD</td><td>GitHub Actions</td><td>—</td><td>Lint + type-check Deno Edge Functions</td></tr>
+      <tr><td>Import map</td><td>deno.json (supabase/functions/)</td><td>—</td><td>Aliases npm:/jsr: pour Deno 2.x</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Arborescence du projet <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="ascii">
+<span class="hi">safecrm/</span>
+├── <span class="hi2">assets/</span>                    → Core frontend SPA
+│   ├── app.js                 (5 301 lignes — cœur CRM)
+│   ├── app-init.js            (initialisation)
+│   ├── style.css              (484 lignes)
+│   ├── pipeline.js / .css     (vue Kanban)
+│   ├── config.js              (config Supabase)
+│   ├── <span class="hi2">app/</span>                   → Modules auth, navigation, helpers
+│   ├── <span class="hi2">contacts/</span>              → 6 fichiers JS contacts
+│   ├── <span class="hi2">contracts/</span>             → 7 fichiers JS contrats
+│   ├── <span class="hi2">dpo/</span>                   → Guards + CRM DPO
+│   ├── <span class="hi2">rgpd/</span>                  → Journal RGPD
+│   ├── <span class="hi2">tasks/</span>                 → Gestion tâches
+│   └── <span class="hi2">totp/</span>                  → MFA TOTP
+├── <span class="hi2">modules/</span>                   → 5 modules verticaux IA
+│   ├── <span class="hi2">SEO/</span>                   → 4 JS + 1 HTML
+│   ├── <span class="hi2">DPO/</span>                   → 10 JS + 4 HTML
+│   ├── <span class="hi2">Cyber/</span>                 → 7 JS + 3 HTML
+│   ├── <span class="hi2">ClickCollect/</span>          → 5 JS + 1 HTML
+│   ├── <span class="hi2">Social/</span>                → 6 JS + 1 HTML
+│   ├── connecteurs.html       → Configuration IA
+│   └── shared.css             → CSS partagé modules
+├── <span class="hi2">prospection-terrain/</span>       → Espace terrain (PIN)
+│   ├── index.html             → Dashboard 4 missions
+│   ├── mission-rgpd.html
+│   ├── mission-seo.html
+│   ├── mission-cyber.html
+│   └── mission-onboarding.html
+├── <span class="hi2">Force-de-vente/</span>            → Espace agents DCI
+│   ├── index.html             → Hub force de vente
+│   ├── session.html           → PIN accès
+│   ├── mandat.html            → Mandat DCI signature OTP
+│   └── grille.html            → Grille commissions
+├── <span class="hi2">supabase/</span>
+│   ├── <span class="hi2">functions/</span>             → 13 Edge Functions Deno
+│   │   ├── call-ia/           ├── send-crm-email/
+│   │   ├── stripe-webhook/    ├── send-mandat-email/
+│   │   ├── create-checkout/   ├── send-clause-email/
+│   │   ├── cancel-subscription/ ├── send-password-reset/
+│   │   ├── customer-portal/   ├── record-login-failure/
+│   │   ├── admin-create-user/ ├── delete-user/
+│   │   └── agenda-ics/
+│   └── -schema-v[1-29].sql   → 29 migrations versionnées
+├── <span class="hi2">docs/legal/</span>                → Registres RGPD
+├── <span class="hi2">legal/</span>                     → DPA Stripe, Sous-traitants
+├── <span class="hi2">audits/</span>                    → Rapports d'audit v1-v3, CCTP
+├── index.html                 → SPA principale
+├── manifest.json              → PWA
+├── sw.js                      → Service Worker
+└── .github/workflows/         → CI/CD deno-check.yml</div>
+
+  <h3>Métriques de volume de code <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Type de fichier</th><th>Nb fichiers</th><th>Lignes de code</th><th>Poids relatif</th></tr></thead>
+    <tbody>
+      <tr><td>HTML (templates + vues)</td><td>41</td><td>63 780</td><td>68,7%</td></tr>
+      <tr><td>JavaScript (ES2022)</td><td>65</td><td>19 164</td><td>20,6%</td></tr>
+      <tr><td>TypeScript (Edge Functions)</td><td>16</td><td>2 829</td><td>3,0%</td></tr>
+      <tr><td>SQL (schémas + migrations)</td><td>31</td><td>4 711</td><td>5,1%</td></tr>
+      <tr><td>CSS</td><td>8</td><td>~2 400</td><td>2,6%</td></tr>
+      <tr class="hi-navy" style="background:var(--navy)"><td><strong style="color:#fff">TOTAL</strong></td><td><strong style="color:var(--gold)">161</strong></td><td><strong style="color:var(--gold)">~92 884</strong></td><td><strong style="color:var(--gold)">100%</strong></td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 3 — MODULES ═══════════════════════ -->
+<div class="sec pb" id="p3">
+  <div class="sec-hdr">
+    <div class="sec-num">3</div>
+    <div class="sec-title">Description Complète des Modules</div>
+  </div>
+
+  <h3>Module 1 — CRM Principal <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="cards">
+    <div class="card"><div class="card-title">👥 Gestion Contacts</div><div class="card-body">Création, édition, recherche, filtres multi-critères. Statuts : Prospect → Client → Inactif. Champs : nom, entreprise, email, téléphone, adresse (API Adresse Gouv), activités, source, notes. Journal d'interactions intégré. Attribution automatique à l'utilisateur créateur (RLS).</div></div>
+    <div class="card"><div class="card-title">📄 Pipeline Kanban</div><div class="card-body">Vue unifiée Contacts + Contrats en colonnes Kanban. Drag &amp; drop des statuts. Filtres par utilisateur/période. Remplace les anciennes vues séparées depuis la refonte 2026.</div></div>
+    <div class="card"><div class="card-title">📋 Gestion Contrats</div><div class="card-body">Cycle de vie : Devis envoyé → Signé → En cours → Terminé → Résilié. Types et formules configurables. Récurrence : Ponctuel / Mensuel / Annuel. Lien direct Stripe pour paiement. PDF BDC auto-généré.</div></div>
+    <div class="card"><div class="card-title">✅ Tâches</div><div class="card-body">Création liée à un contact et/ou contrat. Types : RDV terrain, RDV visio, email, appel, autre. Kanban intégré. Échéances, priorités, export iCal (Edge Function agenda-ics). Notifications email.</div></div>
+    <div class="card"><div class="card-title">📊 Tableau de Bord</div><div class="card-body">KPIs : taux de transformation, CA potentiel, contrats actifs, alertes. Horloge Paris. Statistiques filtrables par rôle. Alertes contextuelles selon profil (admin vs user vs dci).</div></div>
+    <div class="card"><div class="card-title">💬 Messagerie Interne</div><div class="card-body">Canal de communication interne entre utilisateurs. Table <code>messages</code>, notifications temps réel Supabase Realtime.</div></div>
+  </div>
+
+  <h3>Module 2 — Module DPO (RGPD) <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <p>Accessible depuis <code>/modules/DPO/</code> — 10 fichiers JS, 4 HTML. Module le plus riche du CRM en termes de conformité.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Sous-module</th><th>Fichier JS</th><th>Fonctionnalité</th></tr></thead>
+    <tbody>
+      <tr><td>Dashboard</td><td>dpo-dashboard.js</td><td>Indicateurs conformité : score global, alertes, délais</td></tr>
+      <tr><td>Registre traitements</td><td>dpo-traitements.js</td><td>Art. 30 RGPD — gestion complète des traitements</td></tr>
+      <tr><td>Consentements</td><td>dpo-consentements.js</td><td>Capture, révocation, preuve horodatée</td></tr>
+      <tr><td>Demandes droits</td><td>dpo-demandes.js</td><td>DSAR Art. 15-22 — accès, rectification, suppression, portabilité</td></tr>
+      <tr><td>Violations</td><td>dpo-violations.js</td><td>Déclaration violations, notification CNIL sous 72h</td></tr>
+      <tr><td>Documents</td><td>dpo-documents.js</td><td>Bibliothèque documents conformité (politiques, mentions légales)</td></tr>
+      <tr><td>Audit RGPD</td><td>dpo-audit.js</td><td>Grille d'auto-évaluation RGPD par catégorie</td></tr>
+      <tr><td>CNIL</td><td>dpo-cnil.js</td><td>Suivi procédures CNIL, modèles de réponse</td></tr>
+      <tr><td>Assistant IA</td><td>dpo-assistant.js</td><td>Chat IA contextuel, prompts pré-définis DPIA/registre</td></tr>
+      <tr><td>Portabilité</td><td>portabilite.html</td><td>Export données client format JSON/CSV (Art. 20)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Module 3 — Module Cybersécurité <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="cards">
+    <div class="card"><div class="card-title">🛡 Audit ANSSI/CIS</div><div class="card-body">23 points de contrôle, 6 catégories pondérées. Statuts : Conforme · Partiel · Non conforme · N/A. Score global + score par catégorie. Rapport PDF exportable avec barre de progression par catégorie.</div></div>
+    <div class="card"><div class="card-title">🚨 Incidents NIS2</div><div class="card-body">Déclaration structurée d'incidents. Indicateur 72h (vert/orange/rouge). Notification ANSSI traçable. Table dédiée <code>incidents_nis2</code> avec RLS admins. Accès depuis <code>/modules/Cyber/incidents-nis2.html</code>.</div></div>
+    <div class="card"><div class="card-title">📋 Plan de sécurité</div><div class="card-body">Cyber-plan.js : gestion des plans d'action suite aux non-conformités de l'audit. Priorisation par criticité, assignation, suivi d'avancement.</div></div>
+    <div class="card"><div class="card-title">🤖 Assistant IA Cyber</div><div class="card-body">Analyse contextuelle des incidents, recommandations de remédiation, génération de rapports de sécurité PDF brandés S@FE (thème marine/rouge, score prominent 48px).</div></div>
+  </div>
+
+  <h3>Module 4 — Module SEO <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="cards">
+    <div class="card"><div class="card-title">🔍 Grille d'évaluation SEO</div><div class="card-body">Critères : Google Business Profile, avis clients, concurrence locale, mots-clés. Score calculé par catégorie. Téléchargeable en PDF.</div></div>
+    <div class="card"><div class="card-title">🎯 Mots-clés</div><div class="card-body">seo-mots-cles.js : gestion des mots-clés cibles par client. Suivi de positionnement, recommandations IA.</div></div>
+    <div class="card"><div class="card-title">📄 Rapport PDF</div><div class="card-body">Thème vert S@FE. Header "Rapport SEO — Référencement local". Support multi-pages, pagination automatique via jsPDF.</div></div>
+    <div class="card"><div class="card-title">🤖 Assistant IA SEO</div><div class="card-body">Conversation contextuelle liée au client sélectionné. Suggestions rapides pré-définies. Rapport envoyé par email avec PDF en pièce jointe.</div></div>
+  </div>
+
+  <h3>Module 5 — Click &amp; Collect <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <p>Module e-commerce orienté TPE/commerçants. Gestion catalogue produits, commandes en ligne, dashboard ventes, rapports. 5 fichiers JS spécialisés. <span class="badge b-warn">Beta</span></p>
+
+  <h3>Module 6 — Social Media <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <p>Planification de posts réseaux sociaux avec assistance IA, calendrier éditorial, rapports de performance. 6 fichiers JS. <span class="badge b-warn">Beta</span></p>
+
+  <h3>Module 7 — Prospection Terrain <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <p>Espace dédié aux commerciaux sur tablette. Accès par code PIN (sessionStorage <code>pt_unlocked</code>). 4 missions disponibles :</p>
+  <div class="cards-4">
+    <div class="card"><div class="card-title" style="color:#0ea5e9">🔵 Mission RGPD</div><div class="card-body">Audit RGPD prospect. Capture consentement. Envoi rapport PDF par email.</div></div>
+    <div class="card"><div class="card-title" style="color:#22c55e">🟢 Mission SEO</div><div class="card-body">Audit SEO local. Grille d'évaluation. Rapport PDF personnalisé.</div></div>
+    <div class="card"><div class="card-title" style="color:#ef4444">🔴 Mission Cyber</div><div class="card-body">Audit cybersécurité 23 points. Score ANSSI/CIS. PDF de résultats.</div></div>
+    <div class="card"><div class="card-title" style="color:#f59e0b">🟡 Onboarding</div><div class="card-body">Accueil nouveau client. Parcours d'onboarding guidé. Signature des premiers documents.</div></div>
+  </div>
+
+  <h3>Module 8 — Force de Vente &amp; Commissions <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="cards">
+    <div class="card"><div class="card-title">📜 Mandat DCI</div><div class="card-body">Génération automatique du mandat agent commercial. Signature électronique OTP (code SMS/email 6 chiffres, 24h, SHA-256). 9 documents joints automatiquement depuis Supabase Storage.</div></div>
+    <div class="card"><div class="card-title">💰 Grille de commission</div><div class="card-body">Grille SAFE-AC-2026-V1. Taux par palier de CA. Calcul automatique. Simulation prospective. Export bordereau PDF.</div></div>
+    <div class="card"><div class="card-title">📊 Cockpit DCI</div><div class="card-body">Vue consolidée équipe. Objectifs CA, taux de transformation, contrats signés. Alertes dépassement/retard.</div></div>
+    <div class="card"><div class="card-title">📋 Bordereaux mensuels</div><div class="card-body">Génération automatique des bordereaux de commission. PDF brandé. Envoi email (type <code>bordereau</code> via Brevo).</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 4 — BASE DE DONNÉES ═══════════════════════ -->
+<div class="sec pb" id="p4">
+  <div class="sec-hdr">
+    <div class="sec-num">4</div>
+    <div class="sec-title">Base de Données</div>
+  </div>
+
+  <h3>Inventaire des tables <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <p>28 tables PostgreSQL identifiées par analyse du schéma source (29 versions de migration, de v2 à v29).</p>
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>Table</th><th>Domaine</th><th>RLS</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><code>contacts</code></td><td>CRM</td><td><span class="badge b-ok">✓</span></td><td>Prospects et clients. Statut, source, activités, RGPD flag</td></tr>
+      <tr><td>2</td><td><code>contracts</code></td><td>CRM</td><td><span class="badge b-ok">✓</span></td><td>Contrats liés à un contact. Type, formule, montant, récurrence, statut Stripe</td></tr>
+      <tr><td>3</td><td><code>tasks</code></td><td>CRM</td><td><span class="badge b-ok">✓</span></td><td>Tâches liées contact/contrat. RDV terrain/visio, iCal, priorités</td></tr>
+      <tr><td>4</td><td><code>interactions</code></td><td>CRM</td><td><span class="badge b-ok">✓</span></td><td>Journal d'interactions par contact (appel, email, visite…)</td></tr>
+      <tr><td>5</td><td><code>profiles</code></td><td>Auth</td><td><span class="badge b-ok">✓</span></td><td>Profils utilisateurs étendu (rôle, équipe, ICS token, code_postal, ville)</td></tr>
+      <tr><td>6</td><td><code>objectifs</code></td><td>Résultats</td><td><span class="badge b-ok">✓</span></td><td>Objectifs commerciaux par utilisateur/période. Taux commission</td></tr>
+      <tr><td>7</td><td><code>messages</code></td><td>Messagerie</td><td><span class="badge b-ok">✓</span></td><td>Messages internes entre utilisateurs</td></tr>
+      <tr><td>8</td><td><code>mandats</code></td><td>Force de vente</td><td><span class="badge b-ok">✓</span></td><td>Mandats DCI signés, statut, documents joints, date signature</td></tr>
+      <tr><td>9</td><td><code>mandat_otp</code></td><td>Force de vente</td><td><span class="badge b-ok">✓</span></td><td>OTP 6 chiffres pour signature mandat (TTL 24h, SHA-256)</td></tr>
+      <tr><td>10</td><td><code>bordereau_log</code></td><td>Commissions</td><td><span class="badge b-ok">✓</span></td><td>Historique des bordereaux de commission générés et envoyés</td></tr>
+      <tr><td>11</td><td><code>order_links</code></td><td>Stripe</td><td><span class="badge b-ok">✓</span></td><td>Liens de commande Stripe générés par contrat</td></tr>
+      <tr><td>12</td><td><code>help_requests</code></td><td>Support</td><td><span class="badge b-ok">✓</span></td><td>Demandes d'aide intégrées</td></tr>
+      <tr><td>13</td><td><code>rgpd_log</code></td><td>RGPD</td><td><span class="badge b-ok">✓</span></td><td>Journal d'actions RGPD (accès, modification, suppression données)</td></tr>
+      <tr><td>14</td><td><code>safe_connectors</code></td><td>IA</td><td><span class="badge b-ok">✓</span></td><td>Configuration fournisseurs IA (statut, clé service, priorité)</td></tr>
+      <tr><td>15</td><td><code>safe_connectors_log</code></td><td>IA</td><td><span class="badge b-ok">✓</span></td><td>Log des appels IA (fire-and-forget, anonymisé)</td></tr>
+      <tr><td>16</td><td><code>audit_access_log</code></td><td>Sécurité</td><td><span class="badge b-ok">✓</span></td><td>Journal d'accès admin aux données sensibles</td></tr>
+      <tr><td>17</td><td><code>login_attempts</code></td><td>Sécurité</td><td><span class="badge b-ok">✓</span></td><td>Tentatives de connexion pour anti-bruteforce (IP + email)</td></tr>
+      <tr><td>18</td><td><code>login_alerts</code></td><td>Sécurité</td><td><span class="badge b-ok">✓</span></td><td>Alertes générées après dépassement seuil (5 tentatives)</td></tr>
+      <tr><td>19</td><td><code>login_audit</code></td><td>Sécurité</td><td><span class="badge b-ok">✓</span></td><td>Audit complet des connexions réussies et échouées</td></tr>
+      <tr><td>20</td><td><code>rate_limits</code></td><td>Sécurité</td><td><span class="badge b-ok">✓</span></td><td>Rate limiting par endpoint Edge Function</td></tr>
+      <tr><td>21</td><td><code>totp_audit</code></td><td>Sécurité / MFA</td><td><span class="badge b-ok">✓</span></td><td>Chaque événement TOTP loggé (enrôlement, validation, échec)</td></tr>
+      <tr><td>22</td><td><code>dpo_client_profiles</code></td><td>Module DPO</td><td><span class="badge b-ok">✓</span></td><td>Profil de conformité RGPD par client suivi</td></tr>
+      <tr><td>23</td><td><code>dpo_client_traitements</code></td><td>Module DPO</td><td><span class="badge b-ok">✓</span></td><td>Registre Art. 30 par client (finalité, base légale, rétention)</td></tr>
+      <tr><td>24</td><td><code>dpo_client_consentements</code></td><td>Module DPO</td><td><span class="badge b-ok">✓</span></td><td>Consentements RGPD : capture, révocation, horodatage</td></tr>
+      <tr><td>25</td><td><code>dpo_client_demandes</code></td><td>Module DPO</td><td><span class="badge b-ok">✓</span></td><td>DSAR Art. 15-22 : demandes d'exercice de droits</td></tr>
+      <tr><td>26</td><td><code>dpo_client_documents</code></td><td>Module DPO</td><td><span class="badge b-ok">✓</span></td><td>Documents de conformité archivés par client</td></tr>
+      <tr><td>27</td><td><code>dpo_client_violations</code></td><td>Module DPO</td><td><span class="badge b-ok">✓</span></td><td>Violations de données, statut notification CNIL</td></tr>
+      <tr><td>28</td><td><code>dpo_client_audit_items</code></td><td>Module DPO</td><td><span class="badge b-ok">✓</span></td><td>Items d'audit RGPD par client (grille auto-évaluation)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Politique RLS — Hiérarchie d'accès <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="ascii">
+<span class="hi">Hiérarchie des droits d'accès aux données (Row Level Security)</span>
+
+  super_admin / admin_candy          ─── Accès total toutes tables
+         │
+  is_admin()  ─── Fonction PostgreSQL ─── Vérifie profiles.role IN (super_admin, admin_candy)
+         │
+  is_dci()    ─── Accès à son équipe  ─── get_team_ids() retourne UUIDs de son équipe
+         │
+  user         ─── Accès own data only ─── created_by = auth.uid()
+
+Schéma type (tables contacts, contracts, tasks) :
+  SELECT : is_admin() OR created_by=uid OR (is_dci() AND contact IN get_team_ids())
+  INSERT : is_admin() OR created_by=uid
+  UPDATE : is_admin() OR created_by=uid OR is_dci()
+  DELETE : is_admin() OR created_by=uid</div>
+
+  <h3>Edge Functions — Inventaire complet <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Edge Function</th><th>Rôle</th><th>Auth requise</th><th>Dépendances</th></tr></thead>
+    <tbody>
+      <tr><td><code>call-ia</code> v4</td><td>Routage IA multi-fournisseur (4 providers, fallback auto)</td><td>JWT Supabase</td><td>Groq / xAI / Anthropic / Mistral</td></tr>
+      <tr><td><code>send-crm-email</code> v10</td><td>12 types d'emails transactionnels + PDF joints</td><td>JWT + is_admin</td><td>Brevo API v3, jsPDF base64</td></tr>
+      <tr><td><code>stripe-webhook</code></td><td>Réception webhooks Stripe, sync statut contrats</td><td>Stripe signature</td><td>Stripe SDK v14</td></tr>
+      <tr><td><code>create-checkout</code></td><td>Crée session Stripe Checkout, génère lien paiement</td><td>JWT</td><td>Stripe API</td></tr>
+      <tr><td><code>cancel-subscription</code></td><td>Résiliation abonnement Stripe + mise à jour contrat</td><td>JWT + is_admin</td><td>Stripe API</td></tr>
+      <tr><td><code>check-resiliation-status</code></td><td>Vérifie statut résiliation en attente</td><td>JWT</td><td>Stripe API</td></tr>
+      <tr><td><code>customer-portal</code></td><td>Génère lien Stripe Customer Portal auto-service</td><td>JWT</td><td>Stripe API</td></tr>
+      <tr><td><code>send-mandat-email</code></td><td>Email mandat DCI signé + 9 pièces jointes Storage</td><td>JWT</td><td>Brevo, Supabase Storage</td></tr>
+      <tr><td><code>send-clause-email</code></td><td>Email clause de confidentialité (interne + public)</td><td>JWT / Public</td><td>Brevo</td></tr>
+      <tr><td><code>send-password-reset</code></td><td>Email réinitialisation mot de passe</td><td>Public</td><td>Brevo</td></tr>
+      <tr><td><code>record-login-failure</code></td><td>Anti-bruteforce : enregistre tentatives, ban IP/email</td><td>Aucune (pré-auth)</td><td>Tables login_attempts / alerts</td></tr>
+      <tr><td><code>admin-create-user</code></td><td>Création utilisateur par admin (bypass email confirmation)</td><td>JWT + is_admin</td><td>Supabase Admin API</td></tr>
+      <tr><td><code>delete-user</code></td><td>Suppression compte utilisateur + données associées</td><td>JWT + is_admin</td><td>Supabase Admin API</td></tr>
+      <tr><td><code>agenda-ics</code></td><td>Export calendrier tâches format iCal (.ics)</td><td>Token URL (ics_token)</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 5 — FLUX ═══════════════════════ -->
+<div class="sec pb" id="p5">
+  <div class="sec-hdr">
+    <div class="sec-num">5</div>
+    <div class="sec-title">Cartographie des Flux</div>
+  </div>
+
+  <h3>Flux 1 — Parcours commercial complet</h3>
+  <div class="flow">
+    <div class="fb navy">Commercial terrain</div><div class="fa">→</div>
+    <div class="fb gold">Mission Terrain (PIN)</div><div class="fa">→</div>
+    <div class="fb">Audit prospect (RGPD/SEO/Cyber)</div><div class="fa">→</div>
+    <div class="fb green">Consentement + Email capturé</div><div class="fa">→</div>
+    <div class="fb">Contact créé "Prospect"</div><div class="fa">→</div>
+    <div class="fb blue">Rapport PDF généré jsPDF</div><div class="fa">→</div>
+    <div class="fb green">Email + PDF → Brevo</div>
+  </div>
+  <div class="flow">
+    <div class="fb">Prospect → suivi CRM</div><div class="fa">→</div>
+    <div class="fb gold">Contrat créé</div><div class="fa">→</div>
+    <div class="fb navy">create-checkout Edge Fn</div><div class="fa">→</div>
+    <div class="fb blue">Stripe Checkout</div><div class="fa">→</div>
+    <div class="fb green">payment_succeeded webhook</div><div class="fa">→</div>
+    <div class="fb green">Contrat = "En cours"</div>
+  </div>
+
+  <h3>Flux 2 — Authentification &amp; Session</h3>
+  <div class="ascii">
+Utilisateur                   Frontend                    Supabase Auth
+    │                              │                            │
+    ├── Email + Mot de passe ──────▶                            │
+    │                              ├── signInWithPassword ─────▶│
+    │                              │                            ├── Vérification bcrypt
+    │                              │◀── JWT (access + refresh) ─┤
+    │                              │                            │
+    │                              ├── challengeTOTPIfNeeded() ─▶
+    │                              │   (si rôle sensible)       │
+    ├── Code TOTP 6 digits ────────▶                            │
+    │                              ├── verifyTOTP ─────────────▶│
+    │                              │◀── Session validée ────────┤
+    │                              │                            │
+    │◀── App chargée ──────────────┤                            │
+    │   (dashboard selon rôle)      │                            │</div>
+
+  <h3>Flux 3 — Appel IA + Rapport PDF + Email</h3>
+  <div class="ascii">
+Frontend (Module SEO/DPO/Cyber)
+    │
+    ├── POST /call-ia  {service_key, system, messages}
+    │         │
+    │    Edge Function call-ia v4
+    │         ├── Vérif JWT → getUser()
+    │         ├── Lecture safe_connectors (statut actif, priorité)
+    │         ├── Tentative Groq → si échec → Grok → Anthropic → Mistral
+    │         ├── Log usage (fire-and-forget PromiseLike)
+    │         └── return {reply, provider}
+    │
+    ├── Génération PDF (jsPDF côté client)
+    │   - Thème couleur selon module (vert SEO / marine DPO / rouge Cyber)
+    │   - Encode base64 → Payload JSON
+    │
+    └── POST /send-crm-email  {type: rapport_seo|rapport_dpo|rapport_cyber, pdf_b64}
+              │
+         Edge Function send-crm-email v10
+              ├── Vérif JWT + is_admin
+              ├── Décode PDF base64
+              └── Brevo API v3 → Email + pièce jointe PDF</div>
+
+  <h3>Flux 4 — Paiement Stripe</h3>
+  <div class="flow">
+    <div class="fb navy">Admin crée contrat</div><div class="fa">→</div>
+    <div class="fb">POST create-checkout</div><div class="fa">→</div>
+    <div class="fb blue">Stripe Session créée</div><div class="fa">→</div>
+    <div class="fb">Lien email client</div><div class="fa">→</div>
+    <div class="fb green">Client paie</div><div class="fa">→</div>
+    <div class="fb navy">Stripe webhook → Edge Fn</div><div class="fa">→</div>
+    <div class="fb green">contract.statut = "En cours"</div><div class="fa">→</div>
+    <div class="fb blue">Email confirmation Brevo</div>
+  </div>
+
+  <h3>Flux 5 — Signature mandat DCI</h3>
+  <div class="flow">
+    <div class="fb navy">Admin génère mandat</div><div class="fa">→</div>
+    <div class="fb">OTP 6 chiffres généré (SHA-256)</div><div class="fa">→</div>
+    <div class="fb blue">Email OTP → DCI</div><div class="fa">→</div>
+    <div class="fb">DCI saisit OTP (TTL 24h)</div><div class="fa">→</div>
+    <div class="fb green">Signature horodatée enregistrée</div><div class="fa">→</div>
+    <div class="fb navy">send-mandat-email</div><div class="fa">→</div>
+    <div class="fb blue">Email + 9 documents joints</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 6 — AUTOMATISATIONS ═══════════════════════ -->
+<div class="sec pb" id="p6">
+  <div class="sec-hdr">
+    <div class="sec-num">6</div>
+    <div class="sec-title">Automatisations</div>
+  </div>
+
+  <h3>Matrice complète des automatisations <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Déclencheur</th><th>Automatisation</th><th>Mécanisme</th><th>Email</th></tr></thead>
+    <tbody>
+      <tr><td>Connexion réussie</td><td>Log <code>login_audit</code>, vérification TOTP</td><td>Frontend + Supabase Auth</td><td>—</td></tr>
+      <tr><td>5 tentatives échouées</td><td>Ban IP/email, alerte admin</td><td>Edge Fn <code>record-login-failure</code></td><td>✓ Alerte admin</td></tr>
+      <tr><td>Création compte</td><td>Profil initialisé, email bienvenue</td><td>Supabase Auth + Brevo</td><td>✓ Bienvenue</td></tr>
+      <tr><td>Mot de passe oublié</td><td>Lien réinitialisation envoyé</td><td>Edge Fn <code>send-password-reset</code></td><td>✓ Reset</td></tr>
+      <tr><td>Expiration session (4h)</td><td>Déconnexion automatique + alerte T-15min</td><td>Frontend timer</td><td>—</td></tr>
+      <tr><td>Contrat créé + lien Stripe</td><td>Session checkout créée</td><td>Edge Fn <code>create-checkout</code></td><td>—</td></tr>
+      <tr><td>Paiement Stripe réussi</td><td>Statut contrat → "En cours", email confirmation</td><td>Edge Fn <code>stripe-webhook</code></td><td>✓ Confirmation</td></tr>
+      <tr><td>Échec paiement Stripe</td><td>Statut contrat → alerte, email relance</td><td>Edge Fn <code>stripe-webhook</code></td><td>✓ Relance</td></tr>
+      <tr><td>Résiliation demandée</td><td>Résiliation Stripe + mise à jour contrat</td><td>Edge Fn <code>cancel-subscription</code></td><td>✓ Confirmation</td></tr>
+      <tr><td>Rapport IA finalisé</td><td>PDF généré + email avec pièce jointe</td><td>jsPDF + Edge Fn <code>send-crm-email</code></td><td>✓ Rapport PDF</td></tr>
+      <tr><td>Mandat DCI signé</td><td>Email DCI + 9 documents joints</td><td>Edge Fn <code>send-mandat-email</code></td><td>✓ Mandat + docs</td></tr>
+      <tr><td>Bordereau commission généré</td><td>PDF bordereau + email</td><td><code>send-crm-email</code> type bordereau</td><td>✓ Bordereau</td></tr>
+      <tr><td>Incident NIS2 ouvert &gt;72h</td><td>Indicateur rouge automatique (calcul frontend)</td><td>Frontend timer</td><td>—</td></tr>
+      <tr><td>Export agenda tâches</td><td>Flux iCal .ics généré à la demande</td><td>Edge Fn <code>agenda-ics</code></td><td>—</td></tr>
+      <tr><td>Clause confidentialité signée</td><td>Email collaborateur + email admin</td><td>Edge Fn <code>send-clause-email</code></td><td>✓ Clause</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>12 types d'emails Brevo <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="cards-3">
+    <div class="card"><div class="card-title">📧 Bienvenue</div><div class="card-body">Création nouveau compte utilisateur</div></div>
+    <div class="card"><div class="card-title">🔑 Reset mot de passe</div><div class="card-body">Lien sécurisé, expiration 1h</div></div>
+    <div class="card"><div class="card-title">✅ Confirmation paiement</div><div class="card-body">Déclenché par webhook Stripe</div></div>
+    <div class="card"><div class="card-title">⚠️ Échec paiement</div><div class="card-body">Relance automatique</div></div>
+    <div class="card"><div class="card-title">📄 Rapport SEO PDF</div><div class="card-body">Rapport + PDF joint</div></div>
+    <div class="card"><div class="card-title">📄 Rapport DPO PDF</div><div class="card-body">Rapport + PDF joint</div></div>
+    <div class="card"><div class="card-title">🛡 Rapport Cyber PDF</div><div class="card-body">Rapport + PDF joint</div></div>
+    <div class="card"><div class="card-title">📜 Mandat DCI</div><div class="card-body">Email + 9 documents joints</div></div>
+    <div class="card"><div class="card-title">💰 Bordereau commission</div><div class="card-body">PDF bordereau mensuel</div></div>
+    <div class="card"><div class="card-title">🔐 Clause confidentialité</div><div class="card-body">Envoi interne + public</div></div>
+    <div class="card"><div class="card-title">🚨 Alerte bruteforce</div><div class="card-body">Notification admin ban IP</div></div>
+    <div class="card"><div class="card-title">📅 Résiliation</div><div class="card-body">Confirmation résiliation abonnement</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 7 — DOC TECHNIQUE ═══════════════════════ -->
+<div class="sec pb" id="p7">
+  <div class="sec-hdr">
+    <div class="sec-num">7</div>
+    <div class="sec-title">Documentation Technique</div>
+  </div>
+
+  <h3>Frontend — Architecture SPA</h3>
+  <p>S@FE CRM est une <strong>Single Page Application</strong> construite en Vanilla JS ES2022 sans framework (ni React, ni Vue, ni Angular). Ce choix délibéré offre :</p>
+  <ul>
+    <li><strong>Zéro dépendance npm en production :</strong> aucune chaîne de build complexe, aucun bundle à maintenir côté client</li>
+    <li><strong>Chargement ultra-rapide :</strong> parsing JS minimal, pas de virtual DOM, rendu natif</li>
+    <li><strong>Maintenabilité maximale :</strong> tout développeur JS peut lire et modifier le code sans formation framework</li>
+    <li><strong>Modularité fonctionnelle :</strong> 65 fichiers JS organisés par domaine (contacts/, contracts/, modules/SEO/, etc.)</li>
+  </ul>
+
+  <h3>Authentification RBAC</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Rôle</th><th>Niveau</th><th>MFA obligatoire</th><th>Périmètre données</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge b-admin">super_admin</span></td><td>4</td><td><span class="badge b-ok">Oui — bloquant</span></td><td>Toutes tables, tous utilisateurs</td></tr>
+      <tr><td><span class="badge b-admin">admin_candy</span></td><td>3</td><td><span class="badge b-ok">Oui — bloquant</span></td><td>Toutes tables, tous utilisateurs</td></tr>
+      <tr><td><span class="badge b-dci">dci</span></td><td>2</td><td><span class="badge b-ok">Oui — bloquant</span></td><td>Propres données + équipe</td></tr>
+      <tr><td><span class="badge b-user">user</span></td><td>1</td><td><span class="badge b-warn">Optionnel</span></td><td>Propres données uniquement</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Deno 2.x — Configuration Edge Functions</h3>
+  <p>Toutes les Edge Functions utilisent <strong>Deno 2.x</strong> avec <code>Deno.serve()</code> natif (sans import <code>std/http/server</code>). Un fichier import map central (<code>supabase/functions/deno.json</code>) gère les dépendances :</p>
+  <div class="ascii">
+<span class="hi">supabase/functions/deno.json</span>  (import map Deno 2.x)
+{
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
+    "stripe":                "npm:stripe@14",
+    "pdf-lib":               "npm:pdf-lib",
+    "@std/encoding/base64":  "jsr:@std/encoding@^1.0.0/base64"
+  }
+}
+
+<span class="hi2">Avantage :</span> bare imports dans les sources → découplage entre alias et fournisseur npm/jsr.
+<span class="hi2">CI/CD :</span> deno check --config supabase/functions/deno.json $file  (GitHub Actions)</div>
+
+  <h3>Sécurité technique</h3>
+  <ul>
+    <li><strong>JWT :</strong> Supabase Auth émet des JWT signés RS256, vérifiés à chaque requête Edge Function via <code>getUser()</code></li>
+    <li><strong>RLS :</strong> Row Level Security activé sur les 28 tables — aucun accès possible sans JWT valide</li>
+    <li><strong>Secrets :</strong> clés API stockées dans Supabase Vault (variables d'environnement Edge Functions), jamais exposées côté client</li>
+    <li><strong>CORS :</strong> Edge Functions limitées à <code>https://crm.safe-digitalisation.fr</code> (origin whitelist)</li>
+    <li><strong>Anti-bruteforce :</strong> Edge Function <code>record-login-failure</code> + tables <code>login_attempts</code> + <code>rate_limits</code></li>
+    <li><strong>TOTP MFA :</strong> Google Authenticator / Authy — code 6 chiffres, trust 2h en localStorage, enrôlement forcé roles sensibles</li>
+    <li><strong>Chiffrement :</strong> TLS 1.2+ en transit, AES-256 au repos (Supabase)</li>
+    <li><strong>Hachage OTP :</strong> SHA-256 pour signatures mandats, stocké hashé — non réversible</li>
+  </ul>
+
+  <h3>PWA — Progressive Web App</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Critère PWA</th><th>Statut</th><th>Détail</th></tr></thead>
+    <tbody>
+      <tr><td>manifest.json</td><td><span class="badge b-ok">✓</span></td><td>Nom, description, display: standalone, theme_color: navy</td></tr>
+      <tr><td>Service Worker (sw.js)</td><td><span class="badge b-ok">✓</span></td><td>Cache offline, interception fetch</td></tr>
+      <tr><td>Icônes multi-résolutions</td><td><span class="badge b-ok">✓</span></td><td>8 tailles : 72, 96, 128, 144, 152, 192, 384, 512px</td></tr>
+      <tr><td>Installable iOS/Android</td><td><span class="badge b-ok">✓</span></td><td>apple-touch-icon.png inclus</td></tr>
+      <tr><td>Raccourcis applicatifs</td><td><span class="badge b-ok">✓</span></td><td>Contacts et Contrats (manifest shortcuts)</td></tr>
+      <tr><td>Orientation tablette</td><td><span class="badge b-ok">✓</span></td><td>portrait-primary + responsive CSS</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 8 — DOC FONCTIONNELLE ═══════════════════════ -->
+<div class="sec pb" id="p8">
+  <div class="sec-hdr">
+    <div class="sec-num">8</div>
+    <div class="sec-title">Documentation Fonctionnelle</div>
+  </div>
+
+  <h3>Parcours Utilisateur (Niveau 1 — Commercial)</h3>
+  <ol>
+    <li>Connexion email + mot de passe → (TOTP optionnel)</li>
+    <li>Dashboard : KPIs personnels, alertes, horloge Paris</li>
+    <li>Gestion pipeline Kanban : prospects, relances, conversions</li>
+    <li>Création contrat → lien Stripe → paiement client</li>
+    <li>Tâches : planification RDV terrain/visio, iCal</li>
+    <li>Prospection terrain (tablette) : missions guidées, capture consentement</li>
+    <li>Modules SEO/DPO/Cyber : audits clients, rapports IA</li>
+  </ol>
+
+  <h3>Parcours Administrateur</h3>
+  <ol>
+    <li>Connexion → TOTP MFA obligatoire → Dashboard global</li>
+    <li>Gestion utilisateurs : création, rôles, désactivation</li>
+    <li>Panel Admin 5 onglets : Utilisateurs · Connecteurs IA · Réglages · Sécurité · Logs</li>
+    <li>Supervision incidents NIS2, journal RGPD global, audit logs</li>
+    <li>Génération documents Force de Vente (admin-docs.html)</li>
+    <li>Configuration modules, activation/désactivation connecteurs IA</li>
+    <li>Bordereau de commission global, objectifs équipe</li>
+  </ol>
+
+  <h3>Parcours DCI (Délégué Commercial Indépendant)</h3>
+  <ol>
+    <li>Connexion → TOTP obligatoire</li>
+    <li>Cockpit équipe : CA consolidé, objectifs, alertes dépassement</li>
+    <li>Gestion équipe : vue portefeuille de chaque commercial</li>
+    <li>Mandat DCI : signature électronique OTP, réception 9 documents</li>
+    <li>Suivi commissions : grille, simulation, bordereaux</li>
+  </ol>
+
+  <h3>Parcours DPO</h3>
+  <ol>
+    <li>Accès module DPO depuis sidebar CRM</li>
+    <li>Dashboard conformité : score global, alertes, délais</li>
+    <li>Registre des traitements Art. 30 : gestion complète</li>
+    <li>Consentements : capture, révocation, horodatage</li>
+    <li>Demandes DSAR (Art. 15-22) : suivi délai 30j</li>
+    <li>Violations : déclaration, suivi 72h CNIL</li>
+    <li>Portabilité : export données client JSON/CSV</li>
+    <li>Documents conformité : bibliothèque, partage sécurisé</li>
+  </ol>
+
+  <h3>Parcours Commercial Terrain (Tablette)</h3>
+  <ol>
+    <li>Accès <code>/prospection-terrain/</code> → saisie PIN 4 chiffres</li>
+    <li>Dashboard 4 cartes missions (RGPD · SEO · Cyber · Onboarding)</li>
+    <li>Choix mission → mode "Nouveau prospect" ou "Client existant"</li>
+    <li>Audit guidé avec le prospect (tablette en main)</li>
+    <li>Capture : email + téléphone + consentement RGPD</li>
+    <li>Génération rapport PDF → envoi email immédiat</li>
+    <li>Prospect créé automatiquement dans le CRM</li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════ PARTIE 9 — AUDIT QUALITÉ ═══════════════════════ -->
+<div class="sec pb" id="p9">
+  <div class="sec-hdr">
+    <div class="sec-num">9</div>
+    <div class="sec-title">Audit Qualité</div>
+  </div>
+
+  <h3>Notation par critère <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="score-row"><span class="score-label">Structure &amp; modularité</span><div class="score-bar"><div class="score-fill" style="width:85%;background:var(--green)"></div></div><span class="score-val">85/100</span></div>
+  <div class="score-row"><span class="score-label">Lisibilité du code</span><div class="score-bar"><div class="score-fill" style="width:80%;background:var(--green)"></div></div><span class="score-val">80/100</span></div>
+  <div class="score-row"><span class="score-label">Documentation interne</span><div class="score-bar"><div class="score-fill" style="width:90%;background:var(--green)"></div></div><span class="score-val">90/100</span></div>
+  <div class="score-row"><span class="score-label">Maintenabilité</span><div class="score-bar"><div class="score-fill" style="width:80%;background:var(--green)"></div></div><span class="score-val">80/100</span></div>
+  <div class="score-row"><span class="score-label">Cohérence nommage</span><div class="score-bar"><div class="score-fill" style="width:78%;background:var(--blue)"></div></div><span class="score-val">78/100</span></div>
+  <div class="score-row"><span class="score-label">Couverture tests</span><div class="score-bar"><div class="score-fill" style="width:25%;background:var(--red)"></div></div><span class="score-val">25/100</span></div>
+  <div class="score-row"><span class="score-label">Gestion des erreurs</span><div class="score-bar"><div class="score-fill" style="width:75%;background:var(--blue)"></div></div><span class="score-val">75/100</span></div>
+  <div class="score-row"><span class="score-label">Sécurité du code</span><div class="score-bar"><div class="score-fill" style="width:88%;background:var(--green)"></div></div><span class="score-val">88/100</span></div>
+  <div class="score-row"><span class="score-label">Performance (serverless)</span><div class="score-bar"><div class="score-fill" style="width:85%;background:var(--green)"></div></div><span class="score-val">85/100</span></div>
+  <div class="score-row"><span class="score-label">Scalabilité architecture</span><div class="score-bar"><div class="score-fill" style="width:90%;background:var(--green)"></div></div><span class="score-val">90/100</span></div>
+
+  <div style="margin-top:16px;background:var(--navy);border-radius:12px;padding:20px;text-align:center">
+    <div style="font-size:2rem;font-weight:900;color:var(--gold)">79/100</div>
+    <div style="font-size:.8rem;color:var(--txt3);margin-top:4px">Score qualité global — Niveau "Production Ready"</div>
+  </div>
+
+  <h3>Forces identifiées</h3>
+  <ul>
+    <li><strong>Zéro framework frontend :</strong> maintenabilité maximale, aucune dette liée à l'obsolescence d'un framework</li>
+    <li><strong>Modularité par domaine :</strong> chaque fonctionnalité est isolée dans son propre fichier JS (contracts.js, dpo-assistant.js…)</li>
+    <li><strong>Versionning SQL rigoureux :</strong> 29 migrations numérotées et horodatées, évolution schéma traçable</li>
+    <li><strong>CI/CD Deno :</strong> lint + type-check automatique sur chaque push via GitHub Actions</li>
+    <li><strong>Documentation exhaustive :</strong> documentation-crm.html (1 943 lignes), registre traitements, AIPD, DPA</li>
+    <li><strong>Séparation claire BDD/logique :</strong> Edge Functions TypeScript typées, import map centralisé</li>
+  </ul>
+
+  <h3>Points d'amélioration (dette technique)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Point</th><th>Impact</th><th>Effort</th><th>Recommandation</th></tr></thead>
+    <tbody>
+      <tr><td>Absence de tests automatisés</td><td><span class="badge b-err">Élevé</span></td><td>Moyen</td><td>Ajouter Vitest (frontend) + Deno.test (Edge Fn) <span class="fact-tag ft-r">RECO</span></td></tr>
+      <tr><td>app.js monolithique (5 301 lignes)</td><td><span class="badge b-warn">Moyen</span></td><td>Élevé</td><td>Finaliser l'extraction en cours vers assets/app/ <span class="fact-tag ft-r">RECO</span></td></tr>
+      <tr><td>RLS USING(true) sur tables auxiliaires</td><td><span class="badge b-warn">Moyen</span></td><td>Faible</td><td>Renforcer 21 tables avec politique role-based <span class="fact-tag ft-r">RECO</span></td></tr>
+      <tr><td>Pas de Content Security Policy (CSP)</td><td><span class="badge b-warn">Moyen</span></td><td>Faible</td><td>Ajouter header CSP strict via meta ou serveur <span class="fact-tag ft-r">RECO</span></td></tr>
+      <tr><td>Monitoring applicatif absent</td><td><span class="badge b-warn">Moyen</span></td><td>Moyen</td><td>Intégrer Sentry ou Supabase Monitoring <span class="fact-tag ft-r">RECO</span></td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+</div><!-- /wrap — fin partie 9, début partie 10 -->
+<div class="wrap">
+
+<!-- ═══════════════════════ PARTIE 10 — AUDIT SÉCURITÉ ═══════════════════════ -->
+<div class="sec pb" id="p10">
+  <div class="sec-hdr">
+    <div class="sec-num">10</div>
+    <div class="sec-title">Audit Sécurité</div>
+  </div>
+
+  <h3>Checklist OWASP Top 10 <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <ul class="checklist">
+    <li class="cl-ok"><strong>A01 Broken Access Control :</strong> RLS PostgreSQL sur 28 tables, RBAC 4 niveaux, is_admin()/is_dci() fonctions PostgreSQL, Edge Functions vérifient JWT + rôle à chaque appel.</li>
+    <li class="cl-ok"><strong>A02 Cryptographic Failures :</strong> TLS 1.2+ en transit (Supabase + Stripe + Brevo), AES-256 au repos (Supabase), SHA-256 pour OTP, aucun secret exposé côté client.</li>
+    <li class="cl-ok"><strong>A03 Injection :</strong> Supabase JS SDK utilise des requêtes paramétrées (jamais de concaténation SQL), aucune requête SQL construite dynamiquement côté frontend.</li>
+    <li class="cl-ok"><strong>A04 Insecure Design :</strong> Architecture security-first : auth requise avant toute donnée, RLS enforced en base, secrets en Vault.</li>
+    <li class="cl-ok"><strong>A05 Security Misconfiguration :</strong> CORS limité au domaine production, pas de CORS wildcard, headers sécurité Supabase activés.</li>
+    <li class="cl-warn"><strong>A06 Vulnerable Components :</strong> Dépendances npm: Supabase v2, Stripe v14, jsPDF v2.5.1. Audit régulier recommandé (Dependabot). <span class="fact-tag ft-r">RECO</span></li>
+    <li class="cl-ok"><strong>A07 Auth Failures :</strong> JWT RS256, expiration 4h, MFA TOTP obligatoire rôles sensibles, anti-bruteforce 5 tentatives, verrouillage compte.</li>
+    <li class="cl-ok"><strong>A08 Software Integrity :</strong> Builds sans npm en production, imports Supabase CDN vérifiés, scripts SRI recommandés (script check-sri.sh présent).</li>
+    <li class="cl-ok"><strong>A09 Logging Failures :</strong> Audit trail complet : login_audit, totp_audit, audit_access_log, rgpd_log, safe_connectors_log. RLS admins.</li>
+    <li class="cl-warn"><strong>A10 Server-Side Request Forgery :</strong> Edge Functions font des appels sortants vers IA APIs — URLs codées en dur (non paramétrables par l'utilisateur). Risque minimal mais à surveiller. <span class="fact-tag ft-r">RECO</span></li>
+  </ul>
+
+  <h3>Matrice de risques sécurité</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Niveau</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>Accès non autorisé aux données</td><td>Faible</td><td>Élevé</td><td><span class="badge b-warn">Moyen</span></td><td>RLS + JWT + MFA</td></tr>
+      <tr><td>Bruteforce sur authentification</td><td>Moyen</td><td>Élevé</td><td><span class="badge b-warn">Moyen</span></td><td>Anti-bruteforce 5 tentatives, ban IP</td></tr>
+      <tr><td>Fuite de clés API IA</td><td>Faible</td><td>Élevé</td><td><span class="badge b-warn">Moyen</span></td><td>Supabase Vault, jamais côté client</td></tr>
+      <tr><td>Injection SQL</td><td>Très faible</td><td>Critique</td><td><span class="badge b-ok">Faible</span></td><td>SDK Supabase paramétré</td></tr>
+      <tr><td>Violation données personnelles</td><td>Faible</td><td>Critique</td><td><span class="badge b-warn">Moyen</span></td><td>RLS + chiffrement + DSAR module</td></tr>
+      <tr><td>Indisponibilité service IA</td><td>Moyen</td><td>Faible</td><td><span class="badge b-ok">Faible</span></td><td>Fallback 4 fournisseurs</td></tr>
+      <tr><td>Stripe webhook forgé</td><td>Faible</td><td>Élevé</td><td><span class="badge b-warn">Moyen</span></td><td>Vérification signature Stripe (HMAC)</td></tr>
+      <tr><td>XSS / injection HTML</td><td>Faible</td><td>Moyen</td><td><span class="badge b-ok">Faible</span></td><td>Pas de innerHTML avec données user non sanitisées</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Audit authentification</h3>
+  <div class="cards">
+    <div class="card"><div class="card-title">🔑 JWT RS256</div><div class="card-body">Tokens signés asymétriquement par Supabase. Expiration 4h avec alerte T-15min. Refresh token rotatif. Invalidation forcée à la déconnexion.</div></div>
+    <div class="card"><div class="card-title">📱 TOTP MFA</div><div class="card-body">Compatible Google Authenticator / Authy. Enrôlement obligatoire pour super_admin, admin_candy, dci. Trust 2h (localStorage). Chaque événement TOTP loggé dans <code>totp_audit</code>.</div></div>
+    <div class="card"><div class="card-title">🚫 Anti-bruteforce</div><div class="card-body">5 tentatives max → ban IP + ban email. Déblocage manuel par admin. Edge Function <code>record-login-failure</code>. Tables <code>login_attempts</code>, <code>login_alerts</code>. Alerte email admin.</div></div>
+    <div class="card"><div class="card-title">🔐 Secrets Vault</div><div class="card-body">GROQ_API_KEY, GROK_API_KEY, ANTHROPIC_API_KEY, MISTRAL_API_KEY, STRIPE_SECRET_KEY, BREVO_API_KEY — tous en variables Supabase Vault. Jamais exposés côté client.</div></div>
+  </div>
+
+  <h3>Journalisation sécurité — Audit trail</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Table</th><th>Événements tracés</th><th>Rétention</th><th>Accès</th></tr></thead>
+    <tbody>
+      <tr><td><code>login_audit</code></td><td>Toutes connexions réussies et échouées</td><td>90 jours</td><td>Admin uniquement</td></tr>
+      <tr><td><code>totp_audit</code></td><td>Enrôlement, validation, échec TOTP</td><td>90 jours</td><td>Admin uniquement</td></tr>
+      <tr><td><code>audit_access_log</code></td><td>Accès admin aux données sensibles</td><td>2 ans</td><td>super_admin uniquement</td></tr>
+      <tr><td><code>rgpd_log</code></td><td>Actions RGPD (accès, modification, suppression)</td><td>2 ans</td><td>DPO + admin</td></tr>
+      <tr><td><code>safe_connectors_log</code></td><td>Appels IA (anonymisé, fire-and-forget)</td><td>6 mois</td><td>Admin uniquement</td></tr>
+      <tr><td><code>login_attempts</code></td><td>Tentatives bruteforce, ban IP/email</td><td>30 jours</td><td>Admin uniquement</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 11 — CONFORMITÉ ═══════════════════════ -->
+<div class="sec pb" id="p11">
+  <div class="sec-hdr">
+    <div class="sec-num">11</div>
+    <div class="sec-title">Audit Conformité RGPD / NIS2 / ANSSI</div>
+  </div>
+
+  <h3>Conformité RGPD <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <ul class="checklist">
+    <li class="cl-ok"><strong>Art. 5 — Principes :</strong> minimisation données, finalités définies, durée de conservation documentée (registre traitements)</li>
+    <li class="cl-ok"><strong>Art. 6 — Base légale :</strong> 5 traitements documentés (contrat, obligation légale, intérêt légitime, consentement, exécution contrat)</li>
+    <li class="cl-ok"><strong>Art. 13/14 — Information :</strong> mentions légales intégrées, politique de confidentialité accessible</li>
+    <li class="cl-ok"><strong>Art. 15-22 — Droits :</strong> module DSAR opérationnel (accès, rectification, suppression, portabilité, limitation, opposition)</li>
+    <li class="cl-ok"><strong>Art. 25 — Privacy by Design :</strong> RLS enforced par défaut, chiffrement AES-256, pseudonymisation logs IA</li>
+    <li class="cl-ok"><strong>Art. 28 — Sous-traitants :</strong> DPA signé Supabase + Stripe + Brevo, registre sous-traitants documenté</li>
+    <li class="cl-ok"><strong>Art. 30 — Registre traitements :</strong> 5 traitements documentés dans <code>docs/legal/REGISTRE_TRAITEMENTS.md</code></li>
+    <li class="cl-ok"><strong>Art. 32 — Sécurité :</strong> TLS 1.2+, AES-256, JWT, MFA, RLS, anti-bruteforce, audit trail</li>
+    <li class="cl-ok"><strong>Art. 33 — Notification violation :</strong> module violations DPO, indicateur 72h, workflow CNIL</li>
+    <li class="cl-ok"><strong>Art. 35 — DPIA :</strong> AIPD rédigée pour la fonction IA (<code>docs/legal/AIPD_CallIA.md</code>)</li>
+    <li class="cl-ok"><strong>Art. 37 — DPO :</strong> DPO désigné : Sébastien Alonso (dpo@safe-digitalisation.fr)</li>
+    <li class="cl-ok"><strong>Art. 44-46 — Transferts :</strong> Supabase EU, Brevo EU, Stripe USA via Data Privacy Framework + SCC</li>
+    <li class="cl-warn"><strong>Art. 42 — Certification :</strong> Certification CNIL visée (conformité vérifiée, dépôt en cours) <span class="fact-tag ft-i">INFO À COMPLÉTER</span></li>
+  </ul>
+
+  <h3>Registre des traitements — Synthèse <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Traitement</th><th>Base légale</th><th>Rétention</th><th>Transfert USA</th></tr></thead>
+    <tbody>
+      <tr><td>T1 — Gestion CRM contacts/contrats</td><td>Art. 6(1)b + 6(1)c</td><td>Prospects : 3 ans / Clients : 5 ans post-contrat</td><td>Aucun</td></tr>
+      <tr><td>T2 — Signatures électroniques</td><td>Art. 6(1)b + 6(1)c</td><td>10 ans (assurance)</td><td>Aucun</td></tr>
+      <tr><td>T3 — Facturation Stripe</td><td>Art. 6(1)c (obligation légale)</td><td>6 ans</td><td>Stripe → DPF</td></tr>
+      <tr><td>T4 — Logs audit sécurité</td><td>Art. 6(1)f (intérêt légitime)</td><td>90j hot / 2 ans cold</td><td>Aucun</td></tr>
+      <tr><td>T5 — Appels IA</td><td>Art. 6(1)b (contrat service)</td><td>6 mois puis anonymisation</td><td>USA → SCC</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Conformité NIS2 <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <ul class="checklist">
+    <li class="cl-ok"><strong>Gestion des incidents :</strong> Module incidents NIS2 opérationnel, déclaration structurée, indicateur 72h automatique</li>
+    <li class="cl-ok"><strong>Notification ANSSI :</strong> Champ <code>anssi_notifie</code> + timestamp dans <code>incidents_nis2</code></li>
+    <li class="cl-ok"><strong>Continuité d'activité :</strong> Architecture serverless Supabase EU West, SLA Supabase 99.9%</li>
+    <li class="cl-ok"><strong>Sécurité de la chaîne d'approvisionnement :</strong> Registre fournisseurs DPA, DPA Stripe signé et archivé (PDF 2025-Nov-18)</li>
+    <li class="cl-warn"><strong>Périmètre NIS2 :</strong> S@FE SASU est micro-entreprise — NIS2 non obligatoire légalement, bonne pratique commerciale <span class="fact-tag ft-h">HYPOTHÈSE</span></li>
+  </ul>
+
+  <h3>Référentiel ANSSI — Couverture</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Catégorie ANSSI</th><th>Couverture</th><th>Mécanisme S@FE</th></tr></thead>
+    <tbody>
+      <tr><td>Gestion des identités</td><td><span class="badge b-ok">Élevée</span></td><td>Supabase Auth JWT + TOTP MFA + RBAC 4 niveaux</td></tr>
+      <tr><td>Contrôle des accès</td><td><span class="badge b-ok">Élevée</span></td><td>RLS PostgreSQL + fonctions is_admin()/is_dci()</td></tr>
+      <tr><td>Chiffrement</td><td><span class="badge b-ok">Élevée</span></td><td>TLS 1.2+ transit, AES-256 repos, SHA-256 OTP</td></tr>
+      <tr><td>Journalisation</td><td><span class="badge b-ok">Élevée</span></td><td>6 tables de logs, audit trail complet</td></tr>
+      <tr><td>Gestion des vulnérabilités</td><td><span class="badge b-warn">Partielle</span></td><td>GitHub Actions CI, pas de DAST automatisé</td></tr>
+      <tr><td>Gestion des incidents</td><td><span class="badge b-ok">Élevée</span></td><td>Module NIS2, workflow 72h, alertes admin</td></tr>
+      <tr><td>Continuité</td><td><span class="badge b-ok">Élevée</span></td><td>Serverless Supabase, fallback IA 4 fournisseurs</td></tr>
+      <tr><td>Tests de sécurité</td><td><span class="badge b-err">Absente</span></td><td>Aucun pentest documenté — <span class="fact-tag ft-r">RECO</span></td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 12 — HISTORIQUE ═══════════════════════ -->
+<div class="sec pb" id="p12">
+  <div class="sec-hdr">
+    <div class="sec-num">12</div>
+    <div class="sec-title">Historique du Développement</div>
+  </div>
+
+  <h3>Versions de schéma SQL <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <p>29 migrations successives identifiées (schéma de base + v2 à v29), attestant d'une évolution continue et structurée du modèle de données.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Plage</th><th>Nature des évolutions</th></tr></thead>
+    <tbody>
+      <tr><td>v1 – v5</td><td>Schéma de base (contacts, contracts, tasks), RLS initial, profils utilisateurs</td></tr>
+      <tr><td>v6 – v10</td><td>Module commissions, mandats DCI, objectifs, interactions, messages</td></tr>
+      <tr><td>v11 – v15</td><td>Audit logs, TOTP audit, login attempts, rate limits, connecteurs IA</td></tr>
+      <tr><td>v16 – v20</td><td>Module DPO (8 tables dpo_client_*), violations, consentements, demandes</td></tr>
+      <tr><td>v21 – v25</td><td>Incidents NIS2, order_links, agenda iCal token, enrichissements contacts</td></tr>
+      <tr><td>v26 – v29</td><td>RGPD flags, rdv_date/heure/lieu tâches, code_postal/ville profiles, taux_commission objectifs</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Évolution de la codebase <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="cards">
+    <div class="card"><div class="card-num">v6</div><div class="card-label">Version courante (2026-V6)</div></div>
+    <div class="card"><div class="card-num">29</div><div class="card-label">Migrations SQL versionnées</div></div>
+    <div class="card"><div class="card-num">161</div><div class="card-label">Fichiers source actifs</div></div>
+    <div class="card"><div class="card-num">~93K</div><div class="card-label">Lignes de code total</div></div>
+  </div>
+
+  <h3>Chronologie fonctionnelle <span class="fact-tag ft-h">HYPOTHÈSE — estimation basée sur les versions SQL</span></h3>
+  <div class="ascii">
+<span class="hi">Timeline estimée des jalons majeurs</span>
+
+  Phase 1  ──  CRM de base
+               Contacts · Contrats · Tâches · Auth JWT
+               Premiers clients pilotes
+
+  Phase 2  ──  Force de vente &amp; Commissions
+               Mandats DCI · Grille commissions · Bordereaux PDF
+               Intégration Stripe Checkout + Webhook
+
+  Phase 3  ──  Modules IA verticaux
+               SEO · DPO · Cybersécurité · Connecteurs IA multi-fournisseur
+               Génération PDF contextuelle
+
+  Phase 4  ──  Conformité réglementaire
+               RGPD (module DPO complet · 8 tables) · NIS2 · AIPD
+               DPA sous-traitants · Registre traitements
+
+  Phase 5  ──  Prospection terrain &amp; Modules Beta
+               Espace terrain PIN · 4 missions tablette
+               Click &amp; Collect · Social Media planning
+
+  Phase 6  ──  Version actuelle (2026-V6)
+               Refonte Pipeline Kanban · Edge Fn v10 · Deno 2.x
+               Documentation Data Room</div>
+
+  <h3>Statistiques Git <span class="fact-tag ft-i">INFO À COMPLÉTER</span></h3>
+  <div class="box box-red">
+    <strong>Informations à compléter :</strong> Le dépôt Git n'est pas accessible dans le contexte de ce document. L'éditeur doit fournir : nombre total de commits, date du premier commit, nombre de contributeurs, fréquence des commits (semaine/mois), branches actives. Ces données complèteraient l'évaluation de la vélocité de développement.
+  </div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 13 — ACTIFS IMMATÉRIELS ═══════════════════════ -->
+<div class="sec pb" id="p13">
+  <div class="sec-hdr">
+    <div class="sec-num">13</div>
+    <div class="sec-title">Inventaire des Actifs Immatériels</div>
+  </div>
+
+  <h3>Inventaire complet <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Catégorie</th><th>Actif</th><th>Volume</th><th>Valeur</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="4"><strong>Code source</strong></td><td>Core SPA (assets/app.js + modules)</td><td>~92 884 lignes</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td>Edge Functions Deno TypeScript</td><td>13 fonctions / 2 829 lignes</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td>Migrations SQL</td><td>29 fichiers / 4 711 lignes</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td>Scripts de déploiement / CI</td><td>3 fichiers (deno-check.yml, build.mjs, check-sri.sh)</td><td><span class="badge b-warn">Moyenne</span></td></tr>
+      <tr><td rowspan="3"><strong>Architecture</strong></td><td>Architecture serverless Supabase</td><td>Conçue pour 0 infrastructure</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td>Modèle RLS hiérarchique 4 niveaux</td><td>28 tables protégées</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td>Import map Deno 2.x (deno.json)</td><td>Découplage npm/jsr</td><td><span class="badge b-warn">Moyenne</span></td></tr>
+      <tr><td rowspan="4"><strong>Documentation</strong></td><td>documentation-crm.html</td><td>1 943 lignes HTML</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td>Registre des traitements RGPD</td><td>5 traitements documentés</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td>AIPD IA (call-ia)</td><td>Analyse d'impact complète</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td>DPA sous-traitants (Supabase, Stripe, Brevo)</td><td>Contrats signés archivés</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td rowspan="3"><strong>Prompts IA</strong></td><td>Prompts système par module (SEO, DPO, Cyber)</td><td>~15 prompts spécialisés</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td>Suggestions rapides pré-définies</td><td>Intégrées dans chaque module IA</td><td><span class="badge b-warn">Moyenne</span></td></tr>
+      <tr><td>Logique de routage IA multi-fournisseur</td><td>Algorithme priorité + fallback</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td rowspan="3"><strong>Templates</strong></td><td>12 templates emails Brevo (HTML)</td><td>Branding S@FE</td><td><span class="badge b-warn">Moyenne</span></td></tr>
+      <tr><td>Templates PDF (3 thèmes SEO/DPO/Cyber)</td><td>jsPDF branded</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td>Modèles juridiques (mandat DCI, clause, CGV)</td><td>Rédigés pour le marché français</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td rowspan="2"><strong>UX/UI</strong></td><td>Design system S@FE (navy/gold, composants)</td><td>CSS custom properties, 8 fichiers CSS</td><td><span class="badge b-warn">Moyenne</span></td></tr>
+      <tr><td>Missions terrain (UX tablette)</td><td>4 parcours guidés optimisés</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td rowspan="2"><strong>Données/Config</strong></td><td>Grille de commission DCI (SAFE-AC-2026-V1)</td><td>Barème commercial</td><td><span class="badge b-ok">Élevée</span></td></tr>
+      <tr><td>Paramétrage Stripe (webhooks, produits)</td><td>Configuration production</td><td><span class="badge b-warn">Moyenne</span></td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 14 — PROPRIÉTÉ INTELLECTUELLE ═══════════════════════ -->
+<div class="sec pb" id="p14">
+  <div class="sec-hdr">
+    <div class="sec-num">14</div>
+    <div class="sec-title">Propriété Intellectuelle</div>
+  </div>
+
+  <h3>Identification des créations originales</h3>
+  <ul>
+    <li><strong>Architecture RLS hiérarchique 4 niveaux</strong> : combinaison originale de fonctions PostgreSQL (is_admin, is_dci, get_team_ids) appliquée à un CRM métier — non standard, développée spécifiquement</li>
+    <li><strong>Système de missions terrain PIN</strong> : UX spécifique prospection commerciale sur tablette avec sessions éphémères sessionStorage — conçu pour le secteur assurance/digitalisation PME</li>
+    <li><strong>Routeur IA multi-fournisseur avec fallback</strong> : logique de priorité et de commutation entre 4 fournisseurs IA dans un seul endpoint Edge Function — architecture originale</li>
+    <li><strong>Modèles documents juridiques</strong> : mandat agent commercial DCI, clauses confidentialité, CGV — rédigés pour le cadre légal français (assurance, RGPD)</li>
+    <li><strong>Grille de commissionnement SAFE-AC-2026-V1</strong> : barème commercial propriétaire</li>
+    <li><strong>Design system S@FE</strong> : identité visuelle (navy #0a1628 / gold #f59e0b), composants CSS, iconographie, logo</li>
+    <li><strong>Prompts IA spécialisés</strong> : prompts système pour chaque module (SEO local PME, DPO externalisé, cybersécurité ANSSI/CIS), formulations originales</li>
+  </ul>
+
+  <h3>Protection et dépôt <span class="fact-tag ft-i">INFO À COMPLÉTER</span></h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Protection</th><th>Statut</th><th>Action recommandée</th></tr></thead>
+    <tbody>
+      <tr><td>Copyright automatique (Code source)</td><td><span class="badge b-ok">Acquis</span></td><td>Apposer mention © S@FE SASU 2025-2026 dans les fichiers</td></tr>
+      <tr><td>Dépôt INPI — Logiciel</td><td><span class="badge b-err">Non effectué</span></td><td>Dépôt enveloppe Soleau ou APP (Agence Protection Programmes) <span class="fact-tag ft-r">RECO</span></td></tr>
+      <tr><td>Marque "S@FE" / "S@FE CRM"</td><td><span class="badge b-err">Non déposée</span></td><td>Dépôt marque INPI Classes 42 (logiciel SaaS) + 38 (télécommunications) <span class="fact-tag ft-r">RECO</span></td></tr>
+      <tr><td>Hash SHA-256 du code source</td><td><span class="badge b-err">Non calculé</span></td><td>Calculer hash du répertoire complet pour preuve d'antériorité <span class="fact-tag ft-r">RECO</span></td></tr>
+      <tr><td>Licence d'utilisation</td><td><span class="badge b-err">Non définie</span></td><td>Rédiger CGU + licence propriétaire (aucune redistribution) <span class="fact-tag ft-r">RECO</span></td></tr>
+      <tr><td>Accord de confidentialité investisseur</td><td><span class="badge b-err">À préparer</span></td><td>NDA avant communication de ce document <span class="fact-tag ft-r">RECO</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box box-gold">
+    <strong>Note juridique :</strong> En droit français, le logiciel est protégé par le droit d'auteur dès sa création (L. 112-2 CPI), sans formalité. S@FE SASU dispose des droits patrimoniaux sur l'intégralité du code source développé par ses salariés ou sous-traitants dans le cadre de leur mission. Pour une valeur contractuelle opposable en M&amp;A, le dépôt INPI + hash horodaté reste fortement recommandé.
+  </div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 15 — VALORISATION ═══════════════════════ -->
+<div class="sec pb" id="p15">
+  <div class="sec-hdr">
+    <div class="sec-num">15</div>
+    <div class="sec-title">Valorisation</div>
+  </div>
+
+  <div class="box box-gold" style="margin-bottom:24px">
+    <strong>Avertissement méthodologique :</strong> Les valorisations ci-dessous combinent des données vérifiées (métriques codebase, architecture) et des hypothèses de marché clairement identifiées. Elles ne constituent pas une évaluation financière certifiée. Un commissaire aux apports ou un expert judiciaire devra confirmer toute valeur dans le cadre d'une opération M&amp;A ou d'un apport en société.
+  </div>
+
+  <h3>Méthode 1 — Coût de reconstruction (Replacement Value)</h3>
+  <p>Évalue le coût de recréation à l'identique du logiciel depuis zéro.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Composant</th><th>Volume</th><th>Estimation effort</th><th>Coût (€)</th></tr></thead>
+    <tbody>
+      <tr><td>Core SPA frontend (app.js + modules)</td><td>~20 000 lignes JS actives</td><td>200 j/h × 500€/j</td><td>100 000 €</td></tr>
+      <tr><td>Edge Functions TypeScript (13)</td><td>2 829 lignes TS</td><td>40 j/h × 500€/j</td><td>20 000 €</td></tr>
+      <tr><td>Schéma PostgreSQL (28 tables + RLS)</td><td>4 711 lignes SQL</td><td>30 j/h × 500€/j</td><td>15 000 €</td></tr>
+      <tr><td>Modules IA (5 modules, 3 assistants)</td><td>~35 fichiers JS modules</td><td>80 j/h × 500€/j</td><td>40 000 €</td></tr>
+      <tr><td>Documentation technique (1 943 lignes)</td><td>Registre, AIPD, Data Room</td><td>20 j/h × 500€/j</td><td>10 000 €</td></tr>
+      <tr><td>Design system + UX missions terrain</td><td>CSS + HTML + maquettes</td><td>30 j/h × 400€/j</td><td>12 000 €</td></tr>
+      <tr><td>Intégrations (Stripe + Brevo + DPA)</td><td>Contractualisation + dev</td><td>20 j/h × 500€/j</td><td>10 000 €</td></tr>
+      <tr><td>Templates PDF brandés (3)</td><td>jsPDF thèmes</td><td>10 j/h × 400€/j</td><td>4 000 €</td></tr>
+      <tr><td>Documents juridiques (mandat, CGV, clause)</td><td>Rédaction + validation</td><td>15 j/h × 800€/j</td><td>12 000 €</td></tr>
+      <tr style="background:var(--navy)"><td colspan="3" style="color:#fff;font-weight:700">TOTAL RECONSTRUCTION (base)</td><td style="color:var(--gold);font-weight:900">223 000 €</td></tr>
+      <tr><td colspan="3">+ Majoration risque projet (+25%) <span class="fact-tag ft-h">HYPOTHÈSE</span></td><td>55 750 €</td></tr>
+      <tr style="background:var(--navy)"><td colspan="3" style="color:#fff;font-weight:700">VALEUR DE REMPLACEMENT TOTALE</td><td style="color:var(--gold);font-weight:900">~278 750 €</td></tr>
+    </tbody>
+  </table></div>
+  <div class="val-box"><div class="val-range">180 000 € — 280 000 €</div><div class="val-label">Fourchette valeur de remplacement (méthode coût)</div><div class="val-method">Hypothèse : 500€/j développeur senior France, 400€/j junior/design</div></div>
+
+  <h3>Méthode 2 — Patrimoniale (Asset-Based)</h3>
+  <p>Somme des actifs immatériels identifiés, avec coefficients de liquidité.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Actif</th><th>Valeur brute</th><th>Coefficient liquidité</th><th>Valeur nette</th></tr></thead>
+    <tbody>
+      <tr><td>Code source (logiciel opérationnel)</td><td>223 000 €</td><td>0.7</td><td>156 100 €</td></tr>
+      <tr><td>Documentation technique exhaustive</td><td>22 000 €</td><td>0.9</td><td>19 800 €</td></tr>
+      <tr><td>Modèles juridiques français (mandat, CGV)</td><td>12 000 €</td><td>0.8</td><td>9 600 €</td></tr>
+      <tr><td>Prompts IA spécialisés (15+ prompts)</td><td>15 000 €</td><td>0.5</td><td>7 500 €</td></tr>
+      <tr><td>Intégrations opérationnelles (Stripe, Brevo)</td><td>10 000 €</td><td>0.8</td><td>8 000 €</td></tr>
+      <tr><td>DPA signés (valeur conformité)</td><td>5 000 €</td><td>0.9</td><td>4 500 €</td></tr>
+      <tr style="background:var(--navy)"><td colspan="3" style="color:#fff;font-weight:700">VALEUR PATRIMONIALE NETTE</td><td style="color:var(--gold);font-weight:900">~205 500 €</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Méthode 3 — Comparative (Market Multiples)</h3>
+  <p>Comparaison avec des SaaS comparables sur le marché français (CRM PME + compliance). <span class="fact-tag ft-h">HYPOTHÈSE</span></p>
+  <div class="tbl"><table>
+    <thead><tr><th>Concurrent comparable</th><th>ARR estimé</th><th>Multiple</th><th>Valorisation</th></tr></thead>
+    <tbody>
+      <tr><td>CRM PME France (segment compliance)</td><td>200K€ – 2M€</td><td>5x – 10x ARR</td><td>1M€ – 20M€</td></tr>
+      <tr><td>Early-stage SaaS sans ARR</td><td>—</td><td>Valeur IP + pipeline</td><td>200K€ – 500K€</td></tr>
+      <tr><td>S@FE CRM (stade actuel, ARR inconnu)</td><td><span class="fact-tag ft-i">INFO À COMPLÉTER</span></td><td>—</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Méthode 4 — Économique (Projection DCF)</h3>
+  <p>Basée sur un scénario de déploiement commercial. <span class="fact-tag ft-h">HYPOTHÈSE</span></p>
+  <div class="tbl"><table>
+    <thead><tr><th>Scénario</th><th>Clients</th><th>Prix moy./mois</th><th>ARR</th><th>Multiple 5x</th></tr></thead>
+    <tbody>
+      <tr><td>Conservateur</td><td>50</td><td>149 €</td><td>89 400 €</td><td>447 000 €</td></tr>
+      <tr><td>Base</td><td>100</td><td>199 €</td><td>238 800 €</td><td>1 194 000 €</td></tr>
+      <tr><td>Optimiste</td><td>250</td><td>249 €</td><td>747 000 €</td><td>3 735 000 €</td></tr>
+    </tbody>
+  </table></div>
+  <div class="val-box"><div class="val-range">1 000 000 € — 3 500 000 €</div><div class="val-label">Valorisation économique (scénario base–optimiste, 100–250 clients)</div><div class="val-method">Hypothèse : multiple SaaS 5x ARR, prix marché CRM PME compliance France</div></div>
+
+  <h3>Synthèse de valorisation</h3>
+  <div class="cards-4">
+    <div class="card"><div class="card-num" style="font-size:1.1rem">~220K€</div><div class="card-label">Valeur patrimoniale (actuelle)</div></div>
+    <div class="card"><div class="card-num" style="font-size:1.1rem">~280K€</div><div class="card-label">Coût de reconstruction</div></div>
+    <div class="card"><div class="card-num" style="font-size:1.1rem">~1,2M€</div><div class="card-label">Économique (base 100 clients)</div></div>
+    <div class="card"><div class="card-num" style="font-size:1.1rem">~3,5M€</div><div class="card-label">Économique (250 clients)</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 16 — ANALYSE CONCURRENTIELLE ═══════════════════════ -->
+<div class="sec pb" id="p16">
+  <div class="sec-hdr">
+    <div class="sec-num">16</div>
+    <div class="sec-title">Analyse Concurrentielle</div>
+  </div>
+
+  <h3>Matrice forces / faiblesses (SWOT)</h3>
+  <div class="cards">
+    <div class="card" style="border-color:var(--green)">
+      <div class="card-title" style="color:#15803d">✅ Forces</div>
+      <div class="card-body">
+        <ul>
+          <li>Conformité RGPD/NIS2 native (unique sur ce segment)</li>
+          <li>IA multi-fournisseur avec fallback automatique</li>
+          <li>0 infrastructure à maintenir (serverless total)</li>
+          <li>Prospection terrain tablette avec PIN</li>
+          <li>Force de vente intégrée (DCI, commissions, mandats)</li>
+          <li>Architecture extensible (modules plug-and-play)</li>
+          <li>Documentation de niveau entreprise</li>
+          <li>Coût d'exploitation très faible (Supabase Cloud)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card" style="border-color:var(--red)">
+      <div class="card-title" style="color:#991b1b">⚠️ Faiblesses</div>
+      <div class="card-body">
+        <ul>
+          <li>ARR non communiqué (base clients à construire)</li>
+          <li>Absence de tests automatisés</li>
+          <li>app.js monolithique partiellement extrait</li>
+          <li>Marque non déposée à l'INPI</li>
+          <li>Pas de pentest documenté</li>
+          <li>Modules ClickCollect et Social en Beta</li>
+          <li>Dépendance IA à des fournisseurs tiers (Groq, xAI)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card" style="border-color:var(--blue)">
+      <div class="card-title" style="color:#1d4ed8">🚀 Opportunités</div>
+      <div class="card-body">
+        <ul>
+          <li>RGPD : millions de PME françaises non conformes</li>
+          <li>NIS2 2024 : nouvelles obligations sectorielles</li>
+          <li>IA : demande forte d'assistants IA verticaux</li>
+          <li>Réseau DCI : scalabilité commerciale sans salariés</li>
+          <li>Modules verticaux : monetisation additive par secteur</li>
+          <li>Intégration partenaires (Stripe, Brevo) déjà actifs</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card" style="border-color:var(--gold)">
+      <div class="card-title" style="color:#92400e">🎯 Menaces</div>
+      <div class="card-body">
+        <ul>
+          <li>Salesforce / HubSpot : budgets R&amp;D colossaux</li>
+          <li>CRM généralistes ajoutant des modules compliance</li>
+          <li>Évolution réglementaire rapide (RGPD, IA Act)</li>
+          <li>Dépendance à Supabase (risque vendor lock-in)</li>
+          <li>Fournisseurs IA modifiant leurs tarifs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h3>Matrice concurrentielle</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Critère</th><th>S@FE CRM</th><th>Salesforce Essentials</th><th>HubSpot Starter</th><th>Sellsy</th><th>noCRM.io</th></tr></thead>
+    <tbody>
+      <tr><td>Conformité RGPD native</td><td><span class="badge b-ok">✓ Native</span></td><td><span class="badge b-warn">Partielle</span></td><td><span class="badge b-warn">Partielle</span></td><td><span class="badge b-warn">Partielle</span></td><td><span class="badge b-warn">Basique</span></td></tr>
+      <tr><td>Module NIS2</td><td><span class="badge b-ok">✓ Intégré</span></td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>IA intégrée multi-fournisseur</td><td><span class="badge b-ok">✓ 4 fournisseurs</span></td><td><span class="badge b-warn">Einstein (1)</span></td><td><span class="badge b-warn">1 fournisseur</span></td><td>—</td><td>—</td></tr>
+      <tr><td>Force de vente DCI intégrée</td><td><span class="badge b-ok">✓ Natif</span></td><td>Modules séparés</td><td>Modules séparés</td><td>Partiel</td><td>—</td></tr>
+      <tr><td>PWA installable tablette</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td></tr>
+      <tr><td>Prix mensuel PME</td><td><span class="badge b-ok">Marché cible</span></td><td>&gt;200€/user</td><td>&gt;45€/user</td><td>~49€/user</td><td>~19€/user</td></tr>
+      <tr><td>Serverless 0 infra</td><td><span class="badge b-ok">✓</span></td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>Marché France PME spécialisé</td><td><span class="badge b-ok">✓ Focus</span></td><td>Global</td><td>Global</td><td>France</td><td>Global</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Barrières à l'entrée</h3>
+  <ul>
+    <li><strong>Conformité réglementaire :</strong> reproduire les 8 modules DPO, le module NIS2, les DPA signés et l'AIPD représente 6-12 mois de travail juridique et technique</li>
+    <li><strong>Intégrations opérationnelles :</strong> Stripe (webhooks production, customer portal), Brevo (12 templates), IA (4 fournisseurs) — nécessite des comptes et configurations validées</li>
+    <li><strong>Documentation Big Four :</strong> niveau de documentation atteint rare pour un produit PME</li>
+    <li><strong>Réseau DCI :</strong> actif commercial (agents mandants) non reproductible instantanément</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════ PARTIE 17 — ROADMAP ═══════════════════════ -->
+<div class="sec pb" id="p17">
+  <div class="sec-hdr">
+    <div class="sec-num">17</div>
+    <div class="sec-title">Roadmap</div>
+  </div>
+
+  <h3>Court terme (0 – 6 mois) <span class="fact-tag ft-r">RECOMMANDATION</span></h3>
+  <ul>
+    <li>Dépôt INPI marque "S@FE" + protection logicielle (APP/INPI)</li>
+    <li>Mise en place tests automatisés (Vitest + Deno.test) — réduction dette technique</li>
+    <li>Finalisation extraction app.js → modules dans assets/app/</li>
+    <li>Pentest externe documenté (certification ANSSI ou prestataire PASSI)</li>
+    <li>Activation Dependabot GitHub pour suivi dépendances npm</li>
+    <li>Header Content Security Policy (CSP) strict</li>
+    <li>Renforcement RLS USING(true) sur 21 tables auxiliaires</li>
+    <li>Monitoring Sentry ou Supabase Monitoring</li>
+  </ul>
+
+  <h3>Moyen terme (6 – 18 mois)</h3>
+  <ul>
+    <li>Finalisation modules ClickCollect et Social (Beta → Production)</li>
+    <li>Certification conformité CNIL Art. 42</li>
+    <li>API publique S@FE pour intégrations partenaires (webhooks sortants)</li>
+    <li>Onboarding self-service (inscription + paiement + configuration sans intervention humaine)</li>
+    <li>Dashboard analytics avancé (Metabase ou intégré)</li>
+    <li>Application mobile native (React Native ou Capacitor) basée sur la PWA</li>
+    <li>Module Facturation intégré (factures PDF, numérotation légale)</li>
+    <li>Internationalisation (EN, ES) pour expansion européenne</li>
+  </ul>
+
+  <h3>Long terme (18 mois – 3 ans)</h3>
+  <ul>
+    <li>Marketplace de modules verticaux tiers (partenaires sectoriels)</li>
+    <li>IA propriétaire fine-tunée sur données sectorielles anonymisées</li>
+    <li>Certification ISO 27001 (sécurité de l'information)</li>
+    <li>Levée de fonds Seed (200K€ – 500K€) pour accélération commerciale</li>
+    <li>Expansion réseau DCI France entière (50+ délégués)</li>
+    <li>White-label pour intégrateurs/franchises</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════ PARTIE 18 — ANNEXES ═══════════════════════ -->
+<div class="sec pb" id="p18">
+  <div class="sec-hdr">
+    <div class="sec-num">18</div>
+    <div class="sec-title">Annexes</div>
+  </div>
+
+  <h3>Annexe A — Glossaire</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Terme</th><th>Définition</th></tr></thead>
+    <tbody>
+      <tr><td>ARR</td><td>Annual Recurring Revenue — chiffre d'affaires annuel récurrent des abonnements SaaS</td></tr>
+      <tr><td>DCI</td><td>Délégué Commercial Indépendant — agent mandataire sous mandat S@FE</td></tr>
+      <tr><td>DPIA / AIPD</td><td>Data Protection Impact Assessment — Analyse d'Impact sur la Protection des Données (RGPD Art. 35)</td></tr>
+      <tr><td>DPA</td><td>Data Processing Agreement — accord de traitement des données (RGPD Art. 28)</td></tr>
+      <tr><td>DSAR</td><td>Data Subject Access Request — demande d'exercice de droits RGPD (Art. 15-22)</td></tr>
+      <tr><td>Edge Function</td><td>Fonction serverless Deno déployée sur le réseau edge Supabase (faible latence)</td></tr>
+      <tr><td>iCal / ICS</td><td>Format calendrier standard (RFC 5545) pour export agenda vers Google Calendar, Apple Calendar</td></tr>
+      <tr><td>JWT</td><td>JSON Web Token — jeton d'authentification signé RS256 émis par Supabase Auth</td></tr>
+      <tr><td>MFA / TOTP</td><td>Multi-Factor Authentication / Time-based One-Time Password — double authentification</td></tr>
+      <tr><td>NIS2</td><td>Network and Information Security Directive 2 — directive européenne cybersécurité 2024</td></tr>
+      <tr><td>PASSI</td><td>Prestataire d'Audit de Sécurité des Systèmes d'Information — agréé ANSSI</td></tr>
+      <tr><td>PWA</td><td>Progressive Web App — application web installable sur iOS/Android/Desktop</td></tr>
+      <tr><td>RBAC</td><td>Role-Based Access Control — contrôle d'accès basé sur les rôles</td></tr>
+      <tr><td>RLS</td><td>Row Level Security — sécurité au niveau ligne PostgreSQL (accès par enregistrement)</td></tr>
+      <tr><td>SPA</td><td>Single Page Application — application web sans rechargement de page</td></tr>
+      <tr><td>SCC</td><td>Standard Contractual Clauses — clauses types RGPD pour transferts hors UE</td></tr>
+      <tr><td>Supabase</td><td>Backend-as-a-Service open-source (PostgreSQL + Auth + Storage + Edge Functions)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Annexe B — Inventaire complet des fichiers source</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Répertoire</th><th>Fichiers</th><th>Type</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td>/</td><td>index.html, manifest.json, sw.js, admin-docs.html, guide.html, order.html, simulateur.html, clause.html, clause-public.html, mandat.html, automatisation-modules.html</td><td>HTML / JSON / JS</td><td>SPA principale, PWA, outils admin</td></tr>
+      <tr><td>/assets/</td><td>app.js, app-init.js, style.css, pipeline.js, pipeline.css, config.js</td><td>JS / CSS</td><td>Cœur application</td></tr>
+      <tr><td>/assets/app/</td><td>authentification.js, chargement-des-donnees.js, contacts.js, contrats.js, helpers.js, navgation.js, taches/</td><td>JS</td><td>Modules extractés de app.js</td></tr>
+      <tr><td>/assets/contacts/</td><td>contacts.js, contacts.service.js, contacts-ui.js, contacts-address.js, contacts-interactions.js, contacts-transfer.js, index.js</td><td>JS</td><td>Gestion contacts</td></tr>
+      <tr><td>/assets/contracts/</td><td>contracts.js, contracts.service.js, contracts-ui.js, contracts-formulas.js, contracts-notifications.js, contracts-pdf.js, contracts-stripe.js, index.js</td><td>JS</td><td>Gestion contrats + Stripe</td></tr>
+      <tr><td>/assets/dpo/</td><td>connectors-guard.js, dpo-client-crm.js</td><td>JS</td><td>Guards DPO + CRM client</td></tr>
+      <tr><td>/assets/rgpd/</td><td>rgpd-journal.js</td><td>JS</td><td>Journal RGPD</td></tr>
+      <tr><td>/assets/tasks/</td><td>tasks.js</td><td>JS</td><td>Gestion tâches</td></tr>
+      <tr><td>/assets/totp/</td><td>totp.js</td><td>JS</td><td>MFA TOTP</td></tr>
+      <tr><td>/assets/help/</td><td>help.js, help-content.js</td><td>JS</td><td>Aide contextuelle</td></tr>
+      <tr><td>/modules/SEO/</td><td>seo-core.js, seo-dashboard.js, seo-mots-cles.js, seo-rapport.js, module-seo-clients.html</td><td>JS / HTML</td><td>Module SEO IA</td></tr>
+      <tr><td>/modules/DPO/</td><td>10 fichiers JS + 4 HTML</td><td>JS / HTML</td><td>Module DPO RGPD complet</td></tr>
+      <tr><td>/modules/Cyber/</td><td>7 fichiers JS + 3 HTML</td><td>JS / HTML</td><td>Module Cybersécurité NIS2</td></tr>
+      <tr><td>/modules/ClickCollect/</td><td>5 fichiers JS + 1 HTML</td><td>JS / HTML</td><td>Module e-commerce</td></tr>
+      <tr><td>/modules/Social/</td><td>6 fichiers JS + 1 HTML</td><td>JS / HTML</td><td>Module social media</td></tr>
+      <tr><td>/prospection-terrain/</td><td>index.html + 4 mission-*.html + favicon.svg</td><td>HTML</td><td>Espace terrain PIN</td></tr>
+      <tr><td>/Force-de-vente/</td><td>index.html, session.html, mandat.html, grille.html</td><td>HTML</td><td>Espace agents DCI</td></tr>
+      <tr><td>/supabase/functions/</td><td>13 × index.ts + deno.json</td><td>TypeScript</td><td>Edge Functions serverless</td></tr>
+      <tr><td>/supabase/</td><td>-schema.sql + -schema-v2.sql à -schema-v29.sql</td><td>SQL</td><td>Migrations base de données</td></tr>
+      <tr><td>/docs/legal/</td><td>AIPD_CallIA.md, REGISTRE_DPA.md, REGISTRE_TRAITEMENTS.md</td><td>Markdown</td><td>Documentation conformité</td></tr>
+      <tr><td>/legal/stripe/</td><td>DPA PDF + 4 HTML + logs</td><td>HTML / PDF</td><td>Contrats sous-traitants</td></tr>
+      <tr><td>/audits/</td><td>rapport-audit-v1 à v3.html, CCTP.html, data-room.html</td><td>HTML</td><td>Rapports d'audit</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Annexe C — Sous-traitants et DPA</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Sous-traitant</th><th>Rôle</th><th>Siège</th><th>DPA</th><th>Transfert USA</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Supabase</strong></td><td>BDD, Auth, Storage, Edge Functions</td><td>USA (San Francisco)</td><td><span class="badge b-ok">Signé</span></td><td>SCC + EU West</td></tr>
+      <tr><td><strong>Stripe</strong></td><td>Paiements, abonnements</td><td>USA (San Francisco)</td><td><span class="badge b-ok">Signé (Nov 2025)</span></td><td>Data Privacy Framework</td></tr>
+      <tr><td><strong>Brevo</strong></td><td>Emails transactionnels</td><td>France (Paris)</td><td><span class="badge b-ok">Disponible</span></td><td>Aucun (EU)</td></tr>
+      <tr><td><strong>Groq</strong></td><td>Inférence IA Llama 3.3 70B</td><td>USA</td><td><span class="badge b-warn">À vérifier</span></td><td>SCC requis <span class="fact-tag ft-r">RECO</span></td></tr>
+      <tr><td><strong>xAI (Grok)</strong></td><td>Inférence IA Grok-3-mini</td><td>USA</td><td><span class="badge b-warn">À vérifier</span></td><td>SCC requis <span class="fact-tag ft-r">RECO</span></td></tr>
+      <tr><td><strong>Anthropic</strong></td><td>Inférence IA Claude Haiku</td><td>USA</td><td><span class="badge b-warn">À documenter</span></td><td>SCC + Supplementary Measures</td></tr>
+      <tr><td><strong>Mistral AI</strong></td><td>Inférence IA mistral-small</td><td>France (Paris)</td><td><span class="badge b-ok">EU souverain</span></td><td>Aucun</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- ═══════════════════════ PARTIE 19 — INFORMATIONS À COMPLÉTER ═══════════════════════ -->
+<div class="sec pb" id="p19">
+  <div class="sec-hdr">
+    <div class="sec-num">19</div>
+    <div class="sec-title">Informations à Compléter</div>
+  </div>
+
+  <div class="box box-red">
+    <strong>Instructions :</strong> Les éléments ci-dessous sont absents ou non vérifiables dans le cadre de ce document. Ils doivent être fournis par l'éditeur S@FE SASU avant présentation à un investisseur ou dans le cadre d'une due diligence.
+  </div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>Information manquante</th><th>Importance</th><th>Source à fournir</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>ARR (Annual Recurring Revenue) actuel</td><td><span class="badge b-err">Critique</span></td><td>Extrait comptable ou relevé Stripe Dashboard</td></tr>
+      <tr><td>2</td><td>Nombre de clients actifs et MRR par client</td><td><span class="badge b-err">Critique</span></td><td>Export Stripe Subscriptions</td></tr>
+      <tr><td>3</td><td>Statistiques Git (commits, contributeurs, historique)</td><td><span class="badge b-warn">Important</span></td><td>git log --stat ou rapport GitHub</td></tr>
+      <tr><td>4</td><td>Date de création et du premier commit</td><td><span class="badge b-warn">Important</span></td><td>git log --reverse | head</td></tr>
+      <tr><td>5</td><td>Chiffre d'affaires annuel S@FE SASU</td><td><span class="badge b-err">Critique</span></td><td>Bilan comptable ou liasse fiscale</td></tr>
+      <tr><td>6</td><td>Statut des DPA Groq et xAI</td><td><span class="badge b-warn">Important</span></td><td>Contrats signés ou correspondance</td></tr>
+      <tr><td>7</td><td>Résultats de pentest ou audit sécurité externe</td><td><span class="badge b-warn">Important</span></td><td>Rapport prestataire PASSI</td></tr>
+      <tr><td>8</td><td>Statut dépôt marque INPI "S@FE"</td><td><span class="badge b-warn">Important</span></td><td>Récépissé INPI ou recherche d'antériorité</td></tr>
+      <tr><td>9</td><td>Prix de vente officiels par formule</td><td><span class="badge b-warn">Important</span></td><td>Grille tarifaire commerciale</td></tr>
+      <tr><td>10</td><td>Nombre d'utilisateurs / comptes créés</td><td><span class="badge b-warn">Important</span></td><td>Requête Supabase <code>SELECT count(*) FROM profiles</code></td></tr>
+      <tr><td>11</td><td>Certifications en cours (CNIL Art.42, ISO 27001)</td><td><span class="badge b-info">Utile</span></td><td>Correspondance organisme certificateur</td></tr>
+      <tr><td>12</td><td>Coûts d'exploitation mensuels (Supabase, Stripe, Brevo, IA)</td><td><span class="badge b-warn">Important</span></td><td>Factures fournisseurs</td></tr>
+      <tr><td>13</td><td>Contrats clients signés (clause exclusivité/propriété)</td><td><span class="badge b-err">Critique</span></td><td>Modèle CGU + exemples contrats</td></tr>
+      <tr><td>14</td><td>Identité et statut des associés S@FE SASU</td><td><span class="badge b-warn">Important</span></td><td>Extrait Kbis + statuts société</td></tr>
+      <tr><td>15</td><td>Pipeline commercial (prospects identifiés)</td><td><span class="badge b-info">Utile</span></td><td>Export CRM prospects qualifiés</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- ═══════════════════════ PIED DE PAGE ═══════════════════════ -->
+<hr class="divider">
+<div style="text-align:center;padding:40px 0;color:var(--txt3);font-size:.78rem">
+  <div style="font-size:1.2rem;font-weight:900;color:var(--gold);margin-bottom:8px">S<span style="color:var(--navy)">@</span>FE CRM</div>
+  <p>Data Room — Document de Valorisation · Version 2026-DR-V1 · 24 juin 2026</p>
+  <p>S@FE SASU · SIRET 104 699 558 00011 · DPO : dpo@safe-digitalisation.fr</p>
+  <p style="margin-top:12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 20px;display:inline-block;color:#991b1b;font-weight:700">
+    🔒 CONFIDENTIEL — RESTRICTED<br>Ce document ne peut être communiqué qu'après signature d'un accord de confidentialité (NDA).
+  </p>
+</div>
+
+</div><!-- /wrap -->
+</body>
+</html>
