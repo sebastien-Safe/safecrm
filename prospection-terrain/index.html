@@ -7,10 +7,8 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/svg+xml" href="/prospection-terrain/favicon.svg">
 <link rel="shortcut icon" href="/prospection-terrain/favicon.svg">
-<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/plexsans-400.woff2" crossorigin>
-<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/sora-800.woff2" crossorigin>
 <link rel="stylesheet" href="/modules/shared.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha384-c6Rcwz4e4CITMbu/NBmnNS8yN2sC3cUElMEMfP3vqqKFp7GOYaaBBCqmaWBjmkjb" crossorigin="anonymous">
 <style>
 :root{
   --navy:#0a1628; --navy-mid:#142240; --blue:#1a3a6e;
@@ -882,7 +880,7 @@ select option{background:var(--navy-mid)}
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha384-NElt3Op+9NBMCYaef5HxeJmU4Xeard/Lku8ek6hoPTvYkQPh3zLIrJP7KiRocsxO" crossorigin="anonymous"></script>
 <script>
 /* ============================================================
    CONFIG SUPABASE
@@ -1368,6 +1366,7 @@ function renderWorkflowCards(){
 
 function renderQuickAutomations(){
   const container = document.getElementById('quick-automations');
+  if(!container) return;
   const all = Object.values(WORKFLOWS).flat().slice(0,4);
   container.innerHTML = all.map(wf=>`
     <div class="card" style="cursor:pointer" onclick="showView('automate')">
@@ -2351,9 +2350,6 @@ async function _cibleAddResult(idx, btn){
   }
 }
 
-</script>
-</body>
-</html>
 
 // ==========================================================================
 // BLOC 7 — UNITÉS COMMERCIALES (Super Admin Work)
@@ -2682,3 +2678,7 @@ async function _tourneeCreateAllRdv() {
 }
 
 
+
+</script>
+</body>
+</html>
