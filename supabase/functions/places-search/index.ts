@@ -25,7 +25,7 @@ function monthStart(): string {
 // ── Handler ────────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
-  if (req.method !== "GET")     return new Response("method not allowed", { status: 405, headers: CORS });
+  if (req.method !== "POST")    return new Response("method not allowed", { status: 405, headers: CORS });
 
   const SB_URL  = Deno.env.get("SUPABASE_URL")!;
   const SB_ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -43,8 +43,9 @@ Deno.serve(async (req) => {
   if (authErr || !user) return json({ error: "Non authentifié" }, 401);
 
   // ── Paramètre de recherche ─────────────────────────────────────────────────
-  const url = new URL(req.url);
-  const q   = url.searchParams.get("q")?.trim() ?? "";
+  let body: { q?: string } = {};
+  try { body = await req.json(); } catch { /* body vide */ }
+  const q = (body.q ?? "").trim();
   if (q.length < 2) return json({ error: "Requête trop courte (min 2 caractères)" }, 400);
 
   // ── Rate limiting (service role pour contourner RLS en lecture) ────────────
