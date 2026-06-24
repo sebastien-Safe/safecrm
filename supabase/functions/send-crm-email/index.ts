@@ -592,7 +592,8 @@ Deno.serve(async (req) => {
     const dateAlerte  = new Date().toLocaleDateString("fr-FR");
     const dateInc     = incident_date ? new Date(incident_date).toLocaleDateString("fr-FR") : dateAlerte;
     const graviteColor = incident_gravite === "critique" ? "#dc2626" : "#ea580c";
-    const graviteLabel = { critique: "🚨 CRITIQUE", grave: "🔴 GRAVE", modere: "🟡 MODÉRÉ", faible: "🟢 FAIBLE" }[incident_gravite] || "⚠️";
+    const graviteMap: Record<string, string> = { critique: "🚨 CRITIQUE", grave: "🔴 GRAVE", modere: "🟡 MODÉRÉ", faible: "🟢 FAIBLE" };
+    const graviteLabel = graviteMap[incident_gravite as string] || "⚠️";
 
     const htmlActions = escTs(actions || "En cours d'investigation.").replace(/\n/g, "<br>");
     const htmlDesc    = escTs(incident_desc || "").replace(/\n/g, "<br>");
