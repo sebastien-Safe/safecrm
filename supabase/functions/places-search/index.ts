@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
   try {
     const res = await fetch(googleUrl);
     googleData = await res.json();
-  } catch (e) {
+  } catch (_e) {
     return json({ error: "Erreur de connexion à Google Places" }, 502);
   }
 
