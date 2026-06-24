@@ -5298,4 +5298,21 @@ async function triggerPurge() {
   };
 })();
 
+// ── Tests unitaires — helpers Réglages ─────────────────────────────────────
+
+function _copyCmd(id, btn) {
+  const text = document.getElementById(id)?.textContent?.trim();
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copié';
+    btn.style.color = '#4ade80';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1800);
+  });
+}
+
+function _runTestsModal() {
+  document.getElementById('tests-modal')?.classList.add('show');
+}
+
 init()
