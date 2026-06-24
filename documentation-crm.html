@@ -1653,8 +1653,16 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   <ul>
     <li><strong>Bouton "← CRM"</strong> dans la topbar — retour direct à l'index CRM.</li>
     <li><strong>Sidebar organisée en 3 actes</strong> : 🚀 Démarrage · 🗺️ Lancer l'itinéraire · 🔍 Faire un audit gratuit — puis Tableau de bord / Clients / Tâches.</li>
-    <li><strong>🚀 Démarrage — Module Ciblage SIRENE</strong> : recherche d'établissements par secteur métier (8 boutons) ou mot-clé libre. Filtrage géographique par rayon (5/10/25/50 km) depuis le point de départ (GPS ou saisie manuelle). Résultats triés par distance. Bouton "+ Tournée" crée instantanément une fiche prospect dans le CRM avec le champ <code>a_completer = true</code>.</li>
-    <li><strong>⚠️ Garde-fou "À compléter"</strong> : toute fiche créée via le module Ciblage apparaît dans le pipeline kanban avec un badge orange "À compléter". La création d'un contrat est bloquée tant que la fiche n'est pas complétée manuellement (nom, email, téléphone, consentements).</li>
+    <li><strong>🚀 Démarrage — Double moteur de recherche</strong> :
+      <ul style="margin-top:6px">
+        <li><strong>SIRENE (data.gouv.fr)</strong> : ciblage sectoriel par 8 boutons ou mot-clé libre · rayon 5/10/25/50 km · résultats triés par distance · données souveraines, sans clé API.</li>
+        <li><strong>Google Maps Places API</strong> : recherche libre par nom ou activité · proxy Edge Function sécurisé (<code>places-search</code>) · clé jamais exposée au client · résultats en <strong>lecture seule uniquement</strong> (CGU EEE + RGPD).</li>
+      </ul>
+    </li>
+    <li><strong>⚡ Rate limiting Google Places</strong> : 20 recherches/mois/utilisateur · 5 000 recherches/mois global · log RGPD conservé dans <code>places_search_logs</code> (requête + nombre de résultats, jamais les données d'entreprises).</li>
+    <li><strong>🔒 Garde-fous RGPD Places API</strong> : bannière permanente "Données Google — Lecture seule" sur les résultats · formulaire de consentement entièrement vierge (aucun pré-remplissage) · attribution "Propulsé par Google" obligatoire · Google Maps Platform déclaré sous-traitant au registre Art.30.</li>
+    <li><strong>✅ Capture consentement post-audit</strong> : en fin d'audit gratuit (RGPD · SEO · Cyber), saisie obligatoire : nom entreprise · nom signataire · email · case "Consentement oral obtenu" cochée. Sans consentement, le rapport ne part pas et aucune fiche n'est créée dans le CRM.</li>
+    <li><strong>⚠️ Garde-fou "À compléter"</strong> : toute fiche créée apparaît dans le pipeline kanban avec un badge orange "À compléter". Création de contrat bloquée jusqu'à complétion manuelle (nom, email, téléphone, consentements).</li>
     <li><strong>🗺️ Lancer l'itinéraire — Tournée optimisée</strong> : sélection de contacts avec adresse, calcul TSP nearest-neighbor, créneaux horaires automatiques (60 km/h · 60 min/RDV), création groupée des tâches en 1 clic.</li>
     <li><strong>Dashboard missions</strong> : audit multi-missions intégré (RGPD · SEO · Cyber · Social · Click&amp;Collect) + 3 audits individuels rapides.</li>
   </ul>

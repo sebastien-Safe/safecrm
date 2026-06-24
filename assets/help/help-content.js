@@ -301,12 +301,43 @@ const HELP_VIEWS_DATA = {
           'Cliquez "Créer tous les RDV" pour insérer les tâches dans le CRM en un clic',
         ],
       },
+      {
+        title: '🔍 Recherche Google Places — Entreprises',
+        items: [
+          'La recherche d\'entreprises utilise Google Maps Places API via un proxy Edge Function sécurisé (clé jamais exposée au navigateur)',
+          'Les résultats s\'affichent en lecture seule — aucune donnée Google n\'est stockée dans le CRM ni dans Supabase',
+          'Quota : 20 recherches par mois par utilisateur · 5 000 recherches par mois pour tous les utilisateurs',
+          'Un log RGPD est conservé pour chaque recherche : requête + nombre de résultats uniquement (jamais les données des entreprises)',
+          'Attribution obligatoire "Propulsé par Google" affichée sur tous les résultats',
+        ],
+      },
+      {
+        title: '✅ Capture du consentement après audit',
+        items: [
+          'À la fin de chaque audit gratuit (RGPD, SEO, Cyber), le commercial saisit obligatoirement : nom de l\'entreprise, nom du signataire, adresse email',
+          'La case "Consentement oral obtenu" doit être cochée — sans elle, l\'envoi du rapport est bloqué',
+          'Ces informations sont saisies MANUELLEMENT : aucune donnée Google Places ne peut être importée dans le CRM',
+          'La fiche prospect "qualifié" est créée dans le CRM uniquement à cette étape (après consentement)',
+          'La fiche reste en statut "À compléter" jusqu\'à validation complète du dossier',
+        ],
+      },
+      {
+        title: '🔒 Garde-fous RGPD — Données Google',
+        items: [
+          'Données Google Places = lecture seule, jamais stockées (ni Supabase, ni localStorage, ni GitHub)',
+          'Bannière permanente sur les résultats : "⚠️ Données Google — Lecture seule — Ne pas recopier dans le CRM"',
+          'Formulaire de consentement entièrement vierge — aucun pré-remplissage depuis les résultats de recherche',
+          'Google Maps Platform est déclaré sous-traitant dans le registre RGPD Art.30',
+          'Base légale : intérêt légitime B2B (prospection commerciale entre professionnels)',
+        ],
+      },
     ],
     steps: [
       { title: 'Accéder à l\'espace terrain', content: 'Depuis la sidebar CRM : cliquez sur 🥾 Prospection terrain → saisissez le code PIN 4 chiffres pour accéder à l\'espace.' },
       { title: 'Préparer ma cible', content: 'Sidebar → 🚀 Démarrage → choisissez un secteur (ou tapez un mot-clé) → renseignez votre ville de départ → choisissez un rayon → cliquez "Rechercher". Les établissements s\'affichent triés par distance.' },
       { title: 'Ajouter un établissement à la tournée', content: 'Cliquez "+ Tournée" à côté de l\'établissement. Une fiche prospect est créée dans le CRM. La fiche est marquée "À compléter" jusqu\'à votre prochaine visite.' },
       { title: 'Lancer l\'itinéraire', content: 'Sidebar → 🗺️ Lancer l\'itinéraire → sélectionnez vos contacts → choisissez l\'heure de départ → cliquez "Calculer". L\'ordre optimal et les créneaux s\'affichent. Cliquez "Créer tous les RDV".' },
+      { title: 'Capturer le consentement après audit', content: 'En fin d\'audit : renseignez le nom de l\'entreprise, le nom du signataire et l\'email → cochez "Consentement oral obtenu" → cliquez "Envoyer le rapport". La fiche prospect qualifié est créée dans le CRM uniquement à cette étape.' },
       { title: 'Compléter une fiche après visite', content: 'CRM → Pipeline → ouvrez la carte avec le badge ⚠️ À compléter → cliquez "Modifier le contact" → renseignez email, téléphone, consentements → enregistrez. Le badge disparaît et vous pouvez créer un contrat.' },
     ],
     errors: [
@@ -314,6 +345,8 @@ const HELP_VIEWS_DATA = {
       { q: 'Le bouton "Créer un contrat" est grisé', a: 'La fiche est marquée "À compléter". Ouvrez la fiche contact, renseignez au minimum email, téléphone et cochez les consentements, puis enregistrez.' },
       { q: 'La géolocalisation ne fonctionne pas', a: 'Autorisez l\'accès à la position dans les paramètres de votre navigateur. En cas de refus, saisissez votre ville manuellement.' },
       { q: 'Un contact n\'apparaît pas dans la liste Tournée', a: 'La tournée n\'affiche que les contacts avec une adresse complète (rue + code postal ou ville). Complétez l\'adresse dans la fiche contact.' },
+      { q: 'Message "Quota mensuel atteint" sur la recherche Google', a: 'Le quota de 20 recherches/mois par utilisateur (ou 5 000 global) est atteint. Utilisez le ciblage SIRENE en attendant le renouvellement le 1er du mois. Contactez l\'administrateur si le quota global est épuisé.' },
+      { q: 'Puis-je copier une adresse depuis les résultats Google dans le CRM ?', a: 'Non. Les données Google Places sont en lecture seule. Toute saisie dans le CRM doit être effectuée manuellement après consentement du prospect (RGPD + CGU Google Maps Platform EEE).' },
     ],
     related: ['pipeline', 'tasks'],
   },
