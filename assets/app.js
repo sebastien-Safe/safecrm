@@ -5078,15 +5078,12 @@ function _drawAgendaCalendar() {
   }
 
   // Rouvrir le panneau jour si un jour était sélectionné
-  if (agendaState.selectedDay && byDate[agendaState.selectedDay] !== undefined) {
-    _selectAgendaDay(agendaState.selectedDay, byDate[agendaState.selectedDay] || []);
+  if (agendaState.selectedDay) {
+    _renderDayPanel(agendaState.selectedDay, byDate[agendaState.selectedDay] || []);
   }
 }
 
-function _selectAgendaDay(iso, events) {
-  agendaState.selectedDay = iso;
-  _drawAgendaCalendar();
-
+function _renderDayPanel(iso, events) {
   const panel = $('#agenda-day-panel');
   const title = $('#agenda-day-title');
   const list  = $('#agenda-day-list');
@@ -5095,7 +5092,8 @@ function _selectAgendaDay(iso, events) {
   title.textContent = capitalize(label);
 
   if (!events.length) {
-    list.innerHTML = '<p style="color:var(--mut);font-size:.85rem">Aucun événement ce jour.</p>';
+    list.innerHTML = `<p style="color:var(--mut);font-size:.85rem">Aucun événement ce jour.</p>
+      <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="openTaskModal(null,{type_tache:'RDV terrain',rdv_date:'${iso}'})">📅 Programmer un RDV</button>`;
   } else {
     list.innerHTML = events.map(t => {
       const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
@@ -5106,9 +5104,15 @@ function _selectAgendaDay(iso, events) {
         <div class="agenda-ev-dot ${cls}"></div>
         <div><div class="agenda-ev-title">${escapeHtml(t.titre)}</div>${meta ? `<div class="agenda-ev-meta">${escapeHtml(meta)}</div>` : ''}</div>
       </div>`;
-    }).join('');
+    }).join('') + `<button class="btn btn-out btn-sm" style="margin-top:12px;width:100%" onclick="openTaskModal(null,{type_tache:'RDV terrain',rdv_date:'${iso}'})">+ Programmer un RDV ce jour</button>`;
   }
   panel.style.display = 'block';
+}
+
+function _selectAgendaDay(iso, events) {
+  agendaState.selectedDay = iso;
+  _drawAgendaCalendar();
+  // Note: _drawAgendaCalendar appellera _renderDayPanel via la logique de re-sélection
 }
 
 async function copyIcalUrl() {

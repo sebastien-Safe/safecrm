@@ -65,24 +65,24 @@ function onTaskTypeChange() {
     : 'Ex : lien Google Meet, Teams, Zoom…';
 }
 
-function openTaskModal(id = null) {
+function openTaskModal(id = null, defaults = {}) {
   populateContactSelects();
   populateContractSelects();
 
   const t = id ? state.tasks.find(x => x.id === id) : null;
-  $('#task-modal-title').textContent = t ? 'Modifier la tâche' : 'Nouvelle tâche';
+  $('#task-modal-title').textContent = t ? 'Modifier la tâche' : 'Nouveau RDV / Tâche';
   $('#t-id').value          = t?.id           || '';
-  $('#t-type').value        = t?.type_tache   || 'Premier contact';
-  $('#t-titre').value       = t?.titre        || '';
-  $('#t-description').value = t?.description  || '';
-  $('#t-contact').value     = t?.contact_id   || '';
-  $('#t-contract').value    = t?.contract_id  || '';
-  $('#t-rdv-date').value    = t?.rdv_date     || '';
-  $('#t-rdv-heure').value   = t?.rdv_heure    ? t.rdv_heure.slice(0, 5) : '';
-  $('#t-rdv-lieu').value    = t?.rdv_lieu     || '';
-  $('#t-echeance').value    = t?.echeance     || '';
-  $('#t-priorite').value    = t?.priorite     || 'Normale';
-  $('#t-statut').value      = t?.statut       || 'À faire';
+  $('#t-type').value        = t?.type_tache   || defaults.type_tache   || 'Premier contact';
+  $('#t-titre').value       = t?.titre        || defaults.titre        || '';
+  $('#t-description').value = t?.description  || defaults.description  || '';
+  $('#t-contact').value     = t?.contact_id   || defaults.contact_id   || '';
+  $('#t-contract').value    = t?.contract_id  || defaults.contract_id  || '';
+  $('#t-rdv-date').value    = t?.rdv_date     || defaults.rdv_date     || '';
+  $('#t-rdv-heure').value   = t?.rdv_heure    ? t.rdv_heure.slice(0, 5) : (defaults.rdv_heure || '');
+  $('#t-rdv-lieu').value    = t?.rdv_lieu     || defaults.rdv_lieu     || '';
+  $('#t-echeance').value    = t?.echeance     || defaults.echeance     || '';
+  $('#t-priorite').value    = t?.priorite     || defaults.priorite     || 'Normale';
+  $('#t-statut').value      = t?.statut       || defaults.statut       || 'À faire';
 
   const assigneSelect = $('#t-assigne');
   const userOpts = Object.values(state.profilesById || {})
