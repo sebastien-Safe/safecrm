@@ -267,10 +267,7 @@ async function init(){
   const params = new URLSearchParams(location.search);
   const contactId  = params.get('contact');
   const contractId = params.get('contract');
-  if(!contactId||!contractId){
-    document.getElementById('loading').innerHTML = '<p style="color:var(--alert)">Paramètres manquants. Revenir au dashboard Work.</p>';
-    return;
-  }
+  if(!contactId||!contractId){contact={};contract={};render();return;}
   try {
     const token = localStorage.getItem('safe_work_token');
     if(token) H['Authorization'] = 'Bearer '+token;

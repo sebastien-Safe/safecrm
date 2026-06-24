@@ -418,7 +418,7 @@ const FORMULES_INFO={
 async function init(){
   const p=new URLSearchParams(location.search);
   const cid=p.get('contact'),ctid=p.get('contract');
-  if(!cid||!ctid){document.getElementById('loading').innerHTML='<p style="color:var(--alert)">Paramètres manquants.</p>';return;}
+  if(!cid||!ctid){contact={};contract={};render();return;}
   try{
     const token=localStorage.getItem('safe_work_token');
     if(token) H['Authorization']='Bearer '+token;
