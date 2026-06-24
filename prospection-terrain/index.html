@@ -326,6 +326,35 @@ select option{background:var(--navy-mid)}
 .cible-add{flex-shrink:0;padding:5px 12px;border-radius:8px;border:1px solid rgba(245,158,11,.4);background:transparent;color:var(--gold);font-size:.78rem;font-weight:700;cursor:pointer;transition:.15s;font-family:var(--ff-disp)}
 .cible-add:hover{background:rgba(245,158,11,.12)}
 .cible-add.done{border-color:var(--ok);color:var(--ok);cursor:default}
+/* ── ENGINE TABS ── */
+.engine-tabs{display:flex;gap:5px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:18px}
+.engine-tab{flex:1;padding:8px 12px;border-radius:9px;border:none;background:transparent;color:var(--mut-2);font-family:var(--ff-disp);font-size:.82rem;font-weight:600;cursor:pointer;transition:.15s;text-align:center}
+.engine-tab.active{background:rgba(59,130,246,.15);color:#fff;border:1px solid rgba(59,130,246,.3)}
+.engine-tab:hover:not(.active){background:rgba(255,255,255,.05);color:#fff}
+/* ── PLACES ── */
+.places-rgpd{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:10px 14px;font-size:.78rem;color:var(--gold);margin-bottom:14px;display:flex;gap:8px;line-height:1.5}
+.places-quota-row{display:flex;align-items:center;gap:10px;font-family:var(--ff-mono);font-size:.7rem;color:var(--mut);margin-bottom:12px}
+.places-quota-bar{flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.places-quota-fill{height:100%;background:var(--ok);border-radius:2px;transition:.4s}
+.places-quota-fill.warn{background:var(--warn)}.places-quota-fill.full{background:var(--alert)}
+.prospect-bdg{display:inline-flex;align-items:center;gap:4px;font-family:var(--ff-mono);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap;vertical-align:middle}
+.p-gold{background:rgba(245,158,11,.15);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
+.p-green{background:rgba(34,197,94,.12);color:#86efac;border:1px solid rgba(34,197,94,.25)}
+.p-blue{background:rgba(59,130,246,.12);color:#93c5fd;border:1px solid rgba(59,130,246,.25)}
+.p-orange{background:rgba(251,146,60,.12);color:#fdba74;border:1px solid rgba(251,146,60,.25)}
+.p-gray{background:rgba(148,163,184,.08);color:var(--mut);border:1px solid rgba(148,163,184,.15)}
+.places-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;transition:.15s;background:rgba(20,34,64,.5);cursor:pointer}
+.places-item:hover{border-color:rgba(59,130,246,.3)}.places-item.sel{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.4)}
+.places-item input[type=checkbox]{margin-top:2px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+.places-item-body{flex:1;min-width:0}
+.places-nom{font-size:.87rem;color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.places-addr{font-size:.75rem;color:var(--mut);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.places-meta{font-size:.7rem;color:var(--mut);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.places-closed{color:var(--alert)!important;font-size:.6rem;background:rgba(255,77,94,.1);border:1px solid rgba(255,77,94,.2);padding:1px 6px;border-radius:8px;font-family:var(--ff-mono)}
+.places-attrib{font-size:.68rem;color:var(--mut);text-align:right;margin-top:6px;font-style:italic}
+/* ── ECO FRICTION MODAL ── */
+#eco-modal{display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.82);overflow-y:auto;padding:20px;align-items:center;justify-content:center}
+#eco-modal-inner{background:#0f1f3d;border-radius:16px;max-width:460px;width:100%;padding:28px;border:1px solid rgba(34,197,94,.2);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 </style>
 
 </head>
@@ -407,10 +436,17 @@ select option{background:var(--navy-mid)}
       <!-- === VUE CIBLAGE === -->
       <div id="view-ciblage" style="display:none">
         <div style="margin-bottom:20px">
-          <span class="eyebrow">Prospection ciblée · API SIRENE</span>
+          <span class="eyebrow">Prospection ciblée · 2 moteurs</span>
           <h2 style="font-size:1.35rem;margin-top:2px">🚀 Préparer ma cible</h2>
         </div>
         <div class="card" style="max-width:700px">
+          <!-- Onglets moteur -->
+          <div class="engine-tabs">
+            <button class="engine-tab active" id="tab-sirene" onclick="_cibleSetEngine('sirene')">⚡ SIRENE — données ouvertes</button>
+            <button class="engine-tab" id="tab-places" onclick="_cibleSetEngine('places')">🌍 Google Places</button>
+          </div>
+          <!-- Moteur SIRENE -->
+          <div id="engine-sirene">
           <!-- Stepper -->
           <div class="ciblage-stepper">
             <div class="step-dot active" id="cdot-1">1</div>
@@ -474,8 +510,49 @@ select option{background:var(--navy-mid)}
               <button class="btn btn-gold btn-sm" style="margin-left:10px" onclick="openTourneeModal()">🗺️ Lancer l'itinéraire →</button>
             </div>
           </div>
-        </div>
-      </div>
+          </div><!-- /engine-sirene -->
+
+          <!-- Moteur Google Places -->
+          <div id="engine-places" style="display:none">
+            <div class="places-rgpd">
+              <span>⚠️</span>
+              <div><b>Données Google — lecture seule.</b> Les résultats proviennent de Google Maps Platform. Ils ne sont <b>jamais enregistrés</b> dans le CRM. Seuls le nom et l'adresse publics (B2B) sont conservés dans la tournée — RGPD Art.6(1)(f) intérêt légitime.</div>
+            </div>
+            <div class="places-quota-row">
+              <span id="places-quota-txt">Quota mensuel : chargement…</span>
+              <div class="places-quota-bar"><div class="places-quota-fill" id="places-quota-fill" style="width:0%"></div></div>
+              <span id="places-quota-pct" style="min-width:32px;text-align:right;color:var(--mut)"></span>
+            </div>
+            <div style="font-family:var(--ff-mono);font-size:.62rem;letter-spacing:.12em;color:var(--mut);text-transform:uppercase;margin-bottom:8px">Secteur (optionnel — pré-remplit la recherche)</div>
+            <div class="sector-grid" style="margin-bottom:14px">
+              <button class="sector-btn" onclick="_placesQuickSector(this,'restaurant')"><span class="s-ico">🍽️</span>Restauration</button>
+              <button class="sector-btn" onclick="_placesQuickSector(this,'boulangerie')"><span class="s-ico">🥖</span>Boulangerie</button>
+              <button class="sector-btn" onclick="_placesQuickSector(this,'boucherie')"><span class="s-ico">🥩</span>Boucherie</button>
+              <button class="sector-btn" onclick="_placesQuickSector(this,'fleuriste')"><span class="s-ico">💐</span>Fleuriste</button>
+              <button class="sector-btn" onclick="_placesQuickSector(this,'garage automobile')"><span class="s-ico">🔧</span>Garage auto</button>
+              <button class="sector-btn" onclick="_placesQuickSector(this,'hotel gite')"><span class="s-ico">🛏️</span>Hôtel / Gîte</button>
+              <button class="sector-btn" onclick="_placesQuickSector(this,'coiffeur salon')"><span class="s-ico">✂️</span>Coiffeur</button>
+              <button class="sector-btn" onclick="_placesQuickSector(this,'pharmacie')"><span class="s-ico">💊</span>Pharmacie</button>
+            </div>
+            <div class="field">
+              <label>🔍 Recherche Google Places (secteur + ville)</label>
+              <div style="display:flex;gap:8px">
+                <input id="places-query" type="text" placeholder="Ex : boulangerie Lyon 2e, fleuriste Grenoble…" style="flex:1">
+                <button class="btn btn-pri" onclick="_placesSearch()" id="places-search-btn">Chercher</button>
+              </div>
+            </div>
+            <div id="places-results-wrap" style="display:none;margin-top:16px">
+              <div id="places-result-title" style="font-size:.82rem;color:var(--mut-2);margin-bottom:10px"></div>
+              <div id="places-results-list"></div>
+              <div class="places-attrib">Propulsé par Google</div>
+              <div id="places-tournee-hint" style="display:none;margin-top:10px;padding:10px 14px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:10px;font-size:.82rem;color:var(--accent)">
+                ✅ <strong><span id="places-sel-count">0</span></strong> cible(s) sélectionnée(s) pour la tournée
+                <button class="btn btn-pri btn-sm" style="margin-left:10px" onclick="openTourneeModal()">🗺️ Lancer l'itinéraire →</button>
+              </div>
+            </div>
+          </div><!-- /engine-places -->
+        </div><!-- /.card -->
+      </div><!-- /#view-ciblage -->
 
       <!-- === VUE DASHBOARD === -->
       <div id="view-dashboard">
@@ -845,7 +922,12 @@ select option{background:var(--navy-mid)}
       <p style="margin:0 0 14px;font-size:.85rem;color:var(--mut-2)">Sélectionnez les contacts à visiter <strong style="color:#fff">(minimum 2)</strong>. Seuls les contacts avec adresse complète sont disponibles.</p>
       <input type="text" id="tournee-search" oninput="_tourneeBuildList(this.value)" placeholder="🔍 Rechercher…" style="width:100%;box-sizing:border-box;padding:8px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.85rem;margin-bottom:10px;outline:none">
       <div id="tournee-warn-noaddr" style="display:none;font-size:.78rem;color:var(--warn,#f59e0b);padding:6px 10px;background:rgba(245,158,11,.08);border-radius:6px;margin-bottom:10px"></div>
-      <div id="tournee-contact-list" style="max-height:300px;overflow-y:auto;padding-right:4px"></div>
+      <div id="tournee-contact-list" style="max-height:240px;overflow-y:auto;padding-right:4px"></div>
+      <!-- Cibles Google Places sélectionnées -->
+      <div id="tournee-places-section" style="display:none;margin-top:8px">
+        <div style="font-family:var(--ff-mono);font-size:.62rem;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;padding:6px 0 4px;border-top:1px solid var(--line)">🌍 Cibles Google Places</div>
+        <div id="tournee-places-list" style="max-height:120px;overflow-y:auto;padding-right:4px"></div>
+      </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px">
         <span id="tournee-sel-count" style="font-size:.82rem;color:#f59e0b;font-weight:600"></span>
         <button id="tournee-next-1" onclick="_tourneeSetStep(2)" disabled class="btn btn-gold" style="opacity:.5">Continuer →</button>
@@ -881,9 +963,17 @@ select option{background:var(--navy-mid)}
       <div id="tournee-results-list" style="max-height:280px;overflow-y:auto"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-top:1px solid rgba(255,255,255,.08)">
         <button onclick="_tourneeSetStep(2)" class="btn btn-ghost">← Modifier</button>
-        <button id="tournee-create-btn" onclick="_tourneeCreateAllRdv()" class="btn btn-gold">📅 Créer tous les RDV</button>
+        <button id="tournee-create-btn" onclick="_tourneeSaveToAgenda()" class="btn btn-gold">📅 Enregistrer dans l'agenda</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- MODAL ÉCO-FRICTION -->
+<div id="eco-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.82);padding:20px;align-items:flex-start;justify-content:center;overflow-y:auto">
+  <div id="eco-modal-inner" style="background:#0f1f3d;border-radius:16px;max-width:460px;width:100%;padding:28px;border:1px solid rgba(34,197,94,.2);box-shadow:0 20px 60px rgba(0,0,0,.5);margin:40px auto">
+    <div id="eco-modal-step1"></div>
+    <div id="eco-modal-step2" style="display:none"></div>
   </div>
 </div>
 
@@ -972,7 +1062,7 @@ let currentWFStep = 0;
 
 async function initApp(){
   document.getElementById('app').style.display='block';
-  await Promise.all([loadStats(), loadContacts(), loadJournal()]);
+  await Promise.all([loadStats(), loadContacts(), loadJournal(), _loadUserProfile()]);
   loadNouveauxContrats();
   renderQuickAutomations();
   const urlView = new URLSearchParams(location.search).get('view');
@@ -2450,9 +2540,176 @@ function renderUC() {
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 /* ============================================================
+   GOOGLE PLACES — moteur alternatif
+   ============================================================ */
+let _cibleEngine  = 'sirene';
+let _placesTargets  = [];  // cibles sélectionnées pour la tournée (éphémère)
+let _placesResults  = [];  // résultats de la dernière recherche (éphémère)
+let _userProfile    = null;
+
+function _cibleSetEngine(eng) {
+  _cibleEngine = eng;
+  document.getElementById('engine-sirene').style.display = eng === 'sirene' ? '' : 'none';
+  document.getElementById('engine-places').style.display = eng === 'places' ? '' : 'none';
+  document.getElementById('tab-sirene').classList.toggle('active', eng === 'sirene');
+  document.getElementById('tab-places').classList.toggle('active', eng === 'places');
+  if (eng === 'places') _placesLoadQuota();
+}
+
+function _placesQuickSector(btn, sector) {
+  document.querySelectorAll('#engine-places .sector-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('places-query').value = sector;
+  document.getElementById('places-query').focus();
+}
+
+function _getJWT() {
+  try {
+    const raw = localStorage.getItem('sb-qdjmzietysukediqkebg-auth-token');
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    return session?.access_token || null;
+  } catch { return null; }
+}
+
+async function _loadUserProfile() {
+  const jwt = _getJWT();
+  if (!jwt) return;
+  try {
+    const payload = JSON.parse(atob(jwt.split('.')[1]));
+    const userId = payload.sub;
+    if (!userId) return;
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=id,role,is_admin,prenom,nom`,
+      { headers: { ...H, 'Authorization': 'Bearer ' + jwt } }
+    );
+    const data = await r.json();
+    _userProfile = data?.[0] || null;
+  } catch(e) { console.warn('[Profile]', e); }
+}
+
+async function _placesLoadQuota() {
+  const jwt = _getJWT();
+  if (!jwt) {
+    document.getElementById('places-quota-txt').textContent = 'Connexion CRM requise pour Google Places';
+    return;
+  }
+  try {
+    const monthStart = new Date().toISOString().slice(0, 7) + '-01';
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/places_search_logs?select=id&created_at=gte.${monthStart}T00:00:00Z`,
+      { headers: { ...H, 'Authorization': 'Bearer ' + jwt } }
+    );
+    const data = await r.json();
+    const used = Array.isArray(data) ? data.length : 0;
+    const max = 20;
+    const pct = Math.min(100, Math.round(used / max * 100));
+    document.getElementById('places-quota-txt').textContent = `${used} / ${max} requêtes ce mois`;
+    document.getElementById('places-quota-pct').textContent = pct + '%';
+    const fill = document.getElementById('places-quota-fill');
+    fill.style.width = pct + '%';
+    fill.className = 'places-quota-fill' + (pct >= 90 ? ' full' : pct >= 70 ? ' warn' : '');
+    if (used >= max) {
+      document.getElementById('places-search-btn').disabled = true;
+      showToast('Quota mensuel Google Places atteint (20/20)', 'err');
+    }
+  } catch(e) {
+    document.getElementById('places-quota-txt').textContent = 'Quota : erreur de chargement';
+  }
+}
+
+async function _placesSearch() {
+  const jwt = _getJWT();
+  if (!jwt) { showToast('Connectez-vous au CRM pour utiliser Google Places', 'err'); return; }
+  const q = document.getElementById('places-query').value.trim();
+  if (!q) { showToast('Saisissez un type d\'établissement + ville', 'err'); return; }
+
+  // Toast RGPD première utilisation (moins intrusif qu'un confirm)
+  if (!sessionStorage.getItem('places_rgpd_ok')) {
+    showToast('⚠️ Résultats Google Maps — lecture seule, non enregistrés dans le CRM', 'info');
+    sessionStorage.setItem('places_rgpd_ok', '1');
+  }
+
+  const btn = document.getElementById('places-search-btn');
+  btn.disabled = true; btn.textContent = '⏳…';
+  const wrap = document.getElementById('places-results-wrap');
+  const list = document.getElementById('places-results-list');
+  const title = document.getElementById('places-result-title');
+  wrap.style.display = 'block';
+  list.innerHTML = '<div style="text-align:center;padding:28px;color:var(--mut)"><div class="spinner" style="margin:0 auto 10px"></div>Recherche Google Places…</div>';
+
+  try {
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/places-search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+      body: JSON.stringify({ q }),
+    });
+    const data = await r.json();
+    if (!r.ok || data.error) throw new Error(data.error || 'Erreur serveur');
+
+    _placesResults = data.results || [];
+    title.textContent = `${_placesResults.length} établissement${_placesResults.length > 1 ? 's' : ''} qualifiés · "${q}"`;
+    list.innerHTML = _placesResults.length
+      ? _placesResults.map((p, i) => _placesRenderItem(p, i)).join('')
+      : '<p style="text-align:center;padding:24px;color:var(--mut);font-size:.84rem">Aucun résultat</p>';
+    _placesLoadQuota();
+    _placesUpdateHint();
+  } catch(e) {
+    list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--alert)">⚠️ ${escHtml(e.message)}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Chercher';
+  }
+}
+
+function _placesRenderItem(p, i) {
+  const isSel = _placesTargets.some(t => t.place_id === p.place_id);
+  const bdgMap = { gold:'p-gold', green:'p-green', blue:'p-blue', orange:'p-orange', gray:'p-gray' };
+  const bdg = p.prospect ? `<span class="prospect-bdg ${bdgMap[p.prospect.color]||'p-gray'}">${p.prospect.label}</span>` : '';
+  const closed = p.status === 'CLOSED_TEMPORARILY' ? '<span class="places-closed">Fermé temporairement</span>' : '';
+  const stars = p.rating ? `⭐ ${p.rating} (${p.ratings_total} avis)` : p.ratings_total === 0 ? '0 avis — sans présence' : '';
+  const noHours = !p.has_hours ? '<span style="font-size:.63rem;color:var(--mut-2)">Pas d\'horaires Google</span>' : '';
+  return `<label class="places-item${isSel?' sel':''}" id="places-item-${i}">
+    <input type="checkbox"${isSel?' checked':''} onchange="_placesToggle(${i},this)">
+    <div class="places-item-body">
+      <div class="places-nom">${escHtml(p.name||'—')}</div>
+      <div class="places-addr">${escHtml(p.address||'—')}</div>
+      <div class="places-meta">${bdg}${closed}${stars?`<span>${stars}</span>`:''}${noHours}</div>
+    </div>
+  </label>`;
+}
+
+function _placesToggle(idx, checkbox) {
+  const p = _placesResults[idx];
+  if (!p) return;
+  const item = document.getElementById('places-item-' + idx);
+  if (checkbox.checked) {
+    const total = _ts.selected.size + _placesTargets.length;
+    if (total >= 5) {
+      checkbox.checked = false;
+      showToast('Maximum 5 étapes par tournée (limite éco S@FE)', 'err');
+      return;
+    }
+    _placesTargets.push({ place_id:p.place_id, label:p.name, adresse:p.address, lat:p.lat, lng:p.lng, source:'google_places' });
+    item?.classList.add('sel');
+  } else {
+    _placesTargets = _placesTargets.filter(t => t.place_id !== p.place_id);
+    item?.classList.remove('sel');
+  }
+  _placesUpdateHint();
+}
+
+function _placesUpdateHint() {
+  const n = _placesTargets.length;
+  const el = document.getElementById('places-sel-count');
+  if (el) el.textContent = n;
+  const hint = document.getElementById('places-tournee-hint');
+  if (hint) hint.style.display = n > 0 ? 'block' : 'none';
+}
+
+/* ============================================================
    TOURNÉE DE PROSPECTION
    ============================================================ */
-const _ts = { selected: new Set(), map: null, route: [], slots: [], date: '' };
+const _ts = { selected: new Set(), map: null, route: [], slots: [], date: '', totalKm: 0, limiteDepassee: false, forceDepassement: false };
 
 function openTourneeModal() {
   _ts.selected.clear();
@@ -2475,7 +2732,7 @@ function _tourneeBuildList(filter) {
   const shown    = q ? withAddr.filter(c => [c.nom, c.entreprise, c.ville].join(' ').toLowerCase().includes(q)) : withAddr;
 
   const warn = document.getElementById('tournee-warn-noaddr');
-  if (noAddr) { warn.style.display = 'block'; warn.textContent = `⚠️ ${noAddr} contact(s) sans adresse complète — non disponibles dans la tournée.`; }
+  if (noAddr) { warn.style.display = 'block'; warn.textContent = `⚠️ ${noAddr} contact(s) sans adresse complète — non disponibles.`; }
   else warn.style.display = 'none';
 
   const list = document.getElementById('tournee-contact-list');
@@ -2490,7 +2747,33 @@ function _tourneeBuildList(filter) {
       </div>
     </label>`;
   }).join('') : '<p style="color:var(--mut);text-align:center;padding:24px;font-size:.84rem">Aucun contact avec adresse complète.</p>';
+
+  // Cibles Google Places
+  const placesSection = document.getElementById('tournee-places-section');
+  const placesList    = document.getElementById('tournee-places-list');
+  if (_placesTargets.length > 0) {
+    placesSection.style.display = '';
+    placesList.innerHTML = _placesTargets.map((t, i) => `
+      <label class="tournee-item sel" style="border-color:rgba(59,130,246,.4);background:rgba(59,130,246,.07)">
+        <input type="checkbox" checked onchange="_placesRemoveFromTournee(${i},this)">
+        <div>
+          <div style="color:#fff;font-weight:600;font-size:.87rem">${escHtml(t.label)}</div>
+          <div style="font-size:.74rem;color:var(--mut);margin-top:1px">📍 ${escHtml(t.adresse||'—')}</div>
+          <div style="font-size:.63rem;color:var(--accent);font-family:var(--ff-mono);margin-top:2px">🌍 Google Places</div>
+        </div>
+      </label>`).join('');
+  } else {
+    placesSection.style.display = 'none';
+  }
   _tourneeUpdateCount();
+}
+
+function _placesRemoveFromTournee(idx, cb) {
+  if (!cb.checked) {
+    _placesTargets.splice(idx, 1);
+    _placesUpdateHint();
+    _tourneeBuildList(document.getElementById('tournee-search').value);
+  }
 }
 
 function _tourneeToggle(id, checked) {
@@ -2501,9 +2784,9 @@ function _tourneeToggle(id, checked) {
 }
 
 function _tourneeUpdateCount() {
-  const n = _ts.selected.size;
+  const n = _ts.selected.size + _placesTargets.length;
   const el = document.getElementById('tournee-sel-count');
-  if (el) el.textContent = n > 0 ? `${n} contact${n>1?'s':''} sélectionné${n>1?'s':''}` : '';
+  if (el) el.textContent = n > 0 ? `${n} étape${n>1?'s':''} sélectionnée${n>1?'s':''}` : '';
   const btn = document.getElementById('tournee-next-1');
   if (btn) { btn.disabled = n < 2; btn.style.opacity = n < 2 ? '.4' : '1'; }
 }
@@ -2534,20 +2817,30 @@ async function _tourneeCalculer() {
   btn.disabled = true; btn.textContent = '⏳ Géocodage…';
   try {
     const contacts = [..._ts.selected].map(id => allContacts.find(c => c.id === id)).filter(Boolean);
+    const totalStops = contacts.length + _placesTargets.length;
+    if (totalStops > 5) { alert('Maximum 5 étapes par tournée (contrainte éco S@FE).'); return; }
+
     const departStr = document.getElementById('tournee-depart').value.trim();
     if (!departStr) { alert('Veuillez saisir une adresse de départ.'); return; }
 
     const departCoords = await _geocodeTournee(departStr);
     if (!departCoords) { alert('Adresse de départ introuvable. Vérifiez et réessayez.'); return; }
 
-    const points = [{ label:'Départ', isDepart:true, adresse:departStr, ...departCoords }];
+    const points = [{ label:'Départ', isDepart:true, adresse:departStr, source:'crm', ...departCoords }];
 
+    // CRM contacts — géocoder via BAN API
     for (const c of contacts) {
       btn.textContent = `⏳ ${escHtml(c.nom)}…`;
       const addr = [c.adresse, c.code_postal, c.ville].filter(Boolean).join(', ');
       const coords = await _geocodeTournee(addr);
-      if (!coords) { alert(`Adresse introuvable :\n${c.nom} — ${addr}\n\nVérifiez la fiche contact et réessayez.`); return; }
-      points.push({ label:c.nom, entreprise:c.entreprise||'', adresse:addr, contact:c, ...coords });
+      if (!coords) { alert(`Adresse introuvable :\n${c.nom} — ${addr}\n\nVérifiez la fiche contact.`); return; }
+      points.push({ label:c.nom, entreprise:c.entreprise||'', adresse:addr, contact:c, source:'crm', ...coords });
+    }
+
+    // Google Places — lat/lng directs (pas de BAN)
+    for (const t of _placesTargets) {
+      if (!t.lat || !t.lng) { alert(`Coordonnées manquantes pour : ${t.label}`); return; }
+      points.push({ label:t.label, entreprise:'', adresse:t.adresse||'', placesTarget:t, source:'google_places', lat:t.lat, lng:t.lng });
     }
 
     const route = _tspNN(points);
@@ -2555,10 +2848,19 @@ async function _tourneeCalculer() {
     _ts.date  = document.getElementById('tournee-date').value;
     _ts.slots = _calcSlots(route, heureDepart);
     _ts.route = route;
+    _ts.totalKm = Math.round(_ts.slots.slice(1).reduce((s,x) => s + x.distKm, 0));
+    _ts.limiteDepassee   = false;
+    _ts.forceDepassement = false;
 
     _tourneeSetStep(3);
-    _tourneeRenderResults(_ts.slots);
+    _tourneeRenderResults(_ts.slots, _ts.totalKm);
     setTimeout(() => _tourneeRenderMap(route), 150);
+
+    // Vérifier limite éco RSE
+    if (_userProfile && !_userProfile.is_admin) {
+      const limit = _userProfile.role === 'dci' ? 200 : 100;
+      if (_ts.totalKm > limit) _ecoFrictionModal(_ts.totalKm, limit);
+    }
   } catch(e) {
     alert('Erreur de calcul : ' + e.message);
   } finally {
@@ -2610,17 +2912,19 @@ function _calcSlots(route, heureDepart) {
 
 function _toT(min){ return String(Math.floor(min/60)%24).padStart(2,'0')+':'+String(min%60).padStart(2,'0'); }
 
-function _tourneeRenderResults(slots) {
-  const totalKm = Math.round(slots.slice(1).reduce((s,x)=>s+x.distKm,0));
+function _tourneeRenderResults(slots, totalKm) {
+  if (totalKm === undefined) totalKm = Math.round(slots.slice(1).reduce((s,x)=>s+x.distKm,0));
   const last    = slots[slots.length-1];
   const [lh,lm] = last.heure.split(':').map(Number);
   const endTime = _toT(lh*60+lm+60);
+  const co2     = (totalKm * 0.120).toFixed(1);
 
   document.getElementById('tournee-summary').innerHTML = `
-    <div style="display:flex;gap:16px;flex-wrap:wrap;padding:10px 22px;background:rgba(245,158,11,.07);border-bottom:1px solid rgba(255,255,255,.06);font-size:.82rem;color:var(--mut-2)">
-      <span>📍 <strong style="color:#fff">${slots.length-1}</strong> visites</span>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;padding:10px 22px;background:rgba(245,158,11,.07);border-bottom:1px solid rgba(255,255,255,.06);font-size:.82rem;color:var(--mut-2)">
+      <span>📍 <strong style="color:#fff">${slots.length-1}</strong> étapes</span>
       <span>🛣️ <strong style="color:#fff">~${totalKm} km</strong></span>
-      <span>🕐 Fin estimée : <strong style="color:#f59e0b">${endTime}</strong></span>
+      <span>🌿 <strong style="color:#fff">${co2} kg CO₂</strong></span>
+      <span>🕐 Fin : <strong style="color:#f59e0b">${endTime}</strong></span>
     </div>`;
 
   document.getElementById('tournee-results-list').innerHTML = slots.map((s,i)=>`
@@ -2656,32 +2960,144 @@ function _tourneeRenderMap(points) {
   map.fitBounds(ll,{padding:[24,24]});
 }
 
-async function _tourneeCreateAllRdv() {
+async function _tourneeSaveToAgenda() {
   const btn = document.getElementById('tournee-create-btn');
-  btn.disabled = true; btn.textContent = '⏳ Création…';
-  let ok = 0;
-  for (const slot of _ts.slots) {
-    if (slot.isDepart || !slot.contact) continue;
-    const c = slot.contact;
-    try {
-      await sbPost('tasks', {
-        created_by: currentUser?.id,
-        contact_id: c.id,
-        titre: `RDV terrain — ${c.nom}${c.entreprise?' ('+c.entreprise+')':''}`,
-        type_tache: 'RDV terrain',
-        rdv_date: _ts.date,
-        rdv_heure: slot.heure + ':00',
-        rdv_lieu: slot.adresse || '',
-        statut: 'À faire',
-        priorite: 'Normale',
-        description: 'RDV généré via Tournée de prospection.',
-      });
-      ok++;
-    } catch(e) { console.error('Erreur création RDV:', e); }
+  btn.disabled = true; btn.textContent = '⏳ Enregistrement…';
+
+  const jwt = _getJWT();
+  if (!jwt) {
+    showToast('Connexion CRM requise pour sauvegarder la tournée', 'err');
+    btn.disabled = false; btn.textContent = '📅 Enregistrer dans l\'agenda';
+    return;
   }
-  closeTourneeModal();
-  if (typeof loadTasks === 'function') loadTasks();
-  alert(`✅ ${ok} RDV créés dans l'agenda !`);
+
+  const departSlot = _ts.slots?.[0];
+  if (!departSlot) { btn.disabled = false; return; }
+
+  const jwtH = { 'Content-Type':'application/json', 'apikey':SUPABASE_KEY, 'Authorization':'Bearer '+jwt, 'Prefer':'return=representation' };
+
+  try {
+    const payload = JSON.parse(atob(jwt.split('.')[1]));
+    const userId  = payload.sub;
+
+    const totalKm   = _ts.totalKm || Math.round(_ts.slots.slice(1).reduce((s,x)=>s+x.distKm,0));
+    const nbEtapes  = _ts.slots.length - 1;
+    const lastSlot  = _ts.slots[_ts.slots.length-1];
+    const [lh, lm]  = lastSlot.heure.split(':').map(Number);
+    const heureFin  = _toT(lh*60+lm+60);
+
+    // 1. Créer la tournée
+    const rT = await fetch(`${SUPABASE_URL}/rest/v1/tournees`, {
+      method: 'POST', headers: jwtH,
+      body: JSON.stringify({
+        commercial_id:      userId,
+        date_tournee:       _ts.date,
+        heure_depart:       (document.getElementById('tournee-heure-depart').value||'09:00') + ':00',
+        adresse_depart:     departSlot.adresse || '',
+        lat_depart:         departSlot.lat  || null,
+        lng_depart:         departSlot.lng  || null,
+        heure_retour_est:   heureFin + ':00',
+        statut:             'planifiée',
+        distance_totale_km: totalKm,
+        nb_etapes:          nbEtapes,
+        limite_depassee:    _ts.limiteDepassee  || false,
+        force_depassement:  _ts.forceDepassement || false,
+      }),
+    });
+    if (!rT.ok) throw new Error('Erreur tournée : ' + await rT.text());
+    const [tournee] = await rT.json();
+
+    // 2. Créer les étapes
+    const etapes = _ts.slots.filter(s => !s.isDepart);
+    for (let i = 0; i < etapes.length; i++) {
+      const s = etapes[i];
+      const rE = await fetch(`${SUPABASE_URL}/rest/v1/tournee_etapes`, {
+        method: 'POST', headers: jwtH,
+        body: JSON.stringify({
+          tournee_id:    tournee.id,
+          ordre:         i + 1,
+          label:         s.label || ('Étape '+(i+1)),
+          adresse:       s.adresse || null,
+          lat:           s.lat    || null,
+          lng:           s.lng    || null,
+          heure_estimee: (s.heure||'09:00') + ':00',
+          duree_min:     60,
+          contact_id:    s.contact?.id || null,
+          source:        s.source || 'crm',
+          visitee:       false,
+        }),
+      });
+      if (!rE.ok) throw new Error('Erreur étape ' + (i+1) + ' : ' + await rE.text());
+    }
+
+    // 3. Nettoyer et confirmer
+    closeTourneeModal();
+    _placesTargets = [];
+    _placesUpdateHint();
+    showToast(`Tournée du ${_ts.date} enregistrée dans l'agenda (${nbEtapes} étape${nbEtapes>1?'s':''})`, 'ok');
+
+  } catch(e) {
+    showToast('Erreur : ' + (e.message||'sauvegarde impossible'), 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = '📅 Enregistrer dans l\'agenda';
+  }
+}
+
+/* ============================================================
+   ÉCO-FRICTION — 2 étapes de sensibilisation RSE
+   ============================================================ */
+function _ecoFrictionModal(totalKm, limit) {
+  const excess = totalKm - limit;
+  const co2ex  = (excess * 0.120).toFixed(1);
+  const trainEq = Math.round(excess / 0.058); // 58g CO₂/km en train (ADEME)
+  document.getElementById('eco-modal-step1').innerHTML = `
+    <div style="text-align:center;font-size:2.2rem;margin-bottom:14px">🌱</div>
+    <h3 style="color:#fff;font-size:1rem;margin-bottom:12px;text-align:center">Limite éco-responsable dépassée</h3>
+    <p style="font-size:.85rem;color:var(--mut-2);line-height:1.6;margin-bottom:14px">
+      Votre tournée fait <strong style="color:#fff">${totalKm} km</strong> pour une limite de <strong style="color:#fff">${limit} km</strong> selon votre niveau.
+    </p>
+    <div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.15);border-radius:10px;padding:14px;margin-bottom:16px;font-size:.82rem;color:var(--mut-2);line-height:1.7">
+      🌍 <strong style="color:#fff">Impact carbone supplémentaire :</strong><br>
+      • +${excess} km → <strong style="color:var(--gold)">+${co2ex} kg CO₂</strong> (voiture essence, ADEME 2024)<br>
+      • Équivalent à <strong style="color:#fff">${trainEq} km en train</strong><br>
+      • La responsabilité sociétale de chacun commence par de petits gestes.
+    </div>
+    <p style="font-size:.78rem;color:var(--mut);margin-bottom:18px">
+      💡 Alternatives : réduire le périmètre, scinder en 2 tournées, regrouper les visites sur une prochaine sortie.
+    </p>
+    <div style="display:flex;justify-content:space-between;gap:10px">
+      <button class="btn btn-out" onclick="_ecoModalClose()">← Modifier</button>
+      <button class="btn" style="background:rgba(255,77,94,.1);color:var(--alert);border:1px solid rgba(255,77,94,.3)" onclick="_ecoFrictionStep2()">Je comprends — continuer →</button>
+    </div>`;
+  document.getElementById('eco-modal-step2').style.display = 'none';
+  document.getElementById('eco-modal-step1').style.display = 'block';
+  document.getElementById('eco-modal').style.display = 'flex';
+}
+
+function _ecoFrictionStep2() {
+  document.getElementById('eco-modal-step1').style.display = 'none';
+  document.getElementById('eco-modal-step2').innerHTML = `
+    <div style="text-align:center;font-size:1.8rem;margin-bottom:14px">⚠️</div>
+    <p style="color:var(--mut-2);font-size:.85rem;line-height:1.6;margin-bottom:18px;text-align:center">
+      Ce dépassement sera <strong style="color:#fff">enregistré dans votre bilan RSE mensuel</strong> et visible par l'administrateur.
+    </p>
+    <div style="display:flex;justify-content:space-between;gap:10px">
+      <button class="btn btn-out" onclick="_ecoModalClose()">Annuler</button>
+      <button class="btn btn-danger" onclick="_ecoFrictionForce()">🚗 Forcer quand même</button>
+    </div>`;
+  document.getElementById('eco-modal-step2').style.display = 'block';
+}
+
+function _ecoModalClose() {
+  document.getElementById('eco-modal').style.display = 'none';
+  _tourneeSetStep(2);
+}
+
+function _ecoFrictionForce() {
+  document.getElementById('eco-modal').style.display = 'none';
+  _ts.limiteDepassee   = true;
+  _ts.forceDepassement = true;
+  showToast('Dépassement éco confirmé — tracé dans le bilan RSE mensuel', 'warn');
 }
 
 
