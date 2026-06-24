@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
+import { createClient } from "@supabase/supabase-js";
 
 const H = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
     return json({ error: "mfa_required", message: "Authentification à deux facteurs requise pour créer un utilisateur." }, 403);
   }
 
-  let body: any;
+  let body: { action?: string; user_id?: string; new_password?: string; email?: string; password?: string; prenom?: string; is_admin?: boolean; denomination?: string; siret?: string; adresse_pro?: string; tva?: string; numero_mandat?: string; dci_parent_id?: string };
   try {
     body = await req.json();
   } catch {

@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { serve } from "std/http/server";
+import { createClient } from "@supabase/supabase-js";
 
 const CORS = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",

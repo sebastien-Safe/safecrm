@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { serve } from "std/http/server";
 
 const CORS = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",
