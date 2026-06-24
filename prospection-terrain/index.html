@@ -366,14 +366,32 @@ select option{background:var(--navy-mid)}
       <div id="view-dashboard">
 
         <!-- MISSIONS — action principale -->
-        <div style="margin-bottom:28px">
-          <span class="eyebrow">Choisissez votre mission</span>
-          <h2 style="font-size:1.35rem;margin-top:2px">Que faites-vous aujourd'hui ?</h2>
+        <div style="margin-bottom:20px">
+          <span class="eyebrow">Prospection terrain</span>
+          <h2 style="font-size:1.35rem;margin-top:2px">Démarrer un audit prospect</h2>
         </div>
 
-        <div class="mission-grid">
+        <!-- CTA MULTI-AUDIT (entrée principale) -->
+        <a href="/prospection-terrain/audit.html" style="display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(135deg,rgba(20,34,64,.9),rgba(10,17,36,.95));border:1.5px solid rgba(245,158,11,.4);border-radius:18px;padding:20px 24px;text-decoration:none;margin-bottom:24px;transition:.2s;flex-wrap:wrap;gap:16px" onmouseover="this.style.borderColor='rgba(245,158,11,.8)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(245,158,11,.4)';this.style.transform=''">
+          <div>
+            <div style="font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:5px">Recommandé · Audits gratuits sans engagement</div>
+            <div style="font-family:var(--ff-disp);font-size:1.15rem;font-weight:800;color:#fff;margin-bottom:4px">🎯 Audit Multi-Missions</div>
+            <div style="font-size:.82rem;color:var(--mut);line-height:1.5">Sélectionnez avec le prospect les domaines à auditer : RGPD, SEO, Cyber, Social, Click&Collect. Un seul PDF avec le score de chaque audit.</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+              <span style="font-family:var(--ff-mono);font-size:.65rem;background:rgba(139,92,246,.12);color:#c4b5fd;border:1px solid rgba(139,92,246,.25);padding:2px 9px;border-radius:20px">⚖️ RGPD</span>
+              <span style="font-family:var(--ff-mono);font-size:.65rem;background:rgba(34,197,94,.12);color:#86efac;border:1px solid rgba(34,197,94,.25);padding:2px 9px;border-radius:20px">📍 SEO</span>
+              <span style="font-family:var(--ff-mono);font-size:.65rem;background:rgba(6,182,212,.12);color:#67e8f9;border:1px solid rgba(6,182,212,.25);padding:2px 9px;border-radius:20px">🛡️ Cyber</span>
+              <span style="font-family:var(--ff-mono);font-size:.65rem;background:rgba(168,85,247,.12);color:#d8b4fe;border:1px solid rgba(168,85,247,.25);padding:2px 9px;border-radius:20px">📱 Social</span>
+              <span style="font-family:var(--ff-mono);font-size:.65rem;background:rgba(236,72,153,.12);color:#f9a8d4;border:1px solid rgba(236,72,153,.25);padding:2px 9px;border-radius:20px">🛒 Click&Collect</span>
+            </div>
+          </div>
+          <div style="font-family:var(--ff-disp);font-weight:800;font-size:1.1rem;background:linear-gradient(135deg,var(--gold),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;flex-shrink:0">Démarrer →</div>
+        </a>
 
-          <!-- RGPD -->
+        <!-- AUDITS INDIVIDUELS (rapides) -->
+        <div style="font-family:var(--ff-mono);font-size:.62rem;letter-spacing:.15em;color:var(--mut);text-transform:uppercase;margin-bottom:12px">Audits individuels rapides</div>
+        <div class="mission-grid" style="margin-bottom:36px">
+
           <div class="mission-card mc-rgpd">
             <div class="mc-body">
               <div class="mc-top">
@@ -381,35 +399,15 @@ select option{background:var(--navy-mid)}
                 <div class="mc-meta">
                   <span class="mc-phase mc-phase-prosp">Prospection</span>
                   <div class="mc-title">Audit RGPD</div>
-                  <div class="mc-desc">Diagnostic conformité données personnelles — du gratuit au DPO externalisé</div>
+                  <div class="mc-desc">7 questions · Conformité données personnelles · Score + PDF</div>
                 </div>
-              </div>
-              <div class="mc-feats">
-                <span class="mc-feat">Diagnostic gratuit</span>
-                <span class="mc-feat">6 formules</span>
-                <span class="mc-feat">10 à 25 questions</span>
-                <span class="mc-feat">PDF livrable</span>
               </div>
               <div class="mc-actions">
-                <button class="mc-btn" onclick="toggleMissionLauncher('rgpd',this)">Lancer →</button>
-              </div>
-            </div>
-            <div class="mc-launcher" id="ml-rgpd">
-              <div class="mc-launcher-inner">
-                <div class="ml-modes">
-                  <button class="ml-mode on" id="ml-rgpd-prosp" onclick="setMissionMode('rgpd','prospect')">👤 Nouveau prospect</button>
-                  <button class="ml-mode" id="ml-rgpd-client" onclick="setMissionMode('rgpd','client')">📋 Client existant</button>
-                </div>
-                <div id="ml-rgpd-fields" style="display:none">
-                  <select id="ml-rgpd-contact" onchange="onMissionContactChange('rgpd')" style="margin-bottom:8px"><option value="">— Choisir un contact —</option></select>
-                  <select id="ml-rgpd-contract" disabled style="margin-bottom:12px"><option value="">— Contrat —</option></select>
-                </div>
-                <button class="ml-go" onclick="launchMission('rgpd')">Démarrer la mission →</button>
+                <a class="mc-btn" href="/prospection-terrain/mission-rgpd.html">Démarrer →</a>
               </div>
             </div>
           </div>
 
-          <!-- SEO -->
           <div class="mission-card mc-seo">
             <div class="mc-body">
               <div class="mc-top">
@@ -417,35 +415,15 @@ select option{background:var(--navy-mid)}
                 <div class="mc-meta">
                   <span class="mc-phase mc-phase-prosp">Prospection</span>
                   <div class="mc-title">Audit SEO Local</div>
-                  <div class="mc-desc">Visibilité Google Maps, référencement local et benchmark concurrentiel</div>
+                  <div class="mc-desc">6 questions · Visibilité Google & fiche GMB · Score + PDF</div>
                 </div>
-              </div>
-              <div class="mc-feats">
-                <span class="mc-feat">Audit GMB 8 critères</span>
-                <span class="mc-feat">Benchmark</span>
-                <span class="mc-feat">KPIs mensuels</span>
-                <span class="mc-feat">PDF livrable</span>
               </div>
               <div class="mc-actions">
-                <button class="mc-btn" onclick="toggleMissionLauncher('seo',this)">Lancer →</button>
-              </div>
-            </div>
-            <div class="mc-launcher" id="ml-seo">
-              <div class="mc-launcher-inner">
-                <div class="ml-modes">
-                  <button class="ml-mode on" id="ml-seo-prosp" onclick="setMissionMode('seo','prospect')">👤 Nouveau prospect</button>
-                  <button class="ml-mode" id="ml-seo-client" onclick="setMissionMode('seo','client')">📋 Client existant</button>
-                </div>
-                <div id="ml-seo-fields" style="display:none">
-                  <select id="ml-seo-contact" onchange="onMissionContactChange('seo')" style="margin-bottom:8px"><option value="">— Choisir un contact —</option></select>
-                  <select id="ml-seo-contract" disabled style="margin-bottom:12px"><option value="">— Contrat —</option></select>
-                </div>
-                <button class="ml-go" onclick="launchMission('seo')">Démarrer la mission →</button>
+                <a class="mc-btn" href="/prospection-terrain/mission-seo.html">Démarrer →</a>
               </div>
             </div>
           </div>
 
-          <!-- CYBER -->
           <div class="mission-card mc-cyber">
             <div class="mc-body">
               <div class="mc-top">
@@ -453,35 +431,15 @@ select option{background:var(--navy-mid)}
                 <div class="mc-meta">
                   <span class="mc-phase mc-phase-prosp">Prospection</span>
                   <div class="mc-title">Audit Cybersécurité</div>
-                  <div class="mc-desc">Diagnostic des vulnérabilités — posture de sécurité et plan d'action priorisé</div>
+                  <div class="mc-desc">7 questions · 7 domaines ANSSI · Score + PDF</div>
                 </div>
-              </div>
-              <div class="mc-feats">
-                <span class="mc-feat">20 questions</span>
-                <span class="mc-feat">7 domaines ANSSI</span>
-                <span class="mc-feat">26 outils externes</span>
-                <span class="mc-feat">PDF livrable</span>
               </div>
               <div class="mc-actions">
-                <button class="mc-btn" onclick="toggleMissionLauncher('cyber',this)">Lancer →</button>
-              </div>
-            </div>
-            <div class="mc-launcher" id="ml-cyber">
-              <div class="mc-launcher-inner">
-                <div class="ml-modes">
-                  <button class="ml-mode on" id="ml-cyber-prosp" onclick="setMissionMode('cyber','prospect')">👤 Nouveau prospect</button>
-                  <button class="ml-mode" id="ml-cyber-client" onclick="setMissionMode('cyber','client')">📋 Client existant</button>
-                </div>
-                <div id="ml-cyber-fields" style="display:none">
-                  <select id="ml-cyber-contact" onchange="onMissionContactChange('cyber')" style="margin-bottom:8px"><option value="">— Choisir un contact —</option></select>
-                  <select id="ml-cyber-contract" disabled style="margin-bottom:12px"><option value="">— Contrat —</option></select>
-                </div>
-                <button class="ml-go" onclick="launchMission('cyber')">Démarrer la mission →</button>
+                <a class="mc-btn" href="/prospection-terrain/mission-cyber.html">Démarrer →</a>
               </div>
             </div>
           </div>
 
-          <!-- ONBOARDING -->
           <div class="mission-card mc-onboarding">
             <div class="mc-body">
               <div class="mc-top">
@@ -489,30 +447,11 @@ select option{background:var(--navy-mid)}
                 <div class="mc-meta">
                   <span class="mc-phase mc-phase-post">Post-signature</span>
                   <div class="mc-title">Onboarding Client</div>
-                  <div class="mc-desc">Accueil et démarrage d'un nouveau client — email de bienvenue et checklist de lancement</div>
+                  <div class="mc-desc">Démarrage nouveau client — checklist + email bienvenue</div>
                 </div>
-              </div>
-              <div class="mc-feats">
-                <span class="mc-feat">Vérif. données</span>
-                <span class="mc-feat">Email bienvenue</span>
-                <span class="mc-feat">Checklist contextuelle</span>
-                <span class="mc-feat">PDF récap</span>
               </div>
               <div class="mc-actions">
-                <button class="mc-btn" onclick="toggleMissionLauncher('onboarding',this)">Lancer →</button>
-              </div>
-            </div>
-            <div class="mc-launcher" id="ml-onboarding">
-              <div class="mc-launcher-inner">
-                <div class="ml-modes">
-                  <button class="ml-mode on" id="ml-onboarding-prosp" onclick="setMissionMode('onboarding','prospect')">👤 Sans contact</button>
-                  <button class="ml-mode" id="ml-onboarding-client" onclick="setMissionMode('onboarding','client')">📋 Client existant</button>
-                </div>
-                <div id="ml-onboarding-fields" style="display:none">
-                  <select id="ml-onboarding-contact" onchange="onMissionContactChange('onboarding')" style="margin-bottom:8px"><option value="">— Choisir un contact —</option></select>
-                  <select id="ml-onboarding-contract" disabled style="margin-bottom:12px"><option value="">— Contrat —</option></select>
-                </div>
-                <button class="ml-go" onclick="launchMission('onboarding')">Démarrer la mission →</button>
+                <a class="mc-btn" href="/prospection-terrain/mission-onboarding.html">Démarrer →</a>
               </div>
             </div>
           </div>
