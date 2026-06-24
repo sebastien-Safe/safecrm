@@ -2,7 +2,7 @@
 // POST /functions/v1/create-booking
 // Body : { token, date, heure, nom, entreprise, email, telephone, message, adresse }
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "@supabase/supabase-js";
 
 const CORS = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",

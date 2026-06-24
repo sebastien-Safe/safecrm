@@ -142,10 +142,10 @@
           <tbody>
             {{#each params.rows}}
             <tr>
-              <td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;font-size:13px;width:55%">{{this.question}}</td>
-              <td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;font-size:13px" class="hide-mobile">{{this.reponse}}</td>
+              <td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;font-size:13px;width:55%">{{question}}</td>
+              <td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;font-size:13px" class="hide-mobile">{{reponse}}</td>
               <td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;white-space:nowrap">
-                <span style="background:{{this.bg}};color:{{this.color}};padding:2px 9px;border-radius:99px;font-size:11px">{{this.text}}</span>
+                <span style="background:{{bg}};color:{{color}};padding:2px 9px;border-radius:99px;font-size:11px">{{text}}</span>
               </td>
             </tr>
             {{/each}}
@@ -163,8 +163,6 @@
               <ul style="margin:0;padding-left:18px;color:#166534;font-size:13px;line-height:1.7;font-family:Arial,sans-serif">
                 {{#each params.recommandations}}
                 <li style="margin-bottom:6px;padding-left:4px">{{this}}</li>
-                {{else}}
-                <li>Maintenir le niveau de conformité actuel — bon travail !</li>
                 {{/each}}
               </ul>
             </td>

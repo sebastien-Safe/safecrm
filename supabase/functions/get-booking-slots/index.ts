@@ -1,7 +1,7 @@
 // Edge Function publique — Créneaux disponibles d'un commercial
 // GET /functions/v1/get-booking-slots?token=BOOKING_TOKEN&days=30
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "@supabase/supabase-js";
 
 const CORS = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",
