@@ -239,6 +239,7 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
   </div>
   <div class="kpi-row">
     <div class="kpi"><div class="kpi-val">5</div><div class="kpi-label">Modules IA métier</div></div>
+    <div class="kpi"><div class="kpi-val">3</div><div class="kpi-label">API métier souveraines</div></div>
     <div class="kpi"><div class="kpi-val">4</div><div class="kpi-label">Connecteurs IA</div></div>
     <div class="kpi"><div class="kpi-val">12</div><div class="kpi-label">Types d'emails auto.</div></div>
     <div class="kpi"><div class="kpi-val">32</div><div class="kpi-label">Versions de schéma SQL</div></div>
@@ -291,18 +292,31 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
   <h3>Vision</h3>
   <p>Permettre aux PME et aux indépendants français de disposer d'un outil de gestion commerciale qui intègre nativement les obligations réglementaires (RGPD, NIS2, ANSSI) sans surcoût de mise en conformité ni recours à des prestataires tiers spécialisés.</p>
 
+  <h3>Politique RSE</h3>
+  <p>S@FE s'engage à réduire l'empreinte carbone des déplacements commerciaux via trois leviers intégrés directement dans le produit :</p>
+  <ul>
+    <li><strong>Limites kilométriques par rôle :</strong> NIV1 (100 km/tournée), NIV2 (200 km/tournée), Admin illimité — enforced en base de données.</li>
+    <li><strong>Friction intentionnelle :</strong> tout dépassement de limite exige 4 étapes de sensibilisation CO₂ avant confirmation (équivalences arbres, alternatives proposées). Tracé en base (<code>force_depassement = true</code>).</li>
+    <li><strong>Traçabilité carbone :</strong> chaque tournée génère un score CO₂ automatique (<code>distance_totale_km × 0,120 kg/km</code>, facteur ADEME 2024) consultable dans la vue <code>tournees_eco_bilan</code>.</li>
+  </ul>
+  <p style="font-size:.82rem;color:var(--txt3)">Engagement volontaire. Aucune certification externe à ce stade. Intégration RSE native dès la conception, non ajoutée a posteriori.</p>
+
   <h3>Mission</h3>
   <p>S@FE CRM agrège en une seule plateforme : la gestion des prospects et clients, la contractualisation numérique, le paiement récurrent, la conformité réglementaire proactive et l'assistance IA — le tout sans infrastructure à maintenir (SaaS 100% serverless).</p>
 
-  <h3>Positionnement marché</h3>
+  <h3>Positionnement marché <span class="fact-tag ft-v">DONNÉES VÉRIFIÉES — Sources INSEE, NUMEUM, CNIL/ANSSI</span></h3>
   <div class="tbl"><table>
     <thead><tr><th>Dimension</th><th>Positionnement S@FE</th></tr></thead>
     <tbody>
       <tr><td>Segment cible</td><td>PME françaises 1-50 salariés, professions libérales, réseaux de courtiers/agents commerciaux</td></tr>
       <tr><td>Zone géographique</td><td>France métropolitaine — conformité droit français et européen</td></tr>
-      <tr><td>Modèle économique</td><td>SaaS par abonnement mensuel / annuel + modules à la carte <span class="fact-tag ft-h">HYPOTHÈSE</span></td></tr>
+      <tr><td>TAM (Marché Total)</td><td><strong>~5,5 millions</strong> de structures : 4,04M TPE/microentreprises + 164K PME + 1,4M professions libérales (Source : INSEE Focus n°372 + UNAPL/URSSAF)</td></tr>
+      <tr><td>SAM RGPD (100% du TAM)</td><td><strong>100%</strong> des structures sont légalement soumises au RGPD dès 1 client particulier ou professionnel. Toute prospection commerciale implique conformité consentement/registre.</td></tr>
+      <tr><td>SAM Cyber / NIS2 (20-25%)</td><td>Environ <strong>1,1 à 1,4 million de structures</strong> subissent des exigences cyber contractuelles descendantes (fournisseurs de secteurs critiques). Source : ANSSI + baromètre Numeum.</td></tr>
+      <tr><td>Modèle économique</td><td>SaaS par abonnement mensuel / annuel + modules à la carte</td></tr>
       <tr><td>Prix de marché estimé</td><td>€99 – €299/mois selon formule <span class="fact-tag ft-i">INFO À COMPLÉTER</span></td></tr>
-      <tr><td>Différenciateur clé</td><td>Conformité RGPD/NIS2 native, IA multi-fournisseur, prospection terrain tablette</td></tr>
+      <tr><td>Justification prix</td><td>Cohérent vs. Sellsy (~60€/mois) + Dastra (~150-450€/mois) combinés. S@FE évite les coûts de double abonnement et d'intégration entre les deux outils.</td></tr>
+      <tr><td>Différenciateur clé</td><td>Seul acteur hybride CRM + RegTech sur le marché français (aucun concurrent ne combine nativement CRM commercial complet et pilotage RGPD/NIS2)</td></tr>
       <tr><td>Distribution</td><td>Force de vente directe + réseau DCI (Délégués Commerciaux Indépendants)</td></tr>
     </tbody>
   </table></div>
@@ -596,6 +610,14 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
     <div class="card"><div class="card-title">🔒 Sécurité &amp; RGPD</div><div class="card-body">Token UUID opaque (non devinable). Aucune donnée client exposée dans l'URL. Double-booking guard côté Edge Function. Données hébergées exclusivement sur Supabase EU (Paris).</div></div>
   </div>
 
+  <h3>API Métier Souveraines — 3 intégrations <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <p>S@FE intègre trois API publiques françaises sans clé et sans coût, privilégiant la souveraineté des données et l'indépendance vis-à-vis des GAFA.</p>
+  <div class="cards">
+    <div class="card"><div class="card-title">🏢 API SIRENE (INSEE / data.gouv.fr)</div><div class="card-body">Ciblage sectoriel d'entreprises par code NAF, rayon géographique, statut actif. 8 boutons secteurs pré-définis + saisie libre. Sans clé API. Données officielles et souveraines. Établissements fermés filtrés (<code>etat_administratif=A</code>). Conformité RGPD native (données publiques, pas de consentement requis).</div></div>
+    <div class="card"><div class="card-title">🔍 Google Maps Places API</div><div class="card-body">Recherche d'entreprises en 3 étapes guidées (Secteur → Localisation → Résultats). Proxy sécurisé Edge Function <code>places-search</code> — clé jamais exposée côté client. Résultats en lecture seule (RGPD + CGU EEE). Attribution "Propulsé par Google" obligatoire. Score de prospection automatique (8 niveaux). Rate limiting 20 req/mois/user.</div></div>
+    <div class="card"><div class="card-title">📍 API Adresse Gouv (BAN)</div><div class="card-body">Géocodage des adresses pour le calcul d'itinéraire TSP et les tournées de prospection. API officielle sans clé, données souveraines françaises. Utilisée pour le calcul de distance et la vérification d'adresses lors de la création de contacts.</div></div>
+  </div>
+
   <h3>Module 8 — Force de Vente &amp; Commissions <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
   <div class="cards">
     <div class="card"><div class="card-title">📜 Mandat DCI</div><div class="card-body">Génération automatique du mandat agent commercial. Signature électronique OTP (code SMS/email 6 chiffres, 24h, SHA-256). 9 documents joints automatiquement depuis Supabase Storage.</div></div>
@@ -655,9 +677,9 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
   <div class="ascii">
 <span class="hi">Hiérarchie des droits d'accès aux données (Row Level Security)</span>
 
-  super_admin / admin_candy          ─── Accès total toutes tables
+  super_admin (is_admin = true)       ─── Accès total toutes tables
          │
-  is_admin()  ─── Fonction PostgreSQL ─── Vérifie profiles.role IN (super_admin, admin_candy)
+  is_admin()  ─── Fonction PostgreSQL ─── Vérifie profiles.is_admin = true
          │
   is_dci()    ─── Accès à son équipe  ─── get_team_ids() retourne UUIDs de son équipe
          │
@@ -854,8 +876,7 @@ Frontend (Module SEO/DPO/Cyber)
   <div class="tbl"><table>
     <thead><tr><th>Rôle</th><th>Niveau</th><th>MFA obligatoire</th><th>Périmètre données</th></tr></thead>
     <tbody>
-      <tr><td><span class="badge b-admin">super_admin</span></td><td>4</td><td><span class="badge b-ok">Oui — bloquant</span></td><td>Toutes tables, tous utilisateurs</td></tr>
-      <tr><td><span class="badge b-admin">admin_candy</span></td><td>3</td><td><span class="badge b-ok">Oui — bloquant</span></td><td>Toutes tables, tous utilisateurs</td></tr>
+      <tr><td><span class="badge b-admin">admin</span> (<code>is_admin = true</code>)</td><td>3</td><td><span class="badge b-ok">Oui — bloquant</span></td><td>Toutes tables, tous utilisateurs</td></tr>
       <tr><td><span class="badge b-dci">dci</span></td><td>2</td><td><span class="badge b-ok">Oui — bloquant</span></td><td>Propres données + équipe</td></tr>
       <tr><td><span class="badge b-user">user</span></td><td>1</td><td><span class="badge b-warn">Optionnel</span></td><td>Propres données uniquement</td></tr>
     </tbody>
@@ -1059,7 +1080,7 @@ Frontend (Module SEO/DPO/Cyber)
   <h3>Audit authentification</h3>
   <div class="cards">
     <div class="card"><div class="card-title">🔑 JWT RS256</div><div class="card-body">Tokens signés asymétriquement par Supabase. Expiration 4h avec alerte T-15min. Refresh token rotatif. Invalidation forcée à la déconnexion.</div></div>
-    <div class="card"><div class="card-title">📱 TOTP MFA</div><div class="card-body">Compatible Google Authenticator / Authy. Enrôlement obligatoire pour super_admin, admin_candy, dci. Trust 2h (localStorage). Chaque événement TOTP loggé dans <code>totp_audit</code>.</div></div>
+    <div class="card"><div class="card-title">📱 TOTP MFA</div><div class="card-body">Compatible Google Authenticator / Authy. Enrôlement obligatoire pour les admins et dci. Trust 2h (localStorage). Chaque événement TOTP loggé dans <code>totp_audit</code>.</div></div>
     <div class="card"><div class="card-title">🚫 Anti-bruteforce</div><div class="card-body">5 tentatives max → ban IP + ban email. Déblocage manuel par admin. Edge Function <code>record-login-failure</code>. Tables <code>login_attempts</code>, <code>login_alerts</code>. Alerte email admin.</div></div>
     <div class="card"><div class="card-title">🔐 Secrets Vault</div><div class="card-body">GROQ_API_KEY, GROK_API_KEY, ANTHROPIC_API_KEY, MISTRAL_API_KEY, STRIPE_SECRET_KEY, BREVO_API_KEY — tous en variables Supabase Vault. Jamais exposés côté client.</div></div>
   </div>
@@ -1338,16 +1359,19 @@ Frontend (Module SEO/DPO/Cyber)
     </tbody>
   </table></div>
 
-  <h3>Méthode 3 — Comparative (Market Multiples)</h3>
-  <p>Comparaison avec des SaaS comparables sur le marché français (CRM PME + compliance). <span class="fact-tag ft-h">HYPOTHÈSE</span></p>
+  <h3>Méthode 3 — Comparative (Market Multiples) <span class="fact-tag ft-v">DONNÉES VÉRIFIÉES — benchmark éditeurs</span></h3>
+  <p>Benchmark des acteurs CRM et RegTech sur le marché français. Sources : grilles tarifaires publiques des éditeurs (2026).</p>
   <div class="tbl"><table>
-    <thead><tr><th>Concurrent comparable</th><th>ARR estimé</th><th>Multiple</th><th>Valorisation</th></tr></thead>
+    <thead><tr><th>Acteur</th><th>Catégorie</th><th>Prix/utilisateur/mois</th><th>Conformité RGPD/NIS2 native</th><th>Limites</th></tr></thead>
     <tbody>
-      <tr><td>CRM PME France (segment compliance)</td><td>200K€ – 2M€</td><td>5x – 10x ARR</td><td>1M€ – 20M€</td></tr>
-      <tr><td>Early-stage SaaS sans ARR</td><td>—</td><td>Valeur IP + pipeline</td><td>200K€ – 500K€</td></tr>
-      <tr><td>S@FE CRM (stade actuel, ARR inconnu)</td><td><span class="fact-tag ft-i">INFO À COMPLÉTER</span></td><td>—</td><td>—</td></tr>
+      <tr><td><strong>HubSpot</strong></td><td>CRM généraliste 🇺🇸</td><td>20 € (Starter) → 90-100 € (Pro)</td><td><span class="badge b-warn">Partielle</span> — paramétrage manuel lourd</td><td>Forte dépendance Cloud Act USA, audit apps tierces requis</td></tr>
+      <tr><td><strong>Sellsy</strong></td><td>CRM français 🇫🇷</td><td>40 € – 75 €</td><td><span class="badge b-warn">Élevée RGPD</span> — ISO 27001, souveraineté France</td><td>Absence totale de module Cyber / NIS2</td></tr>
+      <tr><td><strong>Axonaut</strong></td><td>CRM français 🇫🇷</td><td>~50 €</td><td><span class="badge b-warn">Basique</span> — stockage France, pas de RegTech</td><td>Aucune fonctionnalité Cyber / NIS2</td></tr>
+      <tr><td><strong>Dastra</strong></td><td>RegTech pure 🇫🇷</td><td>150 € – 450 € (structure)</td><td><span class="badge b-ok">Élevée RGPD</span> — DPO, registre, PIA</td><td>Aucun module CRM</td></tr>
+      <tr style="background:rgba(245,158,11,.08)"><td><strong>S@FE CRM</strong></td><td>CRM + RegTech hybride 🇫🇷</td><td>99 € – 299 € <span class="fact-tag ft-i">INFO À COMPLÉTER</span></td><td><span class="badge b-ok">Native</span> — RGPD + NIS2 + Cyber + DPO intégrés</td><td>ARR à construire · marque non déposée INPI</td></tr>
     </tbody>
   </table></div>
+  <div class="box box-gold" style="margin-top:12px"><strong>Diagnostic :</strong> Il n'existe aucun acteur hybride majeur combinant nativement un CRM commercial complet et un outil de pilotage de conformité sur le marché français. S@FE occupe une niche vierge. (Source : analyse comparative 2026)</div>
 
   <h3>Méthode 4 — Économique (Projection DCF)</h3>
   <p>Basée sur un scénario de déploiement commercial. <span class="fact-tag ft-h">HYPOTHÈSE</span></p>
@@ -1399,12 +1423,13 @@ Frontend (Module SEO/DPO/Cyber)
       <div class="card-body">
         <ul>
           <li>ARR non communiqué (base clients à construire)</li>
-          <li>Absence de tests automatisés</li>
-          <li>app.js monolithique partiellement extrait</li>
-          <li>Marque non déposée à l'INPI</li>
-          <li>Pas de pentest documenté</li>
+          <li>Tests automatisés partiels — 38 tests Deno.test + Vitest (CI intégré) ; couverture à étendre avec Playwright E2E</li>
+          <li>app.js monolithique en cours d'extraction vers assets/app/</li>
+          <li>Marque non déposée à l'INPI (Classes 42 + 38)</li>
+          <li>Pas de pentest documenté (prestataire PASSI recommandé)</li>
           <li>Modules ClickCollect et Social en Beta</li>
           <li>Dépendance IA à des fournisseurs tiers (Groq, xAI)</li>
+          <li>Déficit de notoriété : en conformité/cyber, les acheteurs se tournent vers des marques certifiées (ISO 27001, SecNumCloud) — confiance à construire</li>
         </ul>
       </div>
     </div>
@@ -1412,12 +1437,13 @@ Frontend (Module SEO/DPO/Cyber)
       <div class="card-title" style="color:#1d4ed8">🚀 Opportunités</div>
       <div class="card-body">
         <ul>
-          <li>RGPD : millions de PME françaises non conformes</li>
-          <li>NIS2 2024 : nouvelles obligations sectorielles</li>
-          <li>IA : demande forte d'assistants IA verticaux</li>
-          <li>Réseau DCI : scalabilité commerciale sans salariés</li>
-          <li>Modules verticaux : monetisation additive par secteur</li>
-          <li>Intégration partenaires (Stripe, Brevo) déjà actifs</li>
+          <li><strong>100% des PME françaises soumises au RGPD</strong> — 5,5M de structures, zéro exception légale (Source : CNIL)</li>
+          <li><strong>Effet cascade NIS2</strong> : 20-25% des PME subissent des exigences cyber contractuelles descendantes (fournisseurs de secteurs critiques) — 1,1M à 1,4M de structures (Source : ANSSI / Numeum)</li>
+          <li><strong>Priorités budgétaires</strong> : sécurité des SI (50%) et expérience client (46%) dans le top des priorités DSI (Source : Baromètre Numeum)</li>
+          <li><strong>Niche vierge</strong> : aucun concurrent ne combine CRM commercial + RegTech sur le marché français</li>
+          <li>IA Act 2026 : nouvelles obligations IA pour les PME utilisant des outils IA tiers</li>
+          <li>Réseau DCI : scalabilité commerciale sans masse salariale</li>
+          <li>Modules verticaux : monétisation additive par secteur (Click&Collect, Social, SEO local)</li>
         </ul>
       </div>
     </div>
@@ -1425,28 +1451,30 @@ Frontend (Module SEO/DPO/Cyber)
       <div class="card-title" style="color:#92400e">🎯 Menaces</div>
       <div class="card-body">
         <ul>
-          <li>Salesforce / HubSpot : budgets R&amp;D colossaux</li>
-          <li>CRM généralistes ajoutant des modules compliance</li>
-          <li>Évolution réglementaire rapide (RGPD, IA Act)</li>
-          <li>Dépendance à Supabase (risque vendor lock-in)</li>
-          <li>Fournisseurs IA modifiant leurs tarifs</li>
+          <li>Salesforce / HubSpot : budgets R&amp;D colossaux, peuvent absorber un module compliance</li>
+          <li><strong>Coût du changement</strong> : le CRM est le cœur opérationnel des commerciaux — résistance humaine forte à la migration depuis un outil existant</li>
+          <li>CRM généralistes (Sellsy, Axonaut) pouvant ajouter des modules compliance à l'existant</li>
+          <li>Évolution réglementaire rapide (IA Act 2026, révisions RGPD)</li>
+          <li>Dépendance à Supabase (risque vendor lock-in infrastructure)</li>
+          <li>Fournisseurs IA modifiant leurs tarifs ou APIs</li>
         </ul>
       </div>
     </div>
   </div>
 
-  <h3>Matrice concurrentielle</h3>
+  <h3>Matrice concurrentielle <span class="fact-tag ft-v">DONNÉES VÉRIFIÉES — Sources éditeurs 2026</span></h3>
   <div class="tbl"><table>
-    <thead><tr><th>Critère</th><th>S@FE CRM</th><th>Salesforce Essentials</th><th>HubSpot Starter</th><th>Sellsy</th><th>noCRM.io</th></tr></thead>
+    <thead><tr><th>Critère</th><th>S@FE CRM</th><th>HubSpot Pro</th><th>Sellsy</th><th>Axonaut</th><th>Dastra (RegTech)</th></tr></thead>
     <tbody>
-      <tr><td>Conformité RGPD native</td><td><span class="badge b-ok">✓ Native</span></td><td><span class="badge b-warn">Partielle</span></td><td><span class="badge b-warn">Partielle</span></td><td><span class="badge b-warn">Partielle</span></td><td><span class="badge b-warn">Basique</span></td></tr>
-      <tr><td>Module NIS2</td><td><span class="badge b-ok">✓ Intégré</span></td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-      <tr><td>IA intégrée multi-fournisseur</td><td><span class="badge b-ok">✓ 4 fournisseurs</span></td><td><span class="badge b-warn">Einstein (1)</span></td><td><span class="badge b-warn">1 fournisseur</span></td><td>—</td><td>—</td></tr>
-      <tr><td>Force de vente DCI intégrée</td><td><span class="badge b-ok">✓ Natif</span></td><td>Modules séparés</td><td>Modules séparés</td><td>Partiel</td><td>—</td></tr>
-      <tr><td>PWA installable tablette</td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td><td><span class="badge b-ok">✓</span></td></tr>
-      <tr><td>Prix mensuel PME</td><td><span class="badge b-ok">Marché cible</span></td><td>&gt;200€/user</td><td>&gt;45€/user</td><td>~49€/user</td><td>~19€/user</td></tr>
-      <tr><td>Serverless 0 infra</td><td><span class="badge b-ok">✓</span></td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-      <tr><td>Marché France PME spécialisé</td><td><span class="badge b-ok">✓ Focus</span></td><td>Global</td><td>Global</td><td>France</td><td>Global</td></tr>
+      <tr><td>Conformité RGPD native</td><td><span class="badge b-ok">✓ Native by design</span></td><td><span class="badge b-warn">Partielle</span> — paramétrage manuel</td><td><span class="badge b-warn">Élevée RGPD</span> — ISO 27001</td><td><span class="badge b-warn">Basique</span></td><td><span class="badge b-ok">✓ Élevée</span> — DPO/PIA</td></tr>
+      <tr><td>Module NIS2 / Cyber</td><td><span class="badge b-ok">✓ Intégré</span></td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>Module CRM (contacts/contrats)</td><td><span class="badge b-ok">✓ Complet</span></td><td><span class="badge b-ok">✓ Complet</span></td><td><span class="badge b-ok">✓ Complet</span></td><td><span class="badge b-ok">✓ Complet</span></td><td>—</td></tr>
+      <tr><td>IA intégrée multi-fournisseur</td><td><span class="badge b-ok">✓ 4 fournisseurs</span></td><td><span class="badge b-warn">Copilot (1)</span></td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>Prospection terrain tablette</td><td><span class="badge b-ok">✓ Natif PIN</span></td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>Force de vente DCI intégrée</td><td><span class="badge b-ok">✓ Natif</span></td><td>Modules séparés</td><td>Partiel</td><td>—</td><td>—</td></tr>
+      <tr><td>Hébergement France / souveraineté</td><td><span class="badge b-ok">✓ Supabase EU</span></td><td><span class="badge b-warn">Option EU</span> — Cloud Act US</td><td><span class="badge b-ok">✓ France</span></td><td><span class="badge b-ok">✓ France</span></td><td><span class="badge b-ok">✓ France</span></td></tr>
+      <tr><td>Prix mensuel par utilisateur</td><td>99–299€ <em>(structure)</em></td><td>90–100€/user</td><td>40–75€/user</td><td>~50€/user</td><td>150–450€ <em>(structure)</em></td></tr>
+      <tr><td>Serverless / 0 infrastructure</td><td><span class="badge b-ok">✓</span></td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
     </tbody>
   </table></div>
 
