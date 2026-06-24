@@ -1,16 +1,20 @@
-name: Deno — Edge Functions
+name: CI — Edge Functions & Tests
 
 on:
   push:
     paths:
       - "supabase/functions/**"
+      - "assets/**"
+      - "tests/**"
   pull_request:
     paths:
       - "supabase/functions/**"
+      - "assets/**"
+      - "tests/**"
 
 jobs:
   deno:
-    name: Lint & Type-check Edge Functions
+    name: Lint, Type-check & Test — Edge Functions
     runs-on: ubuntu-latest
 
     steps:
@@ -36,3 +40,34 @@ jobs:
             deno check --config supabase/functions/deno.json "$f" || exit 1
           done
           echo "✅ Type-check OK"
+
+      # ── Tests unitaires Deno ─────────────────────────────────────────────
+      - name: "deno test"
+        run: |
+          find supabase/functions -name "lib.test.ts" | while read f; do
+            echo "→ deno test $f"
+            deno test --config supabase/functions/deno.json "$f" || exit 1
+          done
+          echo "✅ Deno tests OK"
+
+  vitest:
+    name: Tests unitaires — Frontend JS
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Vitest ───────────────────────────────────────────────────────────
+      - name: "npm test"
+        run: npm test
+        env:
+          CI: true

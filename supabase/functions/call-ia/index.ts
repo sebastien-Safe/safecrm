@@ -1,20 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
+import { PROVIDERS, PRIORITY, selectProvider } from "./lib.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Fournisseurs IA supportés — tous compatibles OpenAI sauf Anthropic
-const PROVIDERS: Record<string, { url: string; model: string; keyEnv: string; format: "openai" | "anthropic" }> = {
-  groq:      { url: "https://api.groq.com/openai/v1/chat/completions", model: "llama-3.3-70b-versatile", keyEnv: "GROQ_API_KEY",      format: "openai"    },
-  grok:      { url: "https://api.x.ai/v1/chat/completions",            model: "grok-3-mini",             keyEnv: "GROK_API_KEY",      format: "openai"    },
-  anthropic: { url: "https://api.anthropic.com/v1/messages",           model: "claude-haiku-4-5-20251001", keyEnv: "ANTHROPIC_API_KEY", format: "anthropic" },
-  mistral:   { url: "https://api.mistral.ai/v1/chat/completions",      model: "mistral-small-latest",    keyEnv: "MISTRAL_API_KEY",   format: "openai"    },
-};
-
-// Ordre de priorité si plusieurs connecteurs actifs
-const PRIORITY = ["groq", "grok", "anthropic", "mistral"];
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -54,9 +44,7 @@ Deno.serve(async (req) => {
 
     if (!rows?.length) return json({ error: "Aucun connecteur IA actif" }, 403);
 
-    for (const key of PRIORITY) {
-      if ((rows as Array<{ service_key: string }>).find(r => r.service_key === key)) { service_key = key; break; }
-    }
+    service_key = selectProvider(rows as Array<{ service_key: string }>);
   }
 
   if (!service_key) return json({ error: "Connecteur introuvable" }, 400);

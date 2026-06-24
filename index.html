@@ -902,6 +902,48 @@
             Les contrats et journaux d'audit sont conservés (valeur probatoire).
           </div>
         </div>
+
+        <!-- Tests unitaires -->
+        <div class="panel-block" style="margin-top:16px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+            <div>
+              <h3 style="margin:0">🧪 Tests unitaires</h3>
+              <p class="mut" style="margin-top:4px;font-size:.82rem">Edge Functions Deno · Logique JS frontend · CI/CD GitHub Actions</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-out btn-sm" onclick="_runTestsModal()">▶ Lancer les tests</button>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+            <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:1.4rem;font-weight:900;color:#4ade80">14</div>
+              <div style="font-size:.72rem;color:var(--mut);margin-top:2px">Tests Deno<br><span style="color:#4ade80">✓ 14 passent</span></div>
+            </div>
+            <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:1.4rem;font-weight:900;color:var(--gold)">24</div>
+              <div style="font-size:.72rem;color:var(--mut);margin-top:2px">Tests Vitest<br><span style="color:var(--gold)">⚡ npm test</span></div>
+            </div>
+            <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:1.4rem;font-weight:900;color:#60a5fa">CI</div>
+              <div style="font-size:.72rem;color:var(--mut);margin-top:2px">GitHub Actions<br><span style="color:#60a5fa">Push auto</span></div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.25);border-radius:8px;padding:10px 14px;font-family:monospace;font-size:.8rem">
+              <span style="color:#4ade80;flex-shrink:0">Deno</span>
+              <code style="flex:1;color:#e2e8f0;background:none;padding:0" id="cmd-deno">deno test --config supabase/functions/deno.json supabase/functions/call-ia/lib.test.ts</code>
+              <button class="btn btn-out btn-sm" style="padding:3px 9px;font-size:.7rem" onclick="_copyCmd('cmd-deno',this)">Copier</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.25);border-radius:8px;padding:10px 14px;font-family:monospace;font-size:.8rem">
+              <span style="color:var(--gold);flex-shrink:0">JS</span>
+              <code style="flex:1;color:#e2e8f0;background:none;padding:0" id="cmd-vitest">npm test</code>
+              <button class="btn btn-out btn-sm" style="padding:3px 9px;font-size:.7rem" onclick="_copyCmd('cmd-vitest',this)">Copier</button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </section>

@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "build:watch": "node build.mjs --watch"
+    "build:watch": "node build.mjs --watch",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "vitest": "^2.0.0"
   }
 }
