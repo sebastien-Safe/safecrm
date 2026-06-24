@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>S@FE — Espace Work</title>
+<title>S@FE — Prospection Terrain</title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" type="image/svg+xml" href="/work/favicon.svg">
-<link rel="shortcut icon" href="/work/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="/prospection-terrain/favicon.svg">
+<link rel="shortcut icon" href="/prospection-terrain/favicon.svg">
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/plexsans-400.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/sora-800.woff2" crossorigin>
 <link rel="stylesheet" href="/modules/shared.css">
@@ -177,14 +177,65 @@ select option{background:var(--navy-mid)}
 .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ---- LOGIN ---- */
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
-.login-box{background:rgba(20,34,64,.9);border:1px solid var(--line);border-radius:20px;padding:36px 32px;width:min(400px,95vw);text-align:center}
-.login-box h1{font-size:1.5rem;margin-bottom:6px}
-.login-box p{font-size:.85rem;color:var(--mut);margin-bottom:24px}
-.login-box input{margin-bottom:10px}
-.login-box .btn{width:100%;justify-content:center;margin-top:4px}
-.login-error{color:var(--alert);font-size:.8rem;margin-top:8px;min-height:1.2em}
+/* ---- PIN OVERLAY ---- */
+#pin-overlay{position:fixed;inset:0;z-index:300;background:rgba(4,9,26,.95);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center}
+#pin-box{background:#0a1628;border:2px solid rgba(245,158,11,.35);border-radius:18px;padding:40px 48px;text-align:center;width:min(320px,92vw)}
+.pin-logo{font-family:var(--ff-disp,sans-serif);font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:4px}
+.pin-logo b{color:var(--gold)}
+.pin-sub{font-size:.78rem;color:var(--mut);font-family:var(--ff-mono,monospace);letter-spacing:.12em;text-transform:uppercase;margin-bottom:22px}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:22px}
+.pin-dot{width:14px;height:14px;border-radius:50%;background:#1e3a5f;border:2px solid #2a4a7f;transition:all .15s}
+.pin-dot.filled{background:var(--gold);border-color:var(--gold)}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pin-key{background:#0d1b36;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px;font-family:var(--ff-disp,sans-serif);font-size:20px;font-weight:700;color:#fff;cursor:pointer;transition:all .15s}
+.pin-key:hover{background:#162a4a;border-color:rgba(245,158,11,.5)}
+.pin-key:active{transform:scale(.93)}
+.pin-key.del{font-size:14px;color:var(--mut)}
+#pin-error{color:var(--alert,#ef4444);font-size:.78rem;margin-top:14px;min-height:18px;font-style:italic}
+
+/* ---- MISSION CARDS ---- */
+.mission-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:36px}
+.mission-card{background:rgba(13,27,51,.85);border:1.5px solid var(--line);border-radius:18px;overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s}
+.mission-card:hover{transform:translateY(-3px)}
+.mc-rgpd:hover{border-color:rgba(59,130,246,.5);box-shadow:0 20px 50px rgba(59,130,246,.12)}
+.mc-seo:hover{border-color:rgba(34,197,94,.5);box-shadow:0 20px 50px rgba(34,197,94,.12)}
+.mc-cyber:hover{border-color:rgba(239,68,68,.5);box-shadow:0 20px 50px rgba(239,68,68,.12)}
+.mc-onboarding:hover{border-color:rgba(245,158,11,.5);box-shadow:0 20px 50px rgba(245,158,11,.12)}
+.mc-body{padding:22px 22px 16px}
+.mc-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+.mc-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+.mc-rgpd .mc-icon{background:rgba(59,130,246,.15)}
+.mc-seo .mc-icon{background:rgba(34,197,94,.15)}
+.mc-cyber .mc-icon{background:rgba(239,68,68,.15)}
+.mc-onboarding .mc-icon{background:rgba(245,158,11,.15)}
+.mc-meta{flex:1;min-width:0}
+.mc-phase{display:inline-block;font-family:var(--ff-mono);font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:20px;margin-bottom:6px}
+.mc-phase-prosp{background:rgba(34,197,94,.1);color:#22c55e}
+.mc-phase-post{background:rgba(245,158,11,.1);color:var(--gold)}
+.mc-title{font-family:var(--ff-disp);font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:3px}
+.mc-desc{font-size:.79rem;color:var(--mut);line-height:1.45}
+.mc-feats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.mc-feat{font-family:var(--ff-mono);font-size:.68rem;color:var(--mut-2);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+.mc-actions{display:flex;justify-content:flex-end}
+.mc-btn{padding:9px 20px;border-radius:10px;font-family:var(--ff-disp);font-size:.85rem;font-weight:700;border:1.5px solid;cursor:pointer;transition:.15s;background:transparent}
+.mc-rgpd .mc-btn{color:#60a5fa;border-color:rgba(59,130,246,.4)}
+.mc-rgpd .mc-btn:hover{background:rgba(59,130,246,.12);border-color:#3b82f6}
+.mc-seo .mc-btn{color:#4ade80;border-color:rgba(34,197,94,.4)}
+.mc-seo .mc-btn:hover{background:rgba(34,197,94,.12);border-color:#22c55e}
+.mc-cyber .mc-btn{color:#f87171;border-color:rgba(239,68,68,.4)}
+.mc-cyber .mc-btn:hover{background:rgba(239,68,68,.12);border-color:#ef4444}
+.mc-onboarding .mc-btn{color:var(--gold-light);border-color:rgba(245,158,11,.4)}
+.mc-onboarding .mc-btn:hover{background:rgba(245,158,11,.12);border-color:var(--gold)}
+/* Launcher inline */
+.mc-launcher{border-top:1px solid var(--line);max-height:0;overflow:hidden;transition:max-height .32s ease}
+.mc-launcher.open{max-height:320px}
+.mc-launcher-inner{padding:18px 22px 20px}
+.ml-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.ml-mode{padding:9px 10px;border-radius:10px;border:1.5px solid var(--line);background:transparent;color:var(--mut);font-family:var(--ff-body);font-size:.82rem;cursor:pointer;transition:.15s;text-align:center}
+.ml-mode.on{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.25);color:#fff}
+.ml-go{width:100%;padding:10px;border-radius:10px;font-family:var(--ff-disp);font-weight:700;font-size:.88rem;border:none;cursor:pointer;transition:.15s;color:#0a1628;background:linear-gradient(135deg,var(--gold),var(--gold-light))}
+.ml-go:hover{filter:brightness(1.08);transform:translateY(-1px)}
+@media(max-width:860px){.mission-grid{grid-template-columns:1fr}}
 
 /* ---- RESPONSIVE ---- */
 
@@ -246,16 +297,32 @@ select option{background:var(--navy-mid)}
 </head>
 <body>
 
-<!-- ========== LOGIN ========== -->
-<div id="login-screen" class="login-wrap">
-  <div class="login-box">
-    <span class="eyebrow">Espace Work</span>
-    <h1>S<b style="color:var(--gold)">@</b>FE</h1>
-    <p>Accès réservé aux administrateurs</p>
-    <div class="field"><label>E-mail</label><input type="email" id="l-email" placeholder="votre@email.fr" autocomplete="email"></div>
-    <div class="field"><label>Mot de passe</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"></div>
-    <button class="btn btn-gold" onclick="doLogin()" style="width:100%;justify-content:center;margin-top:4px" id="btn-login">Se connecter</button>
-    <div class="login-error" id="login-err"></div>
+<!-- ========== PIN OVERLAY ========== -->
+<div id="pin-overlay">
+  <div id="pin-box">
+    <div class="pin-logo">S<b>@</b>FE</div>
+    <div class="pin-sub">Prospection Terrain</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key del" onclick="pinClear()">✕</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+    </div>
+    <div id="pin-error"></div>
   </div>
 </div>
 
@@ -267,12 +334,11 @@ select option{background:var(--navy-mid)}
     <button id="work-burger-btn" aria-label="Menu" onclick="toggleWorkSidebar()">
       <span></span><span></span><span></span>
     </button>
-    <div class="topbar-brand">S<b>@</b>FE<small>WORK</small></div>
-    
+    <div class="topbar-brand">S<b>@</b>FE<small>PROSPECTION</small></div>
+
     <div class="topbar-user">
       <a href="/" class="btn btn-out" style="font-size:.78rem;padding:5px 12px;text-decoration:none;border-color:rgba(245,158,11,.4);color:var(--gold)">← CRM</a>
-      <span style="font-size:.83rem;color:var(--mut)">Connecté : <strong id="user-label">—</strong></span>
-      <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
+      <button class="btn-logout" onclick="doLogout()">Verrouiller</button>
     </div>
   </div>
 
@@ -309,81 +375,189 @@ select option{background:var(--navy-mid)}
 
       <!-- === VUE DASHBOARD === -->
       <div id="view-dashboard">
-        <div style="margin-bottom:24px">
-          <span class="eyebrow">Vue d'ensemble</span>
-          <h2 style="font-size:1.4rem">Bonjour <span id="dash-prenom">—</span> 👋</h2>
+
+        <!-- MISSIONS — action principale -->
+        <div style="margin-bottom:28px">
+          <span class="eyebrow">Choisissez votre mission</span>
+          <h2 style="font-size:1.35rem;margin-top:2px">Que faites-vous aujourd'hui ?</h2>
         </div>
-        <div class="card-grid" id="stats-grid">
+
+        <div class="mission-grid">
+
+          <!-- RGPD -->
+          <div class="mission-card mc-rgpd">
+            <div class="mc-body">
+              <div class="mc-top">
+                <div class="mc-icon">⚖️</div>
+                <div class="mc-meta">
+                  <span class="mc-phase mc-phase-prosp">Prospection</span>
+                  <div class="mc-title">Audit RGPD</div>
+                  <div class="mc-desc">Diagnostic conformité données personnelles — du gratuit au DPO externalisé</div>
+                </div>
+              </div>
+              <div class="mc-feats">
+                <span class="mc-feat">Diagnostic gratuit</span>
+                <span class="mc-feat">6 formules</span>
+                <span class="mc-feat">10 à 25 questions</span>
+                <span class="mc-feat">PDF livrable</span>
+              </div>
+              <div class="mc-actions">
+                <button class="mc-btn" onclick="toggleMissionLauncher('rgpd',this)">Lancer →</button>
+              </div>
+            </div>
+            <div class="mc-launcher" id="ml-rgpd">
+              <div class="mc-launcher-inner">
+                <div class="ml-modes">
+                  <button class="ml-mode on" id="ml-rgpd-prosp" onclick="setMissionMode('rgpd','prospect')">👤 Nouveau prospect</button>
+                  <button class="ml-mode" id="ml-rgpd-client" onclick="setMissionMode('rgpd','client')">📋 Client existant</button>
+                </div>
+                <div id="ml-rgpd-fields" style="display:none">
+                  <select id="ml-rgpd-contact" onchange="onMissionContactChange('rgpd')" style="margin-bottom:8px"><option value="">— Choisir un contact —</option></select>
+                  <select id="ml-rgpd-contract" disabled style="margin-bottom:12px"><option value="">— Contrat —</option></select>
+                </div>
+                <button class="ml-go" onclick="launchMission('rgpd')">Démarrer la mission →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEO -->
+          <div class="mission-card mc-seo">
+            <div class="mc-body">
+              <div class="mc-top">
+                <div class="mc-icon">📍</div>
+                <div class="mc-meta">
+                  <span class="mc-phase mc-phase-prosp">Prospection</span>
+                  <div class="mc-title">Audit SEO Local</div>
+                  <div class="mc-desc">Visibilité Google Maps, référencement local et benchmark concurrentiel</div>
+                </div>
+              </div>
+              <div class="mc-feats">
+                <span class="mc-feat">Audit GMB 8 critères</span>
+                <span class="mc-feat">Benchmark</span>
+                <span class="mc-feat">KPIs mensuels</span>
+                <span class="mc-feat">PDF livrable</span>
+              </div>
+              <div class="mc-actions">
+                <button class="mc-btn" onclick="toggleMissionLauncher('seo',this)">Lancer →</button>
+              </div>
+            </div>
+            <div class="mc-launcher" id="ml-seo">
+              <div class="mc-launcher-inner">
+                <div class="ml-modes">
+                  <button class="ml-mode on" id="ml-seo-prosp" onclick="setMissionMode('seo','prospect')">👤 Nouveau prospect</button>
+                  <button class="ml-mode" id="ml-seo-client" onclick="setMissionMode('seo','client')">📋 Client existant</button>
+                </div>
+                <div id="ml-seo-fields" style="display:none">
+                  <select id="ml-seo-contact" onchange="onMissionContactChange('seo')" style="margin-bottom:8px"><option value="">— Choisir un contact —</option></select>
+                  <select id="ml-seo-contract" disabled style="margin-bottom:12px"><option value="">— Contrat —</option></select>
+                </div>
+                <button class="ml-go" onclick="launchMission('seo')">Démarrer la mission →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CYBER -->
+          <div class="mission-card mc-cyber">
+            <div class="mc-body">
+              <div class="mc-top">
+                <div class="mc-icon">🛡️</div>
+                <div class="mc-meta">
+                  <span class="mc-phase mc-phase-prosp">Prospection</span>
+                  <div class="mc-title">Audit Cybersécurité</div>
+                  <div class="mc-desc">Diagnostic des vulnérabilités — posture de sécurité et plan d'action priorisé</div>
+                </div>
+              </div>
+              <div class="mc-feats">
+                <span class="mc-feat">20 questions</span>
+                <span class="mc-feat">7 domaines ANSSI</span>
+                <span class="mc-feat">26 outils externes</span>
+                <span class="mc-feat">PDF livrable</span>
+              </div>
+              <div class="mc-actions">
+                <button class="mc-btn" onclick="toggleMissionLauncher('cyber',this)">Lancer →</button>
+              </div>
+            </div>
+            <div class="mc-launcher" id="ml-cyber">
+              <div class="mc-launcher-inner">
+                <div class="ml-modes">
+                  <button class="ml-mode on" id="ml-cyber-prosp" onclick="setMissionMode('cyber','prospect')">👤 Nouveau prospect</button>
+                  <button class="ml-mode" id="ml-cyber-client" onclick="setMissionMode('cyber','client')">📋 Client existant</button>
+                </div>
+                <div id="ml-cyber-fields" style="display:none">
+                  <select id="ml-cyber-contact" onchange="onMissionContactChange('cyber')" style="margin-bottom:8px"><option value="">— Choisir un contact —</option></select>
+                  <select id="ml-cyber-contract" disabled style="margin-bottom:12px"><option value="">— Contrat —</option></select>
+                </div>
+                <button class="ml-go" onclick="launchMission('cyber')">Démarrer la mission →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ONBOARDING -->
+          <div class="mission-card mc-onboarding">
+            <div class="mc-body">
+              <div class="mc-top">
+                <div class="mc-icon">🚀</div>
+                <div class="mc-meta">
+                  <span class="mc-phase mc-phase-post">Post-signature</span>
+                  <div class="mc-title">Onboarding Client</div>
+                  <div class="mc-desc">Accueil et démarrage d'un nouveau client — email de bienvenue et checklist de lancement</div>
+                </div>
+              </div>
+              <div class="mc-feats">
+                <span class="mc-feat">Vérif. données</span>
+                <span class="mc-feat">Email bienvenue</span>
+                <span class="mc-feat">Checklist contextuelle</span>
+                <span class="mc-feat">PDF récap</span>
+              </div>
+              <div class="mc-actions">
+                <button class="mc-btn" onclick="toggleMissionLauncher('onboarding',this)">Lancer →</button>
+              </div>
+            </div>
+            <div class="mc-launcher" id="ml-onboarding">
+              <div class="mc-launcher-inner">
+                <div class="ml-modes">
+                  <button class="ml-mode on" id="ml-onboarding-prosp" onclick="setMissionMode('onboarding','prospect')">👤 Sans contact</button>
+                  <button class="ml-mode" id="ml-onboarding-client" onclick="setMissionMode('onboarding','client')">📋 Client existant</button>
+                </div>
+                <div id="ml-onboarding-fields" style="display:none">
+                  <select id="ml-onboarding-contact" onchange="onMissionContactChange('onboarding')" style="margin-bottom:8px"><option value="">— Choisir un contact —</option></select>
+                  <select id="ml-onboarding-contract" disabled style="margin-bottom:12px"><option value="">— Contrat —</option></select>
+                </div>
+                <button class="ml-go" onclick="launchMission('onboarding')">Démarrer la mission →</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /mission-grid -->
+
+        <!-- STATS — secondaires -->
+        <div class="section-head">
+          <h2>Vue d'ensemble</h2>
+          <a class="btn btn-out btn-sm" href="/" style="border-color:rgba(245,158,11,.4);color:var(--gold)">Ouvrir le CRM →</a>
+        </div>
+        <div class="card-grid" id="stats-grid" style="margin-bottom:24px">
           <div class="stat-card"><div class="val" id="st-contacts">—</div><div class="lbl">Contacts total</div></div>
           <div class="stat-card"><div class="val" id="st-clients">—</div><div class="lbl">Clients actifs</div><div class="sub" id="st-clients-sub"></div></div>
           <div class="stat-card"><div class="val" id="st-contrats">—</div><div class="lbl">Contrats en cours</div></div>
           <div class="stat-card"><div class="val" id="st-tasks">—</div><div class="lbl">Tâches à faire</div></div>
         </div>
 
-        <!-- Carte opérationnalité modules -->
-        <div id="dash-modules-card" style="margin-top:20px"></div>
-
-        <!-- Bloc Nouveaux contrats — bordure dorée -->
-        <div style="margin-top:20px;background:rgba(20,34,64,.7);border:1.5px solid var(--gold);border-radius:var(--r);padding:20px 22px">
+        <!-- Bloc Nouveaux contrats -->
+        <div style="background:rgba(20,34,64,.7);border:1.5px solid rgba(245,158,11,.25);border-radius:var(--r);padding:20px 22px;margin-bottom:24px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
             <div>
               <div style="font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Activité récente</div>
               <h3 style="font-size:1rem;color:#fff;margin:0">📄 Nouveaux contrats</h3>
             </div>
-            <a class="btn btn-out btn-sm" href="https://crm.safe-digitalisation.fr/" style="border-color:var(--gold);color:var(--gold);font-size:.78rem">Ouvrir CRM →</a>
           </div>
           <div id="dash-nouveaux-contrats">
             <div style="text-align:center;padding:20px;color:var(--mut);font-size:.85rem">Chargement…</div>
           </div>
         </div>
 
-        <div class="section-head">
-          <h2>Automatisations rapides</h2>
-          <button class="btn btn-out btn-sm" onclick="showView('automate')">Voir tout →</button>
-        </div>
-        <div class="card-grid" id="quick-automations">
-          <!-- injecté dynamiquement -->
-        </div>
+        <div id="dash-modules-card"></div>
 
-        <div class="section-head" style="margin-top:28px">
-          <h2>Dernières actions</h2>
-        </div>
-        <div class="card" id="dash-journal-preview">
-          <div class="empty"><div class="ico">📋</div><p>Aucune action enregistrée</p></div>
-        </div>
-
-        <!-- Accès rapide sécurité & journaux -->
-        <div class="section-head" style="margin-top:28px">
-          <h2>Sécurité & Conformité</h2>
-        </div>
-        <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">
-          <a href="/" onclick="sessionStorage.setItem('safe_work_goto','rgpd');return true;" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(59,130,246,.3)" title="Accéder au Journal RGPD dans le CRM">
-            <div class="val" style="font-size:1.4rem">📒</div>
-            <div class="lbl">Journal RGPD</div>
-            <div style="font-size:.72rem;color:var(--mut);margin-top:6px">Admin → Registre RGPD</div>
-          </a>
-          <a href="/" onclick="sessionStorage.setItem('safe_work_goto','securite');return true;" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(59,130,246,.3)" title="Accéder au journal de sécurité dans le CRM">
-            <div class="val" style="font-size:1.4rem">🔒</div>
-            <div class="lbl">Journal sécurité</div>
-            <div style="font-size:.72rem;color:var(--mut);margin-top:6px">Admin → Sécurité · connexions</div>
-          </a>
-          <a href="/modules/Cyber/incidents-nis2.html" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(245,158,11,.3)">
-            <div class="val" style="font-size:1.4rem">🛡️</div>
-            <div class="lbl">Incidents NIS2</div>
-            <div style="font-size:.72rem;color:var(--mut);margin-top:6px">Déclarer · timeline · ANSSI</div>
-          </a>
-          <a href="/" onclick="sessionStorage.setItem('safe_work_goto','reglages');return true;" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(148,163,184,.2)" title="Registre des fournisseurs tiers">
-            <div class="val" style="font-size:1.4rem">⚙️</div>
-            <div class="lbl">Registre fournisseurs</div>
-            <div style="font-size:.72rem;color:var(--mut);margin-top:6px">Admin → Réglages · RGPD art. 28</div>
-          </a>
-          <a href="/modules/DPO/portabilite.html" class="stat-card" style="text-decoration:none;cursor:pointer;display:block;border-color:rgba(59,130,246,.3)" title="Export données personnelles — RGPD art. 20">
-            <div class="val" style="font-size:1.4rem">⬇️</div>
-            <div class="lbl">Portabilité des données</div>
-            <div style="font-size:.72rem;color:var(--mut);margin-top:6px">RGPD art. 20 · export JSON + PDF</div>
-          </a>
-        </div>
-      </div>
+      </div><!-- /view-dashboard -->
 
       <!-- === VUE CLIENTS === -->
       <div id="view-clients" style="display:none">
@@ -655,50 +829,41 @@ function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&l
 function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}); }
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 
-/* AUTH */
-async function doLogin(){
-  const email = document.getElementById('l-email').value.trim();
-  const pass  = document.getElementById('l-pass').value;
-  const btn   = document.getElementById('btn-login');
-  const errEl = document.getElementById('login-err');
-  errEl.textContent = '';
-  if(!email||!pass){errEl.textContent='Renseignez e-mail et mot de passe.';return;}
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
-      body:JSON.stringify({email,password:pass})
-    });
-    let d;
-    try { d = await r.json(); } catch(je){ throw new Error('Réponse serveur invalide ('+r.status+')'); }
-    if(!r.ok){
-      const msg = d.error_description||d.msg||d.message||d.error||JSON.stringify(d);
-      throw new Error(msg);
-    }
-    if(!d.access_token) throw new Error('Token manquant dans la réponse Supabase.');
-    localStorage.setItem('safe_work_token',         d.access_token);
-    localStorage.setItem('safe_work_refresh_token', d.refresh_token || '');
-    localStorage.setItem('safe_work_uid',           d.user.id);
-    localStorage.setItem('safe_work_email',         d.user.email);
-    localStorage.setItem('safe_work_expires_at',    String(Date.now() + (d.expires_in || 3600) * 1000));
-    await initApp(d.access_token, d.user);
-    scheduleTokenRefresh();
-  } catch(e){
-    errEl.textContent = e.message;
-    console.error('[Work login]', e);
-  }
-  btn.disabled=false; btn.innerHTML='Se connecter';
+/* ── PIN ── */
+const PT_PIN = '2206';
+let _pinVal = '';
+
+function pinKey(k){
+  if(_pinVal.length>=4) return;
+  _pinVal+=k; _pinUpdateDots();
+  if(_pinVal.length===4) _pinCheck();
 }
+function pinDel(){ _pinVal=_pinVal.slice(0,-1); _pinUpdateDots(); document.getElementById('pin-error').textContent=''; }
+function pinClear(){ _pinVal=''; _pinUpdateDots(); document.getElementById('pin-error').textContent=''; }
+function _pinUpdateDots(){ for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('filled',i<_pinVal.length); }
+function _pinCheck(){
+  if(_pinVal===PT_PIN){
+    sessionStorage.setItem('pt_unlocked','1');
+    document.getElementById('pin-overlay').style.display='none';
+    initApp();
+  } else {
+    document.getElementById('pin-error').textContent='Code incorrect.';
+    _pinVal=''; _pinUpdateDots();
+    setTimeout(()=>{ document.getElementById('pin-error').textContent=''; },1500);
+  }
+}
+document.addEventListener('keydown', e=>{
+  if(document.getElementById('pin-overlay').style.display==='none') return;
+  if(e.key>='0'&&e.key<='9') pinKey(e.key);
+  else if(e.key==='Backspace') pinDel();
+  else if(e.key==='Escape') pinClear();
+});
 
 function doLogout(){
-  localStorage.removeItem('safe_work_token');
-  localStorage.removeItem('safe_work_refresh_token');
-  localStorage.removeItem('safe_work_uid');
-  localStorage.removeItem('safe_work_email');
-  localStorage.removeItem('safe_work_expires_at');
+  sessionStorage.removeItem('pt_unlocked');
   document.getElementById('app').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('pin-overlay').style.display='flex';
+  _pinVal=''; _pinUpdateDots();
 }
 
 /* ============================================================
@@ -711,33 +876,8 @@ let journalData = [];
 let currentWF = null;
 let currentWFStep = 0;
 
-async function initApp(token, user){
-  H['Authorization'] = 'Bearer '+token;
-  // Récupérer le profil — non bloquant en phase test
-  try {
-    const profiles = await sbGet('profiles', `id=eq.${user.id}&select=prenom,is_admin`);
-    const p = profiles[0]||{};
-    currentUser = {...user, prenom: p.prenom||user.email.split('@')[0], is_admin: p.is_admin};
-  } catch(e){
-    // Profil inaccessible (RLS) — on continue avec les infos auth de base
-    currentUser = {id:user.id, email:user.email, prenom:user.email.split('@')[0]};
-  }
-
-  if (!currentUser.is_admin) {
-    document.getElementById('login-screen').innerHTML = `
-      <div class="login-box">
-        <h1 style="margin-bottom:12px">S<b style="color:var(--gold)">@</b>FE</h1>
-        <p style="margin-bottom:20px;color:var(--mut)">L'espace WORK est réservé aux administrateurs.</p>
-        <a href="/" class="btn btn-gold" style="width:100%;justify-content:center;text-decoration:none">← Retour au CRM</a>
-      </div>`;
-    return;
-  }
-
-  document.getElementById('login-screen').style.display='none';
+async function initApp(){
   document.getElementById('app').style.display='block';
-  document.getElementById('user-label').textContent = currentUser.prenom;
-  document.getElementById('dash-prenom').textContent = currentUser.prenom;
-
   await Promise.all([loadStats(), loadContacts(), loadJournal()]);
   loadNouveauxContrats();
   renderQuickAutomations();
@@ -971,7 +1111,7 @@ function launchOnboardingBtn(contactId){
   const cts = allContracts.filter(ct => ct.contact_id === contactId && !['Résilié','Refusé','Terminé'].includes(ct.statut));
   if(!cts.length) return '';
   const ct = cts[0];
-  return `<button class="btn btn-sm" style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);color:var(--gold)" onclick="window.location.href='/work/mission-onboarding.html?contact=${contactId}&contract=${ct.id}&wf=generic_onboard'">🚀 Onboarding</button>`;
+  return `<button class="btn btn-sm" style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);color:var(--gold)" onclick="window.location.href='/prospection-terrain/mission-onboarding.html?contact=${contactId}&contract=${ct.id}&wf=generic_onboard'">🚀 Onboarding</button>`;
 }
 
 function renderClientsTable(){
@@ -1802,84 +1942,104 @@ function showToast(msg, type='info'){
 }
 
 /* ============================================================
+   MISSION LAUNCHER
+   ============================================================ */
+const MISSIONS = {
+  rgpd:       '/prospection-terrain/mission-rgpd.html',
+  seo:        '/prospection-terrain/mission-seo.html',
+  cyber:      '/prospection-terrain/mission-cyber.html',
+  onboarding: '/prospection-terrain/mission-onboarding.html'
+};
+let _activeMission = null;
+const _missionMode = {};
+
+function toggleMissionLauncher(key, btn) {
+  const launcher = document.getElementById('ml-' + key);
+  const isOpen   = launcher.classList.contains('open');
+  // Fermer tous
+  document.querySelectorAll('.mc-launcher').forEach(el => el.classList.remove('open'));
+  _activeMission = null;
+  if (isOpen) return;
+  // Ouvrir celui-ci
+  _activeMission = key;
+  _missionMode[key] = 'prospect';
+  launcher.classList.add('open');
+  // Pré-remplir contacts si mode client déjà actif
+  setMissionMode(key, 'prospect');
+}
+
+function setMissionMode(key, mode) {
+  _missionMode[key] = mode;
+  document.getElementById('ml-' + key + '-prosp').classList.toggle('on', mode === 'prospect');
+  document.getElementById('ml-' + key + '-client').classList.toggle('on', mode === 'client');
+  const fields = document.getElementById('ml-' + key + '-fields');
+  if (!fields) return;
+  fields.style.display = mode === 'client' ? 'block' : 'none';
+  if (mode === 'client') _populateMissionContacts(key);
+}
+
+function _populateMissionContacts(key) {
+  const sel = document.getElementById('ml-' + key + '-contact');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Choisir un contact —</option>';
+  (allContacts || []).forEach(c => {
+    const name = [c.prenom, c.nom].filter(Boolean).join(' ') || c.email || c.id;
+    const opt  = document.createElement('option');
+    opt.value  = c.id;
+    opt.textContent = name + (c.entreprise ? ' — ' + c.entreprise : '');
+    if (c.id === cur) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  const contractSel = document.getElementById('ml-' + key + '-contract');
+  contractSel.innerHTML = '<option value="">— Contrat —</option>';
+  contractSel.disabled = true;
+  if (cur) onMissionContactChange(key);
+}
+
+function onMissionContactChange(key) {
+  const contactId   = document.getElementById('ml-' + key + '-contact').value;
+  const contractSel = document.getElementById('ml-' + key + '-contract');
+  contractSel.innerHTML = '<option value="">— Contrat —</option>';
+  if (!contactId) { contractSel.disabled = true; return; }
+  const contracts = (allContracts || []).filter(c => c.contact_id === contactId);
+  contracts.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = (c.formule || c.type || 'Contrat') + (c.montant ? ' — ' + c.montant + ' €' : '');
+    contractSel.appendChild(opt);
+  });
+  contractSel.disabled = contracts.length === 0;
+  if (contracts.length === 1) contractSel.value = contracts[0].id;
+}
+
+function launchMission(key) {
+  const url = MISSIONS[key];
+  if (!url) return;
+  const mode = _missionMode[key] || 'prospect';
+  if (mode === 'prospect') { window.location.href = url; return; }
+  const contactId  = document.getElementById('ml-' + key + '-contact').value;
+  if (!contactId) {
+    const sel = document.getElementById('ml-' + key + '-contact');
+    sel.style.borderColor = 'var(--alert)';
+    setTimeout(() => { sel.style.borderColor = ''; }, 2000);
+    return;
+  }
+  const contractId = document.getElementById('ml-' + key + '-contract').value;
+  window.location.href = url + '?contact=' + contactId + (contractId ? '&contract=' + contractId : '');
+}
+
+/* ============================================================
    BOOTSTRAP
    ============================================================ */
 document.getElementById('wf-overlay').addEventListener('click', function(e){
   if(e.target.id==='wf-overlay') closeWorkflow();
 });
 
-// Reprise de session — enveloppé pour ne jamais bloquer le chargement
-// ── Refresh token auto ──
-async function refreshWorkToken() {
-  const refreshToken = localStorage.getItem('safe_work_refresh_token');
-  if (!refreshToken) throw new Error('Pas de refresh token — reconnexion requise.');
-  const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
-    body: JSON.stringify({ refresh_token: refreshToken })
-  });
-  if (!r.ok) throw new Error('Refresh token invalide — reconnexion requise.');
-  const d = await r.json();
-  localStorage.setItem('safe_work_token',         d.access_token);
-  localStorage.setItem('safe_work_refresh_token', d.refresh_token || refreshToken);
-  localStorage.setItem('safe_work_expires_at',    String(Date.now() + (d.expires_in || 3600) * 1000));
-  H['Authorization'] = 'Bearer ' + d.access_token;
-  return d.access_token;
+// PIN déjà validé dans cette session → lancer l'app directement
+if (sessionStorage.getItem('pt_unlocked') === '1') {
+  document.getElementById('pin-overlay').style.display = 'none';
+  initApp();
 }
-
-// Auto-refresh toutes les 50 minutes
-function scheduleTokenRefresh() {
-  setTimeout(async function tick() {
-    try {
-      await refreshWorkToken();
-      console.log('[Work] Token rafraîchi automatiquement.');
-    } catch(e) {
-      console.warn('[Work] Refresh échoué :', e.message);
-      doLogout();
-      return;
-    }
-    setTimeout(tick, 50 * 60 * 1000);
-  }, 50 * 60 * 1000);
-}
-
-(function(){
-  var token, uid, email, expiresAt, refreshToken;
-  try {
-    token        = localStorage.getItem('safe_work_token');
-    refreshToken = localStorage.getItem('safe_work_refresh_token');
-    uid          = localStorage.getItem('safe_work_uid');
-    email        = localStorage.getItem('safe_work_email');
-    expiresAt    = parseInt(localStorage.getItem('safe_work_expires_at') || '0', 10);
-  } catch(e){ return; }
-
-  if (!token || !uid) return;
-
-  const msLeft = expiresAt - Date.now();
-
-  if (msLeft < 60 * 1000 && refreshToken) {
-    // Token expiré ou quasi-expiré → refresh avant initApp
-    refreshWorkToken().then(function(newToken) {
-      H['Authorization'] = 'Bearer ' + newToken;
-      return initApp(newToken, { id: uid, email: email || '' });
-    }).then(function() {
-      scheduleTokenRefresh();
-    }).catch(function(err) {
-      console.warn('[Work bootstrap] refresh échoué, nettoyage.', err);
-      ['safe_work_token','safe_work_refresh_token','safe_work_uid','safe_work_email','safe_work_expires_at']
-        .forEach(function(k){ try { localStorage.removeItem(k); } catch(e){} });
-    });
-  } else {
-    // Token encore valide → initApp direct
-    H['Authorization'] = 'Bearer ' + token;
-    initApp(token, { id: uid, email: email || '' }).then(function() {
-      scheduleTokenRefresh();
-    }).catch(function(err) {
-      console.warn('[Work bootstrap] session invalide, nettoyage.', err);
-      ['safe_work_token','safe_work_refresh_token','safe_work_uid','safe_work_email','safe_work_expires_at']
-        .forEach(function(k){ try { localStorage.removeItem(k); } catch(e){} });
-    });
-  }
-})();
 
 // ── BURGER MOBILE WORK ──
 function toggleWorkSidebar() {

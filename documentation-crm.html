@@ -207,7 +207,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   <h3>Navigation &amp; accès aux modules</h3>
   <p>Le CRM est une Single Page Application (<code>index.html</code>). La navigation se fait via la <strong>barre latérale gauche</strong> (sidebar). Depuis la refonte Pipeline (2026), les anciennes vues "Contacts" et "Contrats" séparées ont été remplacées par un <strong>Pipeline Kanban unifié</strong> (🗂️ Pipeline) qui regroupe les deux en une seule vue Kanban. Les vues Tâches, Résultats, Messages et Administration restent distinctes.</p>
   <div class="info-box" style="margin-bottom:20px">
-    <strong>Accès WORK :</strong> L'espace WORK (<code>/work/index.html</code>) est distinct du CRM principal. Il est accessible depuis la sidebar (lien WORK) ou directement par URL. Un bouton <strong>← CRM</strong> est présent dans la topbar de toutes les pages WORK pour revenir au CRM.
+    <strong>Accès WORK :</strong> L'espace WORK (<code>/prospection-terrain/index.html</code>) est distinct du CRM principal. Il est accessible depuis la sidebar (lien WORK) ou directement par URL. Un bouton <strong>← CRM</strong> est présent dans la topbar de toutes les pages WORK pour revenir au CRM.
   </div>
 
   <h3>Connexion &amp; Gestion de session</h3>
@@ -978,7 +978,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <div class="section-title">Modules Work IA — SEO · DPO · Cybersécurité</div>
   </div>
 
-  <p>Les modules Work sont des espaces de travail avancés accessibles depuis <code>/work/index.html</code>. Ils exploitent les connecteurs IA pour produire des analyses, rapports et alertes personnalisés pour chaque client.</p>
+  <p>Les modules Work sont des espaces de travail avancés accessibles depuis <code>/prospection-terrain/index.html</code>. Ils exploitent les connecteurs IA pour produire des analyses, rapports et alertes personnalisés pour chaque client.</p>
 
   <h3>Connecteurs IA</h3>
   <p>Quatre fournisseurs d'IA sont supportés, interrogés dans l'ordre de priorité suivant via la Edge Function <code>call-ia</code> :</p>
@@ -1591,7 +1591,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <div class="section-title">Sécurité NIS2 — Incidents, MFA, Registre fournisseurs</div>
   </div>
 
-  <h3>Module Incidents NIS2 (<code>/work/incidents-nis2.html</code>)</h3>
+  <h3>Module Incidents NIS2 (<code>/prospection-terrain/incidents-nis2.html</code>)</h3>
   <p>Accessible depuis WORK → Incidents NIS2 ou Administration → Réglages. Réservé aux administrateurs. Chaque incident est enregistré dans la table <code>incidents_nis2</code> (RLS : admins uniquement) et logué dans <code>audit_logs</code>.</p>
   <div class="tbl-wrap">
   <table>
@@ -1834,7 +1834,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
       <tr><td>Altération / falsification des données</td><td>Très faible</td><td>Modérée</td><td><span class="badge b-ok">Négligeable</span></td><td>Trigger immuable audit_logs + hash PDF contrats</td></tr>
       <tr><td>Perte / destruction accidentelle</td><td>Très faible</td><td>Modérée</td><td><span class="badge b-ok">Négligeable</span></td><td>Sauvegardes Supabase automatiques (Point-in-Time)</td></tr>
       <tr><td>Non-respect durées de conservation</td><td><strong>Éliminé</strong></td><td>Modérée</td><td><span class="badge b-ok">Résiduel nul</span></td><td>Purge automatique pg_cron mensuelle + interface admin</td></tr>
-      <tr><td>Exercice des droits (portabilité, accès, effacement)</td><td>Faible</td><td>Faible</td><td><span class="badge b-ok">Négligeable</span></td><td>Module Demandes de droits + /work/portabilite.html</td></tr>
+      <tr><td>Exercice des droits (portabilité, accès, effacement)</td><td>Faible</td><td>Faible</td><td><span class="badge b-ok">Négligeable</span></td><td>Module Demandes de droits + /prospection-terrain/portabilite.html</td></tr>
     </tbody>
   </table>
 

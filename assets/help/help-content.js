@@ -273,7 +273,7 @@ const HELP_VIEWS_DATA = {
       {
         title: 'Incidents NIS2',
         items: [
-          'Déclaration d\'incident : /work/incidents-nis2.html (admins uniquement)',
+          'Déclaration d\'incident : /prospection-terrain/incidents-nis2.html (admins uniquement)',
           'Champs : type d\'incident, systèmes affectés, description, mesures prises',
           'Indicateur 72h : délai de notification ANSSI (si entité assujettie NIS2)',
           'Timeline des incidents classés par statut : Ouvert / En cours / Clôturé',
@@ -286,7 +286,7 @@ const HELP_VIEWS_DATA = {
       { title: 'Activer le MFA TOTP', content: 'Cliquez sur votre prénom en haut à droite → Profil → section "Double authentification" → "Configurer". Scannez le QR code, saisissez le code à 6 chiffres pour confirmer l\'activation.' },
       { title: 'Voir le journal de sécurité', content: 'Administration → onglet "🔒 Sécurité". Liste des 50 dernières tentatives de connexion avec résultat, IP et indicateur de verrouillage.' },
       { title: 'Débloquer un utilisateur verrouillé', content: 'Administration → Sécurité → liste des comptes verrouillés → bouton "Débloquer". Le compteur d\'échecs est réinitialisé.' },
-      { title: 'Déclarer un incident NIS2', content: 'Depuis WORK → menu "Incidents NIS2" ou directement via /work/incidents-nis2.html. Réservé aux administrateurs.' },
+      { title: 'Déclarer un incident NIS2', content: 'Depuis WORK → menu "Incidents NIS2" ou directement via /prospection-terrain/incidents-nis2.html. Réservé aux administrateurs.' },
     ],
     errors: [
       { q: 'Je n\'ai pas reçu l\'e-mail de réinitialisation', a: 'Vérifiez vos courriers indésirables (spam). L\'expéditeur est noreply@safe-digitalisation.fr. Si l\'e-mail n\'arrive pas après 5 minutes, refaites la demande. En cas de persistance, contactez votre administrateur.' },
@@ -326,7 +326,7 @@ const HELP_VIEWS_DATA = {
       },
     ],
     steps: [
-      { title: 'Accéder aux modules', content: 'Depuis le CRM : menu WORK (sidebar) → sélectionnez le module. Depuis un navigateur : /work/index.html.' },
+      { title: 'Accéder aux modules', content: 'Depuis le CRM : menu WORK (sidebar) → sélectionnez le module. Depuis un navigateur : /prospection-terrain/index.html.' },
       { title: 'Lancer une automatisation', content: 'WORK → "Automatisations" → sélectionnez un client et un contrat → choisissez le workflow → cliquez sur "Lancer".' },
       { title: 'Suivre les actions lancées', content: 'WORK → "Journal des actions". Chaque automatisation est tracée avec horodatage, client concerné et résultat.' },
     ],
