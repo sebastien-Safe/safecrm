@@ -8,6 +8,7 @@ const state = {
   contacts: [],
   contracts: [],
   tasks: [],
+  tournees: [],
   profile: null,
   profilesById: {},
   objectifs: [],
@@ -270,6 +271,13 @@ async function _afterSignatures() {
     sessionStorage.removeItem('safe_work_goto');
     switchView('admin');
     setTimeout(() => switchAdminTab(workGoto), 80);
+    return;
+  }
+  // Lien direct vers une vue via ?v=agenda (ex : depuis la sidebar prospection terrain)
+  const vParam = new URLSearchParams(window.location.search).get('v');
+  if (vParam) {
+    history.replaceState({}, document.title, window.location.pathname);
+    switchView(vParam);
   }
 }
 
@@ -404,7 +412,7 @@ setInterval(checkSessionExpiry, 5 * 60 * 1000); // toutes les 5 min
 // ---------------------------------------------------------
 async function loadAll() {
   await Promise.all([
-    loadContacts(), loadContracts(), loadTasks(),
+    loadContacts(), loadContracts(), loadTasks(), loadTournees(),
     loadProfile(), loadAllProfiles(), loadObjectifs(),
     loadUnreadMessages(), loadInteractions(),
   ]);
@@ -424,6 +432,19 @@ async function loadAll() {
 
 // → déplacé dans contacts/contacts.service.js : loadContacts
 // → déplacé dans contracts/contracts.service.js : loadContracts
+
+async function loadTournees() {
+  const { data, error } = await sb.from('tournees')
+    .select('*, tournee_etapes(*)')
+    .eq('commercial_id', state.user.id)
+    .neq('statut', 'annulée')
+    .order('date_tournee', { ascending: true });
+  if (error) { console.error('Erreur chargement tournées :', error.message); state.tournees = []; return; }
+  state.tournees = (data || []).map(t => ({
+    ...t,
+    etapes: (t.tournee_etapes || []).sort((a, b) => a.ordre - b.ordre),
+  }));
+}
 
 async function loadTasks() {
   const { data, error } = await sb.from('tasks').select('*').eq('created_by', state.user.id).order('echeance', { ascending: true, nullsFirst: false });
@@ -5049,6 +5070,12 @@ function _drawAgendaCalendar() {
     dates.forEach(d => { if (d) { byDate[d] = byDate[d] || []; byDate[d].push(t); } });
   });
 
+  // Index des tournées par date
+  const byDateTournee = {};
+  (state.tournees || []).forEach(t => {
+    if (t.date_tournee) { byDateTournee[t.date_tournee] = byDateTournee[t.date_tournee] || []; byDateTournee[t.date_tournee].push(t); }
+  });
+
   const cells = $('#agenda-cells');
   cells.innerHTML = '';
 
@@ -5060,30 +5087,38 @@ function _drawAgendaCalendar() {
     const isToday = iso === todayStr;
     const isSelected = iso === agendaState.selectedDay;
     const events = byDate[iso] || [];
+    const tourneesDuJour = byDateTournee[iso] || [];
 
     const cell = document.createElement('div');
     cell.className = ['agenda-cell', isToday ? 'today' : '', !isCurrentMonth ? 'other-month' : '', isSelected ? 'selected' : ''].filter(Boolean).join(' ');
-    cell.onclick = () => _selectAgendaDay(iso, events);
+    cell.onclick = () => _selectAgendaDay(iso, events, tourneesDuJour);
 
     let html = `<div class="agenda-cell-num">${d.getDate()}</div>`;
-    events.slice(0, 3).forEach(t => {
+    // Bloc tournée en premier (orange)
+    tourneesDuJour.forEach(tr => {
+      html += `<div class="agenda-event" style="background:rgba(245,158,11,.18);color:#f59e0b;border-left:2px solid #f59e0b">🗺️ Tournée terrain</div>`;
+    });
+    // Tâches et RDV
+    const remaining = 3 - tourneesDuJour.length;
+    events.slice(0, Math.max(0, remaining)).forEach(t => {
       const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
       const late = isOverdue(t.echeance || t.rdv_date, t.statut);
       const cls = late ? 'overdue' : isRdv ? 'rdv' : 'task';
       html += `<div class="agenda-event ${cls}">${escapeHtml(t.titre)}</div>`;
     });
-    if (events.length > 3) html += `<div style="font-size:.6rem;color:var(--mut)">+${events.length - 3}</div>`;
+    const total = tourneesDuJour.length + events.length;
+    if (total > 3) html += `<div style="font-size:.6rem;color:var(--mut)">+${total - 3}</div>`;
     cell.innerHTML = html;
     cells.appendChild(cell);
   }
 
   // Rouvrir le panneau jour si un jour était sélectionné
   if (agendaState.selectedDay) {
-    _renderDayPanel(agendaState.selectedDay, byDate[agendaState.selectedDay] || []);
+    _renderDayPanel(agendaState.selectedDay, byDate[agendaState.selectedDay] || [], byDateTournee[agendaState.selectedDay] || []);
   }
 }
 
-function _renderDayPanel(iso, events) {
+function _renderDayPanel(iso, events, tourneesDuJour = []) {
   const panel = $('#agenda-day-panel');
   const title = $('#agenda-day-title');
   const list  = $('#agenda-day-list');
@@ -5091,17 +5126,57 @@ function _renderDayPanel(iso, events) {
   const label = new Date(iso + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   title.textContent = capitalize(label);
 
-  if (!events.length) {
+  let html = '';
+
+  // ── Blocs tournée ────────────────────────────────────────────────────────────
+  tourneesDuJour.forEach(tr => {
+    const etapes = (tr.etapes || []);
+    const conflits = events.filter(t => t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain');
+    const alerte = conflits.length
+      ? `<div style="margin:8px 0;padding:8px 12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);border-radius:8px;font-size:.78rem;color:#f59e0b">
+           ⚠️ <strong>${conflits.length} RDV déjà programmé${conflits.length > 1 ? 's' : ''} ce jour.</strong>
+           Vérifiez les horaires avant de partir.
+           ${conflits.map(c => {
+             const contact = c.contact_id ? state.contacts.find(x => x.id === c.contact_id) : null;
+             const lieu = c.rdv_lieu || (contact ? [contact.adresse, contact.code_postal, contact.ville].filter(Boolean).join(', ') : '');
+             return `<div style="margin-top:4px;padding-left:10px;border-left:2px solid #f59e0b">
+               ${escapeHtml(c.titre)}${c.rdv_heure ? ' · ' + c.rdv_heure.slice(0,5) : ''}${lieu ? ' · 📍 ' + escapeHtml(lieu) : ''}
+             </div>`;
+           }).join('')}
+         </div>` : '';
+
+    const etapesHtml = etapes.map((e, i) => `
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+        <span style="font-family:monospace;font-size:.72rem;color:#f59e0b;min-width:28px;padding-top:1px">${e.heure_estimee ? e.heure_estimee.slice(0,5) : ('0'+(i+1)).slice(-2)+'h'}</span>
+        <div style="flex:1">
+          <div style="font-size:.83rem;color:#fff;font-weight:600">${escapeHtml(e.label)}</div>
+          ${e.adresse ? `<div style="font-size:.72rem;color:var(--mut)">📍 ${escapeHtml(e.adresse)}</div>` : ''}
+          <div style="font-size:.65rem;color:var(--mut-2);font-family:monospace">${e.source === 'google_places' ? '🌍 Google Places' : e.source === 'sirene' ? '⚡ SIRENE' : '👤 CRM'}</div>
+        </div>
+      </div>`).join('');
+
+    html += `<div style="margin-bottom:14px;padding:14px 16px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.25);border-radius:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:.82rem;font-weight:700;color:#f59e0b">🗺️ Tournée terrain</span>
+        <span style="font-size:.72rem;color:var(--mut)">${tr.heure_depart ? tr.heure_depart.slice(0,5) : ''} · ${tr.nb_etapes || etapes.length} étape${(tr.nb_etapes || etapes.length) > 1 ? 's' : ''} · ${tr.distance_totale_km ? tr.distance_totale_km + ' km' : ''}</span>
+      </div>
+      ${tr.adresse_depart ? `<div style="font-size:.75rem;color:var(--mut);margin-bottom:8px">📍 Départ : ${escapeHtml(tr.adresse_depart)}</div>` : ''}
+      ${alerte}
+      ${etapesHtml || '<div style="font-size:.78rem;color:var(--mut)">Aucune étape enregistrée.</div>'}
+      ${tr.score_co2_kg ? `<div style="margin-top:8px;font-size:.7rem;color:var(--mut);font-family:monospace">🌱 ${parseFloat(tr.score_co2_kg).toFixed(2)} kg CO₂ estimés (ADEME 2024)</div>` : ''}
+    </div>`;
+  });
+
+  if (!events.length && !tourneesDuJour.length) {
     list.innerHTML = `<p style="color:var(--mut);font-size:.85rem">Aucun événement ce jour.</p>
       <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="openTaskModal(null,{type_tache:'RDV terrain',rdv_date:'${iso}'})">📅 Programmer un RDV</button>`;
   } else {
-    list.innerHTML = events.map(t => {
+    html += events.map(t => {
       const isRdv   = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
       const late    = isOverdue(t.echeance || t.rdv_date, t.statut);
       const cls     = late ? 'overdue' : isRdv ? 'rdv' : 'task';
       const meta    = [t.type_tache, t.rdv_heure ? t.rdv_heure.slice(0,5) : null, t.rdv_lieu].filter(Boolean).join(' · ');
 
-      // Fiche mini contact si lié
       const contact = t.contact_id ? state.contacts.find(c => c.id === t.contact_id) : null;
       const lieu    = t.rdv_lieu || (contact ? [contact.adresse, contact.code_postal, contact.ville].filter(Boolean).join(', ') : '');
       const mapsUrl = t.type_tache === 'RDV terrain' && lieu
@@ -5125,15 +5200,16 @@ function _renderDayPanel(iso, events) {
         </div>
         ${!contact && mapsUrl ? `<a href="${mapsUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="btn btn-out btn-sm" style="padding:3px 9px;font-size:.75rem;align-self:center;white-space:nowrap">🗺️ Itinéraire</a>` : ''}
       </div>`;
-    }).join('') + `<button class="btn btn-out btn-sm" style="margin-top:12px;width:100%" onclick="openTaskModal(null,{type_tache:'RDV terrain',rdv_date:'${iso}'})">+ Programmer un RDV ce jour</button>`;
+    }).join('');
+    html += `<button class="btn btn-out btn-sm" style="margin-top:12px;width:100%" onclick="openTaskModal(null,{type_tache:'RDV terrain',rdv_date:'${iso}'})">+ Programmer un RDV ce jour</button>`;
+    list.innerHTML = html;
   }
   panel.style.display = 'block';
 }
 
-function _selectAgendaDay(iso, events) {
+function _selectAgendaDay(iso, events, tourneesDuJour = []) {
   agendaState.selectedDay = iso;
   _drawAgendaCalendar();
-  // Note: _drawAgendaCalendar appellera _renderDayPanel via la logique de re-sélection
 }
 
 async function copyIcalUrl() {
