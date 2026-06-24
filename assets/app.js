@@ -5096,20 +5096,34 @@ function _renderDayPanel(iso, events) {
       <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="openTaskModal(null,{type_tache:'RDV terrain',rdv_date:'${iso}'})">📅 Programmer un RDV</button>`;
   } else {
     list.innerHTML = events.map(t => {
-      const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
-      const late  = isOverdue(t.echeance || t.rdv_date, t.statut);
-      const cls   = late ? 'overdue' : isRdv ? 'rdv' : 'task';
-      const meta  = [t.type_tache, t.rdv_heure ? t.rdv_heure.slice(0,5) : null, t.rdv_lieu].filter(Boolean).join(' · ');
-      const mapsUrl = t.type_tache === 'RDV terrain' && t.rdv_lieu
-        ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(t.rdv_lieu)}&travelmode=driving`
+      const isRdv   = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
+      const late    = isOverdue(t.echeance || t.rdv_date, t.statut);
+      const cls     = late ? 'overdue' : isRdv ? 'rdv' : 'task';
+      const meta    = [t.type_tache, t.rdv_heure ? t.rdv_heure.slice(0,5) : null, t.rdv_lieu].filter(Boolean).join(' · ');
+
+      // Fiche mini contact si lié
+      const contact = t.contact_id ? state.contacts.find(c => c.id === t.contact_id) : null;
+      const lieu    = t.rdv_lieu || (contact ? [contact.adresse, contact.code_postal, contact.ville].filter(Boolean).join(', ') : '');
+      const mapsUrl = t.type_tache === 'RDV terrain' && lieu
+        ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(lieu)}&travelmode=driving`
         : null;
+
+      const contactCard = contact ? `
+        <div style="margin:6px 0 4px;padding:8px 10px;background:rgba(255,255,255,.05);border-radius:6px;font-size:.78rem;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center">
+          <span>👤 <strong>${escapeHtml(contact.nom)}${contact.entreprise ? ' — ' + escapeHtml(contact.entreprise) : ''}</strong></span>
+          ${contact.telephone ? `<a href="tel:${escapeHtml(contact.telephone)}" onclick="event.stopPropagation()" style="color:var(--accent)">📞 ${escapeHtml(contact.telephone)}</a>` : ''}
+          ${contact.email ? `<a href="mailto:${escapeHtml(contact.email)}" onclick="event.stopPropagation()" style="color:var(--accent)">✉️ ${escapeHtml(contact.email)}</a>` : ''}
+          ${mapsUrl ? `<a href="${mapsUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#f59e0b;font-weight:600">🗺️ Itinéraire</a>` : ''}
+        </div>` : '';
+
       return `<div class="agenda-ev-item" onclick="openTaskModal('${t.id}')">
         <div class="agenda-ev-dot ${cls}"></div>
         <div style="flex:1">
           <div class="agenda-ev-title">${escapeHtml(t.titre)}</div>
           ${meta ? `<div class="agenda-ev-meta">${escapeHtml(meta)}</div>` : ''}
+          ${contactCard}
         </div>
-        ${mapsUrl ? `<a href="${mapsUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="btn btn-out btn-sm" style="padding:3px 9px;font-size:.75rem;align-self:center;white-space:nowrap" title="Itinéraire Google Maps">🗺️ Itinéraire</a>` : ''}
+        ${!contact && mapsUrl ? `<a href="${mapsUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="btn btn-out btn-sm" style="padding:3px 9px;font-size:.75rem;align-self:center;white-space:nowrap">🗺️ Itinéraire</a>` : ''}
       </div>`;
     }).join('') + `<button class="btn btn-out btn-sm" style="margin-top:12px;width:100%" onclick="openTaskModal(null,{type_tache:'RDV terrain',rdv_date:'${iso}'})">+ Programmer un RDV ce jour</button>`;
   }
