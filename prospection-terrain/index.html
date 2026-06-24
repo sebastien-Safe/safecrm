@@ -10,6 +10,7 @@
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/plexsans-400.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/sora-800.woff2" crossorigin>
 <link rel="stylesheet" href="/modules/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
 <style>
 :root{
   --navy:#0a1628; --navy-mid:#142240; --blue:#1a3a6e;
@@ -287,6 +288,14 @@ select option{background:var(--navy-mid)}
   #work-burger-btn{display:none !important}
   #work-mob-overlay{display:none !important}
 }
+/* ── TOURNÉE ── */
+.tournee-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:.15s;margin-bottom:4px}
+.tournee-item:hover{background:rgba(255,255,255,.05)}
+.tournee-item.sel{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.35)}
+.tournee-item input[type=checkbox]{margin-top:3px;accent-color:#f59e0b;flex-shrink:0;cursor:pointer}
+.t-dot{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);color:var(--mut);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;transition:.2s}
+.t-dot.done{background:#f59e0b;border-color:#f59e0b;color:#0a1628}
+.t-dot.active{background:transparent;border-color:#f59e0b;color:#f59e0b}
 </style>
 
 </head>
@@ -346,6 +355,7 @@ select option{background:var(--navy-mid)}
         <button class="sidebar-item active" id="nav-dashboard" onclick="showView('dashboard')"><span class="ico">🎯</span> Missions</button>
         <button class="sidebar-item" id="nav-clients" onclick="showView('clients')"><span class="ico">👥</span> Clients</button>
         <button class="sidebar-item" id="nav-tasks"   onclick="showView('tasks')"  ><span class="ico">✅</span> Tâches</button>
+        <button class="sidebar-item" onclick="openTourneeModal()"><span class="ico">🗺️</span> Tournée</button>
       </div>
 
       <div class="sidebar-section" style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line)">
@@ -702,6 +712,72 @@ select option{background:var(--navy-mid)}
   </div>
 </div>
 
+<!-- MODAL TOURNÉE DE PROSPECTION -->
+<div id="tournee-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.75);overflow-y:auto;padding:20px 12px">
+  <div style="background:#0f1f3d;border-radius:16px;max-width:660px;margin:0 auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <!-- Header -->
+    <div style="background:#0a1628;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08)">
+      <div>
+        <div style="font-size:1rem;font-weight:700;color:#fff">🗺️ Tournée de prospection</div>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+          <div class="t-dot active">1</div>
+          <div style="flex:1;height:2px;background:rgba(255,255,255,.12);border-radius:2px"><div id="t-prog-1" style="height:100%;background:#f59e0b;border-radius:2px;width:0%;transition:.3s"></div></div>
+          <div class="t-dot">2</div>
+          <div style="flex:1;height:2px;background:rgba(255,255,255,.12);border-radius:2px"><div id="t-prog-2" style="height:100%;background:#f59e0b;border-radius:2px;width:0%;transition:.3s"></div></div>
+          <div class="t-dot">3</div>
+        </div>
+      </div>
+      <button onclick="closeTourneeModal()" style="background:none;border:none;color:var(--mut);font-size:20px;cursor:pointer;padding:4px 8px">✕</button>
+    </div>
+
+    <!-- Étape 1 : Sélection contacts -->
+    <div id="tournee-step-1" style="padding:20px 22px">
+      <p style="margin:0 0 14px;font-size:.85rem;color:var(--mut-2)">Sélectionnez les contacts à visiter <strong style="color:#fff">(minimum 2)</strong>. Seuls les contacts avec adresse complète sont disponibles.</p>
+      <input type="text" id="tournee-search" oninput="_tourneeBuildList(this.value)" placeholder="🔍 Rechercher…" style="width:100%;box-sizing:border-box;padding:8px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.85rem;margin-bottom:10px;outline:none">
+      <div id="tournee-warn-noaddr" style="display:none;font-size:.78rem;color:var(--warn,#f59e0b);padding:6px 10px;background:rgba(245,158,11,.08);border-radius:6px;margin-bottom:10px"></div>
+      <div id="tournee-contact-list" style="max-height:300px;overflow-y:auto;padding-right:4px"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px">
+        <span id="tournee-sel-count" style="font-size:.82rem;color:#f59e0b;font-weight:600"></span>
+        <button id="tournee-next-1" onclick="_tourneeSetStep(2)" disabled class="btn btn-gold" style="opacity:.5">Continuer →</button>
+      </div>
+    </div>
+
+    <!-- Étape 2 : Paramètres -->
+    <div id="tournee-step-2" style="display:none;padding:20px 22px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <label style="font-size:.75rem;color:var(--mut);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:5px">Date de la tournée</label>
+          <input type="date" id="tournee-date" style="width:100%;box-sizing:border-box;padding:8px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.85rem;outline:none">
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--mut);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:5px">Heure de départ</label>
+          <input type="time" id="tournee-heure-depart" value="09:00" style="width:100%;box-sizing:border-box;padding:8px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.85rem;outline:none">
+        </div>
+      </div>
+      <div style="margin-bottom:18px">
+        <label style="font-size:.75rem;color:var(--mut);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:5px">Adresse de départ</label>
+        <input type="text" id="tournee-depart" placeholder="Ex : 12 rue de la Paix, 75001 Paris" style="width:100%;box-sizing:border-box;padding:8px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.85rem;outline:none">
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <button onclick="_tourneeSetStep(1)" class="btn btn-ghost">← Retour</button>
+        <button id="tournee-calc-btn" onclick="_tourneeCalculer()" class="btn btn-gold">Calculer l'itinéraire →</button>
+      </div>
+    </div>
+
+    <!-- Étape 3 : Résultats -->
+    <div id="tournee-step-3" style="display:none">
+      <div id="tournee-map" style="height:260px;width:100%"></div>
+      <div id="tournee-summary"></div>
+      <div id="tournee-results-list" style="max-height:280px;overflow-y:auto"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-top:1px solid rgba(255,255,255,.08)">
+        <button onclick="_tourneeSetStep(2)" class="btn btn-ghost">← Modifier</button>
+        <button id="tournee-create-btn" onclick="_tourneeCreateAllRdv()" class="btn btn-gold">📅 Créer tous les RDV</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
 <script>
 /* ============================================================
    CONFIG SUPABASE
@@ -1008,7 +1084,7 @@ async function loadStats(){
    ============================================================ */
 async function loadContacts(){
   try {
-    allContacts = await sbGet('contacts','select=id,nom,entreprise,email,telephone,statut,activites,siret,code_postal_ville&order=nom.asc');
+    allContacts = await sbGet('contacts','select=id,nom,entreprise,email,telephone,statut,activites,siret,adresse,code_postal,ville,code_postal_ville&order=nom.asc');
     allContracts = await sbGet('contracts','select=id,contact_id,type,formule,montant,recurrence,statut,date_debut,date_echeance,frais_mise_en_place,engagement_mois&order=created_at.desc');
     renderClientsTable();
     renderAutoContactSelect();
@@ -2068,5 +2144,239 @@ function renderUC() {
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+/* ============================================================
+   TOURNÉE DE PROSPECTION
+   ============================================================ */
+const _ts = { selected: new Set(), map: null, route: [], slots: [], date: '' };
+
+function openTourneeModal() {
+  _ts.selected.clear();
+  _ts.map = null;
+  _tourneeBuildList('');
+  _tourneeSetStep(1);
+  document.getElementById('tournee-search').value = '';
+  document.getElementById('tournee-modal').style.display = 'block';
+}
+
+function closeTourneeModal() {
+  document.getElementById('tournee-modal').style.display = 'none';
+  if (_ts.map) { _ts.map.remove(); _ts.map = null; }
+}
+
+function _tourneeBuildList(filter) {
+  const q = filter.trim().toLowerCase();
+  const withAddr = allContacts.filter(c => c.adresse && (c.code_postal || c.ville));
+  const noAddr   = allContacts.length - withAddr.length;
+  const shown    = q ? withAddr.filter(c => [c.nom, c.entreprise, c.ville].join(' ').toLowerCase().includes(q)) : withAddr;
+
+  const warn = document.getElementById('tournee-warn-noaddr');
+  if (noAddr) { warn.style.display = 'block'; warn.textContent = `⚠️ ${noAddr} contact(s) sans adresse complète — non disponibles dans la tournée.`; }
+  else warn.style.display = 'none';
+
+  const list = document.getElementById('tournee-contact-list');
+  list.innerHTML = shown.length ? shown.map(c => {
+    const sel  = _ts.selected.has(c.id);
+    const addr = [c.adresse, c.code_postal, c.ville].filter(Boolean).join(', ');
+    return `<label class="tournee-item${sel?' sel':''}">
+      <input type="checkbox" value="${c.id}" ${sel?'checked':''} onchange="_tourneeToggle('${c.id}',this.checked)">
+      <div>
+        <div style="color:#fff;font-weight:600;font-size:.88rem">${escHtml(c.nom)}${c.entreprise?` <span style="font-weight:400;color:var(--mut)">— ${escHtml(c.entreprise)}</span>`:''}</div>
+        <div style="font-size:.76rem;color:var(--mut);margin-top:1px">${escHtml(addr)}</div>
+      </div>
+    </label>`;
+  }).join('') : '<p style="color:var(--mut);text-align:center;padding:24px;font-size:.84rem">Aucun contact avec adresse complète.</p>';
+  _tourneeUpdateCount();
+}
+
+function _tourneeToggle(id, checked) {
+  if (checked) _ts.selected.add(id); else _ts.selected.delete(id);
+  const lbl = document.querySelector(`#tournee-contact-list label:has(input[value="${id}"])`);
+  if (lbl) lbl.classList.toggle('sel', checked);
+  _tourneeUpdateCount();
+}
+
+function _tourneeUpdateCount() {
+  const n = _ts.selected.size;
+  const el = document.getElementById('tournee-sel-count');
+  if (el) el.textContent = n > 0 ? `${n} contact${n>1?'s':''} sélectionné${n>1?'s':''}` : '';
+  const btn = document.getElementById('tournee-next-1');
+  if (btn) { btn.disabled = n < 2; btn.style.opacity = n < 2 ? '.4' : '1'; }
+}
+
+function _tourneeSetStep(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('tournee-step-' + i);
+    if (el) el.style.display = i === n ? '' : 'none';
+  });
+  const dots = document.querySelectorAll('.t-dot');
+  dots.forEach((d, i) => {
+    d.classList.toggle('active', i+1 === n);
+    d.classList.toggle('done',   i+1 < n);
+  });
+  document.getElementById('t-prog-1').style.width = n > 1 ? '100%' : '0%';
+  document.getElementById('t-prog-2').style.width = n > 2 ? '100%' : '0%';
+
+  if (n === 2) {
+    const t = new Date(); t.setDate(t.getDate() + 1);
+    document.getElementById('tournee-date').value = t.toISOString().slice(0,10);
+    if (!document.getElementById('tournee-heure-depart').value) document.getElementById('tournee-heure-depart').value = '09:00';
+  }
+  if (n === 3 && _ts.map) { setTimeout(()=>_ts.map.invalidateSize(), 200); }
+}
+
+async function _tourneeCalculer() {
+  const btn = document.getElementById('tournee-calc-btn');
+  btn.disabled = true; btn.textContent = '⏳ Géocodage…';
+  try {
+    const contacts = [..._ts.selected].map(id => allContacts.find(c => c.id === id)).filter(Boolean);
+    const departStr = document.getElementById('tournee-depart').value.trim();
+    if (!departStr) { alert('Veuillez saisir une adresse de départ.'); return; }
+
+    const departCoords = await _geocodeTournee(departStr);
+    if (!departCoords) { alert('Adresse de départ introuvable. Vérifiez et réessayez.'); return; }
+
+    const points = [{ label:'Départ', isDepart:true, adresse:departStr, ...departCoords }];
+
+    for (const c of contacts) {
+      btn.textContent = `⏳ ${escHtml(c.nom)}…`;
+      const addr = [c.adresse, c.code_postal, c.ville].filter(Boolean).join(', ');
+      const coords = await _geocodeTournee(addr);
+      if (!coords) { alert(`Adresse introuvable :\n${c.nom} — ${addr}\n\nVérifiez la fiche contact et réessayez.`); return; }
+      points.push({ label:c.nom, entreprise:c.entreprise||'', adresse:addr, contact:c, ...coords });
+    }
+
+    const route = _tspNN(points);
+    const heureDepart = document.getElementById('tournee-heure-depart').value || '09:00';
+    _ts.date  = document.getElementById('tournee-date').value;
+    _ts.slots = _calcSlots(route, heureDepart);
+    _ts.route = route;
+
+    _tourneeSetStep(3);
+    _tourneeRenderResults(_ts.slots);
+    setTimeout(() => _tourneeRenderMap(route), 150);
+  } catch(e) {
+    alert('Erreur de calcul : ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = "Calculer l'itinéraire →";
+  }
+}
+
+async function _geocodeTournee(adresse) {
+  try {
+    const r = await fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(adresse) + '&limit=1');
+    const d = await r.json();
+    const f = d.features?.[0];
+    if (!f) return null;
+    const [lng, lat] = f.geometry.coordinates;
+    return { lat, lng };
+  } catch { return null; }
+}
+
+function _hvKm(lat1,lng1,lat2,lng2){
+  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+
+function _tspNN(pts) {
+  const vis=new Set([0]), route=[0];
+  while(vis.size<pts.length){
+    const last=route[route.length-1]; let near=-1,minD=Infinity;
+    for(let i=0;i<pts.length;i++){
+      if(!vis.has(i)){const d=_hvKm(pts[last].lat,pts[last].lng,pts[i].lat,pts[i].lng);if(d<minD){minD=d;near=i;}}
+    }
+    vis.add(near); route.push(near);
+  }
+  return route.map(i=>pts[i]);
+}
+
+function _calcSlots(route, heureDepart) {
+  const [h,m] = heureDepart.split(':').map(Number);
+  let t = h*60+m;
+  return route.map((p,i)=>{
+    if(i===0) return {...p, heure:_toT(t), travelMin:0, distKm:0};
+    const prev=route[i-1];
+    const km = _hvKm(prev.lat,prev.lng,p.lat,p.lng);
+    const travelMin = Math.max(5, Math.round(km*1.3/60*60));
+    t += 60 + travelMin;
+    return {...p, heure:_toT(t), travelMin, distKm:Math.round(km*10)/10};
+  });
+}
+
+function _toT(min){ return String(Math.floor(min/60)%24).padStart(2,'0')+':'+String(min%60).padStart(2,'0'); }
+
+function _tourneeRenderResults(slots) {
+  const totalKm = Math.round(slots.slice(1).reduce((s,x)=>s+x.distKm,0));
+  const last    = slots[slots.length-1];
+  const [lh,lm] = last.heure.split(':').map(Number);
+  const endTime = _toT(lh*60+lm+60);
+
+  document.getElementById('tournee-summary').innerHTML = `
+    <div style="display:flex;gap:16px;flex-wrap:wrap;padding:10px 22px;background:rgba(245,158,11,.07);border-bottom:1px solid rgba(255,255,255,.06);font-size:.82rem;color:var(--mut-2)">
+      <span>📍 <strong style="color:#fff">${slots.length-1}</strong> visites</span>
+      <span>🛣️ <strong style="color:#fff">~${totalKm} km</strong></span>
+      <span>🕐 Fin estimée : <strong style="color:#f59e0b">${endTime}</strong></span>
+    </div>`;
+
+  document.getElementById('tournee-results-list').innerHTML = slots.map((s,i)=>`
+    <div style="display:flex;gap:12px;padding:11px 22px;border-bottom:1px solid rgba(255,255,255,.05);align-items:flex-start">
+      <div style="width:26px;height:26px;border-radius:50%;background:${i===0?'rgba(255,255,255,.08)':'#f59e0b'};color:${i===0?'var(--mut)':'#0a1628'};display:flex;align-items:center;justify-content:center;font-size:${i===0?'1rem':'.72rem'};font-weight:700;flex-shrink:0;margin-top:2px">${i===0?'🚗':i}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+          <span style="font-family:monospace;font-size:.9rem;color:#f59e0b;font-weight:700">${s.heure}</span>
+          <span style="color:#fff;font-weight:600;font-size:.88rem">${escHtml(s.label)}${s.entreprise?` <span style="font-weight:400;color:var(--mut)">— ${escHtml(s.entreprise)}</span>`:''}</span>
+        </div>
+        <div style="font-size:.76rem;color:var(--mut);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(s.adresse||'')}</div>
+        ${i>0?`<div style="font-size:.72rem;color:var(--mut);margin-top:2px">🚗 ${s.travelMin} min · ${s.distKm} km depuis l'étape précédente</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function _tourneeRenderMap(points) {
+  const el = document.getElementById('tournee-map');
+  if (!el || typeof L === 'undefined') return;
+  if (_ts.map) { _ts.map.remove(); _ts.map = null; }
+  const map = L.map('tournee-map');
+  _ts.map = map;
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>', maxZoom:18
+  }).addTo(map);
+  const ll = points.map(p=>[p.lat,p.lng]);
+  L.polyline(ll, {color:'#f59e0b',weight:3,opacity:.85}).addTo(map);
+  points.forEach((p,i)=>{
+    const html=`<div style="background:${i===0?'#0a1628':'#f59e0b'};color:${i===0?'#94a3b8':'#0a1628'};border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${i===0?'14px':'11px'};border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)">${i===0?'🚗':i}</div>`;
+    L.marker([p.lat,p.lng],{icon:L.divIcon({html,className:'',iconSize:[26,26],iconAnchor:[13,13]})})
+     .addTo(map).bindPopup(`<b>${escHtml(p.label)}</b>${p.heure?'<br>🕐 '+p.heure:''}`);
+  });
+  map.fitBounds(ll,{padding:[24,24]});
+}
+
+async function _tourneeCreateAllRdv() {
+  const btn = document.getElementById('tournee-create-btn');
+  btn.disabled = true; btn.textContent = '⏳ Création…';
+  let ok = 0;
+  for (const slot of _ts.slots) {
+    if (slot.isDepart || !slot.contact) continue;
+    const c = slot.contact;
+    try {
+      await sbPost('tasks', {
+        created_by: currentUser?.id,
+        contact_id: c.id,
+        titre: `RDV terrain — ${c.nom}${c.entreprise?' ('+c.entreprise+')':''}`,
+        type_tache: 'RDV terrain',
+        rdv_date: _ts.date,
+        rdv_heure: slot.heure + ':00',
+        rdv_lieu: slot.adresse || '',
+        statut: 'À faire',
+        priorite: 'Normale',
+        description: 'RDV généré via Tournée de prospection.',
+      });
+      ok++;
+    } catch(e) { console.error('Erreur création RDV:', e); }
+  }
+  closeTourneeModal();
+  if (typeof loadTasks === 'function') loadTasks();
+  alert(`✅ ${ok} RDV créés dans l'agenda !`);
+}
 
 
