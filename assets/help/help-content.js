@@ -133,6 +133,37 @@ const HELP_VIEWS_DATA = {
     related: ['contacts', 'contracts'],
   },
 
+  agenda: {
+    title: 'Agenda',
+    icon: '📅',
+    roles: 'all',
+    description: 'L\'Agenda affiche vos tâches et RDV sous forme de calendrier mensuel. Il se synchronise avec Google Calendar et Apple Calendar via un flux iCal personnel. Vous pouvez aussi paramétrer vos disponibilités pour permettre à vos prospects de réserver un créneau en ligne.',
+    sections: [
+      {
+        title: 'Fonctionnalités',
+        items: [
+          'Calendrier mensuel avec navigation (mois précédent / suivant)',
+          'RDV terrain et visio affichés avec code couleur',
+          'Synchronisation iCal avec Google / Apple Calendar',
+          'Paramétrage des disponibilités (plages horaires par jour)',
+          'Lien de réservation en ligne à partager aux prospects',
+        ],
+      },
+    ],
+    steps: [
+      { title: 'Copier l\'URL d\'abonnement iCal', content: 'Cliquez sur "📋 Copier l\'URL d\'abonnement" en haut de l\'agenda. Collez cette URL dans Google Calendar (Autres agendas → "Ajouter par URL") ou Apple Calendar (Fichier → "Nouvel abonnement"). Vos RDV CRM apparaîtront automatiquement.' },
+      { title: 'Paramétrer vos disponibilités', content: 'Cliquez sur ⚙️ en haut de l\'agenda. Activez les jours travaillés (Lun–Ven), définissez vos horaires de début/fin et votre pause déjeuner. Cliquez sur "Enregistrer". Les samedis, dimanches et jours fériés français sont automatiquement exclus.' },
+      { title: 'Partager votre lien de réservation', content: 'Dans la fenêtre ⚙️, copiez votre lien de réservation personnalisé et partagez-le dans vos emails (ex. : signature, email rapport audit). Les prospects pourront réserver directement dans vos créneaux libres.' },
+      { title: 'Recevoir et gérer les réservations', content: 'Chaque réservation déclenche un email de notification avec les coordonnées du prospect et un lien vers l\'itinéraire Google Maps. Une tâche "RDV terrain" est créée automatiquement dans vos tâches CRM.' },
+    ],
+    errors: [
+      { q: 'Mon URL iCal ne fonctionne pas', a: 'Rechargez l\'agenda — un token personnel est généré à la première utilisation. Si le problème persiste, contactez votre administrateur.' },
+      { q: 'Un créneau déjà pris apparaît dans la page de réservation', a: 'La page de réservation exclut automatiquement les créneaux occupés (tâches RDV + réservations existantes). Si un créneau incorrect apparaît, vérifiez que la tâche RDV concernée a bien une date et une heure renseignées.' },
+      { q: 'Je ne reçois pas la notification de réservation', a: 'Vérifiez que votre email est bien renseigné dans votre profil CRM. La notification est envoyée à contact@safe-digitalisation.fr par défaut.' },
+    ],
+    related: ['tasks', 'dashboard'],
+  },
+
   objectifs: {
     title: 'Résultats',
     icon: '📊',

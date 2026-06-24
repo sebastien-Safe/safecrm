@@ -598,7 +598,41 @@
           <h2>Agenda</h2>
           <p>Tâches et RDV en cours — synchronisable avec Google / Apple Calendar</p>
         </div>
-        <button class="btn btn-out btn-sm" id="btn-ical-subscribe" onclick="copyIcalUrl()">📋 Copier l'URL d'abonnement</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-out btn-sm" id="btn-ical-subscribe" onclick="copyIcalUrl()">📋 Copier l'URL d'abonnement</button>
+          <button class="btn btn-out btn-sm" onclick="openAgendaSettings()" title="Paramétrer mes disponibilités" style="font-size:16px;padding:6px 10px">⚙️</button>
+        </div>
+      </div>
+
+      <!-- Modal paramétrage disponibilités -->
+      <div id="modal-agenda-settings" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.55);overflow-y:auto">
+        <div style="background:#0f1f3d;border-radius:16px;max-width:560px;margin:40px auto;padding:28px 24px;color:#fff;position:relative">
+          <button onclick="closeAgendaSettings()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer">✕</button>
+          <h3 style="margin:0 0 6px;font-size:17px;font-weight:700">⚙️ Disponibilités pour les RDV clients</h3>
+          <p style="margin:0 0 20px;font-size:13px;color:#94a3b8">Définissez vos plages horaires. Samedis, dimanches et jours fériés sont automatiquement exclus.</p>
+
+          <div id="avail-grid" style="display:flex;flex-direction:column;gap:10px"></div>
+
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <div style="flex:1">
+              <label style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Durée d'un RDV</label>
+              <select id="avail-duree" style="background:#1e3a5f;border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:7px 10px;font-size:13px">
+                <option value="60">1 heure</option>
+              </select>
+            </div>
+            <div style="flex:1;text-align:right;padding-top:18px">
+              <button onclick="saveAvailability()" class="btn btn-primary btn-sm" style="padding:9px 20px">Enregistrer</button>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;background:#0a1628;border-radius:8px;padding:12px 14px">
+            <p style="margin:0 0 6px;font-size:12px;color:#94a3b8">🔗 Lien de réservation à partager avec vos prospects :</p>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="booking-url-display" readonly style="flex:1;background:#162035;border:1px solid rgba(255,255,255,.1);color:#f59e0b;border-radius:6px;padding:7px 10px;font-size:12px;font-family:monospace" value="Chargement…">
+              <button onclick="copyBookingUrl()" class="btn btn-out btn-sm" style="white-space:nowrap">📋 Copier</button>
+            </div>
+          </div>
+        </div>
       </div>
       <!-- Navigation mois -->
       <div class="agenda-nav">

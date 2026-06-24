@@ -567,12 +567,19 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
   <p>Planification de posts réseaux sociaux avec assistance IA, calendrier éditorial, rapports de performance. 6 fichiers JS. <span class="badge b-warn">Beta</span></p>
 
   <h3>Module 7 — Prospection Terrain <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
-  <p>Espace dédié aux commerciaux sur tablette. Accès par code PIN (sessionStorage <code>pt_unlocked</code>). 4 missions disponibles :</p>
+  <p>Espace dédié aux commerciaux sur tablette. Accès par code PIN (sessionStorage <code>pt_unlocked</code>). 3 missions de diagnostic gratuit disponibles :</p>
   <div class="cards-4">
-    <div class="card"><div class="card-title" style="color:#0ea5e9">🔵 Mission RGPD</div><div class="card-body">Audit RGPD prospect. Capture consentement. Envoi rapport PDF par email.</div></div>
-    <div class="card"><div class="card-title" style="color:#22c55e">🟢 Mission SEO</div><div class="card-body">Audit SEO local. Grille d'évaluation. Rapport PDF personnalisé.</div></div>
-    <div class="card"><div class="card-title" style="color:#ef4444">🔴 Mission Cyber</div><div class="card-body">Audit cybersécurité 23 points. Score ANSSI/CIS. PDF de résultats.</div></div>
-    <div class="card"><div class="card-title" style="color:#f59e0b">🟡 Onboarding</div><div class="card-body">Accueil nouveau client. Parcours d'onboarding guidé. Signature des premiers documents.</div></div>
+    <div class="card"><div class="card-title" style="color:#8b5cf6">🟣 Mission RGPD</div><div class="card-body">Audit RGPD prospect. 7 questions wizard mobile-first. Capture consentement. Envoi rapport PDF + email automatique via Brevo (template ID 12).</div></div>
+    <div class="card"><div class="card-title" style="color:#06b6d4">🔵 Mission Cyber</div><div class="card-body">Audit cybersécurité 7 domaines ANSSI. Score de posture. Rapport PDF + email automatique via Brevo (template ID 12).</div></div>
+    <div class="card"><div class="card-title" style="color:#22c55e">🟢 Mission SEO</div><div class="card-body">Audit SEO local Google Business Profile. 6 critères. Rapport PDF + email automatique via Brevo (template ID 12).</div></div>
+  </div>
+  <h3 style="margin-top:20px">Système de prise de RDV intégré <span class="fact-tag ft-v">NOUVEAU</span></h3>
+  <p>Après chaque diagnostic, le prospect peut réserver directement un créneau avec le commercial via un lien personnel tokenisé.</p>
+  <div class="cards">
+    <div class="card"><div class="card-title">⚙️ Paramétrage disponibilités</div><div class="card-body">Modal agenda (icône ⚙️) : le commercial définit ses plages horaires par jour (Lun–Ven), sa pause déjeuner, et génère son lien de réservation unique.</div></div>
+    <div class="card"><div class="card-title">📅 Page de réservation publique</div><div class="card-body"><code>/booking.html?token=XXX</code> — sans authentification. Affiche les créneaux disponibles en temps réel. Samedis, dimanches et jours fériés français exclus automatiquement.</div></div>
+    <div class="card"><div class="card-title">🗺️ Itinéraire sécurisé</div><div class="card-body">Géocodage via <strong>BAN data.gouv.fr</strong> (API officielle, sans clé, données souveraines). Itinéraire ouvert dans Google Maps. Partage natif iOS/Android via Web Share API.</div></div>
+    <div class="card"><div class="card-title">🔒 Sécurité &amp; RGPD</div><div class="card-body">Token UUID opaque (non devinable). Aucune donnée client exposée dans l'URL. Double-booking guard côté Edge Function. Données hébergées exclusivement sur Supabase EU (Paris).</div></div>
   </div>
 
   <h3>Module 8 — Force de Vente &amp; Commissions <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
@@ -788,7 +795,7 @@ Frontend (Module SEO/DPO/Cyber)
     </tbody>
   </table></div>
 
-  <h3>12 types d'emails Brevo <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <h3>13 types d'emails Brevo <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
   <div class="cards-3">
     <div class="card"><div class="card-title">📧 Bienvenue</div><div class="card-body">Création nouveau compte utilisateur</div></div>
     <div class="card"><div class="card-title">🔑 Reset mot de passe</div><div class="card-body">Lien sécurisé, expiration 1h</div></div>
@@ -802,6 +809,7 @@ Frontend (Module SEO/DPO/Cyber)
     <div class="card"><div class="card-title">🔐 Clause confidentialité</div><div class="card-body">Envoi interne + public</div></div>
     <div class="card"><div class="card-title">🚨 Alerte bruteforce</div><div class="card-body">Notification admin ban IP</div></div>
     <div class="card"><div class="card-title">📅 Résiliation</div><div class="card-body">Confirmation résiliation abonnement</div></div>
+    <div class="card" style="border-left:2px solid var(--green)"><div class="card-title">🆓 Rapport diagnostic gratuit</div><div class="card-body">Template ID 12 — Envoi automatique après audit terrain (RGPD / Cyber / SEO). Edge Function <code>send-audit-email</code>. Résultats + recommandations + lien RDV.</div></div>
   </div>
 </div>
 
@@ -927,13 +935,17 @@ Frontend (Module SEO/DPO/Cyber)
   <h3>Parcours Commercial Terrain (Tablette)</h3>
   <ol>
     <li>Accès <code>/prospection-terrain/</code> → saisie PIN 4 chiffres</li>
-    <li>Dashboard 4 cartes missions (RGPD · SEO · Cyber · Onboarding)</li>
-    <li>Choix mission → mode "Nouveau prospect" ou "Client existant"</li>
-    <li>Audit guidé avec le prospect (tablette en main)</li>
-    <li>Capture : email + téléphone + consentement RGPD</li>
-    <li>Génération rapport PDF → envoi email immédiat</li>
-    <li>Prospect créé automatiquement dans le CRM</li>
+    <li>Dashboard 3 cartes missions (RGPD · Cybersécurité · SEO Local)</li>
+    <li>Audit guidé avec le prospect (tablette en main, wizard mobile-first)</li>
+    <li>Capture : nom, email, téléphone, consentement RGPD</li>
+    <li>Génération rapport PDF (impression/sauvegarde) + envoi email automatique (Brevo template 12)</li>
+    <li>Prospect clique le lien RDV dans l'email → page <code>/booking.html?token=XXX</code></li>
+    <li>Choix créneau disponible → confirmation → notification email commercial + création tâche CRM</li>
+    <li>Commercial reçoit lien itinéraire Google Maps (géocodage BAN data.gouv.fr)</li>
   </ol>
+
+  <h3 style="margin-top:20px">Centre d'Aide intégré</h3>
+  <p>Aide contextuelle disponible depuis toutes les vues du CRM via le bouton <strong>?</strong>. Adapté au rôle de l'utilisateur (admin, DCI, commercial). Inclut : description de la vue, guide pas-à-pas, erreurs fréquentes et articles connexes. Aucune documentation externe requise.</p>
 </div>
 
 <!-- ═══════════════════════ PARTIE 9 — AUDIT QUALITÉ ═══════════════════════ -->

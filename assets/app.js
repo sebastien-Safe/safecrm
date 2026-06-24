@@ -5127,6 +5127,120 @@ async function copyIcalUrl() {
 }
 
 // ==========================================================================
+// AGENDA — PARAMÉTRAGE DISPONIBILITÉS & BOOKING TOKEN
+// ==========================================================================
+
+const AVAIL_JOURS = [
+  { key: 'lun', label: 'Lundi' },
+  { key: 'mar', label: 'Mardi' },
+  { key: 'mer', label: 'Mercredi' },
+  { key: 'jeu', label: 'Jeudi' },
+  { key: 'ven', label: 'Vendredi' },
+];
+
+const AVAIL_DEFAULTS = { enabled: true, start: '09:00', end: '18:00', pause_start: '12:00', pause_end: '14:00' };
+
+let _availData = {};
+
+async function openAgendaSettings() {
+  const modal = $('#modal-agenda-settings');
+  modal.style.display = 'block';
+
+  const uid = state.user?.id;
+  if (!uid) return;
+
+  const { data: profile } = await sb.from('profiles').select('availability, booking_token').eq('id', uid).single();
+  _availData = profile?.availability || {};
+
+  // Générer ou afficher le booking_token
+  let token = profile?.booking_token;
+  if (!token) {
+    token = crypto.randomUUID().replace(/-/g, '').slice(0, 24);
+    await sb.from('profiles').update({ booking_token: token }).eq('id', uid);
+  }
+  const bookingUrl = `${window.location.origin}/booking.html?token=${token}`;
+  $('#booking-url-display').value = bookingUrl;
+
+  // Rendre la grille des jours
+  const grid = $('#avail-grid');
+  grid.innerHTML = AVAIL_JOURS.map(({ key, label }) => {
+    const d = _availData[key] || AVAIL_DEFAULTS;
+    return `
+    <div style="background:#162035;border-radius:10px;padding:12px 14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${d.enabled ? '12px' : '0'}">
+        <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0">
+          <input type="checkbox" id="avail-${key}-on" ${d.enabled ? 'checked' : ''} onchange="toggleAvailDay('${key}')" style="opacity:0;width:0;height:0">
+          <span style="position:absolute;inset:0;background:${d.enabled ? '#f59e0b' : '#374151'};border-radius:99px;cursor:pointer;transition:.2s"></span>
+          <span style="position:absolute;left:${d.enabled ? '20px' : '2px'};top:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s"></span>
+        </label>
+        <span style="font-size:14px;font-weight:600;color:${d.enabled ? '#fff' : '#6b7280'}">${label}</span>
+        ${!d.enabled ? '<span style="font-size:11px;color:#4b5563;margin-left:auto">Fermé</span>' : ''}
+      </div>
+      <div id="avail-${key}-detail" style="display:${d.enabled ? 'grid' : 'none'};grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;align-items:center">
+        <div>
+          <label style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Début</label>
+          <input type="time" id="avail-${key}-start" value="${d.start}" style="width:100%;background:#1e3a5f;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:6px;padding:6px 8px;font-size:13px">
+        </div>
+        <div>
+          <label style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Fin</label>
+          <input type="time" id="avail-${key}-end" value="${d.end}" style="width:100%;background:#1e3a5f;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:6px;padding:6px 8px;font-size:13px">
+        </div>
+        <div>
+          <label style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Pause début</label>
+          <input type="time" id="avail-${key}-ps" value="${d.pause_start || '12:00'}" style="width:100%;background:#1e3a5f;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:6px;padding:6px 8px;font-size:13px">
+        </div>
+        <div>
+          <label style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Pause fin</label>
+          <input type="time" id="avail-${key}-pe" value="${d.pause_end || '14:00'}" style="width:100%;background:#1e3a5f;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:6px;padding:6px 8px;font-size:13px">
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAvailDay(key) {
+  const on = $(`#avail-${key}-on`).checked;
+  const detail = $(`#avail-${key}-detail`);
+  detail.style.display = on ? 'grid' : 'none';
+}
+
+function closeAgendaSettings() {
+  $('#modal-agenda-settings').style.display = 'none';
+}
+
+async function saveAvailability() {
+  const uid = state.user?.id;
+  if (!uid) return;
+
+  const avail = {};
+  AVAIL_JOURS.forEach(({ key }) => {
+    const enabled = $(`#avail-${key}-on`)?.checked ?? false;
+    avail[key] = {
+      enabled,
+      start:       $(`#avail-${key}-start`)?.value || '09:00',
+      end:         $(`#avail-${key}-end`)?.value   || '18:00',
+      pause_start: $(`#avail-${key}-ps`)?.value    || '12:00',
+      pause_end:   $(`#avail-${key}-pe`)?.value    || '14:00',
+    };
+  });
+
+  const { error } = await sb.from('profiles').update({ availability: avail }).eq('id', uid);
+  if (error) { alert('Erreur lors de la sauvegarde.'); return; }
+
+  closeAgendaSettings();
+  showNotif('Disponibilités enregistrées ✓', 'success');
+}
+
+function copyBookingUrl() {
+  const url = $('#booking-url-display').value;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('#modal-agenda-settings .btn-out');
+    const orig = btn.textContent; btn.textContent = '✅ Copié !';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+// ==========================================================================
 // RÉGLAGES — REGISTRE FOURNISSEURS TIERS (RGPD art. 28 / NIS2 supply chain)
 // ==========================================================================
 

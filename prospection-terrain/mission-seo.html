@@ -136,6 +136,21 @@ h2,h3{font-family:var(--ff-disp);color:#fff;line-height:1.2;letter-spacing:-.02e
 <div class="toast" id="toast"></div>
 
 <script>
+const _SB_URL = 'https://qdjmzietysukediqkebg.supabase.co';
+const _AUDIT_SECRET = 'safe-audit-2026';
+
+async function sendAuditEmail(to_email, to_name, params) {
+  try {
+    const r = await fetch(`${_SB_URL}/functions/v1/send-audit-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-audit-secret': _AUDIT_SECRET },
+      body: JSON.stringify({ to_email, to_name, params }),
+    });
+    if (r.ok) showToast('Rapport envoyé par email ✓', 'ok');
+    else showToast('PDF généré — email non envoyé', 'warn');
+  } catch { showToast('PDF généré — email non envoyé', 'warn'); }
+}
+
 const Q = [
   {id:'s1', dom:'📋 Fiche Google', q:"Votre fiche Google Business Profile est-elle revendiquée et vérifiée ?",
    opts:[{ico:'✅',l:"Oui, vérifiée et active",r:'ok'},{ico:'⚠️',l:"Revendiquée mais non vérifiée",r:'warn'},{ico:'❌',l:"Non / inexistante",r:'alert'}]},
@@ -256,6 +271,18 @@ table{width:100%;border-collapse:collapse}th{background:#22c55e;color:#fff;paddi
 </body></html>`;
   const w=window.open('','_blank');w.document.write(html);w.document.close();w.onload=()=>w.print();
   closeModal();showToast('Rapport généré !','ok');
+
+  const niveauBg     = pct>=80?'#f0fdf4':pct>=60?'#fffbeb':pct>=40?'#fef2f2':'#fdf4ff';
+  const niveauBorder = pct>=80?'#22c55e':pct>=60?'#f59e0b':'#ef4444';
+  sendAuditEmail(email, nom, {
+    nom, entreprise: ent||'—', email, telephone: tel||'—',
+    mission: 'SEO Local', mission_color: '#22c55e',
+    score: String(pct), niveau: lvl, niveau_color: lvlColor,
+    niveau_bg: niveauBg, niveau_border: niveauBorder,
+    rows, recommandations: '',
+    date: now, conseiller: 'Safe Digitalisation',
+    rdv_url: 'https://crm.safe-digitalisation.fr/booking.html',
+  });
 }
 
 function restart(){

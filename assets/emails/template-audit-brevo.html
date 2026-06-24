@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Votre diagnostic {{ params.mission }} — S@FE</title>
+  <style>
+    /* ── Reset email ── */
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+    body { margin: 0; padding: 0; background-color: #f3f4f6; font-family: Arial, Helvetica, sans-serif; }
+    /* ── Mobile ── */
+    @media only screen and (max-width: 600px) {
+      .email-wrapper { width: 100% !important; }
+      .email-body    { padding: 24px 16px !important; }
+      .score-box     { padding: 20px 16px !important; }
+      .score-pct     { font-size: 44px !important; }
+      .col-half      { display: block !important; width: 100% !important; }
+      .hide-mobile   { display: none !important; }
+      .cta-btn       { display: block !important; text-align: center !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!--[if mso]>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr><td align="center">
+<![endif]-->
+
+<!-- ── Wrapper ── -->
+<table role="presentation" class="email-wrapper" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f3f4f6">
+<tr><td align="center" style="padding: 24px 16px">
+
+  <!-- ── Card ── -->
+  <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+
+    <!-- ══ HEADER ══ -->
+    <tr>
+      <td style="background:#0a1628;padding:22px 28px">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+          <tr>
+            <td style="vertical-align:middle">
+              <!-- Logo S@FE -->
+              <span style="font-size:22px;font-weight:900;color:#ffffff;letter-spacing:-1px;font-family:Arial,sans-serif">
+                S<span style="color:#f59e0b">@</span>FE
+              </span>
+              <span style="display:block;font-size:10px;color:#94a3b8;letter-spacing:2px;text-transform:uppercase;margin-top:2px;font-family:Arial,sans-serif">
+                Safe Digitalisation
+              </span>
+            </td>
+            <td style="text-align:right;vertical-align:middle">
+              <span style="font-size:15px;font-weight:700;color:{{ params.mission_color }};font-family:Arial,sans-serif">
+                Diagnostic {{ params.mission }}
+              </span>
+              <span style="display:block;font-size:11px;color:#94a3b8;margin-top:3px;font-family:Arial,sans-serif">
+                {{ params.date }}
+              </span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ══ BODY ══ -->
+    <tr>
+      <td class="email-body" style="padding:32px 28px">
+
+        <!-- Accroche -->
+        <p style="margin:0 0 8px;font-size:17px;font-weight:700;color:#0a1628;font-family:Arial,sans-serif">
+          Bonjour {{ params.nom }},
+        </p>
+        <p style="margin:0 0 24px;font-size:14px;color:#4b5563;line-height:1.6;font-family:Arial,sans-serif">
+          Voici les résultats de votre diagnostic <strong>{{ params.mission }}</strong> réalisé
+          par votre conseiller S@FE. Ce rapport confidentiel vous est adressé à titre personnel.
+        </p>
+
+        <!-- ── Score box ── -->
+        <table role="presentation" class="score-box" width="100%" cellspacing="0" cellpadding="0" border="0"
+               style="background:{{ params.niveau_bg }};border:2px solid {{ params.niveau_border }};border-radius:12px;margin-bottom:24px">
+          <tr>
+            <td style="padding:24px 20px;text-align:center">
+              <span class="score-pct"
+                    style="display:block;font-size:52px;font-weight:900;color:{{ params.niveau_color }};line-height:1;font-family:Arial,sans-serif">
+                {{ params.score }}%
+              </span>
+              <span style="display:block;font-size:13px;color:#6b7280;margin-top:6px;font-family:Arial,sans-serif">
+                Score {{ params.mission }} — <strong style="color:{{ params.niveau_color }}">{{ params.niveau }}</strong>
+              </span>
+            </td>
+          </tr>
+        </table>
+
+        <!-- ── Coordonnées prospect ── -->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+               style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:24px">
+          <tr>
+            <td style="padding:14px 16px">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td class="col-half" width="50%" style="vertical-align:top;padding-bottom:8px">
+                    <span style="display:block;font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:700;font-family:Arial,sans-serif">Nom</span>
+                    <span style="display:block;font-size:13px;color:#0f172a;margin-top:2px;font-family:Arial,sans-serif">{{ params.nom }}</span>
+                  </td>
+                  <td class="col-half" width="50%" style="vertical-align:top;padding-bottom:8px">
+                    <span style="display:block;font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:700;font-family:Arial,sans-serif">Entreprise</span>
+                    <span style="display:block;font-size:13px;color:#0f172a;margin-top:2px;font-family:Arial,sans-serif">{{ params.entreprise }}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="col-half" width="50%" style="vertical-align:top">
+                    <span style="display:block;font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:700;font-family:Arial,sans-serif">E-mail</span>
+                    <span style="display:block;font-size:13px;color:#0f172a;margin-top:2px;font-family:Arial,sans-serif">{{ params.email }}</span>
+                  </td>
+                  <td class="col-half" width="50%" style="vertical-align:top">
+                    <span style="display:block;font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:700;font-family:Arial,sans-serif">Téléphone</span>
+                    <span style="display:block;font-size:13px;color:#0f172a;margin-top:2px;font-family:Arial,sans-serif">{{ params.telephone }}</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- ── Titre tableau ── -->
+        <p style="margin:0 0 10px;font-size:14px;font-weight:700;color:#0a1628;font-family:Arial,sans-serif">
+          Détail des réponses
+        </p>
+
+        <!-- ── Tableau résultats ── -->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+               style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:24px;font-size:13px;font-family:Arial,sans-serif">
+          <thead>
+            <tr style="background:{{ params.mission_color }}">
+              <th style="padding:9px 12px;text-align:left;color:#ffffff;font-size:11px;letter-spacing:.5px;text-transform:uppercase;font-weight:700;width:55%">Question</th>
+              <th style="padding:9px 12px;text-align:left;color:#ffffff;font-size:11px;letter-spacing:.5px;text-transform:uppercase;font-weight:700" class="hide-mobile">Réponse</th>
+              <th style="padding:9px 12px;text-align:left;color:#ffffff;font-size:11px;letter-spacing:.5px;text-transform:uppercase;font-weight:700">Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{ params.rows }}
+          </tbody>
+        </table>
+
+        <!-- ── Recommandations ── -->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+               style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;margin-bottom:24px">
+          <tr>
+            <td style="padding:16px 18px">
+              <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#166534;font-family:Arial,sans-serif">
+                ✅ Recommandations prioritaires
+              </p>
+              <ul style="margin:0;padding-left:18px;color:#166534;font-size:13px;line-height:1.7;font-family:Arial,sans-serif">
+                {{ params.recommandations }}
+              </ul>
+            </td>
+          </tr>
+        </table>
+
+        <!-- ── CTA ── -->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:28px">
+          <tr>
+            <td align="center">
+              <a class="cta-btn" href="{{ params.rdv_url }}"
+                 style="display:inline-block;background:#f59e0b;color:#0a1628;font-weight:700;font-size:14px;padding:13px 28px;border-radius:8px;text-decoration:none;font-family:Arial,sans-serif">
+                📅 Prendre rendez-vous pour un accompagnement
+              </a>
+            </td>
+          </tr>
+        </table>
+
+        <!-- ── Conseiller ── -->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+               style="background:#f8fafc;border-left:3px solid {{ params.mission_color }};border-radius:0 8px 8px 0;margin-bottom:24px">
+          <tr>
+            <td style="padding:14px 16px">
+              <p style="margin:0 0 2px;font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif">
+                Votre conseiller S@FE
+              </p>
+              <p style="margin:0;font-size:14px;color:#0f172a;font-weight:600;font-family:Arial,sans-serif">
+                {{ params.conseiller }}
+              </p>
+              <p style="margin:4px 0 0;font-size:13px;color:#4b5563;font-family:Arial,sans-serif">
+                contact@safe-digitalisation.fr
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- ── Mention RGPD ── -->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+          <tr>
+            <td style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 14px">
+              <p style="margin:0;font-size:11px;color:#1e40af;line-height:1.5;font-family:Arial,sans-serif">
+                ✓ Consentement RGPD recueilli le {{ params.date }}. {{ params.nom }} ({{ params.email }}) autorise S@FE à conserver
+                ses coordonnées pour le suivi de ce diagnostic. Données non transmises à des tiers — Art. 13 RGPD.
+              </p>
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+
+    <!-- ══ FOOTER ══ -->
+    <tr>
+      <td style="background:#f8fafc;border-top:1px solid #e5e7eb;padding:18px 28px">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+          <tr>
+            <td style="vertical-align:middle">
+              <span style="font-size:11px;color:#9ca3af;font-family:Arial,sans-serif">
+                S@FE · Safe Digitalisation<br>
+                contact@safe-digitalisation.fr
+              </span>
+            </td>
+            <td style="text-align:right;vertical-align:middle">
+              <span style="font-size:11px;color:#9ca3af;font-family:Arial,sans-serif">
+                Rapport généré le {{ params.date }}
+              </span>
+            </td>
+          </tr>
+        </table>
+        <p style="margin:10px 0 0;font-size:10px;color:#d1d5db;text-align:center;font-family:Arial,sans-serif">
+          Vous recevez cet email car vous avez participé à un diagnostic S@FE.
+          Ce rapport est confidentiel et destiné uniquement à son destinataire.
+        </p>
+      </td>
+    </tr>
+
+  </table>
+  <!-- /Card -->
+
+</td></tr>
+</table>
+<!-- /Wrapper -->
+
+<!--[if mso]>
+</td></tr></table>
+<![endif]-->
+
+</body>
+</html>
