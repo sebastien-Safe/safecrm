@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
     action: "api_call",
     done_by: user.id,
     notes: `module call — ${messages.length} messages`,
-  }).then(() => {}).catch(() => {});
+  }).then(() => {}, () => {});
 
   return json({ reply, provider: service_key });
 });
