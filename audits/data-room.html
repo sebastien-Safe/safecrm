@@ -1160,9 +1160,25 @@ Frontend (Module SEO/DPO/Cyber)
                Refonte Pipeline Kanban · Edge Fn v10 · Deno 2.x
                Documentation Data Room</div>
 
-  <h3>Statistiques Git <span class="fact-tag ft-i">INFO À COMPLÉTER</span></h3>
-  <div class="box box-red">
-    <strong>Informations à compléter :</strong> Le dépôt Git n'est pas accessible dans le contexte de ce document. L'éditeur doit fournir : nombre total de commits, date du premier commit, nombre de contributeurs, fréquence des commits (semaine/mois), branches actives. Ces données complèteraient l'évaluation de la vélocité de développement.
+  <h3>Statistiques Git <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-val">724</div><div class="kpi-label">Commits total</div></div>
+    <div class="kpi"><div class="kpi-val">1</div><div class="kpi-label">Contributeur</div></div>
+    <div class="kpi"><div class="kpi-val">13</div><div class="kpi-label">Jours de développement (repo actuel)</div></div>
+    <div class="kpi"><div class="kpi-val">~56</div><div class="kpi-label">Commits / jour (moyenne)</div></div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Métrique</th><th>Valeur</th></tr></thead>
+    <tbody>
+      <tr><td>Auteur principal</td><td><code>sebastien-Safe</code></td></tr>
+      <tr><td>Date premier commit</td><td>11 juin 2026</td></tr>
+      <tr><td>Date dernier commit</td><td>24 juin 2026</td></tr>
+      <tr><td>Jour de pointe</td><td>17 juin 2026 — 187 commits</td></tr>
+      <tr><td>Commandes de vérification</td><td><code>git log --oneline | wc -l</code> · <code>git shortlog -sn</code></td></tr>
+    </tbody>
+  </table></div>
+  <div class="box box-gold">
+    <strong>Note :</strong> L'historique Git débute le 11 juin 2026 (initialisation ou réinitialisation du dépôt). La vélocité de 724 commits en 13 jours (~56/jour) atteste d'une phase d'itération intensive. Si un historique antérieur existe, il peut être reconstitué via les archives de l'éditeur.
   </div>
 </div>
 
@@ -1539,19 +1555,17 @@ Frontend (Module SEO/DPO/Cyber)
     <tbody>
       <tr><td>1</td><td>ARR (Annual Recurring Revenue) actuel</td><td><span class="badge b-err">Critique</span></td><td>Extrait comptable ou relevé Stripe Dashboard</td></tr>
       <tr><td>2</td><td>Nombre de clients actifs et MRR par client</td><td><span class="badge b-err">Critique</span></td><td>Export Stripe Subscriptions</td></tr>
-      <tr><td>3</td><td>Statistiques Git (commits, contributeurs, historique)</td><td><span class="badge b-warn">Important</span></td><td>git log --stat ou rapport GitHub</td></tr>
-      <tr><td>4</td><td>Date de création et du premier commit</td><td><span class="badge b-warn">Important</span></td><td>git log --reverse | head</td></tr>
-      <tr><td>5</td><td>Chiffre d'affaires annuel S@FE SASU</td><td><span class="badge b-err">Critique</span></td><td>Bilan comptable ou liasse fiscale</td></tr>
-      <tr><td>6</td><td>Statut des DPA Groq et xAI</td><td><span class="badge b-warn">Important</span></td><td>Contrats signés ou correspondance</td></tr>
-      <tr><td>7</td><td>Résultats de pentest ou audit sécurité externe</td><td><span class="badge b-warn">Important</span></td><td>Rapport prestataire PASSI</td></tr>
-      <tr><td>8</td><td>Statut dépôt marque INPI "S@FE"</td><td><span class="badge b-warn">Important</span></td><td>Récépissé INPI ou recherche d'antériorité</td></tr>
-      <tr><td>9</td><td>Prix de vente officiels par formule</td><td><span class="badge b-warn">Important</span></td><td>Grille tarifaire commerciale</td></tr>
-      <tr><td>10</td><td>Nombre d'utilisateurs / comptes créés</td><td><span class="badge b-warn">Important</span></td><td>Requête Supabase <code>SELECT count(*) FROM profiles</code></td></tr>
-      <tr><td>11</td><td>Certifications en cours (CNIL Art.42, ISO 27001)</td><td><span class="badge b-info">Utile</span></td><td>Correspondance organisme certificateur</td></tr>
-      <tr><td>12</td><td>Coûts d'exploitation mensuels (Supabase, Stripe, Brevo, IA)</td><td><span class="badge b-warn">Important</span></td><td>Factures fournisseurs</td></tr>
-      <tr><td>13</td><td>Contrats clients signés (clause exclusivité/propriété)</td><td><span class="badge b-err">Critique</span></td><td>Modèle CGU + exemples contrats</td></tr>
-      <tr><td>14</td><td>Identité et statut des associés S@FE SASU</td><td><span class="badge b-warn">Important</span></td><td>Extrait Kbis + statuts société</td></tr>
-      <tr><td>15</td><td>Pipeline commercial (prospects identifiés)</td><td><span class="badge b-info">Utile</span></td><td>Export CRM prospects qualifiés</td></tr>
+      <tr><td>3</td><td>Chiffre d'affaires annuel S@FE SASU</td><td><span class="badge b-err">Critique</span></td><td>Bilan comptable ou liasse fiscale</td></tr>
+      <tr><td>4</td><td>Statut des DPA Groq et xAI</td><td><span class="badge b-warn">Important</span></td><td>Contrats signés ou correspondance</td></tr>
+      <tr><td>5</td><td>Résultats de pentest ou audit sécurité externe</td><td><span class="badge b-warn">Important</span></td><td>Rapport prestataire PASSI</td></tr>
+      <tr><td>6</td><td>Statut dépôt marque INPI "S@FE"</td><td><span class="badge b-warn">Important</span></td><td>Récépissé INPI ou recherche d'antériorité</td></tr>
+      <tr><td>7</td><td>Prix de vente officiels par formule</td><td><span class="badge b-warn">Important</span></td><td>Grille tarifaire commerciale</td></tr>
+      <tr><td>8</td><td>Nombre d'utilisateurs / comptes créés</td><td><span class="badge b-warn">Important</span></td><td>Requête Supabase <code>SELECT count(*) FROM profiles</code></td></tr>
+      <tr><td>9</td><td>Certifications en cours (CNIL Art.42, ISO 27001)</td><td><span class="badge b-info">Utile</span></td><td>Correspondance organisme certificateur</td></tr>
+      <tr><td>10</td><td>Coûts d'exploitation mensuels (Supabase, Stripe, Brevo, IA)</td><td><span class="badge b-warn">Important</span></td><td>Factures fournisseurs</td></tr>
+      <tr><td>11</td><td>Contrats clients signés (clause exclusivité/propriété)</td><td><span class="badge b-err">Critique</span></td><td>Modèle CGU + exemples contrats</td></tr>
+      <tr><td>12</td><td>Identité et statut des associés S@FE SASU</td><td><span class="badge b-warn">Important</span></td><td>Extrait Kbis + statuts société</td></tr>
+      <tr><td>13</td><td>Pipeline commercial (prospects identifiés)</td><td><span class="badge b-info">Utile</span></td><td>Export CRM prospects qualifiés</td></tr>
     </tbody>
   </table></div>
 </div>
