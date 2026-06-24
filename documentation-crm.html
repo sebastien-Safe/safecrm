@@ -965,7 +965,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   <p style="font-size:.8rem;color:var(--txt3);margin-top:6px">Statut audité en live via <code>SELECT * FROM pg_policies WHERE tablename IN ('contacts','contracts','tasks')</code> — aucune divergence entre le schéma local et la base de production.</p>
 
   <div class="info-box" style="margin-top:24px">
-    <strong>Architecture technique :</strong> 10 Edge Functions Supabase (Deno) · Supabase Auth (JWT + TOTP MFA) · RLS hiérarchique sur toutes les tables sensibles (is_admin / is_dci / get_team_ids) · Stripe (abonnements &amp; webhook) · Brevo API v3 (12 types d'envoi) · Supabase Storage (2 buckets) · jsPDF client-side (PDF SEO · RGPD · Cybersécurité · Bordereau) · API Adresse Gouv (autocomplétion) · Groq / Grok / Anthropic / Mistral (connecteurs IA)
+    <strong>Architecture technique :</strong> 18 Edge Functions Supabase (Deno) · Supabase Auth (JWT + TOTP MFA) · RLS hiérarchique sur toutes les tables sensibles (is_admin / is_dci / get_team_ids) · Stripe (abonnements &amp; webhook) · Brevo API v3 (12 types d'envoi) · Supabase Storage (2 buckets) · jsPDF client-side (PDF SEO · RGPD · Cybersécurité · Bordereau) · API Adresse Gouv (autocomplétion) · Groq / Grok / Anthropic / Mistral (connecteurs IA)
   </div>
 </div>
 
@@ -1304,8 +1304,11 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
       <tr><td><code>stripe-webhook</code></td><td>Webhooks Stripe (payment_succeeded · payment_failed)</td><td>Stripe signature</td><td>—</td></tr>
       <tr><td><code>send-mandat-email</code></td><td>Email mandat DCI signé + 8 documents commerciaux (9 pièces jointes au total) depuis Supabase Storage</td><td>JWT</td><td>—</td></tr>
       <tr><td><code>send-clause-email</code></td><td>Email clause de confidentialité (collaborateur + public)</td><td>JWT / public</td><td>—</td></tr>
-      <tr><td><code>test-brevo</code></td><td>Test d'envoi des 9 templates Brevo (admin uniquement)</td><td>Public (admin-only par logique)</td><td>—</td></tr>
-      <tr><td><code>intrusion-guard</code></td><td>Détection bruteforce · Ban IP/email · Journal sécurité</td><td>Aucune (pré-auth)</td><td>—</td></tr>
+      <tr><td><code>send-audit-email</code></td><td>Envoi rapport d'audit terrain (RGPD · SEO · Cyber) PDF + email au prospect</td><td>JWT</td><td>—</td></tr>
+      <tr><td><code>places-search</code></td><td>Proxy sécurisé Google Maps Places Text Search — clé API jamais exposée, résultats lecture seule</td><td>JWT</td><td>—</td></tr>
+      <tr><td><code>create-booking</code></td><td>Création d'un créneau de réservation prospect (anti-double-booking)</td><td>Public (token URL)</td><td>—</td></tr>
+      <tr><td><code>get-booking-slots</code></td><td>Calcul des créneaux disponibles pour la page de réservation publique</td><td>Public (token URL)</td><td>—</td></tr>
+      <tr><td><code>record-login-failure</code></td><td>Anti-bruteforce : enregistre tentatives, ban IP/email · Journal sécurité</td><td>Aucune (pré-auth)</td><td>—</td></tr>
     </tbody>
   </table>
   </div>
@@ -1656,14 +1659,14 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <li><strong>🚀 Démarrage — Double moteur de recherche</strong> :
       <ul style="margin-top:6px">
         <li><strong>SIRENE (data.gouv.fr)</strong> : ciblage sectoriel par 8 boutons ou mot-clé libre · rayon 5/10/25/50 km · résultats triés par distance · données souveraines, sans clé API.</li>
-        <li><strong>Google Maps Places API</strong> : recherche libre par nom ou activité · proxy Edge Function sécurisé (<code>places-search</code>) · clé jamais exposée au client · résultats en <strong>lecture seule uniquement</strong> (CGU EEE + RGPD).</li>
+        <li><strong>Google Maps Places API</strong> : recherche en 3 étapes guidées (Secteur → Localisation → Résultats) · proxy Edge Function sécurisé (<code>places-search</code>) · clé jamais exposée au client · résultats en <strong>lecture seule uniquement</strong> (CGU EEE + RGPD) · établissements fermés exclus · bouton "+ Tournée" par résultat.</li>
       </ul>
     </li>
     <li><strong>⚡ Rate limiting Google Places</strong> : 20 recherches/mois/utilisateur · 5 000 recherches/mois global · log RGPD conservé dans <code>places_search_logs</code> (requête + nombre de résultats, jamais les données d'entreprises).</li>
     <li><strong>🔒 Garde-fous RGPD Places API</strong> : bannière permanente "Données Google — Lecture seule" sur les résultats · formulaire de consentement entièrement vierge (aucun pré-remplissage) · attribution "Propulsé par Google" obligatoire · Google Maps Platform déclaré sous-traitant au registre Art.30.</li>
     <li><strong>✅ Capture consentement post-audit</strong> : en fin d'audit gratuit (RGPD · SEO · Cyber), saisie obligatoire : nom entreprise · nom signataire · email · case "Consentement oral obtenu" cochée. Sans consentement, le rapport ne part pas et aucune fiche n'est créée dans le CRM.</li>
     <li><strong>⚠️ Garde-fou "À compléter"</strong> : toute fiche créée apparaît dans le pipeline kanban avec un badge orange "À compléter". Création de contrat bloquée jusqu'à complétion manuelle (nom, email, téléphone, consentements).</li>
-    <li><strong>🗺️ Lancer l'itinéraire — Tournée optimisée</strong> : sélection de contacts et/ou cibles Google Places (max 5 étapes), calcul TSP nearest-neighbor, créneaux horaires automatiques (60 km/h · 60 min/RDV). La tournée est enregistrée dans l'agenda CRM avec ses étapes ordonnées (tables <code>tournees</code> + <code>tournee_etapes</code>).</li>
+    <li><strong>🗺️ Lancer l'itinéraire — Tournée optimisée</strong> : sélection de cibles SIRENE et/ou Google Places (max 5 étapes — <strong>contrainte éco</strong>), calcul TSP nearest-neighbor, créneaux horaires automatiques (60 km/h · facteur route 1,3 · 60 min/visite). La tournée est enregistrée dans l'agenda CRM avec ses étapes ordonnées (tables <code>tournees</code> + <code>tournee_etapes</code>). Les données cibles sont <strong>éphémères</strong> (RGPD) : aucun prospect n'est persisté sans consentement explicite. La tournée apparaît dans l'agenda principal (blocs orange 🗺️) avec alertes si un RDV est déjà planifié ce jour.</li>
     <li><strong>🌿 Éco-responsabilité — Limites kilométriques RSE</strong> :
       <ul style="margin-top:6px">
         <li>NIV1 (<code>role=user</code>) : <strong>100 km/tournée</strong> max — périmètre départemental (~12 kg CO₂)</li>
