@@ -506,7 +506,7 @@ select option{background:var(--navy-mid)}
             </div>
             <div id="cible-results-list"></div>
             <div id="cible-tournee-hint" style="display:none;margin-top:14px;padding:12px 16px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;font-size:.84rem;color:var(--gold)">
-              ✅ <strong><span id="cible-added-count">0</span></strong> fiche(s) prospect créée(s) — <span style="color:var(--mut-2);font-size:.8rem">marquées "À compléter" jusqu'à la visite</span>
+              ✅ <strong><span id="cible-added-count">0</span></strong> cible(s) SIRENE sélectionnée(s) — <span style="color:var(--mut-2);font-size:.8rem">fiche à créer après la visite</span>
               <button class="btn btn-gold btn-sm" style="margin-left:10px" onclick="openTourneeModal()">🗺️ Lancer l'itinéraire →</button>
             </div>
           </div>
@@ -514,6 +514,7 @@ select option{background:var(--navy-mid)}
 
           <!-- Moteur Google Places -->
           <div id="engine-places" style="display:none">
+            <!-- Bandeau RGPD + quota (toujours visibles) -->
             <div class="places-rgpd">
               <span>⚠️</span>
               <div><b>Données Google — lecture seule.</b> Les résultats proviennent de Google Maps Platform. Ils ne sont <b>jamais enregistrés</b> dans le CRM. Seuls le nom et l'adresse publics (B2B) sont conservés dans la tournée — RGPD Art.6(1)(f) intérêt légitime.</div>
@@ -523,26 +524,56 @@ select option{background:var(--navy-mid)}
               <div class="places-quota-bar"><div class="places-quota-fill" id="places-quota-fill" style="width:0%"></div></div>
               <span id="places-quota-pct" style="min-width:32px;text-align:right;color:var(--mut)"></span>
             </div>
-            <div style="font-family:var(--ff-mono);font-size:.62rem;letter-spacing:.12em;color:var(--mut);text-transform:uppercase;margin-bottom:8px">Secteur (optionnel — pré-remplit la recherche)</div>
-            <div class="sector-grid" style="margin-bottom:14px">
-              <button class="sector-btn" onclick="_placesQuickSector(this,'restaurant')"><span class="s-ico">🍽️</span>Restauration</button>
-              <button class="sector-btn" onclick="_placesQuickSector(this,'boulangerie')"><span class="s-ico">🥖</span>Boulangerie</button>
-              <button class="sector-btn" onclick="_placesQuickSector(this,'boucherie')"><span class="s-ico">🥩</span>Boucherie</button>
-              <button class="sector-btn" onclick="_placesQuickSector(this,'fleuriste')"><span class="s-ico">💐</span>Fleuriste</button>
-              <button class="sector-btn" onclick="_placesQuickSector(this,'garage automobile')"><span class="s-ico">🔧</span>Garage auto</button>
-              <button class="sector-btn" onclick="_placesQuickSector(this,'hotel gite')"><span class="s-ico">🛏️</span>Hôtel / Gîte</button>
-              <button class="sector-btn" onclick="_placesQuickSector(this,'coiffeur salon')"><span class="s-ico">✂️</span>Coiffeur</button>
-              <button class="sector-btn" onclick="_placesQuickSector(this,'pharmacie')"><span class="s-ico">💊</span>Pharmacie</button>
+            <!-- Stepper -->
+            <div class="ciblage-stepper">
+              <div class="step-dot active" id="pdot-1">1</div>
+              <div class="step-line" id="pline-1"></div>
+              <div class="step-dot" id="pdot-2">2</div>
+              <div class="step-line" id="pline-2"></div>
+              <div class="step-dot" id="pdot-3">3</div>
             </div>
-            <div class="field">
-              <label>🔍 Recherche Google Places (secteur + ville)</label>
-              <div style="display:flex;gap:8px">
-                <input id="places-query" type="text" placeholder="Ex : boulangerie Lyon 2e, fleuriste Grenoble…" style="flex:1">
-                <button class="btn btn-pri" onclick="_placesSearch()" id="places-search-btn">Chercher</button>
+            <!-- Étape 1 — Secteur -->
+            <div class="step-content active" id="pstep-1">
+              <div style="font-size:.88rem;color:var(--mut-2);margin-bottom:16px">Quel secteur souhaitez-vous prospecter ?</div>
+              <div class="sector-grid">
+                <button class="sector-btn" onclick="_placesQuickSector(this,'restaurant')"><span class="s-ico">🍽️</span>Restauration</button>
+                <button class="sector-btn" onclick="_placesQuickSector(this,'boulangerie')"><span class="s-ico">🥖</span>Boulangerie</button>
+                <button class="sector-btn" onclick="_placesQuickSector(this,'boucherie')"><span class="s-ico">🥩</span>Boucherie</button>
+                <button class="sector-btn" onclick="_placesQuickSector(this,'fleuriste')"><span class="s-ico">💐</span>Fleuriste</button>
+                <button class="sector-btn" onclick="_placesQuickSector(this,'garage automobile')"><span class="s-ico">🔧</span>Garage auto</button>
+                <button class="sector-btn" onclick="_placesQuickSector(this,'hotel gite chambre')"><span class="s-ico">🛏️</span>Hôtel / Gîte</button>
+                <button class="sector-btn" onclick="_placesQuickSector(this,'coiffeur salon')"><span class="s-ico">✂️</span>Coiffeur</button>
+                <button class="sector-btn" onclick="_placesQuickSector(this,'pharmacie')"><span class="s-ico">💊</span>Pharmacie</button>
+              </div>
+              <div class="field">
+                <label>Ou saisissez un autre secteur</label>
+                <input id="places-sector-input" type="text" placeholder="Ex : caviste, poissonnier, chocolatier…">
+              </div>
+              <div style="display:flex;justify-content:flex-end;margin-top:8px">
+                <button class="btn btn-gold" onclick="_placesStep1Next()">Suivant →</button>
               </div>
             </div>
-            <div id="places-results-wrap" style="display:none;margin-top:16px">
-              <div id="places-result-title" style="font-size:.82rem;color:var(--mut-2);margin-bottom:10px"></div>
+            <!-- Étape 2 — Localisation -->
+            <div class="step-content" id="pstep-2">
+              <div style="font-size:.88rem;color:var(--mut-2);margin-bottom:18px">Dans quelle zone souhaitez-vous prospecter ?</div>
+              <div class="field" style="margin-bottom:16px">
+                <label>📍 Ville ou zone</label>
+                <div style="display:flex;gap:8px">
+                  <input id="places-ville" type="text" placeholder="Ville, département, région…" style="flex:1">
+                  <button class="btn btn-out btn-sm" id="places-geo-btn" onclick="_placesGeolocate()" title="Utiliser ma position GPS">📡</button>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:20px">
+                <button class="btn btn-out" onclick="_placesSetStep(1)">← Retour</button>
+                <button class="btn btn-gold" id="places-search-btn" onclick="_placesStep2Search()">🔍 Rechercher</button>
+              </div>
+            </div>
+            <!-- Étape 3 — Résultats -->
+            <div class="step-content" id="pstep-3">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                <div id="places-result-title" style="font-size:.82rem;color:var(--mut-2)"></div>
+                <button class="btn btn-out btn-sm" onclick="_placesSetStep(2)">← Modifier la zone</button>
+              </div>
               <div id="places-results-list"></div>
               <div class="places-attrib">Propulsé par Google</div>
               <div id="places-tournee-hint" style="display:none;margin-top:10px;padding:10px 14px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:10px;font-size:.82rem;color:var(--accent)">
@@ -2351,7 +2382,7 @@ async function _cibleSearch(){
 
   // 2. API SIRENE — filtrage géographique via nom de commune (q=) car le param departement est ignoré par l'API
   const _fetchSirene = async (q, naf, limit) => {
-    const p = new URLSearchParams({ per_page: String(limit) });
+    const p = new URLSearchParams({ per_page: String(limit), etat_administratif: 'A' });
     if(naf) p.set('activite_principale', naf);
     if(q)   p.set('q', q);
     const r = await fetch('https://recherche-entreprises.api.gouv.fr/search?' + p.toString());
@@ -2547,6 +2578,59 @@ let _placesTargets  = [];  // cibles sélectionnées pour la tournée (éphémè
 let _placesResults  = [];  // résultats de la dernière recherche (éphémère)
 let _userProfile    = null;
 
+let _placesSector = '';
+let _placesVille  = '';
+
+function _placesSetStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const s = document.getElementById('pstep-' + i);
+    if (s) s.classList.toggle('active', i === n);
+    const dot = document.getElementById('pdot-' + i);
+    if (dot) { dot.classList.remove('active','done'); dot.classList.add(i === n ? 'active' : i < n ? 'done' : ''); }
+    const line = document.getElementById('pline-' + i);
+    if (line) line.classList.toggle('done', i < n);
+  }
+}
+
+function _placesStep1Next() {
+  const kw = document.getElementById('places-sector-input')?.value.trim() || '';
+  if (!_placesSector && !kw) { showToast('Sélectionnez un secteur ou saisissez un mot-clé', 'err'); return; }
+  if (kw) _placesSector = kw;
+  const saved = localStorage.getItem('pt_depart') || '';
+  const villeEl = document.getElementById('places-ville');
+  if (saved && villeEl && !villeEl.value) villeEl.value = saved;
+  _placesSetStep(2);
+}
+
+function _placesStep2Search() {
+  const ville = document.getElementById('places-ville')?.value.trim() || '';
+  if (!ville) { showToast('Saisissez une ville ou zone', 'err'); return; }
+  _placesVille = ville;
+  localStorage.setItem('pt_depart', ville);
+  _placesSetStep(3);
+  _placesSearch();
+}
+
+function _placesGeolocate() {
+  if (!navigator.geolocation) { showToast('Géolocalisation non disponible', 'err'); return; }
+  const btn = document.getElementById('places-geo-btn');
+  btn.textContent = '…'; btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude: lat, longitude: lng } = pos.coords;
+    try {
+      const r = await fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${lng}&lat=${lat}`);
+      const d = await r.json();
+      const p = d.features?.[0]?.properties;
+      if (p) {
+        const s = (p.postcode || '') + ' ' + (p.city || p.municipality || '');
+        const el = document.getElementById('places-ville');
+        if (el) { el.value = s.trim(); localStorage.setItem('pt_depart', s.trim()); }
+      }
+    } catch { /* GPS ok, reverse failed */ }
+    btn.textContent = '📡'; btn.disabled = false;
+  }, () => { showToast('Position GPS indisponible', 'err'); btn.textContent = '📡'; btn.disabled = false; });
+}
+
 function _cibleSetEngine(eng) {
   _cibleEngine = eng;
   document.getElementById('engine-sirene').style.display = eng === 'sirene' ? '' : 'none';
@@ -2559,8 +2643,9 @@ function _cibleSetEngine(eng) {
 function _placesQuickSector(btn, sector) {
   document.querySelectorAll('#engine-places .sector-btn').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
-  document.getElementById('places-query').value = sector;
-  document.getElementById('places-query').focus();
+  _placesSector = sector;
+  const inp = document.getElementById('places-sector-input');
+  if (inp) { inp.value = ''; }
 }
 
 function _getJWT() {
@@ -2621,10 +2706,9 @@ async function _placesLoadQuota() {
 async function _placesSearch() {
   const jwt = _getJWT();
   if (!jwt) { showToast('Connectez-vous au CRM pour utiliser Google Places', 'err'); return; }
-  const q = document.getElementById('places-query').value.trim();
-  if (!q) { showToast('Saisissez un type d\'établissement + ville', 'err'); return; }
+  const q = (_placesSector + ' ' + _placesVille).trim();
+  if (!q) { showToast('Secteur et ville requis', 'err'); return; }
 
-  // Toast RGPD première utilisation (moins intrusif qu'un confirm)
   if (!sessionStorage.getItem('places_rgpd_ok')) {
     showToast('⚠️ Résultats Google Maps — lecture seule, non enregistrés dans le CRM', 'info');
     sessionStorage.setItem('places_rgpd_ok', '1');
@@ -2632,10 +2716,8 @@ async function _placesSearch() {
 
   const btn = document.getElementById('places-search-btn');
   btn.disabled = true; btn.textContent = '⏳…';
-  const wrap = document.getElementById('places-results-wrap');
-  const list = document.getElementById('places-results-list');
+  const list  = document.getElementById('places-results-list');
   const title = document.getElementById('places-result-title');
-  wrap.style.display = 'block';
   list.innerHTML = '<div style="text-align:center;padding:28px;color:var(--mut)"><div class="spinner" style="margin:0 auto 10px"></div>Recherche Google Places…</div>';
 
   try {
@@ -2657,45 +2739,42 @@ async function _placesSearch() {
   } catch(e) {
     list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--alert)">⚠️ ${escHtml(e.message)}</div>`;
   } finally {
-    btn.disabled = false; btn.textContent = 'Chercher';
+    btn.disabled = false; btn.textContent = '🔍 Rechercher';
   }
 }
 
 function _placesRenderItem(p, i) {
-  const isSel = _placesTargets.some(t => t.place_id === p.place_id);
+  const isSel  = _placesTargets.some(t => t.place_id === p.place_id);
   const bdgMap = { gold:'p-gold', green:'p-green', blue:'p-blue', orange:'p-orange', gray:'p-gray' };
-  const bdg = p.prospect ? `<span class="prospect-bdg ${bdgMap[p.prospect.color]||'p-gray'}">${p.prospect.label}</span>` : '';
+  const bdg    = p.prospect ? `<span class="prospect-bdg ${bdgMap[p.prospect.color]||'p-gray'}">${p.prospect.label}</span>` : '';
   const closed = p.status === 'CLOSED_TEMPORARILY' ? '<span class="places-closed">Fermé temporairement</span>' : '';
-  const stars = p.rating ? `⭐ ${p.rating} (${p.ratings_total} avis)` : p.ratings_total === 0 ? '0 avis — sans présence' : '';
+  const stars  = p.rating ? `⭐ ${p.rating} (${p.ratings_total} avis)` : p.ratings_total === 0 ? '0 avis — sans présence' : '';
   const noHours = !p.has_hours ? '<span style="font-size:.63rem;color:var(--mut-2)">Pas d\'horaires Google</span>' : '';
-  return `<label class="places-item${isSel?' sel':''}" id="places-item-${i}">
-    <input type="checkbox"${isSel?' checked':''} onchange="_placesToggle(${i},this)">
-    <div class="places-item-body">
-      <div class="places-nom">${escHtml(p.name||'—')}</div>
-      <div class="places-addr">${escHtml(p.address||'—')}</div>
-      <div class="places-meta">${bdg}${closed}${stars?`<span>${stars}</span>`:''}${noHours}</div>
+  return `<div class="cible-result" id="places-item-${i}">
+    <div class="cible-result-body">
+      <div class="cible-nom">${escHtml(p.name||'—')}</div>
+      <div class="cible-addr">${escHtml(p.address||'—')}</div>
+      <div class="cible-meta">${bdg}${closed}${stars?`<span>${stars}</span>`:''}${noHours}</div>
     </div>
-  </label>`;
+    <button class="cible-add${isSel?' done':''}" id="places-btn-${i}" onclick="_placesAddResult(${i},this)">${isSel?'✓ Ajouté':'+ Tournée'}</button>
+  </div>`;
 }
 
-function _placesToggle(idx, checkbox) {
+function _placesAddResult(idx, btn) {
   const p = _placesResults[idx];
   if (!p) return;
-  const item = document.getElementById('places-item-' + idx);
-  if (checkbox.checked) {
-    const total = _ts.selected.size + _placesTargets.length;
-    if (total >= 5) {
-      checkbox.checked = false;
-      showToast('Maximum 5 étapes par tournée (limite éco S@FE)', 'err');
-      return;
-    }
-    _placesTargets.push({ place_id:p.place_id, label:p.name, adresse:p.address, lat:p.lat, lng:p.lng, source:'google_places' });
-    item?.classList.add('sel');
-  } else {
+  const alreadySel = _placesTargets.some(t => t.place_id === p.place_id);
+  if (alreadySel) {
     _placesTargets = _placesTargets.filter(t => t.place_id !== p.place_id);
-    item?.classList.remove('sel');
+    btn.textContent = '+ Tournée'; btn.classList.remove('done');
+  } else {
+    const total = _ts.selected.size + _sireneTargets.length + _placesTargets.length;
+    if (total >= 5) { showToast('Maximum 5 étapes par tournée (limite éco S@FE)', 'err'); return; }
+    _placesTargets.push({ place_id:p.place_id, label:p.name, adresse:p.address, lat:p.lat, lng:p.lng, source:'google_places' });
+    btn.textContent = '✓ Ajouté'; btn.classList.add('done');
   }
   _placesUpdateHint();
+  _tourneeBuildList('');
 }
 
 function _placesUpdateHint() {
