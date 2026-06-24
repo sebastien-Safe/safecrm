@@ -184,7 +184,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <li><a href="#s10"><span class="num">10</span>Documents &amp; PDF</a></li>
     <li><a href="#s11"><span class="num">11</span>Administration</a></li>
     <li><a href="#s12"><span class="num">12</span>Droits par Rôle</a></li>
-    <li><a href="#s13"><span class="num">13</span>Modules Work IA (SEO · DPO · Cyber)</a></li>
+    <li><a href="#s13"><span class="num">13</span>Modules IA &amp; Missions Terrain (SEO · DPO · Cyber)</a></li>
     <li><a href="#s14"><span class="num">14</span>Architecture Technique &amp; Schémas</a></li>
     <li><a href="#s15"><span class="num">15</span>Documents Juridiques &amp; Conformité</a></li>
     <li><a href="#s16"><span class="num">16</span>Journal RGPD — Registre des traitements &amp; traçabilité</a></li>
@@ -207,7 +207,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   <h3>Navigation &amp; accès aux modules</h3>
   <p>Le CRM est une Single Page Application (<code>index.html</code>). La navigation se fait via la <strong>barre latérale gauche</strong> (sidebar). Depuis la refonte Pipeline (2026), les anciennes vues "Contacts" et "Contrats" séparées ont été remplacées par un <strong>Pipeline Kanban unifié</strong> (🗂️ Pipeline) qui regroupe les deux en une seule vue Kanban. Les vues Tâches, Résultats, Messages et Administration restent distinctes.</p>
   <div class="info-box" style="margin-bottom:20px">
-    <strong>Accès WORK :</strong> L'espace WORK (<code>/prospection-terrain/index.html</code>) est distinct du CRM principal. Il est accessible depuis la sidebar (lien WORK) ou directement par URL. Un bouton <strong>← CRM</strong> est présent dans la topbar de toutes les pages WORK pour revenir au CRM.
+    <strong>Espace Prospection Terrain :</strong> L'espace <code>/prospection-terrain/index.html</code> est distinct du CRM principal. Accès par <strong>code PIN à 4 chiffres</strong> (sessionStorage <code>pt_unlocked</code>) — aucune authentification Supabase requise, accessible à tout commercial sur tablette. La topbar affiche le bouton <strong>← CRM</strong> pour revenir au CRM. Sidebar épurée : Missions · Clients · Tâches uniquement.
   </div>
 
   <h3>Connexion &amp; Gestion de session</h3>
@@ -970,15 +970,20 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
 </div>
 
 <!-- ══════════════════════════════════════════════════════════ -->
-<!-- 13. MODULES WORK IA -->
+<!-- 13. MODULES IA & MISSIONS TERRAIN -->
 <!-- ══════════════════════════════════════════════════════════ -->
 <div class="section page-break" id="s13">
   <div class="section-header">
     <div class="section-num">13</div>
-    <div class="section-title">Modules Work IA — SEO · DPO · Cybersécurité</div>
+    <div class="section-title">Modules IA &amp; Missions Terrain — SEO · DPO · Cybersécurité</div>
   </div>
 
-  <p>Les modules Work sont des espaces de travail avancés accessibles depuis <code>/prospection-terrain/index.html</code>. Ils exploitent les connecteurs IA pour produire des analyses, rapports et alertes personnalisés pour chaque client.</p>
+  <p>Deux types d'entrées donnent accès aux outils IA :</p>
+  <ul>
+    <li><strong>Missions Terrain</strong> (<code>/prospection-terrain/mission-*.html</code>) — 4 fichiers autonomes lancés depuis le tableau de bord de Prospection Terrain, en mode <em>nouveau prospect</em> ou <em>client existant</em>. Outils d'aide à la vente utilisés sur tablette lors de visites commerciales.</li>
+    <li><strong>Modules IA</strong> (<code>/modules/SEO/</code>, <code>/modules/DPO/</code>, <code>/modules/Cyber/</code>) — espaces de travail approfondis, accessibles depuis le CRM principal pour un suivi client continu.</li>
+  </ul>
+  <p>Tous exploitent la Edge Function <code>call-ia</code> pour produire analyses, rapports et alertes personnalisés.</p>
 
   <h3>Connecteurs IA</h3>
   <p>Quatre fournisseurs d'IA sont supportés, interrogés dans l'ordre de priorité suivant via la Edge Function <code>call-ia</code> :</p>
@@ -1076,7 +1081,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
 
   <h3>Flux PDF → Email (commun aux 3 modules)</h3>
   <div class="flow-row">
-    <div class="flow-box navy">Assistant Work</div>
+    <div class="flow-box navy">Missions Terrain</div>
     <div class="flow-arrow">→</div>
     <div class="flow-box gold">jsPDF (client-side)</div>
     <div class="flow-arrow">→</div>
@@ -1332,7 +1337,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
       <div class="chart-bar-col">
         <div class="chart-val">95%</div>
         <div class="chart-bar" style="height:95%;background:#06b6d4"></div>
-        <div class="chart-label">Modules<br>Work IA</div>
+        <div class="chart-label">Modules<br>IA</div>
       </div>
       <div class="chart-bar-col">
         <div class="chart-val">100%</div>
@@ -1360,7 +1365,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     </div>
     <div class="feature-card">
       <div class="fc-title">⚙️ Backend</div>
-      <div class="fc-body">Supabase (PostgreSQL 15 · Auth · Storage · Edge Functions Deno) · Row Level Security sur toutes les tables</div>
+      <div class="fc-body">Supabase (PostgreSQL 15 · Auth · Storage · Edge Functions Deno 2.x) · Row Level Security sur toutes les tables · <code>Deno.serve()</code> natif · Import map <code>supabase/functions/deno.json</code> (aliases bare → <code>npm:</code>/<code>jsr:</code>)</div>
     </div>
     <div class="feature-card">
       <div class="fc-title">🔌 APIs tierces</div>
@@ -1591,8 +1596,8 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <div class="section-title">Sécurité NIS2 — Incidents, MFA, Registre fournisseurs</div>
   </div>
 
-  <h3>Module Incidents NIS2 (<code>/prospection-terrain/incidents-nis2.html</code>)</h3>
-  <p>Accessible depuis WORK → Incidents NIS2 ou Administration → Réglages. Réservé aux administrateurs. Chaque incident est enregistré dans la table <code>incidents_nis2</code> (RLS : admins uniquement) et logué dans <code>audit_logs</code>.</p>
+  <h3>Module Incidents NIS2 (<code>/modules/Cyber/incidents-nis2.html</code>)</h3>
+  <p>Accessible depuis le module Cybersécurité ou Administration → Réglages. Réservé aux administrateurs. Chaque incident est enregistré dans la table <code>incidents_nis2</code> (RLS : admins uniquement) et logué dans <code>audit_logs</code>.</p>
   <div class="tbl-wrap">
   <table>
     <thead><tr><th>Champ</th><th>Description</th></tr></thead>
@@ -1644,11 +1649,11 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   </div>
   <p>Les fournisseurs sont éditables depuis l'interface (ajout, modification, suppression). Chaque modification est logée : <code>fournisseur_modifie</code> — Attention.</p>
 
-  <h3>Accès depuis WORK</h3>
+  <h3>Accès depuis Prospection Terrain</h3>
   <ul>
-    <li><strong>Bouton "← CRM"</strong> dans la topbar de toutes les pages WORK — retour direct à l'index CRM.</li>
-    <li><strong>Sidebar WORK</strong> : section "Sécurité" avec liens directs Incidents NIS2, Journal RGPD, Journal de sécurité.</li>
-    <li><strong>Cartes dashboard WORK</strong> : 4 cartes d'accès rapide (Journal RGPD, Sécurité, Incidents NIS2, Registre fournisseurs). Les 3 cartes CRM utilisent <code>sessionStorage.safe_work_goto</code> pour naviguer automatiquement vers l'onglet admin cible à l'arrivée sur le CRM.</li>
+    <li><strong>Bouton "← CRM"</strong> dans la topbar — retour direct à l'index CRM.</li>
+    <li><strong>Sidebar simplifiée</strong> : Missions · Clients · Tâches (section Sécurité supprimée — hors contexte terrain).</li>
+    <li><strong>Dashboard missions</strong> : 4 cartes d'entrée (RGPD · SEO · Cyber · Onboarding) avec lanceurs inline (mode prospect / client existant).</li>
   </ul>
 </div>
 
@@ -1834,7 +1839,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
       <tr><td>Altération / falsification des données</td><td>Très faible</td><td>Modérée</td><td><span class="badge b-ok">Négligeable</span></td><td>Trigger immuable audit_logs + hash PDF contrats</td></tr>
       <tr><td>Perte / destruction accidentelle</td><td>Très faible</td><td>Modérée</td><td><span class="badge b-ok">Négligeable</span></td><td>Sauvegardes Supabase automatiques (Point-in-Time)</td></tr>
       <tr><td>Non-respect durées de conservation</td><td><strong>Éliminé</strong></td><td>Modérée</td><td><span class="badge b-ok">Résiduel nul</span></td><td>Purge automatique pg_cron mensuelle + interface admin</td></tr>
-      <tr><td>Exercice des droits (portabilité, accès, effacement)</td><td>Faible</td><td>Faible</td><td><span class="badge b-ok">Négligeable</span></td><td>Module Demandes de droits + /prospection-terrain/portabilite.html</td></tr>
+      <tr><td>Exercice des droits (portabilité, accès, effacement)</td><td>Faible</td><td>Faible</td><td><span class="badge b-ok">Négligeable</span></td><td>Module Demandes de droits + /modules/DPO/portabilite.html</td></tr>
     </tbody>
   </table>
 
