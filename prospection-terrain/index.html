@@ -347,21 +347,10 @@ select option{background:var(--navy-mid)}
     <!-- Sidebar -->
     <nav class="sidebar" id="work-sidebar">
 
-      <!-- Navigation principale -->
       <div class="sidebar-section">
-        <button class="sidebar-item active" id="nav-dashboard" onclick="showView('dashboard')"><span class="ico">🏠</span> Tableau de bord</button>
-        <button class="sidebar-item" id="nav-clients"   onclick="showView('clients')"  ><span class="ico">👥</span> Clients</button>
-        <button class="sidebar-item" id="nav-automate"  onclick="showView('automate')" ><span class="ico">⚡</span> Automatisations</button>
-        <button class="sidebar-item" id="nav-tasks"     onclick="showView('tasks')"    ><span class="ico">✅</span> Tâches</button>
-        <button class="sidebar-item" id="nav-journal"   onclick="showView('journal')"  ><span class="ico">📋</span> Journal</button>
-      </div>
-
-      <div class="sidebar-section" style="margin-top:8px;border-top:1px solid var(--line);padding-top:12px">
-        <div class="sidebar-section-label" style="padding:0 12px;margin-bottom:6px">Sécurité</div>
-        <a class="sidebar-item" href="/modules/Cyber/incidents-nis2.html"><span class="ico">🛡️</span> Incidents NIS2</a>
-        <a class="sidebar-item" href="/" onclick="sessionStorage.setItem('safe_work_goto','rgpd');"><span class="ico">📒</span> Journal RGPD</a>
-        <a class="sidebar-item" href="/" onclick="sessionStorage.setItem('safe_work_goto','securite');"><span class="ico">🔒</span> Sécurité</a>
-        <a class="sidebar-item" href="/modules/DPO/portabilite.html"><span class="ico">⬇️</span> Portabilité RGPD</a>
+        <button class="sidebar-item active" id="nav-dashboard" onclick="showView('dashboard')"><span class="ico">🎯</span> Missions</button>
+        <button class="sidebar-item" id="nav-clients" onclick="showView('clients')"><span class="ico">👥</span> Clients</button>
+        <button class="sidebar-item" id="nav-tasks"   onclick="showView('tasks')"  ><span class="ico">✅</span> Tâches</button>
       </div>
 
       <div class="sidebar-section" style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line)">
