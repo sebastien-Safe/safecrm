@@ -266,6 +266,58 @@ const HELP_VIEWS_DATA = {
     related: ['dashboard', 'contracts'],
   },
 
+  prospection: {
+    title: 'Prospection Terrain',
+    icon: '🥾',
+    roles: 'all',
+    description: 'L\'espace Prospection Terrain (/prospection-terrain/) est dédié aux commerciaux sur tablette ou mobile. Accès par code PIN. Il se compose de 3 actes : Démarrage (ciblage SIRENE), Lancer l\'itinéraire (tournée optimisée), Faire un audit gratuit (missions RGPD · SEO · Cyber).',
+    sections: [
+      {
+        title: '🚀 Démarrage — Ciblage entreprises',
+        items: [
+          'Sélectionnez un secteur parmi 8 boutons rapides (Restauration, Boulangerie, Boucherie, Fromagerie, Traiteur, Fleuriste, Garage, Gîte/Chambre d\'hôtes) ou saisissez un mot-clé libre',
+          'Renseignez votre point de départ (saisie manuelle ou bouton 📡 géolocalisation GPS)',
+          'Choisissez un rayon : 5 / 10 / 25 / 50 km',
+          'Le CRM interroge l\'API SIRENE officielle (data.gouv.fr) et affiche les établissements triés par distance',
+          'Cliquez "+ Tournée" : une fiche prospect est créée dans le CRM avec le statut "À compléter"',
+        ],
+      },
+      {
+        title: '⚠️ Badge "À compléter"',
+        items: [
+          'Toute fiche créée depuis le module Ciblage reçoit automatiquement le badge orange "⚠️ À compléter" dans le pipeline',
+          'Ce badge signale que la fiche est incomplète (pas d\'email, téléphone ou consentements renseignés)',
+          'La création d\'un contrat est BLOQUÉE tant que la fiche est marquée "À compléter"',
+          'Pour lever le blocage : ouvrez la fiche contact → complétez les informations → enregistrez → le badge disparaît',
+        ],
+      },
+      {
+        title: '🗺️ Lancer l\'itinéraire — Tournée optimisée',
+        items: [
+          'Sélectionnez les contacts à visiter (minimum 2, avec adresse complète)',
+          'L\'algorithme TSP calcule l\'ordre de visites le plus court',
+          'Créneaux horaires générés automatiquement : 60 km/h moyen, 1 h par RDV, départ à l\'heure choisie',
+          'La carte Leaflet affiche l\'itinéraire numéroté avec polyline',
+          'Cliquez "Créer tous les RDV" pour insérer les tâches dans le CRM en un clic',
+        ],
+      },
+    ],
+    steps: [
+      { title: 'Accéder à l\'espace terrain', content: 'Depuis la sidebar CRM : cliquez sur 🥾 Prospection terrain → saisissez le code PIN 4 chiffres pour accéder à l\'espace.' },
+      { title: 'Préparer ma cible', content: 'Sidebar → 🚀 Démarrage → choisissez un secteur (ou tapez un mot-clé) → renseignez votre ville de départ → choisissez un rayon → cliquez "Rechercher". Les établissements s\'affichent triés par distance.' },
+      { title: 'Ajouter un établissement à la tournée', content: 'Cliquez "+ Tournée" à côté de l\'établissement. Une fiche prospect est créée dans le CRM. La fiche est marquée "À compléter" jusqu\'à votre prochaine visite.' },
+      { title: 'Lancer l\'itinéraire', content: 'Sidebar → 🗺️ Lancer l\'itinéraire → sélectionnez vos contacts → choisissez l\'heure de départ → cliquez "Calculer". L\'ordre optimal et les créneaux s\'affichent. Cliquez "Créer tous les RDV".' },
+      { title: 'Compléter une fiche après visite', content: 'CRM → Pipeline → ouvrez la carte avec le badge ⚠️ À compléter → cliquez "Modifier le contact" → renseignez email, téléphone, consentements → enregistrez. Le badge disparaît et vous pouvez créer un contrat.' },
+    ],
+    errors: [
+      { q: 'Aucun résultat ne s\'affiche', a: 'Vérifiez que le point de départ est reconnu (essayez "Lyon 69000" plutôt que "Lyon"). Augmentez le rayon. L\'API SIRENE peut être lente — attendez quelques secondes.' },
+      { q: 'Le bouton "Créer un contrat" est grisé', a: 'La fiche est marquée "À compléter". Ouvrez la fiche contact, renseignez au minimum email, téléphone et cochez les consentements, puis enregistrez.' },
+      { q: 'La géolocalisation ne fonctionne pas', a: 'Autorisez l\'accès à la position dans les paramètres de votre navigateur. En cas de refus, saisissez votre ville manuellement.' },
+      { q: 'Un contact n\'apparaît pas dans la liste Tournée', a: 'La tournée n\'affiche que les contacts avec une adresse complète (rue + code postal ou ville). Complétez l\'adresse dans la fiche contact.' },
+    ],
+    related: ['pipeline', 'tasks'],
+  },
+
   securite: {
     title: 'Sécurité & Conformité',
     icon: '🔒',
@@ -424,6 +476,8 @@ const HELP_FAQ_DATA = [
       { q: 'Où sont stockées les pièces jointes ?', a: 'Dans Supabase Storage, dossier contrats-pdf/pj/{contact_id}/. Elles sont accessibles depuis la carte du contact dans le pipeline.' },
       { q: 'La checklist est-elle partagée avec l\'équipe ?', a: 'Oui. La checklist est liée au contact, pas à l\'utilisateur. Tous les membres ayant accès au contact voient les mêmes tâches.' },
       { q: 'Le compteur de valeur tient-il compte des filtres ?', a: 'Oui. Le total affiché en haut du pipeline correspond uniquement aux contrats actifs des contacts visibles selon votre recherche et filtre en cours.' },
+      { q: 'Que signifie le badge orange "⚠️ À compléter" ?', a: 'Ce badge indique une fiche prospect créée depuis le module Ciblage SIRENE qui n\'a pas encore été complétée (email, téléphone, consentements manquants). Ouvrez la fiche contact, complétez les informations, enregistrez — le badge disparaît et vous pouvez créer un contrat.' },
+      { q: 'Pourquoi ne puis-je pas créer de contrat pour ce contact ?', a: 'Le contact est marqué "À compléter" (badge orange). Finalisez la fiche contact avec au moins un email, un téléphone et les consentements RGPD cochés avant de créer un contrat.' },
     ],
   },
   {
