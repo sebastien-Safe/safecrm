@@ -200,18 +200,15 @@ select option{background:var(--navy-mid)}
 .mc-rgpd:hover{border-color:rgba(59,130,246,.5);box-shadow:0 20px 50px rgba(59,130,246,.12)}
 .mc-seo:hover{border-color:rgba(34,197,94,.5);box-shadow:0 20px 50px rgba(34,197,94,.12)}
 .mc-cyber:hover{border-color:rgba(239,68,68,.5);box-shadow:0 20px 50px rgba(239,68,68,.12)}
-.mc-onboarding:hover{border-color:rgba(245,158,11,.5);box-shadow:0 20px 50px rgba(245,158,11,.12)}
 .mc-body{padding:22px 22px 16px}
 .mc-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
 .mc-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
 .mc-rgpd .mc-icon{background:rgba(59,130,246,.15)}
 .mc-seo .mc-icon{background:rgba(34,197,94,.15)}
 .mc-cyber .mc-icon{background:rgba(239,68,68,.15)}
-.mc-onboarding .mc-icon{background:rgba(245,158,11,.15)}
 .mc-meta{flex:1;min-width:0}
 .mc-phase{display:inline-block;font-family:var(--ff-mono);font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:20px;margin-bottom:6px}
 .mc-phase-prosp{background:rgba(34,197,94,.1);color:#22c55e}
-.mc-phase-post{background:rgba(245,158,11,.1);color:var(--gold)}
 .mc-title{font-family:var(--ff-disp);font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:3px}
 .mc-desc{font-size:.79rem;color:var(--mut);line-height:1.45}
 .mc-feats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
@@ -224,8 +221,6 @@ select option{background:var(--navy-mid)}
 .mc-seo .mc-btn:hover{background:rgba(34,197,94,.12);border-color:#22c55e}
 .mc-cyber .mc-btn{color:#f87171;border-color:rgba(239,68,68,.4)}
 .mc-cyber .mc-btn:hover{background:rgba(239,68,68,.12);border-color:#ef4444}
-.mc-onboarding .mc-btn{color:var(--gold-light);border-color:rgba(245,158,11,.4)}
-.mc-onboarding .mc-btn:hover{background:rgba(245,158,11,.12);border-color:var(--gold)}
 /* Launcher inline */
 .mc-launcher{border-top:1px solid var(--line);max-height:0;overflow:hidden;transition:max-height .32s ease}
 .mc-launcher.open{max-height:320px}
@@ -440,21 +435,6 @@ select option{background:var(--navy-mid)}
             </div>
           </div>
 
-          <div class="mission-card mc-onboarding">
-            <div class="mc-body">
-              <div class="mc-top">
-                <div class="mc-icon">🚀</div>
-                <div class="mc-meta">
-                  <span class="mc-phase mc-phase-post">Post-signature</span>
-                  <div class="mc-title">Onboarding Client</div>
-                  <div class="mc-desc">Démarrage nouveau client — checklist + email bienvenue</div>
-                </div>
-              </div>
-              <div class="mc-actions">
-                <a class="mc-btn" href="/prospection-terrain/mission-onboarding.html">Démarrer →</a>
-              </div>
-            </div>
-          </div>
 
         </div><!-- /mission-grid -->
 
@@ -758,7 +738,7 @@ function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); retu
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 
 /* ── PIN ── */
-const PT_PIN = '2206';
+const PT_PIN = '1505';
 let _pinVal = '';
 
 function pinKey(k){
@@ -1035,12 +1015,6 @@ async function loadContacts(){
   } catch(e){ console.error(e); }
 }
 
-function launchOnboardingBtn(contactId){
-  const cts = allContracts.filter(ct => ct.contact_id === contactId && !['Résilié','Refusé','Terminé'].includes(ct.statut));
-  if(!cts.length) return '';
-  const ct = cts[0];
-  return `<button class="btn btn-sm" style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);color:var(--gold)" onclick="window.location.href='/prospection-terrain/mission-onboarding.html?contact=${contactId}&contract=${ct.id}&wf=generic_onboard'">🚀 Onboarding</button>`;
-}
 
 function renderClientsTable(){
   const tbody = document.getElementById('clients-tbody');
@@ -1059,7 +1033,6 @@ function renderClientsTable(){
       <td style="font-family:var(--ff-mono);font-size:.82rem">${ca>0?ca.toLocaleString('fr-FR')+'&nbsp;€':'—'}</td>
       <td style="white-space:nowrap;display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn btn-out btn-sm" onclick="showView('automate');selectContact('${c.id}')">⚡ Automatiser</button>
-        ${launchOnboardingBtn(c.id)}
       </td>
     </tr>`;
   }).join('');
@@ -1178,15 +1151,6 @@ const WORKFLOWS = {
        {t:'Rapport + plan d\'action', d:'Générer PDF rapport cyber avec recommandations priorisées'},
      ]},
   ],
-  'Onboarding':[
-    {id:'generic_onboard', label:'Onboarding générique', icon:'🚀', color:'var(--mut-2)',
-     desc:'Workflow de premier contact et suivi initial pour tout nouveau client.',
-     steps:[
-       {t:'Premier contact', d:'Créer tâche "Appel de bienvenue" (type : Premier contact)'},
-       {t:'RDV visio de cadrage', d:'Créer tâche RDV visio — présentation S@FE et recueil des besoins'},
-       {t:'Envoi du contrat', d:'Créer tâche envoi contrat signable + suivi signature'},
-     ]},
-  ],
 };
 
 function getWorkflowsForContract(contract){
@@ -1197,7 +1161,7 @@ function getWorkflowsForContract(contract){
   if(type.includes('digit')) wfs.push(...(WORKFLOWS['Digitalisation']||[]));
   if(type.includes('rgpd')||type.includes('conform')||type.includes('dpo')) wfs.push(...(WORKFLOWS['RGPD']||[]));
   if(type.includes('cyber')||type.includes('sécu')||type.includes('secu')) wfs.push(...(WORKFLOWS['Cybersécurité']||[]));
-  if(!wfs.length) wfs.push(...(WORKFLOWS['Onboarding']||[]));
+
   return wfs;
 }
 
@@ -1240,8 +1204,6 @@ function renderQuickAutomations(){
 const MISSION_PAGES = {
   'seo_onboarding':  'mission-seo.html',
   'seo_rapport':     'mission-seo.html',
-  'dig_onboarding':  'mission-onboarding.html',
-  'generic_onboard': 'mission-onboarding.html',
   'rgpd_audit':      'mission-rgpd.html',
   'rgpd_dpo':        'mission-rgpd.html',
   'cyber_audit':     'mission-cyber.html',
@@ -1876,7 +1838,6 @@ const MISSIONS = {
   rgpd:       '/prospection-terrain/mission-rgpd.html',
   seo:        '/prospection-terrain/mission-seo.html',
   cyber:      '/prospection-terrain/mission-cyber.html',
-  onboarding: '/prospection-terrain/mission-onboarding.html'
 };
 let _activeMission = null;
 const _missionMode = {};
