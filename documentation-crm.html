@@ -207,7 +207,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   <h3>Navigation &amp; accès aux modules</h3>
   <p>Le CRM est une Single Page Application (<code>index.html</code>). La navigation se fait via la <strong>barre latérale gauche</strong> (sidebar). Depuis la refonte Pipeline (2026), les anciennes vues "Contacts" et "Contrats" séparées ont été remplacées par un <strong>Pipeline Kanban unifié</strong> (🗂️ Pipeline) qui regroupe les deux en une seule vue Kanban. Les vues Tâches, Résultats, Messages et Administration restent distinctes.</p>
   <div class="info-box" style="margin-bottom:20px">
-    <strong>Espace Prospection Terrain :</strong> L'espace <code>/prospection-terrain/index.html</code> est distinct du CRM principal. Accès par <strong>code PIN à 4 chiffres</strong> (sessionStorage <code>pt_unlocked</code>) — aucune authentification Supabase requise, accessible à tout commercial sur tablette. La topbar affiche le bouton <strong>← CRM</strong> pour revenir au CRM. Sidebar épurée : Missions · Clients · Tâches uniquement.
+    <strong>Espace Prospection Terrain :</strong> L'espace <code>/prospection-terrain/index.html</code> est distinct du CRM principal. Accès par <strong>code PIN à 4 chiffres</strong> (sessionStorage <code>pt_unlocked</code>) — aucune authentification Supabase requise, accessible à tout commercial sur tablette. La topbar affiche le bouton <strong>← CRM</strong> pour revenir au CRM. Sidebar organisée en 3 actes : <strong>🚀 Démarrage</strong> (ciblage SIRENE) · <strong>🗺️ Lancer l'itinéraire</strong> (tournée optimisée) · <strong>🔍 Faire un audit gratuit</strong> (missions RGPD / SEO / Cyber).
   </div>
 
   <h3>Connexion &amp; Gestion de session</h3>
@@ -1652,8 +1652,11 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
   <h3>Accès depuis Prospection Terrain</h3>
   <ul>
     <li><strong>Bouton "← CRM"</strong> dans la topbar — retour direct à l'index CRM.</li>
-    <li><strong>Sidebar simplifiée</strong> : Missions · Clients · Tâches (section Sécurité supprimée — hors contexte terrain).</li>
-    <li><strong>Dashboard missions</strong> : 4 cartes d'entrée (RGPD · SEO · Cyber · Onboarding) avec lanceurs inline (mode prospect / client existant).</li>
+    <li><strong>Sidebar organisée en 3 actes</strong> : 🚀 Démarrage · 🗺️ Lancer l'itinéraire · 🔍 Faire un audit gratuit — puis Tableau de bord / Clients / Tâches.</li>
+    <li><strong>🚀 Démarrage — Module Ciblage SIRENE</strong> : recherche d'établissements par secteur métier (8 boutons) ou mot-clé libre. Filtrage géographique par rayon (5/10/25/50 km) depuis le point de départ (GPS ou saisie manuelle). Résultats triés par distance. Bouton "+ Tournée" crée instantanément une fiche prospect dans le CRM avec le champ <code>a_completer = true</code>.</li>
+    <li><strong>⚠️ Garde-fou "À compléter"</strong> : toute fiche créée via le module Ciblage apparaît dans le pipeline kanban avec un badge orange "À compléter". La création d'un contrat est bloquée tant que la fiche n'est pas complétée manuellement (nom, email, téléphone, consentements).</li>
+    <li><strong>🗺️ Lancer l'itinéraire — Tournée optimisée</strong> : sélection de contacts avec adresse, calcul TSP nearest-neighbor, créneaux horaires automatiques (60 km/h · 60 min/RDV), création groupée des tâches en 1 clic.</li>
+    <li><strong>Dashboard missions</strong> : audit multi-missions intégré (RGPD · SEO · Cyber · Social · Click&amp;Collect) + 3 audits individuels rapides.</li>
   </ul>
 </div>
 
