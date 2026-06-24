@@ -56,7 +56,7 @@ async function _plLoadData() {
   const isAdm = state.profile?.is_admin;
 
   let contactsQuery = sb.from('contacts')
-    .select('id, nom, prenom, entreprise, kanban_col, priority, date_relance, created_by, notes, kanban_checklist')
+    .select('id, nom, prenom, entreprise, kanban_col, priority, date_relance, created_by, notes, kanban_checklist, a_completer')
     .order('entreprise', { ascending: true });
 
   if (!isAdm && role !== 'admin_candy' && role !== 'super_admin') {
@@ -217,6 +217,7 @@ function _plCardHTML(contact) {
       <div class="pcard-company">${escapeHtml(contact.entreprise || contact.nom || '—')}</div>
       <div class="pcard-name">${escapeHtml(contact.prenom || '')} ${escapeHtml(contact.nom || '')}</div>
       ${contact.kanban_col === 'resilie' ? '<div class="pcard-resilie-badge">🚫 Résilié</div>' : ''}
+      ${contact.a_completer ? '<div class="pcard-a-completer-badge">⚠️ À compléter</div>' : ''}
       <div class="pcard-meta">
         <div class="pcard-meta-item">👤 ${escapeHtml(commercialName)}</div>
         ${totalMontant > 0 ? `<div class="pcard-meta-item pcard-amount">💰 ${montantStr}</div>` : ''}

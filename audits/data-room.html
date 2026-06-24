@@ -340,6 +340,9 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
       <tr><td>Commissions et bordereaux de paiement PDF</td><td>Module Commissions</td><td><span class="badge b-ok">Livré</span></td></tr>
       <tr><td>Click &amp; Collect e-commerce</td><td>Module ClickCollect</td><td><span class="badge b-warn">Beta</span></td></tr>
       <tr><td>Social media planning IA</td><td>Module Social</td><td><span class="badge b-warn">Beta</span></td></tr>
+      <tr><td>Tournée de prospection terrain optimisée (TSP + géocodage BAN)</td><td>Prospection Terrain — Tournée</td><td><span class="badge b-ok">Livré</span></td></tr>
+      <tr><td>Ciblage entreprises par secteur &amp; rayon géographique (API SIRENE)</td><td>Prospection Terrain — Démarrage</td><td><span class="badge b-ok">Livré</span></td></tr>
+      <tr><td>Garde-fou "À compléter" : blocage contrat tant que fiche non validée</td><td>Pipeline Kanban + Contrats</td><td><span class="badge b-ok">Livré</span></td></tr>
     </tbody>
   </table></div>
 </div>
@@ -567,13 +570,23 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
   <p>Planification de posts réseaux sociaux avec assistance IA, calendrier éditorial, rapports de performance. 6 fichiers JS. <span class="badge b-warn">Beta</span></p>
 
   <h3>Module 7 — Prospection Terrain <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
-  <p>Espace dédié aux commerciaux sur tablette. Accès par code PIN (sessionStorage <code>pt_unlocked</code>). 3 missions de diagnostic gratuit disponibles :</p>
+  <p>Espace dédié aux commerciaux sur tablette. Accès par code PIN (sessionStorage <code>pt_unlocked</code>). Sidebar organisée en 3 actes : <strong>Démarrage → Itinéraire → Audit gratuit</strong>.</p>
   <div class="cards-4">
-    <div class="card"><div class="card-title" style="color:#8b5cf6">🟣 Mission RGPD</div><div class="card-body">Audit RGPD prospect. 7 questions wizard mobile-first. Capture consentement. Envoi rapport PDF + email automatique via Brevo (template ID 12).</div></div>
-    <div class="card"><div class="card-title" style="color:#06b6d4">🔵 Mission Cyber</div><div class="card-body">Audit cybersécurité 7 domaines ANSSI. Score de posture. Rapport PDF + email automatique via Brevo (template ID 12).</div></div>
-    <div class="card"><div class="card-title" style="color:#22c55e">🟢 Mission SEO</div><div class="card-body">Audit SEO local Google Business Profile. 6 critères. Rapport PDF + email automatique via Brevo (template ID 12).</div></div>
+    <div class="card"><div class="card-title" style="color:#8b5cf6">🟣 Mission RGPD</div><div class="card-body">Audit RGPD prospect. 7 questions wizard mobile-first. Capture consentement. Envoi rapport PDF + email automatique via Edge Function <code>send-audit-email</code> (HTML généré côté serveur).</div></div>
+    <div class="card"><div class="card-title" style="color:#06b6d4">🔵 Mission Cyber</div><div class="card-body">Audit cybersécurité 7 domaines ANSSI. Score de posture. Rapport PDF + email automatique via <code>send-audit-email</code>.</div></div>
+    <div class="card"><div class="card-title" style="color:#22c55e">🟢 Mission SEO</div><div class="card-body">Audit SEO local Google Business Profile. 6 critères. Rapport PDF + email automatique via <code>send-audit-email</code>.</div></div>
   </div>
-  <h3 style="margin-top:20px">Système de prise de RDV intégré <span class="fact-tag ft-v">NOUVEAU</span></h3>
+  <h3 style="margin-top:20px">Ciblage entreprises — Préparer ma cible <span class="fact-tag ft-v">NOUVEAU</span></h3>
+  <p>Module de recherche prospective intégré à l'espace terrain. Le commercial sélectionne un secteur métier puis un périmètre géographique ; le CRM interroge l'<strong>API SIRENE officielle</strong> (data.gouv.fr) et retourne les établissements correspondants triés par distance.</p>
+  <div class="cards">
+    <div class="card"><div class="card-title">🚀 Étape 1 — Secteur</div><div class="card-body">8 boutons rapides pré-configurés (Restauration, Boulangerie/Pâtisserie, Boucherie/Charcuterie, Fromagerie, Traiteur, Fleuriste, Garage, Gîte/Chambre d'hôtes) + saisie libre pour tout autre métier.</div></div>
+    <div class="card"><div class="card-title">📍 Étape 2 — Zone</div><div class="card-body">Point de départ pré-rempli depuis le localStorage (dernière ville utilisée) ou via géolocalisation GPS (BAN reverse-geocoding). Rayon : 5 / 10 / 25 / 50 km.</div></div>
+    <div class="card"><div class="card-title">🏪 Étape 3 — Résultats</div><div class="card-body">Liste des établissements triés par distance (Haversine). Bouton "+ Tournée" : crée instantanément une fiche prospect dans le CRM avec le flag <code>a_completer = true</code> et l'ajoute à la tournée.</div></div>
+    <div class="card"><div class="card-title">⚠️ Garde-fou "À compléter"</div><div class="card-body">Toute fiche créée depuis SIRENE est marquée "À compléter" (badge orange visible dans le pipeline kanban). La création de contrat est bloquée tant que le commercial n'a pas complété et validé la fiche manuellement.</div></div>
+  </div>
+  <h3 style="margin-top:20px">Tournée de prospection optimisée <span class="fact-tag ft-v">NOUVEAU</span></h3>
+  <p>Depuis la sidebar "Lancer l'itinéraire" : le commercial sélectionne ses contacts (avec adresse), le CRM calcule l'ordre de visite optimal via un algorithme TSP nearest-neighbor, génère les créneaux horaires (60 km/h · facteur route 1,3 · 60 min par RDV) et propose de créer toutes les tâches en un clic.</p>
+  <h3 style="margin-top:20px">Système de prise de RDV intégré <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
   <p>Après chaque diagnostic, le prospect peut réserver directement un créneau avec le commercial via un lien personnel tokenisé.</p>
   <div class="cards">
     <div class="card"><div class="card-title">⚙️ Paramétrage disponibilités</div><div class="card-body">Modal agenda (icône ⚙️) : le commercial définit ses plages horaires par jour (Lun–Ven), sa pause déjeuner, et génère son lien de réservation unique.</div></div>

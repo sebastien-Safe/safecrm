@@ -36,6 +36,13 @@ async function saveContract() {
   const contact_id = $('#ct-contact').value;
   const type = getEffectiveContractType();
   if (!contact_id || !type) { alert('Le contact et le produit sont obligatoires.'); return; }
+  if (!id) {
+    const _ct = state.contacts?.find(c => c.id === contact_id);
+    if (_ct?.a_completer) {
+      alert('⚠️ Cette fiche est marquée "À compléter".\n\nFinalisez les informations du contact (nom complet, email, téléphone, consentements) avant de créer un contrat.');
+      return;
+    }
+  }
   const montant = $('#ct-montant').value;
   const formuleSel = $('#ct-formule-select').value;
   const formule = formuleSel === FORMULE_CUSTOM

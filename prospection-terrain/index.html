@@ -296,6 +296,31 @@ select option{background:var(--navy-mid)}
 .t-dot{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);color:var(--mut);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;transition:.2s}
 .t-dot.done{background:#f59e0b;border-color:#f59e0b;color:#0a1628}
 .t-dot.active{background:transparent;border-color:#f59e0b;color:#f59e0b}
+/* ── MODULE CIBLAGE ── */
+.ciblage-stepper{display:flex;align-items:center;gap:8px;margin-bottom:28px}
+.step-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);color:var(--mut);font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;font-family:var(--ff-mono)}
+.step-dot.active{border-color:var(--gold);color:var(--gold);background:rgba(245,158,11,.1)}
+.step-dot.done{background:var(--gold);border-color:var(--gold);color:#0a1628}
+.step-line{flex:1;height:2px;background:var(--line);border-radius:2px;transition:.3s}
+.step-line.done{background:var(--gold)}
+.step-content{display:none}.step-content.active{display:block}
+.sector-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:8px;margin-bottom:18px}
+.sector-btn{background:rgba(255,255,255,.04);border:1.5px solid var(--line);border-radius:12px;padding:10px 8px;cursor:pointer;text-align:center;transition:.15s;color:var(--mut-2);font-family:var(--ff-body);font-size:.8rem;width:100%}
+.sector-btn:hover{border-color:rgba(245,158,11,.4);color:#fff;background:rgba(245,158,11,.05)}
+.sector-btn.on{background:rgba(245,158,11,.12);border-color:var(--gold);color:var(--gold);font-weight:600}
+.sector-btn .s-ico{font-size:1.25rem;display:block;margin-bottom:5px}
+.rayon-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.rayon-btn{padding:7px 18px;border-radius:10px;border:1.5px solid var(--line);background:transparent;color:var(--mut-2);font-family:var(--ff-disp);font-size:.84rem;font-weight:700;cursor:pointer;transition:.15s}
+.rayon-btn.on{background:rgba(245,158,11,.12);border-color:var(--gold);color:var(--gold)}
+.cible-result{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;transition:.15s;background:rgba(20,34,64,.5)}
+.cible-result:hover{border-color:rgba(245,158,11,.25);background:rgba(20,34,64,.8)}
+.cible-result-body{flex:1;min-width:0}
+.cible-nom{font-size:.88rem;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cible-addr{font-size:.76rem;color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cible-meta{font-family:var(--ff-mono);font-size:.64rem;color:var(--mut);margin-top:1px}
+.cible-add{flex-shrink:0;padding:5px 12px;border-radius:8px;border:1px solid rgba(245,158,11,.4);background:transparent;color:var(--gold);font-size:.78rem;font-weight:700;cursor:pointer;transition:.15s;font-family:var(--ff-disp)}
+.cible-add:hover{background:rgba(245,158,11,.12)}
+.cible-add.done{border-color:var(--ok);color:var(--ok);cursor:default}
 </style>
 
 </head>
@@ -352,10 +377,17 @@ select option{background:var(--navy-mid)}
     <nav class="sidebar" id="work-sidebar">
 
       <div class="sidebar-section">
+        <div class="sidebar-label">Prospection</div>
+        <button class="sidebar-item" id="nav-ciblage" onclick="showView('ciblage')"><span class="ico">🚀</span> Démarrage</button>
+        <button class="sidebar-item" onclick="openTourneeModal()"><span class="ico">🗺️</span> Lancer l'itinéraire</button>
+        <a class="sidebar-item" href="/prospection-terrain/audit.html"><span class="ico">🔍</span> Faire un audit gratuit</a>
+      </div>
+      <hr class="sidebar-divider">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Tableau de bord</div>
         <button class="sidebar-item active" id="nav-dashboard" onclick="showView('dashboard')"><span class="ico">🎯</span> Missions</button>
         <button class="sidebar-item" id="nav-clients" onclick="showView('clients')"><span class="ico">👥</span> Clients</button>
         <button class="sidebar-item" id="nav-tasks"   onclick="showView('tasks')"  ><span class="ico">✅</span> Tâches</button>
-        <button class="sidebar-item" onclick="openTourneeModal()"><span class="ico">🗺️</span> Tournée</button>
       </div>
 
       <div class="sidebar-section" style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line)">
@@ -366,6 +398,79 @@ select option{background:var(--navy-mid)}
 
     <!-- Main -->
     <main class="main">
+
+      <!-- === VUE CIBLAGE === -->
+      <div id="view-ciblage" style="display:none">
+        <div style="margin-bottom:20px">
+          <span class="eyebrow">Prospection ciblée · API SIRENE</span>
+          <h2 style="font-size:1.35rem;margin-top:2px">🚀 Préparer ma cible</h2>
+        </div>
+        <div class="card" style="max-width:700px">
+          <!-- Stepper -->
+          <div class="ciblage-stepper">
+            <div class="step-dot active" id="cdot-1">1</div>
+            <div class="step-line" id="cline-1"></div>
+            <div class="step-dot" id="cdot-2">2</div>
+            <div class="step-line" id="cline-2"></div>
+            <div class="step-dot" id="cdot-3">3</div>
+          </div>
+          <!-- Étape 1 — Secteur -->
+          <div class="step-content active" id="cstep-1">
+            <div style="font-size:.88rem;color:var(--mut-2);margin-bottom:16px">Quel secteur souhaitez-vous prospecter ?</div>
+            <div class="sector-grid">
+              <button class="sector-btn" data-naf="5610A" onclick="_cibleSelectSector(this)"><span class="s-ico">🍽️</span>Restauration</button>
+              <button class="sector-btn" data-naf="1071C" onclick="_cibleSelectSector(this)"><span class="s-ico">🥖</span>Boulangerie / Pâtisserie</button>
+              <button class="sector-btn" data-naf="4722Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🥩</span>Boucherie / Charcuterie</button>
+              <button class="sector-btn" data-naf="4729Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🧀</span>Fromagerie</button>
+              <button class="sector-btn" data-naf="5621Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🍱</span>Traiteur</button>
+              <button class="sector-btn" data-naf="4776Z" onclick="_cibleSelectSector(this)"><span class="s-ico">💐</span>Fleuriste</button>
+              <button class="sector-btn" data-naf="4520A" onclick="_cibleSelectSector(this)"><span class="s-ico">🔧</span>Garage automobile</button>
+              <button class="sector-btn" data-naf="5520Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🛏️</span>Gîte / Chambre d'hôtes</button>
+            </div>
+            <div class="field">
+              <label>Ou saisissez un autre métier</label>
+              <input id="cible-keyword" type="text" placeholder="Ex : caviste, poissonnier, chocolatier…">
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:8px">
+              <button class="btn btn-gold" onclick="_cibleStep1Next()">Suivant →</button>
+            </div>
+          </div>
+          <!-- Étape 2 — Zone -->
+          <div class="step-content" id="cstep-2">
+            <div style="font-size:.88rem;color:var(--mut-2);margin-bottom:18px">Dans quel périmètre souhaitez-vous prospecter ?</div>
+            <div class="field" style="margin-bottom:16px">
+              <label>📍 Point de départ</label>
+              <div style="display:flex;gap:8px">
+                <input id="cible-depart" type="text" placeholder="Ville ou code postal…" style="flex:1">
+                <button class="btn btn-out btn-sm" id="cible-geo-btn" onclick="_cibleGeolocate()" title="Utiliser ma position GPS">📡</button>
+              </div>
+            </div>
+            <div style="font-family:var(--ff-mono);font-size:.65rem;letter-spacing:.12em;color:var(--mut);text-transform:uppercase;margin-bottom:10px">Rayon de recherche</div>
+            <div class="rayon-btns">
+              <button class="rayon-btn" data-km="5"  onclick="_cibleSelectRayon(this)">5 km</button>
+              <button class="rayon-btn" data-km="10" onclick="_cibleSelectRayon(this)">10 km</button>
+              <button class="rayon-btn on" data-km="25" onclick="_cibleSelectRayon(this)">25 km</button>
+              <button class="rayon-btn" data-km="50" onclick="_cibleSelectRayon(this)">50 km</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:20px">
+              <button class="btn btn-out" onclick="_cibleSetStep(1)">← Retour</button>
+              <button class="btn btn-gold" onclick="_cibleStep2Next()">🔍 Rechercher</button>
+            </div>
+          </div>
+          <!-- Étape 3 — Résultats -->
+          <div class="step-content" id="cstep-3">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+              <div id="cible-result-title" style="font-size:.88rem;color:var(--mut-2)">Résultats…</div>
+              <button class="btn btn-out btn-sm" onclick="_cibleSetStep(2)">← Modifier la zone</button>
+            </div>
+            <div id="cible-results-list"></div>
+            <div id="cible-tournee-hint" style="display:none;margin-top:14px;padding:12px 16px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;font-size:.84rem;color:var(--gold)">
+              ✅ <strong><span id="cible-added-count">0</span></strong> fiche(s) prospect créée(s) — <span style="color:var(--mut-2);font-size:.8rem">marquées "À compléter" jusqu'à la visite</span>
+              <button class="btn btn-gold btn-sm" style="margin-left:10px" onclick="openTourneeModal()">🗺️ Lancer l'itinéraire →</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- === VUE DASHBOARD === -->
       <div id="view-dashboard">
@@ -1873,7 +1978,7 @@ async function deleteTask(){
 /* ============================================================
    NAVIGATION
    ============================================================ */
-const VIEWS = ['dashboard','automate','journal','tasks'];
+const VIEWS = ['dashboard','ciblage','automate','journal','tasks'];
 function showView(name){
   VIEWS.forEach(v=>{
     const el = document.getElementById('view-'+v);
@@ -1884,6 +1989,7 @@ function showView(name){
   if(name==='journal') loadJournal();
   if(name==='tasks')   loadTasks();
   if(name==='automate'){ loadContacts(); }
+  if(name==='ciblage'){ _cibleState.added=new Set(); _cibleState.resultData=[]; }
 }
 
 function toggleSection(id){
@@ -2048,6 +2154,196 @@ document.addEventListener('click', e => {
     }
   }, { passive: true });
 })();
+
+/* ============================================================
+   MODULE CIBLAGE — Préparer ma cible (API SIRENE)
+   ============================================================ */
+let _cibleState = { naf:'', rayon:25, added:new Set(), resultData:[] };
+
+function _cibleSelectSector(btn){
+  document.querySelectorAll('.sector-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  _cibleState.naf = btn.dataset.naf;
+  document.getElementById('cible-keyword').value = '';
+}
+
+function _cibleSelectRayon(btn){
+  document.querySelectorAll('.rayon-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  _cibleState.rayon = parseInt(btn.dataset.km);
+}
+
+function _cibleSetStep(n){
+  for(let i=1;i<=3;i++){
+    document.getElementById('cstep-'+i).classList.toggle('active', i===n);
+    const dot = document.getElementById('cdot-'+i);
+    dot.classList.remove('active','done');
+    if(i===n) dot.classList.add('active');
+    else if(i<n) dot.classList.add('done');
+    if(i<3) document.getElementById('cline-'+i).classList.toggle('done', i<n);
+  }
+}
+
+function _cibleStep1Next(){
+  const kw = document.getElementById('cible-keyword').value.trim();
+  if(!_cibleState.naf && !kw){ showToast('Sélectionnez un secteur ou saisissez un mot-clé','err'); return; }
+  if(kw) _cibleState.naf = '';
+  const saved = localStorage.getItem('pt_depart') || '';
+  if(saved && !document.getElementById('cible-depart').value)
+    document.getElementById('cible-depart').value = saved;
+  _cibleSetStep(2);
+}
+
+function _cibleStep2Next(){
+  const dep = document.getElementById('cible-depart').value.trim();
+  if(!dep){ showToast('Saisissez une ville de départ','err'); return; }
+  localStorage.setItem('pt_depart', dep);
+  _cibleSetStep(3);
+  _cibleSearch();
+}
+
+async function _cibleGeolocate(){
+  if(!navigator.geolocation){ showToast('Géolocalisation non disponible','err'); return; }
+  const btn = document.getElementById('cible-geo-btn');
+  btn.textContent = '…'; btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const { latitude:lat, longitude:lng } = pos.coords;
+    try{
+      const r = await fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${lng}&lat=${lat}`);
+      const d = await r.json();
+      const p = d.features?.[0]?.properties;
+      if(p){
+        const s = (p.postcode||'') + ' ' + (p.city || p.municipality || '');
+        document.getElementById('cible-depart').value = s.trim();
+        localStorage.setItem('pt_depart', s.trim());
+      }
+    }catch(e){}
+    btn.textContent = '📡'; btn.disabled = false;
+  }, ()=>{ showToast('Position GPS indisponible','err'); btn.textContent='📡'; btn.disabled=false; });
+}
+
+async function _cibleSearch(){
+  const list  = document.getElementById('cible-results-list');
+  const title = document.getElementById('cible-result-title');
+  list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--mut)"><div class="spinner" style="margin:0 auto 14px"></div>Recherche en cours…</div>';
+  _cibleState.added = new Set();
+  _cibleState.resultData = [];
+  document.getElementById('cible-tournee-hint').style.display = 'none';
+
+  const dep = document.getElementById('cible-depart').value.trim();
+
+  // 1. Géocoder le point de départ
+  let lat=null, lng=null;
+  try{
+    const r = await fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(dep) + '&limit=1');
+    const d = await r.json();
+    const feat = d.features?.[0];
+    if(feat){ [lng, lat] = feat.geometry.coordinates; }
+  }catch(e){}
+  if(!lat || !lng){
+    list.innerHTML = '<div class="empty"><div class="ico">📍</div><p>Impossible de localiser ce point de départ.<br>Vérifiez l\'adresse saisie.</p></div>';
+    return;
+  }
+
+  // 2. Trouver le département
+  let dept = '';
+  try{
+    const r = await fetch(`https://geo.api.gouv.fr/communes?lat=${lat}&lon=${lng}&fields=codeDepartement&limit=1`);
+    const d = await r.json();
+    dept = d[0]?.codeDepartement || '';
+  }catch(e){}
+
+  // 3. API SIRENE
+  let results = [];
+  try{
+    const naf = _cibleState.naf;
+    const kw  = document.getElementById('cible-keyword').value.trim();
+    const p   = new URLSearchParams({ per_page:'25' });
+    if(naf)  p.set('activite_principale', naf);
+    if(kw)   p.set('q', kw);
+    if(dept) p.set('departement', dept);
+    const r = await fetch('https://recherche-entreprises.api.gouv.fr/search?' + p.toString());
+    const d = await r.json();
+    results = d.results || [];
+  }catch(e){
+    list.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>Erreur lors de la recherche.<br>Vérifiez votre connexion internet.</p></div>';
+    return;
+  }
+
+  // 4. Filtrer par rayon + trier par distance
+  const rayon = _cibleState.rayon;
+  const withCoords = results.filter(r => r.siege?.latitude && r.siege?.longitude);
+  const noCoords   = results.filter(r => !r.siege?.latitude || !r.siege?.longitude);
+  const filtered = [
+    ...withCoords
+      .filter(r => _hvKm(lat, lng, parseFloat(r.siege.latitude), parseFloat(r.siege.longitude)) <= rayon)
+      .sort((a,b) => _hvKm(lat,lng,parseFloat(a.siege.latitude),parseFloat(a.siege.longitude)) - _hvKm(lat,lng,parseFloat(b.siege.latitude),parseFloat(b.siege.longitude))),
+    ...noCoords
+  ];
+  _cibleState.resultData = filtered;
+
+  if(!filtered.length){
+    title.textContent = 'Aucun résultat dans ce périmètre';
+    list.innerHTML = '<div class="empty"><div class="ico">🔭</div><p>Aucun établissement trouvé dans ce rayon.<br>Essayez un périmètre plus large ou un autre secteur.</p></div>';
+    return;
+  }
+  title.textContent = `${filtered.length} établissement${filtered.length>1?'s':''} · rayon ${rayon} km`;
+
+  list.innerHTML = filtered.map((r,i) => {
+    const nom  = r.nom_complet || '—';
+    const addr = [r.siege?.adresse, r.siege?.code_postal, r.siege?.commune].filter(Boolean).join(', ');
+    const naf  = r.siege?.activite_principale || r.activite_principale || '';
+    const dist = (r.siege?.latitude && r.siege?.longitude)
+      ? _hvKm(lat, lng, parseFloat(r.siege.latitude), parseFloat(r.siege.longitude)).toFixed(1) + ' km'
+      : '';
+    return `<div class="cible-result">
+      <div class="cible-result-body">
+        <div class="cible-nom">${escHtml(nom)}</div>
+        <div class="cible-addr">${escHtml(addr)}</div>
+        <div class="cible-meta">${escHtml(naf)}${dist ? ' · 📍 ' + dist : ''}</div>
+      </div>
+      <button class="cible-add" id="cible-btn-${i}" onclick="_cibleAddResult(${i},this)">+ Tournée</button>
+    </div>`;
+  }).join('');
+}
+
+async function _cibleAddResult(idx, btn){
+  if(_cibleState.added.has(idx)) return;
+  const r = _cibleState.resultData[idx];
+  if(!r) return;
+  btn.textContent = '…'; btn.disabled = true;
+
+  const payload = {
+    nom:              r.nom_complet || r.siege?.siret || 'Inconnu',
+    siret:            r.siege?.siret  || null,
+    adresse:          r.siege?.adresse || null,
+    code_postal:      r.siege?.code_postal || null,
+    ville:            r.siege?.commune || null,
+    code_postal_ville:[r.siege?.code_postal, r.siege?.commune].filter(Boolean).join(' ') || null,
+    statut:           'Prospect',
+    kanban_col:       'prospect',
+    a_completer:      true,
+    source:           'Terrain',
+    activites:        [],
+    rgpd_ko:          false,
+    consent_telephone:false,
+    consent_email:    false,
+    consent_courrier: false,
+  };
+
+  try{
+    const created = await sbPost('contacts', payload);
+    if(created?.[0]) allContacts.push(created[0]);
+    _cibleState.added.add(idx);
+    btn.textContent = '✓ Ajouté'; btn.classList.add('done'); btn.disabled = true;
+    document.getElementById('cible-added-count').textContent = _cibleState.added.size;
+    document.getElementById('cible-tournee-hint').style.display = 'block';
+    showToast('Fiche créée · sera complétée après la visite','ok');
+  }catch(e){
+    btn.textContent = '+ Tournée'; btn.disabled = false;
+    showToast('Erreur : ' + (e.message||'création impossible'), 'err');
+  }
+}
 
 </script>
 </body>
