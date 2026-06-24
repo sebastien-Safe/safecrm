@@ -3,7 +3,7 @@
 // Protégée par un secret partagé AUDIT_SECRET (env var)
 
 const CORS = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",
   "Access-Control-Allow-Headers": "content-type, x-audit-secret",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };

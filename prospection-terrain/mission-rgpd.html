@@ -313,6 +313,7 @@ function genPDF(){
       <td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;font-size:13px">${a.l}</td>
       <td style="padding:9px 10px;border-bottom:1px solid #f3f4f6;white-space:nowrap">${badge}</td></tr>`;
   }).join('');
+  const rowsData = Q.map(q=>{ const a=ans[q.id]; if(!a) return null; const s=a.r==='ok'?{text:'✅ Conforme',bg:'#d1fae5',color:'#065f46'}:a.r==='warn'?{text:'⚠️ Partiel',bg:'#fef3c7',color:'#92400e'}:{text:'❌ Non conforme',bg:'#fee2e2',color:'#991b1b'}; return {question:q.q,reponse:a.l,...s}; }).filter(Boolean);
 
   const reco = [];
   Object.values(ans).filter(a=>a.r!=='ok').forEach(a=>{
@@ -397,7 +398,7 @@ th{background:#8b5cf6;color:#fff;padding:8px 10px;text-align:left;font-size:11px
     mission: 'RGPD', mission_color: '#8b5cf6',
     score: String(pct), niveau: lvl, niveau_color: lvlColor,
     niveau_bg: niveauBg, niveau_border: niveauBorder,
-    rows, recommandations: recoHtml, date: now,
+    rows: rowsData, recommandations: reco, date: now,
     conseiller: 'Safe Digitalisation',
     rdv_url: 'https://crm.safe-digitalisation.fr/booking.html',
   });

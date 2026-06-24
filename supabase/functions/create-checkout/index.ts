@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
   if (!SK) return json({ error: "no_stripe_key" }, 500);
 
   const sb = createClient(SU, SR);
-  const stripe = new Stripe(SK, { apiVersion: "2024-04-10" });
+  const stripe = new Stripe(SK, { apiVersion: "2023-10-16" });
 
   let body: { contract_id?: string };
   try {

@@ -249,6 +249,7 @@ function genPDF(){
   const rows=Q.map(q=>{ const a=ans[q.id]; if(!a) return '';
     const badge=a.r==='ok'?`<span style="background:#d1fae5;color:#065f46;padding:2px 9px;border-radius:99px;font-size:11px">✅ OK</span>`:a.r==='warn'?`<span style="background:#fef3c7;color:#92400e;padding:2px 9px;border-radius:99px;font-size:11px">⚠️ A améliorer</span>`:`<span style="background:#fee2e2;color:#991b1b;padding:2px 9px;border-radius:99px;font-size:11px">❌ Action requise</span>`;
     return `<tr><td style="padding:8px 10px;border-bottom:1px solid #f3f4f6;font-size:12px;width:55%">${q.q}</td><td style="padding:8px 10px;border-bottom:1px solid #f3f4f6;font-size:12px">${a.l}</td><td style="padding:8px 10px;border-bottom:1px solid #f3f4f6">${badge}</td></tr>`;}).join('');
+  const rowsData=Q.map(q=>{ const a=ans[q.id]; if(!a) return null; const s=a.r==='ok'?{text:'✅ OK',bg:'#d1fae5',color:'#065f46'}:a.r==='warn'?{text:'⚠️ A améliorer',bg:'#fef3c7',color:'#92400e'}:{text:'❌ Action requise',bg:'#fee2e2',color:'#991b1b'}; return {question:q.q,reponse:a.l,...s}; }).filter(Boolean);
   const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Rapport SEO Local — ${nom}</title>
 <style>@page{margin:18mm 16mm}body{font-family:Arial,sans-serif;color:#1f2937;font-size:13px;line-height:1.5}
 .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #22c55e;padding-bottom:10px;margin-bottom:16px}
@@ -279,7 +280,7 @@ table{width:100%;border-collapse:collapse}th{background:#22c55e;color:#fff;paddi
     mission: 'SEO Local', mission_color: '#22c55e',
     score: String(pct), niveau: lvl, niveau_color: lvlColor,
     niveau_bg: niveauBg, niveau_border: niveauBorder,
-    rows, recommandations: '',
+    rows: rowsData, recommandations: [],
     date: now, conseiller: 'Safe Digitalisation',
     rdv_url: 'https://crm.safe-digitalisation.fr/booking.html',
   });
