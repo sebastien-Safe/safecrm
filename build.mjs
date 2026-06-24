@@ -54,9 +54,12 @@ function copyDir(src, dest) {
 }
 
 function copyStatic() {
+  // Fichiers HTML racine
   const staticFiles = [
     'index.html', 'clause.html', 'clause-public.html', 'mandat.html',
     'order.html', 'sw.js', 'manifest.json', 'CNAME', 'favicon.png',
+    'booking.html', 'documentation-crm.html', 'admin-docs.html',
+    'guide.html', 'simulateur.html', 'automatisation-modules.html',
   ];
   for (const f of staticFiles) {
     if (fs.existsSync(f)) {
@@ -64,9 +67,14 @@ function copyStatic() {
       fs.copyFileSync(f, `${OUT}/${f}`);
     }
   }
-  for (const dir of ['icons', 'legal', 'assets/supabase']) {
+  // Répertoires complets (contenu HTML + assets propres)
+  for (const dir of [
+    'icons', 'legal', 'assets/supabase',
+    'prospection-terrain', 'modules', 'audits', 'docs',
+  ]) {
     if (fs.existsSync(dir)) copyDir(dir, `${OUT}/${dir}`);
   }
+  // Images statiques dans assets/
   for (const ext of ['png', 'svg', 'webp', 'ico']) {
     for (const f of fs.readdirSync('assets').filter(n => n.endsWith(`.${ext}`))) {
       fs.mkdirSync(`${OUT}/assets`, { recursive: true });
