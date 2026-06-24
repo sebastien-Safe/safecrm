@@ -418,14 +418,14 @@ select option{background:var(--navy-mid)}
           <div class="step-content active" id="cstep-1">
             <div style="font-size:.88rem;color:var(--mut-2);margin-bottom:16px">Quel secteur souhaitez-vous prospecter ?</div>
             <div class="sector-grid">
-              <button class="sector-btn" data-naf="5610A" onclick="_cibleSelectSector(this)"><span class="s-ico">🍽️</span>Restauration</button>
-              <button class="sector-btn" data-naf="1071C" onclick="_cibleSelectSector(this)"><span class="s-ico">🥖</span>Boulangerie / Pâtisserie</button>
-              <button class="sector-btn" data-naf="4722Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🥩</span>Boucherie / Charcuterie</button>
-              <button class="sector-btn" data-naf="4729Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🧀</span>Fromagerie</button>
-              <button class="sector-btn" data-naf="5621Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🍱</span>Traiteur</button>
-              <button class="sector-btn" data-naf="4776Z" onclick="_cibleSelectSector(this)"><span class="s-ico">💐</span>Fleuriste</button>
-              <button class="sector-btn" data-naf="4520A" onclick="_cibleSelectSector(this)"><span class="s-ico">🔧</span>Garage automobile</button>
-              <button class="sector-btn" data-naf="5520Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🛏️</span>Gîte / Chambre d'hôtes</button>
+              <button class="sector-btn" data-naf="56.10A" onclick="_cibleSelectSector(this)"><span class="s-ico">🍽️</span>Restauration</button>
+              <button class="sector-btn" data-naf="10.71C" onclick="_cibleSelectSector(this)"><span class="s-ico">🥖</span>Boulangerie / Pâtisserie</button>
+              <button class="sector-btn" data-naf="47.22Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🥩</span>Boucherie / Charcuterie</button>
+              <button class="sector-btn" data-naf="47.29Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🧀</span>Fromagerie</button>
+              <button class="sector-btn" data-naf="56.21Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🍱</span>Traiteur</button>
+              <button class="sector-btn" data-naf="47.76Z" onclick="_cibleSelectSector(this)"><span class="s-ico">💐</span>Fleuriste</button>
+              <button class="sector-btn" data-naf="45.20A" onclick="_cibleSelectSector(this)"><span class="s-ico">🔧</span>Garage automobile</button>
+              <button class="sector-btn" data-naf="55.20Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🛏️</span>Gîte / Chambre d'hôtes</button>
             </div>
             <div class="field">
               <label>Ou saisissez un autre métier</label>
@@ -2232,39 +2232,45 @@ async function _cibleSearch(){
 
   const dep = document.getElementById('cible-depart').value.trim();
 
-  // 1. Géocoder le point de départ
-  let lat=null, lng=null;
+  // 1. Géocoder le point de départ → lat/lng + nom de commune
+  let lat=null, lng=null, commune='';
   try{
     const r = await fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(dep) + '&limit=1');
     const d = await r.json();
     const feat = d.features?.[0];
-    if(feat){ [lng, lat] = feat.geometry.coordinates; }
+    if(feat){
+      [lng, lat] = feat.geometry.coordinates;
+      commune = feat.properties.city || feat.properties.municipality || '';
+    }
   }catch(e){}
   if(!lat || !lng){
     list.innerHTML = '<div class="empty"><div class="ico">📍</div><p>Impossible de localiser ce point de départ.<br>Vérifiez l\'adresse saisie.</p></div>';
     return;
   }
 
-  // 2. Trouver le département
-  let dept = '';
-  try{
-    const r = await fetch(`https://geo.api.gouv.fr/communes?lat=${lat}&lon=${lng}&fields=codeDepartement&limit=1`);
+  // 2. API SIRENE — filtrage géographique via nom de commune (q=) car le param departement est ignoré par l'API
+  const _fetchSirene = async (q, naf, limit) => {
+    const p = new URLSearchParams({ per_page: String(limit) });
+    if(naf) p.set('activite_principale', naf);
+    if(q)   p.set('q', q);
+    const r = await fetch('https://recherche-entreprises.api.gouv.fr/search?' + p.toString());
     const d = await r.json();
-    dept = d[0]?.codeDepartement || '';
-  }catch(e){}
+    return d.results || [];
+  };
 
-  // 3. API SIRENE
   let results = [];
   try{
     const naf = _cibleState.naf;
     const kw  = document.getElementById('cible-keyword').value.trim();
-    const p   = new URLSearchParams({ per_page:'25' });
-    if(naf)  p.set('activite_principale', naf);
-    if(kw)   p.set('q', kw);
-    if(dept) p.set('departement', dept);
-    const r = await fetch('https://recherche-entreprises.api.gouv.fr/search?' + p.toString());
-    const d = await r.json();
-    results = d.results || [];
+    // On utilise le mot-clé utilisateur S'IL existe, sinon la commune géocodée
+    const qParam = kw || commune;
+    // Première tentative avec la commune / mot-clé (25 résultats)
+    results = await _fetchSirene(qParam, naf, 25);
+    // Si peu de résultats locaux (<3), on retente sans filtre textuel pour élargir
+    if(results.length < 3 && !kw){
+      const broader = await _fetchSirene('', naf, 50);
+      results = [...results, ...broader.filter(b => !results.find(r => r.siren===b.siren))];
+    }
   }catch(e){
     list.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>Erreur lors de la recherche.<br>Vérifiez votre connexion internet.</p></div>';
     return;
