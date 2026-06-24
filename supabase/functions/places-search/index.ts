@@ -104,7 +104,8 @@ Deno.serve(async (req) => {
     return json({ error: `Google Places : ${googleData.status}` }, 502);
   }
 
-  // ── Filtrage RGPD : champs minimaux, pas de stockage des résultats ─────────
+  // ── Qualification et filtrage des résultats ───────────────────────────────
+  // RGPD : champs minimaux, pas de stockage des résultats
   type PlaceResult = {
     place_id?: string;
     name?: string;
@@ -114,20 +115,52 @@ Deno.serve(async (req) => {
     business_status?: string;
     rating?: number;
     user_ratings_total?: number;
+    opening_hours?: { open_now?: boolean };
   };
 
+  // Score prospect (plus bas = meilleure cible commerciale)
+  function prospectScore(p: PlaceResult): number {
+    const avis = p.user_ratings_total ?? 0;
+    const sansHoraires = !p.opening_hours;
+    if (avis === 0  && sansHoraires) return 1;   // 🎯 Cible idéale
+    if (avis === 0)                  return 2;   // 🎯 Aucun avis
+    if (avis <= 5   && sansHoraires) return 3;   // ⭐ Très peu d'avis, pas d'horaires
+    if (avis <= 5)                   return 4;   // ⭐ Très peu d'avis
+    if (avis <= 20  && sansHoraires) return 5;   // 👍 Peu d'avis, pas d'horaires
+    if (avis <= 20)                  return 6;   // 👍 Peu d'avis
+    if (avis <= 50)                  return 7;   // 💤 Présence partielle
+    return 8;                                    // ✅ Bien référencé
+  }
+
+  function prospectLabel(p: PlaceResult): { label: string; color: string; score: number } {
+    const s = prospectScore(p);
+    if (s <= 2) return { label: "Cible idéale",       color: "gold",   score: s };
+    if (s <= 4) return { label: "Très peu d'avis",    color: "green",  score: s };
+    if (s <= 6) return { label: "Peu d'avis",         color: "blue",   score: s };
+    if (s === 7) return { label: "Présence partielle", color: "orange", score: s };
+    return             { label: "Bien référencé",      color: "gray",   score: s };
+  }
+
   const results = ((googleData.results ?? []) as PlaceResult[])
+    // 1. Exclure les établissements définitivement fermés
+    .filter((p) => p.business_status !== "CLOSED_PERMANENTLY")
+    // 2. Trier par score prospect (meilleures cibles en premier)
+    .sort((a, b) => prospectScore(a) - prospectScore(b))
+    // 3. Limiter à 10 résultats qualifiés
     .slice(0, 10)
     .map((p) => ({
-      place_id: p.place_id,
-      name:     p.name,
-      address:  p.formatted_address,
-      lat:      p.geometry?.location?.lat,
-      lng:      p.geometry?.location?.lng,
-      types:    (p.types ?? []).slice(0, 3),
-      status:   p.business_status,
-      rating:   p.rating,
-      ratings_total: p.user_ratings_total,
+      place_id:       p.place_id,
+      name:           p.name,
+      address:        p.formatted_address,
+      lat:            p.geometry?.location?.lat,
+      lng:            p.geometry?.location?.lng,
+      types:          (p.types ?? []).slice(0, 3),
+      status:         p.business_status,           // OPERATIONAL | CLOSED_TEMPORARILY
+      rating:         p.rating,
+      ratings_total:  p.user_ratings_total ?? 0,
+      has_hours:      !!p.opening_hours,           // false = pas d'horaires sur Google
+      open_now:       p.opening_hours?.open_now ?? null,
+      prospect:       prospectLabel(p),            // qualification commerciale
     }));
 
   // ── Log RGPD : requête + nombre de résultats UNIQUEMENT (jamais les données) ─
