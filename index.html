@@ -275,31 +275,45 @@
     <div class="mob-brand">S<em>@</em>FE CRM</div>
     <button class="mob-close" onclick="closeMobMenu()">&#x2715;</button>
   </div>
-  <!-- Zone scrollable : uniquement le contenu navigation -->
   <div class="mob-scroll">
+    <!-- Navigation principale -->
     <div class="mob-sec">
       <div class="mob-sec-lbl">Navigation</div>
-      <button class="mob-lk mob-active" id="mob-lk-dashboard" onclick="mobNav('dashboard')"><span class="ico">🏠</span> Tableau de bord</button>
-      <button class="mob-lk" id="mob-lk-pipeline" onclick="closeMobMenu();switchView('pipeline')"><span class="ico">🗂️</span> Pipeline</button>
+      <button class="mob-lk" id="mob-lk-dashboard" onclick="mobNav('dashboard')"><span class="ico">🏠</span> Tableau de bord</button>
+      <button class="mob-lk" id="mob-lk-pipeline" onclick="mobNav('pipeline')"><span class="ico">🗂️</span> Pipeline</button>
+      <button class="mob-lk" onclick="mobNav('contacts')"><span class="ico">👥</span> Contacts</button>
+      <button class="mob-lk" onclick="mobNav('tasks')"><span class="ico">✅</span> T&#226;ches</button>
+      <button class="mob-lk" onclick="mobNav('agenda')"><span class="ico">📅</span> Agenda</button>
       <button class="mob-lk" id="mob-lk-resultats" onclick="mobNav('resultats')"><span class="ico">📊</span> R&#233;sultats</button>
-      <button class="mob-lk" onclick="closeMobMenu();switchView('tasks')"><span class="ico">✅</span> T&#226;ches</button>
+      <a class="mob-lk" href="/prospection-terrain/" onclick="closeMobMenu()"><span class="ico">🥾</span> Prospection terrain</a>
+      <button class="mob-lk dci-only" style="display:none" onclick="closeMobMenu();openEquipeModal()"><span class="ico">🤝</span> G&#233;rer mon &#233;quipe</button>
     </div>
+
+    <!-- Modules -->
     <div class="mob-divider"></div>
-    <div class="mob-sec dci-only" id="mob-sec-dci" style="display:none">
-      <div class="mob-sec-lbl">&#128100; Gestion</div>
-      <button class="mob-lk" onclick="closeMobMenu();openEquipeModal()"><span class="ico">🤝</span> G&#233;rer mon &#233;quipe</button>
+    <div class="mob-sec">
+      <div class="mob-sec-lbl">Modules</div>
+      <a class="mob-lk" href="/modules/SEO/module-seo-clients.html"><span class="ico">🚀</span> SEO</a>
+      <a class="mob-lk" href="/modules/Cyber/module-cyber-clients.html"><span class="ico">💻</span> Cybersec</a>
+      <a class="mob-lk" href="/modules/DPO/module-dpo-clients.html"><span class="ico">⚖️</span> DPO</a>
+      <a class="mob-lk" href="/modules/Social/module-social-clients.html"><span class="ico">📱</span> Social</a>
+      <a class="mob-lk" href="/modules/ClickCollect/module-clickcollect-clients.html"><span class="ico">🛒</span> Click &amp; Collect</a>
     </div>
-    <div class="mob-sec admin-only" id="mob-sec-outils" style="display:none">
-      <div class="mob-sec-lbl">🛠️ Outils</div>
-      <a class="mob-lk" href="/prospection-terrain/" onclick="closeMobMenu()"><span class="ico">🛡️</span> S@FE Work</a>
-      <button class="mob-lk admin-only" id="mob-lk-admin" onclick="closeMobMenu();switchView('admin');setTimeout(()=>switchAdminTab('overview'),50)"><span class="ico">👨‍💼</span> Gestion</button>
+
+    <!-- Administration (admin uniquement) -->
+    <div class="mob-divider admin-only" id="mob-sep-admin" style="display:none"></div>
+    <div class="mob-sec admin-only" id="mob-sec-admin" style="display:none">
+      <div class="mob-sec-lbl">Administration</div>
+      <button class="mob-lk" onclick="mobNav('journal')"><span class="ico">📋</span> Journal RGPD</button>
+      <button class="mob-lk" id="mob-lk-admin" onclick="closeMobMenu();switchView('admin');setTimeout(()=>switchAdminTab('overview'),50)"><span class="ico">👨‍💼</span> Gestion</button>
+      <a class="mob-lk" href="/modules/connecteurs.html"><span class="ico">🔌</span> Connecteurs</a>
     </div>
   </div>
-  <!-- Footer toujours visible en bas, jamais scrollé hors écran -->
+  <!-- Footer ancré en bas -->
   <div class="mob-footer">
-    <button class="mob-lk" onclick="closeMobMenu();openHelp('contextual')"><span class="ico">❓</span> Centre d'aide</button>
-    <button class="mob-lk" onclick="closeMobMenu();openProfileModal()"><span class="ico">&#128100;</span> Mon profil</button>
-    <button class="mob-lk danger" onclick="closeMobMenu();logout()"><span class="ico">&#128682;</span> D&#233;connexion</button>
+    <button class="mob-lk" onclick="closeMobMenu();openHelp('contextual')"><span class="ico">❓</span> Centre d&#x27;aide</button>
+    <button class="mob-lk" onclick="closeMobMenu();openProfileModal()"><span class="ico">👤</span> Mon profil</button>
+    <button class="mob-lk danger" onclick="closeMobMenu();logout()"><span class="ico">🚪</span> D&#233;connexion</button>
   </div>
 </div>
 
@@ -352,48 +366,37 @@
 <!-- ================= APPLICATION ================= -->
 <div id="app" class="app" style="display:none">
   <aside class="sidebar">
-    <img src="assets/logo.png" alt="S@FE" class="brand-logo">
+    <img src="assets/logo.png" alt="S@FE" class="brand-logo" style="flex-shrink:0;margin-bottom:22px">
     <nav class="navlinks">
-      <!-- Mon activité -->
-      <button class="nav-section-lbl nav-toggle" data-grp="activite">Mon activité <em class="nav-chevron">▾</em></button>
-      <div class="nav-group" id="grp-activite">
-        <button class="navlink" onclick="switchView('pipeline')">🗂️ Pipeline</button>
-        <button data-view="resultats" class="navlink" id="nav-resultats">📊 Résultats</button>
-        <button class="navlink" id="lk-tasks" onclick="switchView('tasks')">✅ Tâches</button>
-        <button data-view="agenda" class="navlink" id="nav-agenda">📅 Agenda</button>
-        <a class="navlink" href="/prospection-terrain/" style="text-decoration:none">🥾 Prospection terrain</a>
-        <button class="navlink dci-only" style="display:none" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
-      </div>
-
-
-      <div class="nav-sep"></div>
+      <!-- Navigation principale -->
+      <div class="nav-section-lbl">Navigation</div>
+      <button class="navlink" data-view="dashboard">🏠 Tableau de bord</button>
+      <button class="navlink" data-view="pipeline">🗂️ Pipeline</button>
+      <button class="navlink" data-view="contacts">👥 Contacts</button>
+      <button class="navlink" data-view="tasks" id="lk-tasks">✅ Tâches</button>
+      <button class="navlink" data-view="agenda" id="nav-agenda">📅 Agenda</button>
+      <button class="navlink" data-view="resultats" id="nav-resultats">📊 Résultats</button>
+      <a class="navlink" href="/prospection-terrain/" style="text-decoration:none">🥾 Prospection terrain</a>
+      <button class="navlink dci-only" style="display:none" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
 
       <!-- Modules -->
-      <button class="nav-section-lbl nav-toggle" data-grp="modules">Modules <em class="nav-chevron">▾</em></button>
-      <div class="nav-group" id="grp-modules">
-        <a class="sidebar-item sidebar-sub" href="/modules/SEO/module-seo-clients.html"><span class="ico">🚀</span> SEO</a>
-        <a class="sidebar-item sidebar-sub" href="/modules/Cyber/module-cyber-clients.html"><span class="ico">💻</span> Cybersec</a>
-        <a class="sidebar-item sidebar-sub" href="/modules/DPO/module-dpo-clients.html"><span class="ico">⚖️</span> DPO</a>
-        <a class="sidebar-item sidebar-sub" href="/modules/Social/module-social-clients.html"><span class="ico">📱</span> Social</a>
-        <a class="sidebar-item sidebar-sub" href="/modules/ClickCollect/module-clickcollect-clients.html"><span class="ico">🛒</span> Click &amp; Collect</a>
-        <span class="sidebar-item sidebar-sub" style="opacity:.38;cursor:not-allowed">🛡 Assurances <span style="font-size:.6rem;color:var(--muted);margin-left:auto;font-family:monospace">bientôt</span></span>
-      </div>
+      <div class="nav-sep" style="margin-top:8px"></div>
+      <div class="nav-section-lbl">Modules</div>
+      <a class="navlink" href="/modules/SEO/module-seo-clients.html" style="text-decoration:none">🚀 SEO</a>
+      <a class="navlink" href="/modules/Cyber/module-cyber-clients.html" style="text-decoration:none">💻 Cybersec</a>
+      <a class="navlink" href="/modules/DPO/module-dpo-clients.html" style="text-decoration:none">⚖️ DPO</a>
+      <a class="navlink" href="/modules/Social/module-social-clients.html" style="text-decoration:none">📱 Social</a>
+      <a class="navlink" href="/modules/ClickCollect/module-clickcollect-clients.html" style="text-decoration:none">🛒 Click &amp; Collect</a>
+      <span class="navlink" style="opacity:.35;cursor:not-allowed;pointer-events:none">🛡 Assurances <small style="margin-left:auto;font-size:.6rem;font-family:monospace;opacity:.7">bientôt</small></span>
 
-      <div class="nav-sep admin-only" style="display:none"></div>
-
-      <!-- Réglages (admin uniquement) -->
-      <button class="nav-section-lbl nav-toggle admin-only" data-grp="reglages" style="display:none">Réglages <em class="nav-chevron">▾</em></button>
-      <div class="nav-group admin-only" id="grp-reglages" style="display:none">
-        <a class="sidebar-item sidebar-sub" href="/modules/connecteurs.html"><span class="ico">🔌</span> Connecteurs</a>
-        <a class="sidebar-item sidebar-sub" href="https://github.com/sebastien-Safe/" target="_blank" rel="noopener"><img src="/icons/tiers/github.svg" class="ico-img" alt="GitHub"> GitHub</a>
-        <a class="sidebar-item sidebar-sub" href="https://supabase.com/dashboard/" target="_blank" rel="noopener"><img src="/icons/tiers/supabase.svg" class="ico-img" alt="Supabase"> Supabase</a>
-        <a class="sidebar-item sidebar-sub" href="vscode://"><img src="/icons/tiers/vscode.svg" class="ico-img" alt="VSCode"> VSCode</a>
-      </div>
-
-      <div class="nav-sep"></div>
-
-      <button class="navlink" onclick="switchView('journal')">📋 Journal</button>
-      <button class="navlink admin-only" style="display:none" onclick="switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)">👨‍💼 GESTION</button>
+      <!-- Administration (admin uniquement) -->
+      <div class="nav-sep admin-only" style="display:none;margin-top:8px"></div>
+      <div class="nav-section-lbl admin-only" style="display:none">Administration</div>
+      <button class="navlink admin-only" style="display:none" data-view="journal">📋 Journal RGPD</button>
+      <button class="navlink admin-only" style="display:none" onclick="switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)">👨‍💼 Gestion</button>
+      <a class="navlink admin-only" style="display:none;text-decoration:none" href="/modules/connecteurs.html">🔌 Connecteurs</a>
+      <a class="navlink admin-only" style="display:none;text-decoration:none" href="https://github.com/sebastien-Safe/" target="_blank" rel="noopener">⌥ GitHub</a>
+      <a class="navlink admin-only" style="display:none;text-decoration:none" href="https://supabase.com/dashboard/" target="_blank" rel="noopener">⚡ Supabase</a>
     </nav>
     <div class="sidebar-footer">
       <button class="btn btn-out btn-sm" onclick="openHelp('contextual')" title="Centre d'aide"
