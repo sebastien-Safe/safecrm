@@ -923,6 +923,11 @@ select option{background:var(--navy-mid)}
       <input type="text" id="tournee-search" oninput="_tourneeBuildList(this.value)" placeholder="🔍 Rechercher…" style="width:100%;box-sizing:border-box;padding:8px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.85rem;margin-bottom:10px;outline:none">
       <div id="tournee-warn-noaddr" style="display:none;font-size:.78rem;color:var(--warn,#f59e0b);padding:6px 10px;background:rgba(245,158,11,.08);border-radius:6px;margin-bottom:10px"></div>
       <div id="tournee-contact-list" style="max-height:240px;overflow-y:auto;padding-right:4px"></div>
+      <!-- Cibles SIRENE sélectionnées (éphémères — jamais insérées dans contacts) -->
+      <div id="tournee-sirene-section" style="display:none;margin-top:8px">
+        <div style="font-family:var(--ff-mono);font-size:.62rem;letter-spacing:.15em;color:#f59e0b;text-transform:uppercase;padding:6px 0 4px;border-top:1px solid var(--line)">⚡ Cibles SIRENE</div>
+        <div id="tournee-sirene-list" style="max-height:120px;overflow-y:auto;padding-right:4px"></div>
+      </div>
       <!-- Cibles Google Places sélectionnées -->
       <div id="tournee-places-section" style="display:none;margin-top:8px">
         <div style="font-family:var(--ff-mono);font-size:.62rem;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;padding:6px 0 4px;border-top:1px solid var(--line)">🌍 Cibles Google Places</div>
@@ -2415,36 +2420,30 @@ async function _cibleAddResult(idx, btn){
   if(!r) return;
   btn.textContent = '…'; btn.disabled = true;
 
-  const payload = {
-    nom:              r.nom_complet || r.siege?.siret || 'Inconnu',
-    siret:            r.siege?.siret  || null,
-    adresse:          r.siege?.adresse || null,
-    code_postal:      r.siege?.code_postal || null,
-    ville:            r.siege?.commune || null,
-    code_postal_ville:[r.siege?.code_postal, r.siege?.commune].filter(Boolean).join(' ') || null,
-    statut:           'Prospect',
-    kanban_col:       'prospect',
-    a_completer:      true,
-    source:           'Terrain',
-    activites:        [],
-    rgpd_ko:          false,
-    consent_telephone:false,
-    consent_email:    false,
-    consent_courrier: false,
-  };
+  const label   = r.nom_complet || r.siege?.siret || 'Inconnu';
+  const adresse = [r.siege?.adresse, r.siege?.code_postal, r.siege?.commune].filter(Boolean).join(', ');
 
-  try{
-    const created = await sbPost('contacts', payload);
-    if(created?.[0]) allContacts.push(created[0]);
-    _cibleState.added.add(idx);
-    btn.textContent = '✓ Ajouté'; btn.classList.add('done'); btn.disabled = true;
-    document.getElementById('cible-added-count').textContent = _cibleState.added.size;
-    document.getElementById('cible-tournee-hint').style.display = 'block';
-    showToast('Fiche créée · sera complétée après la visite','ok');
-  }catch(e){
-    btn.textContent = '+ Tournée'; btn.disabled = false;
-    showToast('Erreur : ' + (e.message||'création impossible'), 'err');
-  }
+  // Géocodage BAN (optionnel — lat/lng pour optimisation TSP)
+  let lat = null, lng = null;
+  try {
+    const banQ = [r.siege?.adresse, r.siege?.code_postal, r.siege?.commune].filter(Boolean).join(' ');
+    const ban  = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(banQ)}&limit=1`);
+    if (ban.ok) {
+      const bd = await ban.json();
+      const f  = bd.features?.[0];
+      if (f) { lng = f.geometry.coordinates[0]; lat = f.geometry.coordinates[1]; }
+    }
+  } catch { /* géocodage optionnel */ }
+
+  // Ajout éphémère — RGPD : aucune donnée SIRENE n'entre dans Supabase avant consentement
+  _sireneTargets.push({ label, adresse, lat, lng, siret: r.siege?.siret || null, source: 'sirene' });
+
+  _cibleState.added.add(idx);
+  btn.textContent = '✓ Ajouté'; btn.classList.add('done'); btn.disabled = true;
+  document.getElementById('cible-added-count').textContent = _cibleState.added.size;
+  document.getElementById('cible-tournee-hint').style.display = 'block';
+  _tourneeBuildList('');
+  showToast('Étape ajoutée à l\'itinéraire · fiche à compléter après la visite', 'ok');
 }
 
 
@@ -2543,6 +2542,7 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
    GOOGLE PLACES — moteur alternatif
    ============================================================ */
 let _cibleEngine  = 'sirene';
+let _sireneTargets  = [];  // cibles SIRENE pour la tournée (éphémère — RGPD : pas de contact créé)
 let _placesTargets  = [];  // cibles sélectionnées pour la tournée (éphémère)
 let _placesResults  = [];  // résultats de la dernière recherche (éphémère)
 let _userProfile    = null;
@@ -2748,6 +2748,24 @@ function _tourneeBuildList(filter) {
     </label>`;
   }).join('') : '<p style="color:var(--mut);text-align:center;padding:24px;font-size:.84rem">Aucun contact avec adresse complète.</p>';
 
+  // Cibles SIRENE (éphémères)
+  const sireneSection = document.getElementById('tournee-sirene-section');
+  const sireneList    = document.getElementById('tournee-sirene-list');
+  if (_sireneTargets.length > 0) {
+    sireneSection.style.display = '';
+    sireneList.innerHTML = _sireneTargets.map((t, i) => `
+      <label class="tournee-item sel" style="border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.07)">
+        <input type="checkbox" checked onchange="_sireneRemoveFromTournee(${i},this)">
+        <div>
+          <div style="color:#fff;font-weight:600;font-size:.87rem">${escHtml(t.label)}</div>
+          <div style="font-size:.74rem;color:var(--mut);margin-top:1px">📍 ${escHtml(t.adresse||'—')}</div>
+          <div style="font-size:.63rem;color:#f59e0b;font-family:var(--ff-mono);margin-top:2px">⚡ SIRENE · fiche à compléter après visite</div>
+        </div>
+      </label>`).join('');
+  } else {
+    sireneSection.style.display = 'none';
+  }
+
   // Cibles Google Places
   const placesSection = document.getElementById('tournee-places-section');
   const placesList    = document.getElementById('tournee-places-list');
@@ -2768,6 +2786,13 @@ function _tourneeBuildList(filter) {
   _tourneeUpdateCount();
 }
 
+function _sireneRemoveFromTournee(idx, cb) {
+  if (!cb.checked) {
+    _sireneTargets.splice(idx, 1);
+    _tourneeBuildList(document.getElementById('tournee-search').value);
+  }
+}
+
 function _placesRemoveFromTournee(idx, cb) {
   if (!cb.checked) {
     _placesTargets.splice(idx, 1);
@@ -2784,7 +2809,7 @@ function _tourneeToggle(id, checked) {
 }
 
 function _tourneeUpdateCount() {
-  const n = _ts.selected.size + _placesTargets.length;
+  const n = _ts.selected.size + _sireneTargets.length + _placesTargets.length;
   const el = document.getElementById('tournee-sel-count');
   if (el) el.textContent = n > 0 ? `${n} étape${n>1?'s':''} sélectionnée${n>1?'s':''}` : '';
   const btn = document.getElementById('tournee-next-1');
@@ -2817,7 +2842,7 @@ async function _tourneeCalculer() {
   btn.disabled = true; btn.textContent = '⏳ Géocodage…';
   try {
     const contacts = [..._ts.selected].map(id => allContacts.find(c => c.id === id)).filter(Boolean);
-    const totalStops = contacts.length + _placesTargets.length;
+    const totalStops = contacts.length + _sireneTargets.length + _placesTargets.length;
     if (totalStops > 5) { alert('Maximum 5 étapes par tournée (contrainte éco S@FE).'); return; }
 
     const departStr = document.getElementById('tournee-depart').value.trim();
@@ -2835,6 +2860,12 @@ async function _tourneeCalculer() {
       const coords = await _geocodeTournee(addr);
       if (!coords) { alert(`Adresse introuvable :\n${c.nom} — ${addr}\n\nVérifiez la fiche contact.`); return; }
       points.push({ label:c.nom, entreprise:c.entreprise||'', adresse:addr, contact:c, source:'crm', ...coords });
+    }
+
+    // Cibles SIRENE — lat/lng depuis BAN (géocodé dans _cibleAddResult)
+    for (const t of _sireneTargets) {
+      if (!t.lat || !t.lng) { alert(`Adresse non géocodée pour : ${t.label}\nVérifiez l'adresse dans SIRENE.`); return; }
+      points.push({ label:t.label, entreprise:'', adresse:t.adresse||'', sireneTarget:t, source:'sirene', lat:t.lat, lng:t.lng });
     }
 
     // Google Places — lat/lng directs (pas de BAN)
@@ -3032,6 +3063,7 @@ async function _tourneeSaveToAgenda() {
 
     // 3. Nettoyer et confirmer
     closeTourneeModal();
+    _sireneTargets = [];
     _placesTargets = [];
     _placesUpdateHint();
     showToast(`Tournée du ${_ts.date} enregistrée dans l'agenda (${nbEtapes} étape${nbEtapes>1?'s':''})`, 'ok');
