@@ -326,8 +326,8 @@ tr:hover td { background: rgba(255,255,255,.02); }
 
 
 /* ── RESPONSIVE ─────────────────────────────────────────────── */
-//ANCIEN CODE
-/*@media (max-width: 768px) {
+/*ANCIEN CODE
+@media (max-width: 768px) {
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .stats-row { grid-template-columns: 1fr 1fr; }
   .kanban-board { flex-direction: column; }
@@ -335,7 +335,7 @@ tr:hover td { background: rgba(255,255,255,.02); }
   .timeline-row-label { width: 120px; }
 }
 */
-//NOUVEAU CODE 
+/*NOUVEAU CODE */
 /* ── RESPONSIVE ─────────────────────────────────────────────── */
 @media (max-width: 860px) {
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
@@ -353,7 +353,7 @@ tr:hover td { background: rgba(255,255,255,.02); }
   }
 }
 
-//AJOUT CORRECTION BUG SIDEBAR SOUS 860PX
+/*AJOUT CORRECTION BUG SIDEBAR SOUS 860PX*/
 
 @media (max-width: 860px) {
   /* On force l'overlay à se placer DERRIÈRE la sidebar */
@@ -370,8 +370,8 @@ tr:hover td { background: rgba(255,255,255,.02); }
     z-index: 10000 !important; /* Passe devant l'overlay */
   }
 }
-//MODIFICATION PRECEDENTE SANS EFFET.
-//NOUVEAU TEST
+/* MODIFICATION PRECEDENTE SANS EFFET.
+NOUVEAU TEST */
 
 @media (max-width: 860px) {
   /* 1. On s'assure que le shell laisse passer les clics ou se positionne correctement */
