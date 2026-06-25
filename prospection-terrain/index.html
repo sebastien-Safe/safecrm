@@ -2792,15 +2792,36 @@ function _placesUpdateHint() {
    ============================================================ */
 const _ts = { selected: new Set(), map: null, route: [], slots: [], date: '', totalKm: 0, limiteDepassee: false, forceDepassement: false };
 
+  //BLOC CORRIGE BUGG LANCEMENT TOURNEE
+//function openTourneeModal() {
+// _ts.selected.clear();
+// _ts.map = null;
+// _tourneeBuildList('');
+//_tourneeSetStep(1);
+// document.getElementById('tournee-search').value = '';
+// document.getElementById('tournee-modal').style.display = 'block';
+//}
+//DEBUT NOUVEAU BLOC  
 function openTourneeModal() {
   _ts.selected.clear();
   _ts.map = null;
   _tourneeBuildList('');
   _tourneeSetStep(1);
-  document.getElementById('tournee-search').value = '';
-  document.getElementById('tournee-modal').style.display = 'block';
-}
 
+  // Correction ici : on vérifie si l'élément existe avant de changer sa valeur
+  const searchInput = document.getElementById('tournee-search');
+  if (searchInput) {
+    searchInput.value = '';
+  }
+
+  const modal = document.getElementById('tournee-modal');
+  if (modal) {
+    modal.style.display = 'block';
+  }
+}
+//FIN DE LA CORRECTION
+
+  
 function closeTourneeModal() {
   document.getElementById('tournee-modal').style.display = 'none';
   if (_ts.map) { _ts.map.remove(); _ts.map = null; }
