@@ -412,3 +412,24 @@ NOUVEAU TEST */
     cursor: pointer !important;
   }
 }
+@media (max-width: 860px) {
+  /* ... vos autres règles (grid, stats, etc.) ... */
+
+  /* 1. On force l'overlay à descendre d'un cran en arrière-plan */
+  #work-mob-overlay.show {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 900 !important; /* Un z-index modéré pour rester SOUS la sidebar */
+    display: block !important;
+  }
+
+  /* 2. On prend le conteneur global du layout pour le forcer à créer 
+     un contexte d'empilement propre, ou on cible directement la sidebar */
+  #work-sidebar, 
+  .sidebar,
+  aside {
+    position: fixed !important;
+    z-index: 2000 !important; /* Largement supérieur à 900 */
+    pointer-events: auto !important; /* On s'assure que les clics fonctionnent */
+  }
+}
