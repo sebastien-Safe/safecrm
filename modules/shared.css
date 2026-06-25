@@ -352,3 +352,21 @@ tr:hover td { background: rgba(255,255,255,.02); }
     pointer-events: auto !important;  /* Force la réactivation des clics */
   }
 }
+
+//AJOUT CORRECTION BUG SIDEBAR SOUS 860PX
+
+@media (max-width: 860px) {
+  /* On force l'overlay à se placer DERRIÈRE la sidebar */
+  #work-mob-overlay {
+    z-index: 999; /* Un z-index élevé pour l'overlay... */
+  }
+
+  /* ...Mais on force la sidebar et ses éléments à être ENCORE PLUS HAUT */
+  .sidebar-contact-list, 
+  .sidebar-contact-item,
+  aside, 
+  [id*="sidebar"] {
+    position: relative; /* Indispensable pour que le z-index fonctionne */
+    z-index: 10000 !important; /* Passe devant l'overlay */
+  }
+}
