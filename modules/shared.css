@@ -370,3 +370,29 @@ tr:hover td { background: rgba(255,255,255,.02); }
     z-index: 10000 !important; /* Passe devant l'overlay */
   }
 }
+//MODIFICATION PRECEDENTE SANS EFFET.
+//NOUVEAU TEST
+
+@media (max-width: 860px) {
+  /* 1. On s'assure que le shell laisse passer les clics ou se positionne correctement */
+  .shell {
+    position: relative;
+    z-index: 9999 !important;
+  }
+
+  /* 2. On force la sidebar à passer au tout premier plan et à intercepter les clics */
+  #work-sidebar, 
+  .sidebar {
+    position: relative; /* ou fixed selon votre design mobile */
+    z-index: 10000 !important;   /* Plus haut que n'importe quel autre élément de la page */
+    pointer-events: auto !important; /* Force la réactivation complète des clics */
+  }
+
+  /* 3. On s'assure que les boutons internes reçoivent aussi les clics */
+  .sidebar-item {
+    position: relative;
+    z-index: 10001 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+  }
+}
