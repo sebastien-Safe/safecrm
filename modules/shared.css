@@ -324,11 +324,31 @@ tr:hover td { background: rgba(255,255,255,.02); }
 .timeline-month   { flex: 1; font-family: var(--ff-mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--mut); padding: 6px 4px; border-left: 1px solid var(--line); text-align: center; }
 .timeline-today   { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--gold); opacity: .6; }
 
+
 /* ── RESPONSIVE ─────────────────────────────────────────────── */
-@media (max-width: 768px) {
+//ANCIEN CODE
+/*@media (max-width: 768px) {
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .stats-row { grid-template-columns: 1fr 1fr; }
   .kanban-board { flex-direction: column; }
   .kanban-col { width: 100%; }
   .timeline-row-label { width: 120px; }
+}
+*/
+//NOUVEAU CODE 
+/* ── RESPONSIVE ─────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .kanban-board { flex-direction: column; }
+  .kanban-col { width: 100%; }
+  .timeline-row-label { width: 120px; }
+
+  /* AJOUT DE LA SÉCURITÉ POUR LA SIDEBAR */
+  .sidebar-contact-list, 
+  .sidebar-contact-item {
+    position: relative;
+    z-index: 1000 !important;        /* Passe au-dessus des grilles écrasées */
+    pointer-events: auto !important;  /* Force la réactivation des clics */
+  }
 }
