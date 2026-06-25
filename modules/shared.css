@@ -324,112 +324,11 @@ tr:hover td { background: rgba(255,255,255,.02); }
 .timeline-month   { flex: 1; font-family: var(--ff-mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--mut); padding: 6px 4px; border-left: 1px solid var(--line); text-align: center; }
 .timeline-today   { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--gold); opacity: .6; }
 
-
 /* ── RESPONSIVE ─────────────────────────────────────────────── */
-/*ANCIEN CODE
 @media (max-width: 768px) {
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .stats-row { grid-template-columns: 1fr 1fr; }
   .kanban-board { flex-direction: column; }
   .kanban-col { width: 100%; }
   .timeline-row-label { width: 120px; }
-}
-*/
-
-@media (max-width: 860px) {
-  .grid-2, .grid-3 { grid-template-columns: 1fr; }
-  .stats-row { grid-template-columns: 1fr 1fr; }
-  .kanban-board { flex-direction: column; }
-  .kanban-col { width: 100%; }
-  .timeline-row-label { width: 120px; }
-
-  /* 1. On neutralise l'overlay mobile s'il passe devant par erreur */
-  #work-mob-overlay,
-  .mobile-overlay {
-    z-index: 9990 !important;
-  }
-
-  /* 2. On FORCE le comportement FIXED (indispensable pour un volet mobile) 
-     et on le propulse au sommet de la pile des z-index */
-  #work-sidebar, 
-  .sidebar,
-  aside {
-    position: fixed !important;
-    z-index: 9999 !important;      /* Rejoint le premier plan absolu */
-    pointer-events: auto !important; /* Réactive l'interception des clics */
-  }
-
-  /* 3. Sécurité maximale pour les éléments cliquables internes */
-  
-   .sidebar-item,
-   .sidebar-contact-item {
-    position: relative;
-    z-index: 10000 !important;
-    pointer-events: auto !important;
-    cursor: pointer !important;
-  }
-}
-/*AJOUT CORRECTION BUG SIDEBAR SOUS 860PX*/
-
-@media (max-width: 860px) {
-  /* On force l'overlay à se placer DERRIÈRE la sidebar */
-  #work-mob-overlay {
-    z-index: 999; /* Un z-index élevé pour l'overlay... */
-  }
-
-  /* ...Mais on force la sidebar et ses éléments à être ENCORE PLUS HAUT */
-  .sidebar-contact-list, 
-  .sidebar-contact-item,
-  aside, 
-  [id*="sidebar"] {
-    position: relative; /* Indispensable pour que le z-index fonctionne */
-    z-index: 10000 !important; /* Passe devant l'overlay */
-  }
-}
-/* MODIFICATION PRECEDENTE SANS EFFET.
-NOUVEAU TEST */
-
-@media (max-width: 860px) {
-  /* 1. On s'assure que le shell laisse passer les clics ou se positionne correctement */
-  .shell {
-    position: relative;
-    z-index: 9999 !important;
-  }
-
-  /* 2. On force la sidebar à passer au tout premier plan et à intercepter les clics */
-  #work-sidebar, 
-  .sidebar {
-    position: relative; /* ou fixed selon votre design mobile */
-    z-index: 10000 !important;   /* Plus haut que n'importe quel autre élément de la page */
-    pointer-events: auto !important; /* Force la réactivation complète des clics */
-  }
-
-  /* 3. On s'assure que les boutons internes reçoivent aussi les clics */
-  .sidebar-item {
-    position: relative;
-    z-index: 10001 !important;
-    pointer-events: auto !important;
-    cursor: pointer !important;
-  }
-}
-@media (max-width: 860px) {
-  /* ... vos autres règles (grid, stats, etc.) ... */
-
-  /* 1. On force l'overlay à descendre d'un cran en arrière-plan */
-  #work-mob-overlay.show {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 900 !important; /* Un z-index modéré pour rester SOUS la sidebar */
-    display: block !important;
-  }
-
-  /* 2. On prend le conteneur global du layout pour le forcer à créer 
-     un contexte d'empilement propre, ou on cible directement la sidebar */
-  #work-sidebar, 
-  .sidebar,
-  aside {
-    position: fixed !important;
-    z-index: 2000 !important; /* Largement supérieur à 900 */
-    pointer-events: auto !important; /* On s'assure que les clics fonctionnent */
-  }
 }
