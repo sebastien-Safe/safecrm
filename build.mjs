@@ -9,12 +9,10 @@ const JS_FILES = [
   'assets/app-init.js',
   'assets/config.js',
   'assets/pipeline.js',
-  'assets/app/authentification.js',
-  'assets/app/chargement-des-donnees.js',
-  'assets/app/contacts.js',
-  'assets/app/contrats.js',
-  'assets/app/helpers.js',
-  'assets/app/navgation.js',
+  'assets/js/composants/gauge.js',
+  'assets/js/composants/session-banner.js',
+  'assets/js/composants/toast.js',
+  'assets/js/utils/helpers.js',
   'assets/contacts/contacts-address.js',
   'assets/contacts/contacts-interactions.js',
   'assets/contacts/contacts-transfer.js',
@@ -42,6 +40,13 @@ const JS_FILES = [
 const CSS_FILES = [
   'assets/style.css',
   'assets/pipeline.css',
+  'assets/css/base.css',
+  'assets/css/composants/nav-mobile.css',
+  'assets/css/composants/toast.css',
+  'assets/css/composants/onboarding.css',
+  'assets/css/composants/help.css',
+  'assets/css/composants/pwa.css',
+  'assets/css/composants/session-banner.css',
 ];
 
 function copyDir(src, dest) {
