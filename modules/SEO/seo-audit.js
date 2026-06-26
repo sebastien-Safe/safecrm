@@ -68,14 +68,23 @@ async function loadSeoAudit() {
 }
 
 function renderSeoCatBlock(catKey, cat, catScore) {
+  const pagespeedBtn = catKey === 'technique' && currentDomaine?.domaine ? `
+    <button class="btn btn-ghost btn-sm" id="ps-btn"
+      onclick="runPageSpeedAnalysis()"
+      style="font-size:.72rem;padding:3px 10px;margin-left:8px">
+      ⚡ Analyser avec PageSpeed
+    </button>` : '';
+
   return `
     <div class="checklist-cat">
       <div class="checklist-cat-head">
         <span class="checklist-cat-label">${cat.icon} ${cat.label}
           <span style="font-size:.72rem;color:var(--mut);font-weight:400">(${Math.round(cat.weight*100)}%)</span>
+          ${pagespeedBtn}
         </span>
         <span class="checklist-cat-score" style="color:${scoreColor(catScore)}">${catScore}%</span>
       </div>
+      <div id="ps-result-card" style="display:none"></div>
       <div class="checklist-items">
         ${cat.items.map(item => {
           const row    = _seoAuditData[item.key] || {};
@@ -218,4 +227,133 @@ async function exportSeoAuditPDF() {
   }
 
   doc.save(`audit-seo-${nom.replace(/[^a-z0-9]/gi,'_')}${domTxt?'-'+domTxt.replace(/[^a-z0-9]/gi,'_'):''}.pdf`);
+}
+
+/* ============================================================
+   ANALYSE PAGESPEED INSIGHTS
+   ============================================================ */
+
+async function runPageSpeedAnalysis() {
+  if (!currentDomaine?.domaine) { toast('Sélectionnez un domaine avant d\'analyser', 'err'); return; }
+
+  const btn      = document.getElementById('ps-btn');
+  const card     = document.getElementById('ps-result-card');
+  if (!btn || !card) return;
+
+  btn.disabled   = true;
+  btn.textContent = '⏳ Analyse en cours…';
+  card.style.display = 'none';
+
+  const { data: { session } } = await supa.auth.getSession();
+  if (!session) { toast('Session expirée — reconnectez-vous', 'err'); return; }
+
+  let result;
+  try {
+    const res = await fetch(
+      `${SUPA_URL}/functions/v1/pagespeed-analyze`,
+      {
+        method:  'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type':  'application/json',
+        },
+        body: JSON.stringify({ url: currentDomaine.domaine, strategy: 'mobile' }),
+      }
+    );
+    result = await res.json();
+    if (!res.ok) throw new Error(result.error || `HTTP ${res.status}`);
+  } catch (e) {
+    toast('Erreur PageSpeed : ' + e.message, 'err');
+    btn.disabled = false;
+    btn.textContent = '⚡ Analyser avec PageSpeed';
+    return;
+  }
+
+  // ── Auto-remplissage des points d'audit ───────────────────────────────────
+  const { verdict } = result;
+
+  _applyPagespeedVerdict('vitesse', verdict.vitesse,
+    `PageSpeed ${result.strategy} — score ${result.performance}% — FCP : ${result.metrics.fcp.display}`);
+
+  _applyPagespeedVerdict('cwv', verdict.cwv,
+    `LCP : ${result.metrics.lcp.display} (${_ratingLabel(result.metrics.lcp.rating)}) · CLS : ${result.metrics.cls.display} (${_ratingLabel(result.metrics.cls.rating)}) · TBT : ${result.metrics.tbt.display} (${_ratingLabel(result.metrics.tbt.rating)})`);
+
+  // ── Carte résultat visuelle ───────────────────────────────────────────────
+  const m = result.metrics;
+  const scoreColor100 = result.performance >= 90 ? '#22c55e' : result.performance >= 50 ? '#f59e0b' : '#ff4d5e';
+
+  card.innerHTML = `
+    <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);
+      border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px;font-size:.8rem">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+        <div style="text-align:center">
+          <div style="font-family:var(--ff-disp);font-size:2rem;font-weight:800;
+            color:${scoreColor100};line-height:1">${result.performance}</div>
+          <div style="font-size:.68rem;color:var(--mut)">Score Perf.</div>
+        </div>
+        <div style="flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;min-width:260px">
+          ${[
+            ['LCP', m.lcp.display, m.lcp.rating],
+            ['CLS', m.cls.display, m.cls.rating],
+            ['TBT', m.tbt.display, m.tbt.rating],
+            ['FCP', m.fcp.display, m.fcp.rating],
+            ['SI',  m.si.display,  m.si.rating],
+          ].map(([label, val, rating]) => `
+            <div style="background:rgba(255,255,255,.03);border:1px solid var(--line);
+              border-radius:6px;padding:5px 8px;text-align:center">
+              <div style="font-size:.65rem;color:var(--mut)">${label}</div>
+              <div style="font-weight:700;color:${_psRatingColor(rating)}">${val}</div>
+            </div>`).join('')}
+        </div>
+        <div style="font-size:.7rem;color:var(--mut);white-space:nowrap">
+          📱 Mobile${result.simulated ? '<br><span style="color:#f59e0b">⚠ Simulation</span>' : ''}
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1;padding:6px 10px;border-radius:6px;
+          background:${_psVerdictBg(verdict.vitesse)};font-size:.75rem">
+          ⚡ Vitesse : <strong>${_verdictLabel(verdict.vitesse)}</strong>
+          <span style="color:var(--mut);font-size:.68rem"> — FCP ${m.fcp.display}</span>
+        </div>
+        <div style="flex:1;padding:6px 10px;border-radius:6px;
+          background:${_psVerdictBg(verdict.cwv)};font-size:.75rem">
+          📊 CWV : <strong>${_verdictLabel(verdict.cwv)}</strong>
+          <span style="color:var(--mut);font-size:.68rem"> — LCP ${m.lcp.display}</span>
+        </div>
+      </div>
+    </div>`;
+  card.style.display = 'block';
+
+  btn.disabled = false;
+  btn.textContent = '⚡ Relancer l\'analyse';
+  toast(`PageSpeed analysé — score ${result.performance}% ✅`);
+}
+
+function _applyPagespeedVerdict(itemKey, verdict, noteText) {
+  const sel = document.getElementById(`st-${itemKey}`);
+  if (!sel) return;
+  sel.value = verdict;
+  sel.dispatchEvent(new Event('change'));
+
+  const noteInput = document.getElementById(`notes-${itemKey}`);
+  if (noteInput && !noteInput.value) {
+    noteInput.value = noteText;
+    onSeoNotesChange(itemKey, noteText);
+  }
+}
+
+function _ratingLabel(r) {
+  return r === 'good' ? '✅ Bon' : r === 'needs-improvement' ? '🟡 À améliorer' : '❌ Faible';
+}
+
+function _psRatingColor(r) {
+  return r === 'good' ? '#22c55e' : r === 'needs-improvement' ? '#f59e0b' : '#ff4d5e';
+}
+
+function _psVerdictBg(v) {
+  return v === 'conforme' ? 'rgba(34,197,94,.1)' : v === 'partiel' ? 'rgba(251,191,36,.1)' : 'rgba(255,77,94,.1)';
+}
+
+function _verdictLabel(v) {
+  return v === 'conforme' ? '✅ Conforme' : v === 'partiel' ? '🟡 Partiel' : '❌ Non conforme';
 }
