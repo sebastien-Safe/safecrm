@@ -262,7 +262,7 @@ select option{background:var(--navy-mid)}
 #work-mob-overlay.show{display:block}
 @media(max-width:860px){
   /* Sidebar : drawer fixe sur mobile, départ sous la topbar */
-  .shell{grid-template-columns:1fr}
+  .shell{grid-template-columns:1fr;z-index:auto} /* z-index:auto évite le stacking context qui piège la sidebar */
   .main{padding:18px 16px}
   .sidebar{
     display:flex !important;
@@ -2276,7 +2276,7 @@ function closeWorkSidebar() {
 }
 // Fermer la sidebar mobile après clic sur un item
 document.addEventListener('click', e => {
-  if (window.innerWidth > 768) return;
+  if (window.innerWidth > 860) return;
   if (e.target.closest('.sidebar-item') && !e.target.closest('#work-burger-btn')) {
     closeWorkSidebar();
   }
@@ -2286,7 +2286,7 @@ document.addEventListener('click', e => {
   let startX = 0;
   document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
   document.addEventListener('touchend', e => {
-    if (window.innerWidth <= 768 && e.changedTouches[0].clientX - startX < -50) {
+    if (window.innerWidth <= 860 && e.changedTouches[0].clientX - startX < -50) {
       closeWorkSidebar();
     }
   }, { passive: true });

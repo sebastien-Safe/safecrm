@@ -281,24 +281,45 @@ body{font-family:var(--ff-body);background:var(--bg-page);color:var(--tx);font-s
 .modal-close{background:none;border:none;cursor:pointer;color:var(--tx-2);font-size:20px;line-height:1;padding:2px 6px}
 .modal-close:hover{color:#fff}
 
+/* ── MOB BURGER ── */
+#mod-burger-btn{display:none;background:none;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:7px 9px;cursor:pointer;flex-direction:column;gap:5px;align-items:center;flex-shrink:0;margin-right:4px}
+#mod-burger-btn span{display:block;width:18px;height:2px;background:rgba(255,255,255,.75);border-radius:2px;transition:all .22s}
+#mod-burger-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+#mod-burger-btn.open span:nth-child(2){opacity:0;width:0}
+#mod-burger-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+#mod-mob-overlay{display:none;position:fixed;inset:0;z-index:198;background:rgba(0,0,0,.55)}
+#mod-mob-overlay.show{display:block}
 @media(max-width:700px){
+  #mod-burger-btn{display:flex}
   .stats-row{grid-template-columns:1fr 1fr}
   .results-grid{grid-template-columns:1fr}
   .contact-select-row{grid-template-columns:1fr}
   .shell{grid-template-columns:1fr}
-  .sidebar{display:none}
+  .sidebar{
+    display:flex !important;flex-direction:column;
+    position:fixed;top:var(--topbar-h);left:-270px;
+    width:260px;height:calc(100dvh - var(--topbar-h));
+    z-index:199;background:#0f1d35 !important;
+    border-right:1px solid rgba(255,255,255,.08);
+    padding:16px 0 !important;overflow-y:auto;
+    transition:left .28s cubic-bezier(.4,0,.2,1);
+  }
+  .sidebar.mob-open{left:0}
 }
+@media(min-width:701px){#mod-burger-btn,#mod-mob-overlay{display:none !important}}
 </style>
 </head>
 <body>
 
 <!-- TOPBAR -->
 <div class="topbar">
+  <button id="mod-burger-btn" aria-label="Menu" onclick="toggleModSidebar()"><span></span><span></span><span></span></button>
   <div class="topbar-brand">S<b>@</b>FE<small>CYBER</small></div>
   <span class="topbar-badge">🛡 MODULE CYBERSÉCURITÉ</span>
   <a href="/prospection-terrain/index.html" class="topbar-back">◀ Prospection</a>
 </div>
 
+<div id="mod-mob-overlay" onclick="closeModSidebar()"></div>
 <!-- SHELL -->
 <div class="shell">
 
@@ -963,6 +984,32 @@ function resetForm(){
   document.getElementById('snav-resultats').style.display='none';
   switchSidebar('nouvel');
 }
+
+// ── HAMBURGER MOBILE ──
+function toggleModSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('mod-mob-overlay');
+  const btn     = document.getElementById('mod-burger-btn');
+  if (!sidebar) return;
+  if (sidebar.classList.contains('mob-open')) {
+    closeModSidebar();
+  } else {
+    sidebar.classList.add('mob-open');
+    overlay?.classList.add('show');
+    btn?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+function closeModSidebar() {
+  document.querySelector('.sidebar')?.classList.remove('mob-open');
+  document.getElementById('mod-mob-overlay')?.classList.remove('show');
+  document.getElementById('mod-burger-btn')?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('click', e => {
+  if (window.innerWidth > 700) return;
+  if (e.target.closest('.sidebar-item') && !e.target.closest('#mod-burger-btn')) closeModSidebar();
+});
 </script>
 </body>
 </html>

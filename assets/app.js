@@ -4264,12 +4264,23 @@ async function loadChurnRisk() {
   const contracts = (state.contracts || []).filter(c => c.created_by === myId && !['Terminé'].includes(c.statut));
   const clientsAvecContrat = contacts.filter(c => contracts.some(ct => ct.contact_id === c.id));
 
+  if (!clientsAvecContrat.length) { block.classList.add('is-hidden'); return; }
+
   // Chercher la dernière interaction pour chaque client
-  const { data: interactions } = await sb
-    .from('interactions')
-    .select('contact_id, date')
-    .in('contact_id', clientsAvecContrat.map(c => c.id))
-    .order('date', { ascending: false });
+  let interactions = [];
+  try {
+    const { data, error } = await sb
+      .from('interactions')
+      .select('contact_id, date')
+      .in('contact_id', clientsAvecContrat.map(c => c.id))
+      .order('date', { ascending: false });
+    if (error) throw error;
+    interactions = data || [];
+  } catch (e) {
+    console.error('loadChurnRisk:', e);
+    block.classList.add('is-hidden');
+    return;
+  }
 
   const risques = [];
   for (const contact of clientsAvecContrat) {
@@ -4555,7 +4566,7 @@ async function envoyerMessageMembre(memberId, prenom) {
 // Notification messages DCI pour les membres niveau 1
 async function loadMessagesDCI() {
   const block = document.getElementById('messages-dci-alert');
-  if (!block || isAtLeast('dci')) return; // Uniquement pour les level 1
+  if (!block || !state.profile?.dci_parent_id) return; // Uniquement si un DCI parent est assigné
 
   const { data, error } = await sb.from('notifications')
     .select('*')
