@@ -53,7 +53,7 @@ async function loadDashboard() {
           ${[
             ['google_gsc', '🔍 Google Search Console', 'Positions automatiques'],
             ['google_gmb', '📍 Google My Business',    'Avis et statistiques'],
-            ['seranking',  '📈 SE Ranking',            'Audit et backlinks'],
+            ['pagespeed',  '⚡ PageSpeed Insights',     'Performance & Core Web Vitals'],
           ].map(([key, lbl, desc]) => `
             <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;
               background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:var(--r-sm)">
@@ -108,7 +108,7 @@ async function loadDashboard() {
     </div>`;
 
   // Charger les statuts des connecteurs
-  loadConnectorStatuses(['google_gsc','google_gmb','seranking']);
+  loadConnectorStatuses(['google_gsc','google_gmb','pagespeed']);
 }
 
 async function loadConnectorStatuses(keys) {
