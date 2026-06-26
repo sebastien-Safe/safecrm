@@ -439,8 +439,11 @@
       </div>
       <div id="agenda-cells" class="agenda-grid"></div>
       <!-- Liste des événements du jour sélectionné -->
-      <div id="agenda-day-panel" class="agenda-day-panel is-hidden">
-        <h4 id="agenda-day-title"></h4>
+      <div id="agenda-day-panel" class="agenda-day-panel" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <h4 id="agenda-day-title" style="margin:0"></h4>
+          <button class="btn btn-out btn-sm" style="padding:3px 10px;font-size:.8rem" onclick="document.getElementById('agenda-day-panel').style.display='none';agendaState.selectedDay=null;_drawAgendaCalendar()">✕</button>
+        </div>
         <div id="agenda-day-list"></div>
       </div>
     </section>

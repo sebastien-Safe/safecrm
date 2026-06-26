@@ -4967,20 +4967,34 @@ function _drawAgendaCalendar() {
     cell.onclick = () => _selectAgendaDay(iso, events, tourneesDuJour);
 
     let html = `<div class="agenda-cell-num">${d.getDate()}</div>`;
-    // Bloc tournée en premier (orange)
-    tourneesDuJour.forEach(tr => {
-      html += `<div class="agenda-event" style="background:rgba(245,158,11,.18);color:#f59e0b;border-left:2px solid #f59e0b">🗺️ Tournée terrain</div>`;
-    });
-    // Tâches et RDV
-    const remaining = 3 - tourneesDuJour.length;
-    events.slice(0, Math.max(0, remaining)).forEach(t => {
-      const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
-      const late = isOverdue(t.echeance || t.rdv_date, t.statut);
-      const cls = late ? 'overdue' : isRdv ? 'rdv' : 'task';
-      html += `<div class="agenda-event ${cls}">${escapeHtml(t.titre)}</div>`;
-    });
-    const total = tourneesDuJour.length + events.length;
-    if (total > 3) html += `<div style="font-size:.6rem;color:var(--mut)">+${total - 3}</div>`;
+    const isMobile = window.innerWidth <= 600;
+    if (isMobile) {
+      // Vue mobile : points colorés uniquement
+      const dots = [];
+      tourneesDuJour.forEach(() => dots.push('tournee'));
+      events.forEach(t => {
+        const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
+        const late = isOverdue(t.echeance || t.rdv_date, t.statut);
+        dots.push(late ? 'overdue' : isRdv ? 'rdv' : 'task');
+      });
+      if (dots.length) {
+        html += `<div class="agenda-dots">${dots.slice(0, 4).map(c => `<span class="agenda-dot ${c}"></span>`).join('')}${dots.length > 4 ? `<span class="agenda-dot" style="background:var(--mut);opacity:.6"></span>` : ''}</div>`;
+      }
+    } else {
+      // Vue desktop : étiquettes texte
+      tourneesDuJour.forEach(tr => {
+        html += `<div class="agenda-event" style="background:rgba(245,158,11,.18);color:#f59e0b;border-left:2px solid #f59e0b">🗺️ Tournée terrain</div>`;
+      });
+      const remaining = 3 - tourneesDuJour.length;
+      events.slice(0, Math.max(0, remaining)).forEach(t => {
+        const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
+        const late = isOverdue(t.echeance || t.rdv_date, t.statut);
+        const cls = late ? 'overdue' : isRdv ? 'rdv' : 'task';
+        html += `<div class="agenda-event ${cls}">${escapeHtml(t.titre)}</div>`;
+      });
+      const total = tourneesDuJour.length + events.length;
+      if (total > 3) html += `<div style="font-size:.6rem;color:var(--mut)">+${total - 3}</div>`;
+    }
     cell.innerHTML = html;
     cells.appendChild(cell);
   }
@@ -5077,7 +5091,10 @@ function _renderDayPanel(iso, events, tourneesDuJour = []) {
     html += `<button class="btn btn-out btn-sm" style="margin-top:12px;width:100%" onclick="openTaskModal(null,{type_tache:'RDV terrain',rdv_date:'${iso}'})">+ Programmer un RDV ce jour</button>`;
     list.innerHTML = html;
   }
-  panel.classList.remove('is-hidden');
+  panel.style.display = 'block';
+  if (window.innerWidth <= 600) {
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
 }
 
 function _selectAgendaDay(iso, events, tourneesDuJour = []) {

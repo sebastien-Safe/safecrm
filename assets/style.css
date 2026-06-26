@@ -467,4 +467,34 @@ a.sidebar-item{text-decoration:none}
 .agenda-ev-title{font-size:.88rem;font-weight:600}
 .agenda-ev-meta{font-size:.75rem;color:var(--mut)}
 
-/* .is-hidden → défini dans assets/css/base.css */
+/* ── AGENDA — adaptation mobile ── */
+@media(max-width:600px){
+  .agenda-nav{gap:8px;margin-bottom:12px}
+  .agenda-nav span{min-width:0;flex:1;font-size:.92rem}
+  .agenda-grid{gap:2px}
+  .agenda-day-header{font-size:.6rem;padding:3px 0;letter-spacing:.04em}
+  .agenda-cell{min-height:44px;padding:4px 3px;border-radius:6px}
+  .agenda-cell-num{font-size:.75rem;margin-bottom:2px;display:block;text-align:center}
+  /* Remplace les étiquettes texte par des points colorés sur mobile */
+  .agenda-event{
+    display:none
+  }
+  .agenda-dots{display:flex;justify-content:center;gap:3px;flex-wrap:wrap;margin-top:2px}
+  .agenda-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+  .agenda-dot.rdv{background:var(--gold)}
+  .agenda-dot.task{background:var(--accent-2)}
+  .agenda-dot.overdue{background:var(--alert)}
+  .agenda-dot.tournee{background:#34d399}
+  /* Panneau du jour : plein écran, plus lisible */
+  .agenda-day-panel{
+    border-radius:16px;
+    padding:14px 12px;
+    margin-top:10px;
+  }
+  .agenda-day-panel h4{font-size:1rem;margin-bottom:10px}
+  .agenda-ev-item{padding:10px;gap:8px}
+  .agenda-ev-title{font-size:.92rem}
+  .agenda-ev-meta{font-size:.78rem}
+  /* Boutons de navigation mois plus larges pour le toucher */
+  .agenda-nav .btn{min-width:40px;height:40px;font-size:1.1rem;padding:0;display:grid;place-items:center}
+}
