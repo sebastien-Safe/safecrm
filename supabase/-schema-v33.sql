@@ -105,7 +105,7 @@ BEGIN
       p.numero_mandat,
       p.role,
       COALESCE(p.is_admin, false)              AS is_admin,
-      COALESCE(p.profil_complet, false)        AS profil_completed,
+      COALESCE(p.profil_completed, false)      AS profil_completed,
       COALESCE(p.profil_revocation_flag, false) AS profil_revocation_flag,
       p.dci_parent_id,
       p.region,
