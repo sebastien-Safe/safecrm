@@ -1,26 +1,8 @@
 /* =========================================================
    S@FE CRM — Styles
    Charte graphique reprise du site S@FE Digitalisation
+   Variables CSS → assets/css/base.css (chargé avant ce fichier)
    ========================================================= */
-
-:root{
-  --navy:#0a1628;
-  --navy-mid:#142240;
-  --panel:#142240;
-  --line:rgba(255,255,255,.08);
-  --mut:#94a3b8;
-  --mut-2:#cbd5e1;
-  --accent:#3b82f6;
-  --accent-2:#2563eb;
-  --gold:#f59e0b;
-  --gold-light:#fbbf24;
-  --alert:#ff4d5e;
-  --ok:#22c55e;
-  --r:14px;
-  --ff-disp:'Sora',sans-serif;
-  --ff-body:'IBM Plex Sans',sans-serif;
-  --ff-mono:'IBM Plex Mono',monospace;
-}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
@@ -239,7 +221,7 @@ a.sidebar-item{text-decoration:none}
 .gauge-track,.gauge-fill{fill:none;stroke-width:8;transform:rotate(-90deg);transform-origin:50px 50px}
 .gauge-track{stroke:rgba(255,255,255,.08)}
 .gauge-fill{stroke-linecap:round;transition:stroke-dashoffset .6s ease}
-.gauge-text{font-family:var(--ff-disp);font-size:20px;font-weight:800;text-anchor:middle;dominant-baseline:central}
+.gauge-text{font-family:var(--ff-disp);font-size:20px;font-weight:800;text-anchor:middle;dominant-baseline:central;fill:#fff}
 .objectif-row{display:flex;align-items:center;gap:14px;padding:9px 0;border-bottom:1px solid var(--line)}
 .objectif-row:last-child{border-bottom:0}
 .objectif-row label{flex:1;font-size:.9rem;color:var(--mut-2)}
@@ -484,3 +466,5 @@ a.sidebar-item{text-decoration:none}
 .agenda-ev-dot.overdue{background:var(--alert)}
 .agenda-ev-title{font-size:.88rem;font-weight:600}
 .agenda-ev-meta{font-size:.75rem;color:var(--mut)}
+
+/* .is-hidden → défini dans assets/css/base.css */

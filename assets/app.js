@@ -19,90 +19,11 @@ const state = {
   adminFilterUserId: null, // pour visualiser les objectifs d'un utilisateur précis (admin)
 };
 
-// ---------------------------------------------------------
-// HELPERS
-// ---------------------------------------------------------
-function $(sel, ctx = document) { return ctx.querySelector(sel); }
-function $all(sel, ctx = document) { return [...ctx.querySelectorAll(sel)]; }
-
-function escapeHtml(str) {
-  if (str === null || str === undefined) return '';
-  return String(str).replace(/[&<>"']/g, m => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[m]));
-}
-
-function formatDate(d) {
-  if (!d) return '—';
-  const [y, m, day] = d.split('-');
-  return `${day}/${m}/${y}`;
-}
-
-function formatMoney(n) {
-  if (n === null || n === undefined || n === '') return '—';
-  return Number(n).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
-}
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function isOverdue(dateStr, statut) {
-  return dateStr && statut !== 'Terminé' && dateStr < todayISO();
-}
-
-function monthKey(d = new Date()) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-}
-
-function isThisMonth(dateStr) {
-  if (!dateStr) return false;
-  return dateStr.slice(0, 7) === monthKey();
-}
-
-function gaugeColor(pct) {
-  if (pct < 50) return '#2563eb';
-  if (pct < 75) return '#3b82f6';
-  return '#f59e0b';
-}
-
-function gaugeSvg(pct) {
-  const clamped = Math.max(0, Math.min(100, pct));
-  const r = 42;
-  const c = 2 * Math.PI * r;
-  const offset = c * (1 - clamped / 100);
-  return `<svg viewBox="0 0 100 100" class="gauge-svg">
-    <defs>
-      <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#0a1628"/>
-        <stop offset="40%" stop-color="#2563eb"/>
-        <stop offset="100%" stop-color="#f59e0b"/>
-      </linearGradient>
-    </defs>
-    <circle cx="50" cy="50" r="${r}" class="gauge-track"></circle>
-    <circle cx="50" cy="50" r="${r}" class="gauge-fill" style="stroke:url(#gaugeGrad);stroke-dasharray:${c.toFixed(2)};stroke-dashoffset:${offset.toFixed(2)}"></circle>
-    <text x="50" y="50" class="gauge-text" style="fill:#fff">${Math.round(pct)}%</text>
-  </svg>`;
-}
-
-// → déplacé dans contacts/contacts.js : CONTACT_STATUT_BADGE, ACTIVITE_BADGE, CONTACT_FIELD_IDS, CONTACT_CONSENT_IDS, contactName
-// → déplacé dans contracts/contracts.js : CONTRACT_STATUT_BADGE
-// → déplacé dans tasks/tasks.js : PRIORITY_BADGE, TASK_TYPE_BADGE
-
-function showCrmToast(html, duration = 8000) {
-  const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:28px;right:28px;z-index:9999;background:#1e293b;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 18px;color:#f1f5f9;font-size:.88rem;box-shadow:0 8px 24px rgba(0,0,0,.5);display:flex;align-items:center;gap:12px;max-width:380px;animation:fadeInUp .25s ease';
-  t.innerHTML = html;
-  document.body.appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, duration);
-  return t;
-}
-// → déplacé dans tasks/tasks.js : getFilteredTasks, taskCardHtml, renderTasks, onTaskTypeChange, openTaskModal, closeTaskModal, saveTask, deleteTask, quickSetTaskStatus
-
-// → déplacé dans contracts/contracts.js : CONTRACT_ICONS, getContractIcon, FORMULE_PRESETS, FORMULE_CUSTOM, COMMISSION_FALLBACK
-
-// → déplacé dans contacts/contacts.js : contactName
-// → déplacé dans contracts/contracts.js : contractLabel
+// Helpers → assets/js/utils/helpers.js  ($, $all, escapeHtml, formatDate, formatMoney, todayISO, isOverdue, monthKey, isThisMonth, gaugeColor)
+// Composants → assets/js/composants/gauge.js (gaugeSvg) | toast.js (showCrmToast) | session-banner.js (_showSessionWarningBanner, checkSessionExpiry)
+// → contacts/contacts.js : CONTACT_STATUT_BADGE, ACTIVITE_BADGE, CONTACT_FIELD_IDS, CONTACT_CONSENT_IDS, contactName
+// → contracts/contracts.js : CONTRACT_STATUT_BADGE, CONTRACT_ICONS, getContractIcon, FORMULE_PRESETS, FORMULE_CUSTOM, COMMISSION_FALLBACK
+// → tasks/tasks.js : PRIORITY_BADGE, TASK_TYPE_BADGE, getFilteredTasks, taskCardHtml, renderTasks, openTaskModal, closeTaskModal, saveTask, deleteTask, quickSetTaskStatus
 
 // ---------------------------------------------------------
 // AUTHENTIFICATION
@@ -170,39 +91,38 @@ async function init() {
 }
 
 function showLogin() {
-  $('#login-screen').style.display = 'grid';
-  $('#reset-screen').style.display = 'none';
-  $('#app').style.display = 'none';
+  $('#login-screen').classList.remove('is-hidden');
+  $('#reset-screen').classList.add('is-hidden');
+  $('#app').classList.add('is-hidden');
   showLoginPanel();
 }
 
 function showResetScreen() {
-  $('#login-screen').style.display = 'none';
-  $('#app').style.display = 'none';
+  $('#login-screen').classList.add('is-hidden');
+  $('#app').classList.add('is-hidden');
   $('#reset-error').textContent = '';
   $('#reset-password').value = '';
   $('#reset-password-2').value = '';
-  $('#reset-screen').style.display = 'grid';
-  // Nettoie le jeton de récupération de l'URL
+  $('#reset-screen').classList.remove('is-hidden');
   history.replaceState({}, document.title, window.location.pathname);
 }
 
 function showLoginPanel() {
-  $('#forgot-panel').style.display = 'none';
-  $('#login-panel').style.display = 'block';
+  $('#forgot-panel').classList.add('is-hidden');
+  $('#login-panel').classList.remove('is-hidden');
 }
 
 function showForgotPanel() {
-  $('#login-panel').style.display = 'none';
-  $('#forgot-panel').style.display = 'block';
+  $('#login-panel').classList.add('is-hidden');
+  $('#forgot-panel').classList.remove('is-hidden');
   $('#forgot-error').textContent = '';
-  $('#forgot-success').style.display = 'none';
+  $('#forgot-success').classList.add('is-hidden');
 }
 
 async function sendPasswordReset() {
   const email = $('#forgot-email').value.trim();
   $('#forgot-error').textContent = '';
-  $('#forgot-success').style.display = 'none';
+  $('#forgot-success').classList.add('is-hidden');
   if (!email) { $('#forgot-error').textContent = 'Merci de renseigner votre e-mail.'; return; }
 
   $('#forgot-error').textContent = 'Envoi en cours…';
@@ -227,7 +147,7 @@ async function sendPasswordReset() {
   if (typeof logRgpd === 'function') logRgpd('mot_de_passe_reinitialise', 'Sécurité', {
     criticite: 'Attention', donnees: 'email', details: { email },
   });
-  $('#forgot-success').style.display = 'block';
+  $('#forgot-success').classList.remove('is-hidden');
 }
 
 function _sendPasswordChangedConfirmation(email) {
@@ -249,22 +169,21 @@ async function submitNewPassword() {
   const { data: { session } } = await sb.auth.getSession();
   state.user = session?.user || null;
   _sendPasswordChangedConfirmation(updData?.user?.email || session?.user?.email || '');
-  $('#reset-screen').style.display = 'none';
+  $('#reset-screen').classList.add('is-hidden');
   await showApp();
 }
 
 async function showApp() {
-  $('#login-screen').style.display = 'none';
-  $('#reset-screen').style.display = 'none';
-  // Charger le profil minimal pour le nom du signataire dans le mur
+  $('#login-screen').classList.add('is-hidden');
+  $('#reset-screen').classList.add('is-hidden');
   await loadProfile();
   const wallShown = await _checkAndShowSignatureWall();
-  if (wallShown) return; // Le mur appellera _afterSignatures() une fois tout signé
+  if (wallShown) return;
   await _afterSignatures();
 }
 
 async function _afterSignatures() {
-  $('#app').style.display = 'flex';
+  $('#app').classList.remove('is-hidden');
   await loadAll();
   const workGoto = sessionStorage.getItem('safe_work_goto');
   if (workGoto && isAdmin()) {
@@ -355,57 +274,8 @@ async function logout() {
   await sb.auth.signOut();
 }
 
-// Vérification de la durée de session (4h max) — appelée toutes les 5 minutes
-const SESSION_MAX_MS  = 4 * 3600 * 1000;           // 4 heures (RGPD Art.42)
-const SESSION_WARN_MS = SESSION_MAX_MS - 15 * 60 * 1000; // alerte à -15 min
-let   _sessionWarnShown = false;
-
-function _showSessionWarningBanner() {
-  if (document.getElementById('session-warn-banner')) return;
-  const banner = document.createElement('div');
-  banner.id = 'session-warn-banner';
-  banner.style.cssText = [
-    'position:fixed;bottom:20px;right:20px;z-index:9999',
-    'background:#1e293b;border:1px solid rgba(245,158,11,.4)',
-    'border-radius:12px;padding:14px 18px;max-width:340px',
-    'box-shadow:0 8px 32px rgba(0,0,0,.45)',
-    'display:flex;align-items:flex-start;gap:12px',
-    'animation:fadeInUp .3s ease',
-  ].join(';');
-  banner.innerHTML = `
-    <span style="font-size:1.4rem;flex-shrink:0">⚠️</span>
-    <div>
-      <div style="font-weight:700;color:#fff;font-size:.9rem;margin-bottom:3px">Session expire dans 15 min</div>
-      <div style="font-size:.78rem;color:#94a3b8;line-height:1.5">
-        Par sécurité (Art.42 RGPD), votre session est limitée à 4h.<br>
-        Enregistrez votre travail et reconnectez-vous si besoin.
-      </div>
-      <button onclick="document.getElementById('session-warn-banner').remove()"
-        style="margin-top:8px;background:none;border:1px solid rgba(255,255,255,.15);border-radius:6px;
-               padding:4px 10px;color:#94a3b8;font-size:.75rem;cursor:pointer">
-        Compris
-      </button>
-    </div>`;
-  document.body.appendChild(banner);
-}
-
-function checkSessionExpiry() {
-  if (!state.user) return;
-  const signinAt = parseInt(localStorage.getItem('safe_signin_at') || '0', 10);
-  if (!signinAt) return;
-  const elapsed = Date.now() - signinAt;
-  if (elapsed > SESSION_MAX_MS) {
-    console.warn('[S@FE CRM] Session expirée après 4h — déconnexion automatique.');
-    localStorage.removeItem('safe_signin_at');
-    sb.auth.signOut();
-    return;
-  }
-  if (!_sessionWarnShown && elapsed > SESSION_WARN_MS) {
-    _sessionWarnShown = true;
-    _showSessionWarningBanner();
-  }
-}
-setInterval(checkSessionExpiry, 5 * 60 * 1000); // toutes les 5 min
+// SESSION_MAX_MS, SESSION_WARN_MS, _sessionWarnShown, _showSessionWarningBanner, checkSessionExpiry
+// → déplacés dans assets/js/composants/session-banner.js
 
 // ---------------------------------------------------------
 // CHARGEMENT DES DONNÉES
@@ -599,7 +469,7 @@ function renderDashboard() {
     .sort((a, b) => a.date_echeance.localeCompare(b.date_echeance));
   const alertBlock = $('#echeances-alert');
   if (dueSoon.length) {
-    alertBlock.style.display = 'block';
+    alertBlock.classList.remove('is-hidden');
     $('#echeances-list').innerHTML = dueSoon.map(c => {
       const days = Math.round((new Date(c.date_echeance) - new Date(today)) / 86400000);
       const when = days < 0 ? `en retard de ${Math.abs(days)} j` : (days === 0 ? "aujourd'hui" : `dans ${days} j`);
@@ -610,11 +480,11 @@ function renderDashboard() {
             <div class="s">Échéance le ${formatDate(c.date_echeance)}</div>
           </div>
           <span class="${days < 0 ? 'overdue' : ''}">${when}</span>
-          <button class="btn btn-pri btn-sm" style="margin-left:8px;font-size:.72rem" onclick="interactAlert('${c.id}','${c.contact_id}',${days})">👉 Interagir</button>
+          <button class="btn btn-pri btn-sm btn-interact-alert" onclick="interactAlert('${c.id}','${c.contact_id}',${days})">👉 Interagir</button>
         </div>`;
     }).join('');
   } else {
-    alertBlock.style.display = 'none';
+    alertBlock.classList.add('is-hidden');
   }
 
   const myId = state.user?.id;
@@ -686,7 +556,7 @@ function renderUserBadge() {
   $('#user-name').textContent = name;
   setAvatar($('#user-avatar'), state.profile?.photo_url, name);
   // Onglet Administration visible uniquement pour les super-admins
-  $all('.admin-only').forEach(el => { el.style.display = isAdmin() ? '' : 'none'; });
+  $all('.admin-only').forEach(el => el.classList.toggle('is-hidden', !isAdmin()));
   if (isAdmin()) checkResetFlag();
   applyRoleVisibility();
   updateMobMenuRole();
@@ -736,15 +606,14 @@ function openProfileModal() {
       .maybeSingle();
 
     if (data) {
-      signedBlock.style.display   = 'flex';
-      unsignedBlock.style.display = 'none';
-      // Construire un lien vers une page de visualisation
+      signedBlock.classList.remove('is-hidden');
+      unsignedBlock.classList.add('is-hidden');
       const dateStr = new Date(data.signed_at).toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'});
       signedBlock.querySelector('span').textContent = '✅ Clause signée le ' + dateStr;
       document.getElementById('clause-signed-link').href = '/clause.html?view=' + data.id;
     } else {
-      signedBlock.style.display   = 'none';
-      unsignedBlock.style.display = 'block';
+      signedBlock.classList.add('is-hidden');
+      unsignedBlock.classList.remove('is-hidden');
     }
   })();
   $('#profile-photo-input').value = '';
@@ -753,7 +622,7 @@ function openProfileModal() {
   refreshTOTPStatus();
   $('#profile-new-password-2').value = '';
   $('#password-error').textContent = '';
-  $('#password-success').style.display = 'none';
+  $('#password-success').classList.add('is-hidden');
   setAvatar($('#profile-avatar-preview'), state.profile?.photo_url, state.profile?.prenom || state.user?.email);
   $('#profile-modal').classList.add('show');
 }
@@ -867,7 +736,7 @@ async function changePassword() {
   const pw1 = $('#profile-new-password').value;
   const pw2 = $('#profile-new-password-2').value;
   $('#password-error').textContent = '';
-  $('#password-success').style.display = 'none';
+  $('#password-success').classList.add('is-hidden');
 
   if (!pw1 || pw1.length < 6) {
     $('#password-error').textContent = 'Le mot de passe doit contenir au moins 6 caractères.';
@@ -889,7 +758,7 @@ async function changePassword() {
   });
   $('#profile-new-password').value = '';
   $('#profile-new-password-2').value = '';
-  $('#password-success').style.display = 'block';
+  $('#password-success').classList.remove('is-hidden');
 }
 
 // ---------------------------------------------------------
@@ -911,7 +780,7 @@ function switchAdminTab(tab) {
   $all('[data-admin-tab]').forEach(b => b.classList.toggle('active', b.dataset.adminTab === tab));
   ['overview', 'per-user', 'users', 'registre', 'securite', 'archives', 'reglages'].forEach(t => {
     const el = $('#admin-panel-' + t);
-    if (el) el.style.display = (t === tab) ? '' : 'none';
+    if (el) el.classList.toggle('is-hidden', t !== tab);
   });
   if (tab === 'users')    loadAdminUsers().then(renderAdminUsers);
   if (tab === 'overview') renderAdminOverview();
@@ -1040,8 +909,8 @@ function renderResiliationAlerts() {
   const listEl    = document.getElementById('resiliation-pending-list');
   if (!sidebarEl || !listEl) return;
 
-  if (!pending.length) { sidebarEl.style.display = 'none'; return; }
-  sidebarEl.style.display = '';
+  if (!pending.length) { sidebarEl.classList.add('is-hidden'); return; }
+  sidebarEl.classList.remove('is-hidden');
 
   listEl.innerHTML = pending.map(ct => {
     const contact = (state.contacts || []).find(c => c.id === ct.contact_id);
@@ -3162,7 +3031,7 @@ function bindEvents() {
   $('#ct-date-debut').addEventListener('change', autoCalcEcheance);
   $('#ct-montant').addEventListener('input', updateNetDisplay);
   $('#ct-remise-check').addEventListener('change', e => {
-    $('#ct-remise').style.display = e.target.checked ? '' : 'none';
+    $('#ct-remise').classList.toggle('is-hidden', !e.target.checked);
     if (!e.target.checked) $('#ct-remise').value = '';
     updateNetDisplay();
   });
@@ -3385,7 +3254,7 @@ async function loadBordereaux() {
   // N'afficher l'alerte que si on est dans la fenêtre de l'avant-dernier jour ouvré
   if (!isAlertePeriode) {
     const block = document.getElementById('bordereaux-alert');
-    if (block) block.style.display = 'none';
+    if (block) block.classList.add('is-hidden');
     return;
   }
 
@@ -3405,9 +3274,9 @@ async function renderBordereaux() {
     if (error) throw error;
 
     const users = data || [];
-    if (!users.length) { block.style.display = 'none'; return; }
+    if (!users.length) { block.classList.add('is-hidden'); return; }
 
-    block.style.display = 'block';
+    block.classList.remove('is-hidden');
     list.innerHTML = users.map(u => {
       const sent = u.sent_at;
       const sentLabel = sent
@@ -3533,7 +3402,7 @@ async function loadHelpRequests() {
   if (isAdmin() && block) {
     const adminRequests = requests; // toutes les demandes ouvertes
     if (adminRequests.length) {
-      block.style.display = 'block';
+      block.classList.remove('is-hidden');
       const list = document.getElementById('help-requests-list');
       list.innerHTML = adminRequests.map(r => {
         const profile = state.profilesById?.[r.user_id];
@@ -3542,16 +3411,15 @@ async function loadHelpRequests() {
           <div>
             <div class="t">${escapeHtml(nom)} — ${escapeHtml(r.sujet)}</div>
             <div class="s">${escapeHtml(r.message.slice(0,120))}${r.message.length > 120 ? '…' : ''}</div>
-            <div class="s mut" style="font-size:.75rem">${formatDate(r.created_at.slice(0,10))}</div>
+            <div class="s mut">${formatDate(r.created_at.slice(0,10))}</div>
           </div>
-          <button class="btn btn-ok btn-sm" style="margin-left:8px;font-size:.72rem;background:var(--ok);color:#fff;border:none;flex-shrink:0"
-            onclick="traiterHelpRequest('${r.id}')">
+          <button class="btn btn-ok btn-sm btn-action-inline" onclick="traiterHelpRequest('${r.id}')">
             ✅ Traité
           </button>
         </div>`;
       }).join('');
     } else {
-      block.style.display = 'none';
+      block.classList.add('is-hidden');
     }
   }
 
@@ -3568,26 +3436,24 @@ async function loadHelpRequests() {
     });
 
     if (toShow.length) {
-      myBlock.style.display = 'block';
+      myBlock.classList.remove('is-hidden');
       const myList = document.getElementById('my-help-requests-list');
       myList.innerHTML = toShow.map(r => `
         <div class="mini-item">
           <div>
             <div class="t">${escapeHtml(r.sujet)}</div>
             <div class="s">${escapeHtml(r.message.slice(0,100))}${r.message.length > 100 ? '…' : ''}</div>
-            <div class="s mut" style="font-size:.75rem">Envoyée le ${formatDate(r.created_at.slice(0,10))} — En attente de traitement</div>
+            <div class="s mut">Envoyée le ${formatDate(r.created_at.slice(0,10))} — En attente de traitement</div>
           </div>
-          <button class="btn btn-out btn-sm" style="margin-left:8px;font-size:.72rem;flex-shrink:0"
-            onclick="vuHelpRequest('${r.id}')">
+          <button class="btn btn-out btn-sm btn-action-inline" onclick="vuHelpRequest('${r.id}')">
             👁 Vu
           </button>
-          <button class="btn btn-danger btn-sm" style="margin-left:4px;font-size:.72rem;flex-shrink:0"
-            onclick="terminerHelpRequest('${r.id}')">
+          <button class="btn btn-danger btn-sm btn-action-inline" onclick="terminerHelpRequest('${r.id}')">
             ✕ Terminé
           </button>
         </div>`).join('');
     } else {
-      myBlock.style.display = 'none';
+      myBlock.classList.add('is-hidden');
     }
   }
 }
@@ -3669,7 +3535,7 @@ async function loadJournalView() {
   // Filtre utilisateur (admin uniquement)
   const admin = isAdmin();
   if (filterSel) {
-    filterSel.style.display = admin ? '' : 'none';
+    filterSel.classList.toggle('is-hidden', !admin);
     if (admin && filterSel.options.length <= 1) {
       // Peupler le filtre une seule fois
       (state.adminUsers || []).forEach(u => {
@@ -3787,7 +3653,7 @@ async function _checkAndShowSignatureWall() {
   if (el2) el2.textContent = nomAffiche;
 
   const wall = document.getElementById('onboarding-wall');
-  wall.style.display = 'flex';
+  wall.classList.remove('is-hidden');
 
   if (!clause) {
     wallSwitchTab('clause');
@@ -3839,7 +3705,7 @@ function _wallInitScroll(docId, rowId, checkId, btnId, hintId) {
     btn.disabled = false;
     if (row) row.classList.add('enabled');
     const hint = document.getElementById(hintId);
-    if (hint) hint.style.display = 'none';
+    if (hint) hint.classList.add('is-hidden');
     doc.removeEventListener('scroll', onScroll);
   };
 
@@ -3902,7 +3768,7 @@ async function wallSignCharteSI() {
   _wallMarkDone('charte');
 
   // Les deux signatures sont en place → fermer le mur et charger le CRM
-  document.getElementById('onboarding-wall').style.display = 'none';
+  document.getElementById('onboarding-wall').classList.add('is-hidden');
   await _afterSignatures();
 }
 
@@ -3975,7 +3841,7 @@ function openChangePasswordModal(isFirst = true) {
   document.getElementById('cp-password').value = '';
   document.getElementById('cp-password2').value = '';
   document.getElementById('cp-save-btn').disabled = true;
-  document.getElementById('cp-strength').style.display = 'none';
+  document.getElementById('cp-strength').classList.add('is-hidden');
   modal.classList.add('show');
 }
 
@@ -4011,14 +3877,14 @@ function setupPasswordValidation() {
     const v = validatePassword(input.value);
     const match = input.value === input2.value && input2.value.length > 0;
     const matchErr = document.getElementById('cp-match-error');
-    if (matchErr) matchErr.style.display = (input2.value && !match) ? 'block' : 'none';
+    if (matchErr) matchErr.classList.toggle('is-hidden', !(input2.value && !match));
     saveBtn.disabled = !(v.valid && match);
   };
 
   input.addEventListener('input', () => {
     const pwd = input.value;
     const v = validatePassword(pwd);
-    document.getElementById('cp-strength').style.display = pwd.length ? 'block' : 'none';
+    document.getElementById('cp-strength').classList.toggle('is-hidden', !pwd.length);
 
     // Barres de force
     const score = [v.length, v.lower || v.upper, v.digit, v.special].filter(Boolean).length;
@@ -4063,7 +3929,7 @@ async function saveNewPassword() {
 
     _sendPasswordChangedConfirmation(state.user?.email || '');
     closeChangePasswordModal();
-    document.getElementById('password-renewal-banner').style.display = 'none';
+    document.getElementById('password-renewal-banner').classList.add('is-hidden');
 
     // Proposer la 2FA si pas encore fait et pas déjà activée
     const profile = state.profile;
@@ -4107,7 +3973,7 @@ async function checkPasswordStatus() {
     if (needsRenewal && isAdmin()) {
       // Admin → banner non bloquant
       const banner = document.getElementById('password-renewal-banner');
-      if (banner) banner.style.display = 'flex';
+      if (banner) banner.classList.remove('is-hidden');
       return;
     }
 
@@ -4148,7 +4014,7 @@ async function loadBordereauDCI() {
     now.getDate()     === dernierJour.getDate()
   );
 
-  if (!isLastOuvre) { block.style.display = 'none'; return; }
+  if (!isLastOuvre) { block.classList.add('is-hidden'); return; }
 
   // Calculer les commissions du mois courant
   const periode  = `${year}-${String(month).padStart(2,'0')}`;
@@ -4177,7 +4043,7 @@ async function loadBordereauDCI() {
   recurrents.forEach(c  => { total += Math.round((Number(c.montant) || 0) * 0.10); });
 
   if (total === 0 && signatures.length === 0 && recurrents.length === 0) {
-    block.style.display = 'none';
+    block.classList.add('is-hidden');
     return;
   }
 
@@ -4194,7 +4060,7 @@ Cordialement,
 ${state.profile?.prenom || ''}`
   );
 
-  block.style.display = 'block';
+  block.classList.remove('is-hidden');
   const list = document.getElementById('my-bordereau-list');
   if (list) list.innerHTML = `
     <div class="mini-item" style="flex-direction:column;gap:12px;align-items:flex-start">
@@ -4242,7 +4108,7 @@ async function checkResetFlag() {
     .select('value').eq('key', 'reset_done').maybeSingle();
   const wrap = document.getElementById('reset-test-btn-wrap');
   if (wrap) {
-    wrap.style.display = (data?.value === 'false') ? 'block' : 'none';
+    wrap.classList.toggle('is-hidden', data?.value !== 'false');
   }
 }
 
@@ -4279,7 +4145,7 @@ async function executeReset() {
     if (error) throw new Error(error.message);
 
     document.getElementById('reset-test-modal').classList.remove('show');
-    document.getElementById('reset-test-btn-wrap').style.display = 'none';
+    document.getElementById('reset-test-btn-wrap').classList.add('is-hidden');
 
     // Recharger toutes les données depuis Supabase (les tâches sont préservées)
     await loadAll();
@@ -4333,33 +4199,25 @@ async function loadUpsellOpportunities() {
   opps.sort((a, b) => b.manquantes.length - a.manquantes.length);
   const top = opps.slice(0, 5);
 
-  if (!top.length) { block.style.display = 'none'; return; }
+  if (!top.length) { block.classList.add('is-hidden'); return; }
 
   // Accordéon : replié par défaut, animation fluide
-  if (block.style.display === 'none' || !block.dataset.initialized) {
-    block.style.display = 'block';
+  if (block.classList.contains('is-hidden') || !block.dataset.initialized) {
+    block.classList.remove('is-hidden');
     block.dataset.initialized = '1';
-    // Ajouter le header accordéon si pas déjà présent
     if (!block.querySelector('.upsell-toggle')) {
       const h3 = block.querySelector('h3');
       if (h3) {
-        h3.style.cursor = 'pointer';
-        h3.style.userSelect = 'none';
-        h3.style.display = 'flex';
-        h3.style.alignItems = 'center';
-        h3.style.justifyContent = 'space-between';
+        h3.className = (h3.className + ' collapsible-head').trim();
         const arrow = document.createElement('span');
         arrow.className = 'upsell-toggle';
         arrow.textContent = '▼';
-        arrow.style.cssText = 'font-size:.7rem;color:var(--mut);transition:transform .3s;transform:rotate(-90deg)';
         h3.appendChild(arrow);
         const body = block.querySelector('.mini-list');
-        if (body) {
-          body.style.cssText = 'max-height:0;overflow:hidden;transition:max-height .35s ease';
-        }
+        if (body) body.classList.add('collapsible-body');
         h3.onclick = () => {
-          const isOpen = arrow.style.transform === 'rotate(0deg)';
-          arrow.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
+          const isOpen = arrow.classList.contains('is-open');
+          arrow.classList.toggle('is-open', !isOpen);
           if (body) body.style.maxHeight = isOpen ? '0' : body.scrollHeight + 'px';
         };
       }
@@ -4414,20 +4272,19 @@ async function loadChurnRisk() {
   risques.sort((a, b) => b.joursEcoules - a.joursEcoules);
   const top = risques.slice(0, 5);
 
-  if (!top.length) { block.style.display = 'none'; return; }
+  if (!top.length) { block.classList.add('is-hidden'); return; }
 
-  block.style.display = 'block';
+  block.classList.remove('is-hidden');
   list.innerHTML = top.map(r => {
     const nom  = escapeHtml((r.contact.entreprise || r.contact.nom || '—').slice(0, 30));
     const j    = r.joursEcoules;
-    const couleur = j >= 120 ? 'var(--alert)' : j >= 90 ? '#f59e0b' : 'var(--mut)';
+    const cls  = j >= 120 ? 'overdue' : j >= 90 ? 's' : 'mut';
     return `<div class="mini-item">
       <div>
-        <div class="t" style="cursor:pointer" onclick="switchView('contacts');openContactModal('${r.contact.id}')">${nom}</div>
-        <div class="s" style="color:${couleur};font-size:.75rem">Dernier contact il y a <strong>${j} jours</strong></div>
+        <div class="t churn-link" onclick="switchView('contacts');openContactModal('${r.contact.id}')">${nom}</div>
+        <div class="s ${cls}">Dernier contact il y a <strong>${j} jours</strong></div>
       </div>
-      <button class="btn btn-pri btn-sm"
-        style="font-size:.72rem;padding:5px 10px;flex-shrink:0;margin-left:8px"
+      <button class="btn btn-pri btn-sm btn-action-inline"
         onclick="switchView('contacts');openContactModal('${r.contact.id}')">
         📞 Relancer
       </button>
@@ -4468,19 +4325,13 @@ function applyRoleVisibility() {
   document.querySelectorAll('[data-min-role]').forEach(el => {
     const minRole = el.getAttribute('data-min-role');
     const minLevel = order.indexOf(minRole);
-    el.style.display = level >= minLevel ? '' : 'none';
+    el.classList.toggle('is-hidden', level < minLevel);
   });
 
   // Classes spécifiques
-  document.querySelectorAll('.admin-only').forEach(el => {
-    el.style.display = isAdmin() ? '' : 'none';
-  });
-  document.querySelectorAll('.super-admin-only').forEach(el => {
-    el.style.display = isSuperAdmin() ? '' : 'none';
-  });
-  document.querySelectorAll('.dci-only').forEach(el => {
-    el.style.display = isAtLeast('dci') ? '' : 'none';
-  });
+  document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('is-hidden', !isAdmin()));
+  document.querySelectorAll('.super-admin-only').forEach(el => el.classList.toggle('is-hidden', !isSuperAdmin()));
+  document.querySelectorAll('.dci-only').forEach(el => el.classList.toggle('is-hidden', !isAtLeast('dci')));
 }
 
 // Vérifier le profil complet + alerte révocation
@@ -4509,29 +4360,28 @@ function openMFACheckModal() {
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'mfa-recheck-modal';
-    modal.style.cssText = 'position:fixed;inset:0;z-index:900;background:rgba(10,22,40,.92);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px';
+    modal.className = 'mfa-modal';
     modal.innerHTML = `
-      <div style="background:var(--navy-2);border:1px solid var(--line);border-radius:16px;padding:32px;max-width:400px;width:100%;text-align:center">
-        <div style="font-size:2.5rem;margin-bottom:12px">🔐</div>
-        <h3 style="font-family:var(--ff-disp,Sora,sans-serif);font-size:1.2rem;color:#fff;margin-bottom:8px">Vérification de sécurité</h3>
-        <p style="font-size:.85rem;color:var(--mut);margin-bottom:20px;line-height:1.6">
+      <div class="mfa-modal__box">
+        <div class="mfa-modal__icon">🔐</div>
+        <h3 class="mfa-modal__title">Vérification de sécurité</h3>
+        <p class="mfa-modal__body">
           Votre session dure depuis 4 heures. Saisissez le code de votre application d'authentification pour continuer.
         </p>
         <input id="mfa-recheck-code" type="text" maxlength="6" placeholder="Code TOTP à 6 chiffres"
-          style="width:100%;background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:8px;padding:12px;color:#fff;font-family:var(--fm,monospace);font-size:1.2rem;letter-spacing:.2em;text-align:center;outline:none;margin-bottom:12px">
-        <div style="color:var(--alert);font-size:.78rem;margin-bottom:12px;display:none" id="mfa-recheck-err">Code incorrect. Réessayez.</div>
-        <button onclick="submitMFARecheck()" class="btn btn-pri" style="width:100%;background:var(--blue-2);color:#fff;border:none;border-radius:8px;padding:12px;font-family:Sora,sans-serif;font-weight:600;font-size:.9rem;cursor:pointer">
-          Vérifier
-        </button>
+          class="mfa-modal__input">
+        <div class="mfa-modal__error is-hidden" id="mfa-recheck-err">Code incorrect. Réessayez.</div>
+        <button onclick="submitMFARecheck()" class="btn btn-pri btn--full">Vérifier</button>
       </div>`;
     document.body.appendChild(modal);
   }
-  modal.style.display = 'flex';
+  modal.classList.remove('is-hidden');
 }
 
 async function submitMFARecheck() {
   const code = document.getElementById('mfa-recheck-code').value.trim();
   if (code.length !== 6) return;
+  const errEl = document.getElementById('mfa-recheck-err');
   try {
     const { data: factors } = await sb.auth.mfa.listFactors();
     const factor = factors?.totp?.find(f => f.status === 'verified');
@@ -4539,13 +4389,13 @@ async function submitMFARecheck() {
     const { data: challenge } = await sb.auth.mfa.challenge({ factorId: factor.id });
     const { error } = await sb.auth.mfa.verify({ factorId: factor.id, challengeId: challenge.id, code });
     if (error) {
-      document.getElementById('mfa-recheck-err').style.display = 'block';
+      errEl.classList.remove('is-hidden');
       return;
     }
     localStorage.setItem(MFA_CHECK_KEY, String(Date.now()));
-    document.getElementById('mfa-recheck-modal').style.display = 'none';
+    document.getElementById('mfa-recheck-modal').classList.add('is-hidden');
   } catch(e) {
-    document.getElementById('mfa-recheck-err').style.display = 'block';
+    errEl.classList.remove('is-hidden');
   }
 }
 
@@ -4560,12 +4410,11 @@ function checkUpsellFirstLogin() {
   setTimeout(() => {
     const block = document.getElementById('upsell-alert');
     if (block && block.innerHTML.trim() !== '') {
-      block.style.display = 'block';
-      // Replié par défaut — l'utilisateur déplie en cliquant
+      block.classList.remove('is-hidden');
       const list  = block.querySelector('.mini-list');
       const arrow = block.querySelector('.upsell-toggle');
-      if (list)  list.style.maxHeight  = '0';
-      if (arrow) arrow.style.transform = 'rotate(-90deg)';
+      if (list)  list.style.maxHeight = '0';
+      if (arrow) arrow.classList.remove('is-open');
     }
   }, 2000);
 }
@@ -4703,9 +4552,9 @@ async function loadMessagesDCI() {
     .order('created_at', { ascending: false })
     .limit(5);
 
-  if (error || !data?.length) { block.style.display = 'none'; return; }
+  if (error || !data?.length) { block.classList.add('is-hidden'); return; }
 
-  block.style.display = 'block';
+  block.classList.remove('is-hidden');
   const list = document.getElementById('messages-dci-list');
   list.innerHTML = data.map(n => {
     const from = n.data?.from_name || 'Votre DCI';
@@ -4849,7 +4698,7 @@ function openGenererMDPModal() {
   // Reset
   document.getElementById('mdp-password').value = '';
   document.getElementById('mdp-error').textContent = '';
-  document.getElementById('mdp-warn').style.display = 'none';
+  document.getElementById('mdp-warn').classList.add('is-hidden');
   document.getElementById('mdp-send-btn').disabled = true;
   document.getElementById('generer-mdp-modal').classList.add('show');
 }
@@ -4857,7 +4706,7 @@ function openGenererMDPModal() {
 function genererNouveauMDP() {
   const pwd = genererMotDePasseFort();
   document.getElementById('mdp-password').value = pwd;
-  document.getElementById('mdp-warn').style.display = 'block';
+  document.getElementById('mdp-warn').classList.remove('is-hidden');
   document.getElementById('mdp-error').textContent = '';
   // Activer le bouton seulement si un utilisateur est sélectionné
   const userId = document.getElementById('mdp-user-select').value;
@@ -4994,14 +4843,14 @@ function updateMobMenuRole() {
   const admin = typeof isAdmin === 'function' && isAdmin();
   const dci   = typeof isAtLeast === 'function' && isAtLeast('dci');
   const sup   = typeof isSuperAdmin === 'function' && isSuperAdmin();
-  document.querySelectorAll('#mob-drawer .admin-only').forEach(el => el.style.display = admin ? '' : 'none');
-  document.querySelectorAll('#mob-drawer .dci-only').forEach(el => el.style.display = dci ? '' : 'none');
+  document.querySelectorAll('#mob-drawer .admin-only').forEach(el => el.classList.toggle('is-hidden', !admin));
+  document.querySelectorAll('#mob-drawer .dci-only').forEach(el => el.classList.toggle('is-hidden', !dci));
   const dciSec = document.getElementById('mob-sec-dci');
-  if (dciSec) dciSec.style.display = dci ? '' : 'none';
+  if (dciSec) dciSec.classList.toggle('is-hidden', !dci);
   const outilsSec = document.getElementById('mob-sec-outils');
-  if (outilsSec) outilsSec.style.display = admin ? '' : 'none';
+  if (outilsSec) outilsSec.classList.toggle('is-hidden', !admin);
   const dangerSec = document.getElementById('mob-sec-danger');
-  if (dangerSec) dangerSec.style.display = sup ? '' : 'none';
+  if (dangerSec) dangerSec.classList.toggle('is-hidden', !sup);
 }
 // Swipe gauche pour fermer
 (function() {
@@ -5204,7 +5053,7 @@ function _renderDayPanel(iso, events, tourneesDuJour = []) {
     html += `<button class="btn btn-out btn-sm" style="margin-top:12px;width:100%" onclick="openTaskModal(null,{type_tache:'RDV terrain',rdv_date:'${iso}'})">+ Programmer un RDV ce jour</button>`;
     list.innerHTML = html;
   }
-  panel.style.display = 'block';
+  panel.classList.remove('is-hidden');
 }
 
 function _selectAgendaDay(iso, events, tourneesDuJour = []) {
@@ -5245,7 +5094,7 @@ let _availData = {};
 
 async function openAgendaSettings() {
   const modal = $('#modal-agenda-settings');
-  modal.style.display = 'block';
+  modal.classList.remove('is-hidden');
 
   const uid = state.user?.id;
   if (!uid) return;
@@ -5302,11 +5151,11 @@ async function openAgendaSettings() {
 function toggleAvailDay(key) {
   const on = $(`#avail-${key}-on`).checked;
   const detail = $(`#avail-${key}-detail`);
-  detail.style.display = on ? 'grid' : 'none';
+  detail.classList.toggle('is-hidden', !on);
 }
 
 function closeAgendaSettings() {
-  $('#modal-agenda-settings').style.display = 'none';
+  $('#modal-agenda-settings').classList.add('is-hidden');
 }
 
 async function saveAvailability() {
@@ -5374,7 +5223,7 @@ async function loadFournisseurs() {
 
 function openFournisseurModal(id) {
   const modal = $('#fournisseur-modal');
-  $('#fournisseur-modal-error').style.display = 'none';
+  $('#fournisseur-modal-error').classList.add('is-hidden');
   if (id) {
     const f = (window._fournisseursCache || []).find(x => x.id === id);
     if (!f) { loadFournisseurs(); return; }
@@ -5402,7 +5251,7 @@ function openFournisseurModal(id) {
 async function saveFournisseur() {
   const id  = $('#f-id').value;
   const nom = $('#f-nom').value.trim();
-  if (!nom) { $('#fournisseur-modal-error').textContent = 'Le nom est obligatoire.'; $('#fournisseur-modal-error').style.display = ''; return; }
+  if (!nom) { $('#fournisseur-modal-error').textContent = 'Le nom est obligatoire.'; $('#fournisseur-modal-error').classList.remove('is-hidden'); return; }
   const payload = {
     nom, pays: $('#f-pays').value.trim() || 'FR',
     categorie:         $('#f-categorie').value,
@@ -5417,7 +5266,7 @@ async function saveFournisseur() {
   const { error } = id
     ? await sb.from('fournisseurs').update(payload).eq('id', id)
     : await sb.from('fournisseurs').insert(payload);
-  if (error) { $('#fournisseur-modal-error').textContent = 'Erreur : ' + error.message; $('#fournisseur-modal-error').style.display = ''; return; }
+  if (error) { $('#fournisseur-modal-error').textContent = 'Erreur : ' + error.message; $('#fournisseur-modal-error').classList.remove('is-hidden'); return; }
   if (typeof logRgpd === 'function') logRgpd('fournisseur_modifie', 'Réglages', {
     criticite: 'Attention', donnees: 'registre fournisseurs tiers',
     details: { nom, action: id ? 'modification' : 'ajout', niveau_risque: payload.niveau_risque },

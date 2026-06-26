@@ -29,244 +29,20 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/style.css?v=1.2.5">
 <link rel="stylesheet" href="assets/pipeline.css">
 
-<style>
-/* MENU HAMBURGER MOBILE — visible uniquement < 768px — N'affecte PAS le desktop */
-@media (max-width: 1024px) {
-  .sidebar { display: none !important; }
-  #mob-menu-btn {
-    display: flex !important;
-    position: fixed;
-    top: 12px;
-    left: 14px;
-    z-index: 850;
-    background: var(--navy-2, #142240);
-    border: 1px solid rgba(255,255,255,.1);
-    border-radius: 10px;
-    padding: 9px 11px;
-    cursor: pointer;
-    flex-direction: column;
-    gap: 5px;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 16px rgba(0,0,0,.4);
-  }
-  #mob-menu-btn span {
-    display: block;
-    width: 20px;
-    height: 2px;
-    background: #fff;
-    border-radius: 2px;
-    transition: all .25s;
-  }
-  #mob-menu-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-  #mob-menu-btn.open span:nth-child(2) { opacity: 0; width: 0; }
-  #mob-menu-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-  #mob-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 840;
-    background: rgba(0,0,0,.55);
-    backdrop-filter: blur(2px);
-    display: none;
-  }
-  #mob-overlay.show { display: block; }
-  #mob-menu-btn {
-    top: max(12px, env(safe-area-inset-top, 12px));
-  }
-  #mob-drawer {
-    position: fixed;
-    top: 0;
-    left: -280px;
-    width: 265px;
-    height: 100dvh;
-    z-index: 860;
-    background: #0f1d35;
-    border-right: 1px solid rgba(255,255,255,.08);
-    display: flex;
-    flex-direction: column;
-    transition: left .28s cubic-bezier(.4,0,.2,1);
-    overflow: hidden; /* le scroll est géré par .mob-scroll, pas le drawer entier */
-  }
-  #mob-drawer.open { left: 0; }
-  .mob-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 18px;
-    border-bottom: 1px solid rgba(255,255,255,.08);
-    flex-shrink: 0;
-  }
-  /* Zone centrale scrollable — header et footer restent toujours visibles */
-  .mob-scroll { flex: 1; overflow-y: auto; min-height: 0; scrollbar-width: none; }
-  .mob-scroll::-webkit-scrollbar { display: none; }
-  .mob-brand { font-family: Sora, sans-serif; font-size: 1rem; font-weight: 800; color: #fff; }
-  .mob-brand em { color: #f59e0b; font-style: normal; }
-  .mob-close { background: none; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer; padding: 4px; line-height: 1; }
-  .mob-sec { padding: 8px 10px 2px; }
-  .mob-sec-lbl { font-size: .58rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #64748b; padding: 0 8px; margin-bottom: 3px; }
-  .mob-lk {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 11px 14px;
-    border-radius: 10px;
-    border: none;
-    background: none;
-    color: #94a3b8;
-    font-family: Inter, sans-serif;
-    font-size: .88rem;
-    font-weight: 500;
-    cursor: pointer;
-    text-align: left;
-    text-decoration: none;
-    transition: background .15s, color .15s;
-    margin-bottom: 1px;
-  }
-  .mob-lk:hover { background: rgba(255,255,255,.06); color: #e2e8f0; }
-  .mob-lk.mob-active { background: rgba(245,158,11,.1); color: #f59e0b; }
-  .mob-lk .ico { font-size: 1rem; flex-shrink: 0; width: 22px; text-align: center; }
-  .mob-lk.danger { color: #ff4d5e; }
-  .mob-lk.danger:hover { background: rgba(255,77,94,.08); }
-  .mob-divider { height: 1px; background: rgba(255,255,255,.06); margin: 6px 14px; }
-  /* Footer toujours ancré en bas, jamais scrollé hors écran */
-  .mob-footer { flex-shrink: 0; padding: 8px 10px; padding-bottom: max(20px, env(safe-area-inset-bottom, 20px)); border-top: 1px solid rgba(255,255,255,.06); }
-  /* Padding-top : compense le bouton hamburger fixe en haut à gauche */
-  .main { padding-top: max(62px, calc(env(safe-area-inset-top, 0px) + 58px)) !important; }
-}
-@media (min-width: 1025px) {
-  #mob-menu-btn, #mob-overlay, #mob-drawer { display: none !important; }
-}
-
-/* ── MUR DE SIGNATURE ──────────────────────────────────────────────────── */
-#onboarding-wall {
-  display: none;
-  position: fixed; inset: 0; z-index: 10000;
-  background: #060e1c;
-  flex-direction: column;
-  align-items: center;
-  overflow-y: auto;
-}
-.wall-inner {
-  width: 100%; max-width: 720px;
-  padding: 32px 24px 64px;
-  display: flex; flex-direction: column; gap: 0;
-}
-.wall-brand {
-  display: flex; align-items: center; gap: 14px;
-  margin-bottom: 28px; padding-bottom: 20px;
-  border-bottom: 1px solid rgba(255,255,255,.07);
-}
-.wall-brand-name {
-  font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 800; color: #fff;
-}
-.wall-brand-name span { color: #f59e0b; }
-.wall-brand-sub {
-  font-size: .65rem; letter-spacing: .18em; text-transform: uppercase;
-  color: #64748b; margin-top: 2px;
-}
-.wall-steps {
-  display: flex; gap: 8px; margin-bottom: 20px;
-}
-.wall-step {
-  flex: 1; padding: 10px 14px; border-radius: 10px;
-  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
-  cursor: pointer; transition: all .2s;
-  display: flex; align-items: center; gap: 8px;
-  font-size: .82rem; font-weight: 600; color: #64748b;
-}
-.wall-step.active {
-  background: rgba(245,158,11,.08); border-color: rgba(245,158,11,.35); color: #f59e0b;
-}
-.wall-step.done {
-  background: rgba(34,197,94,.07); border-color: rgba(34,197,94,.3); color: #22c55e;
-  cursor: default;
-}
-.wall-step-num {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: rgba(255,255,255,.07); font-size: .72rem; font-weight: 800;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.wall-step.active .wall-step-num { background: #f59e0b; color: #0a1628; }
-.wall-step.done .wall-step-num { background: #22c55e; color: #0a1628; }
-.wall-panel { display: none; flex-direction: column; gap: 16px; }
-.wall-panel.active { display: flex; }
-.wall-doc-header {
-  display: flex; align-items: center; gap: 14px;
-  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
-  border-radius: 12px; padding: 16px 20px;
-}
-.wall-doc-icon { font-size: 1.6rem; flex-shrink: 0; }
-.wall-doc-tag {
-  font-size: .62rem; font-weight: 700; letter-spacing: .15em;
-  text-transform: uppercase; color: #64748b; margin-bottom: 3px;
-}
-.wall-doc-title { font-size: 1rem; font-weight: 800; color: #f1f5f9; }
-.wall-scroll-hint {
-  text-align: center; font-size: .74rem; color: #475569;
-  padding: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.wall-doc-scroll {
-  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
-  border-radius: 12px; padding: 20px 24px;
-  max-height: 42vh; overflow-y: auto;
-  font-size: .84rem; line-height: 1.75; color: #94a3b8;
-}
-.wall-doc-scroll::-webkit-scrollbar { width: 4px; }
-.wall-doc-scroll::-webkit-scrollbar-track { background: transparent; }
-.wall-doc-scroll::-webkit-scrollbar-thumb { background: rgba(245,158,11,.3); border-radius: 2px; }
-.wall-doc-scroll h4 {
-  font-size: .82rem; font-weight: 700; color: #fff;
-  margin: 16px 0 6px; padding-left: 10px;
-  border-left: 3px solid #f59e0b;
-}
-.wall-doc-scroll h4:first-child { margin-top: 0; }
-.wall-doc-scroll p { margin-bottom: 8px; }
-.wall-doc-scroll strong { color: #cbd5e1; }
-.wall-accept-zone {
-  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
-  border-radius: 12px; padding: 18px 20px;
-  display: flex; flex-direction: column; gap: 14px;
-}
-.wall-check-row {
-  display: flex; align-items: flex-start; gap: 10px;
-  opacity: .4; transition: opacity .3s; cursor: default;
-}
-.wall-check-row.enabled { opacity: 1; cursor: auto; }
-.wall-check-row input[type="checkbox"] {
-  width: 16px; height: 16px; accent-color: #f59e0b;
-  flex-shrink: 0; margin-top: 2px; cursor: pointer;
-}
-.wall-check-label {
-  font-size: .83rem; color: #94a3b8; line-height: 1.55;
-}
-.wall-check-label strong { color: #fff; }
-.wall-btn-sign {
-  width: 100%; padding: 14px;
-  background: linear-gradient(135deg,#f59e0b,#e08f00);
-  color: #0a1628; font-weight: 800; font-size: .92rem;
-  border: none; border-radius: 10px; cursor: pointer;
-  transition: all .2s; font-family: 'Sora', sans-serif;
-}
-.wall-btn-sign:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,158,11,.35); }
-.wall-btn-sign:disabled { opacity: .35; cursor: not-allowed; transform: none; }
-.wall-legal-footer {
-  margin-top: 24px; text-align: center;
-  font-size: .7rem; color: #334155; line-height: 1.7;
-}
-@media (max-width: 600px) {
-  .wall-inner { padding: 20px 14px 48px; }
-  .wall-doc-scroll { max-height: 38vh; padding: 16px; }
-  .wall-steps { flex-direction: column; }
-}
-</style>
+<link rel="stylesheet" href="assets/css/composants/nav-mobile.css">
+<link rel="stylesheet" href="assets/css/composants/onboarding.css">
+<link rel="stylesheet" href="assets/css/composants/toast.css">
+<link rel="stylesheet" href="assets/css/composants/session-banner.css">
+<link rel="stylesheet" href="assets/css/composants/pwa.css">
+<link rel="stylesheet" href="assets/css/composants/help.css">
 </head>
 <body>
 <!-- HAMBURGER MOBILE : N'affecte PAS le desktop -->
-<button id="mob-menu-btn" aria-label="Ouvrir le menu" style="display:none" onclick="toggleMobMenu()">
+<button id="mob-menu-btn" aria-label="Ouvrir le menu" onclick="toggleMobMenu()">
   <span></span><span></span><span></span>
 </button>
 <div id="mob-overlay" onclick="closeMobMenu()"></div>
@@ -286,7 +62,7 @@
       <button class="mob-lk" onclick="mobNav('agenda')"><span class="ico">📅</span> Agenda</button>
       <button class="mob-lk" id="mob-lk-resultats" onclick="mobNav('resultats')"><span class="ico">📊</span> R&#233;sultats</button>
       <a class="mob-lk" href="/prospection-terrain/" onclick="closeMobMenu()"><span class="ico">🥾</span> Prospection terrain</a>
-      <button class="mob-lk dci-only" style="display:none" onclick="closeMobMenu();openEquipeModal()"><span class="ico">🤝</span> G&#233;rer mon &#233;quipe</button>
+      <button class="mob-lk dci-only is-hidden" onclick="closeMobMenu();openEquipeModal()"><span class="ico">🤝</span> G&#233;rer mon &#233;quipe</button>
     </div>
 
     <!-- Modules -->
@@ -301,8 +77,8 @@
     </div>
 
     <!-- Administration (admin uniquement) -->
-    <div class="mob-divider admin-only" id="mob-sep-admin" style="display:none"></div>
-    <div class="mob-sec admin-only" id="mob-sec-admin" style="display:none">
+    <div class="mob-divider admin-only is-hidden" id="mob-sep-admin"></div>
+    <div class="mob-sec admin-only is-hidden" id="mob-sec-admin">
       <div class="mob-sec-lbl">Administration</div>
       <button class="mob-lk" onclick="mobNav('journal')"><span class="ico">📋</span> Journal RGPD</button>
       <button class="mob-lk" id="mob-lk-admin" onclick="closeMobMenu();switchView('admin');setTimeout(()=>switchAdminTab('overview'),50)"><span class="ico">👨‍💼</span> Gestion</button>
@@ -325,48 +101,47 @@
       <form onsubmit="login();return false" autocomplete="on">
         <div class="field"><label>E-mail</label><input id="login-email" type="email" autocomplete="username"></div>
         <div class="field"><label>Mot de passe</label>
-          <div style="position:relative">
-            <input id="login-password" type="password" autocomplete="current-password" style="padding-right:40px;width:100%">
+          <div class="field-pw-wrap">
+            <input id="login-password" type="password" autocomplete="current-password" class="input-pw">
             <button type="button" id="toggle-login-password" onclick="toggleLoginPasswordVisibility()"
-              style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;padding:4px;color:var(--mut)"
-              title="Afficher/masquer le mot de passe">👁</button>
+              class="input-addon-end" title="Afficher/masquer le mot de passe">👁</button>
           </div>
         </div>
-        <button type="submit" class="btn btn-pri" id="login-btn" style="width:100%;justify-content:center">Se connecter</button>
+        <button type="submit" class="btn btn-pri btn--full" id="login-btn">Se connecter</button>
         <p class="error" id="login-error"></p>
         <p class="link-row"><a href="#" id="forgot-password-link" class="link-muted">Mot de passe oublié ?</a></p>
       </form>
     </div>
 
-    <div id="forgot-panel" style="display:none">
+    <div id="forgot-panel" class="is-hidden">
       <h1>Mot de passe oublié</h1>
       <p class="mut" style="font-size:.85rem;margin-bottom:14px">Indiquez votre e-mail : si un compte existe, vous recevrez un lien pour choisir un nouveau mot de passe.</p>
       <div class="field"><label>E-mail</label><input id="forgot-email" type="email" autocomplete="username"></div>
-      <button class="btn btn-pri" id="forgot-send-btn" style="width:100%;justify-content:center">Envoyer le lien</button>
+      <button class="btn btn-pri btn--full" id="forgot-send-btn">Envoyer le lien</button>
       <p class="error" id="forgot-error"></p>
-      <p class="success" id="forgot-success" style="display:none">E-mail envoyé ! Vérifiez votre boîte de réception (et vos indésirables).</p>
+      <p class="success is-hidden" id="forgot-success">E-mail envoyé ! Vérifiez votre boîte de réception (et vos indésirables).</p>
       <p class="link-row"><a href="#" id="back-to-login-link" class="link-muted">← Retour à la connexion</a></p>
     </div>
   </div>
 </div>
 
 <!-- ================= ÉCRAN RÉINITIALISATION MOT DE PASSE ================= -->
-<div id="reset-screen" class="login-screen" style="display:none">
+<div id="reset-screen" class="login-screen is-hidden">
   <div class="login-card">
     <img src="assets/logo.png" alt="S@FE" class="brand-logo brand-logo-lg">
     <h1>Nouveau mot de passe</h1>
     <p class="mut" style="font-size:.85rem;margin-bottom:14px">Choisissez un nouveau mot de passe pour votre compte S@FE CRM.</p>
     <div class="field"><label>Nouveau mot de passe</label><input id="reset-password" type="password" autocomplete="new-password" placeholder="Au moins 6 caractères"></div>
     <div class="field"><label>Confirmer le mot de passe</label><input id="reset-password-2" type="password" autocomplete="new-password"></div>
-    <button class="btn btn-pri" id="reset-submit-btn" style="width:100%;justify-content:center">Mettre à jour le mot de passe</button>
+    <button class="btn btn-pri btn--full" id="reset-submit-btn">Mettre à jour le mot de passe</button>
     <p class="error" id="reset-error"></p>
   </div>
 </div>
 
 <!-- ================= APPLICATION ================= -->
-<div id="app" class="app" style="display:none">
+<div id="app" class="app is-hidden">
   <aside class="sidebar">
-    <img src="assets/logo.png" alt="S@FE" class="brand-logo" style="flex-shrink:0;margin-bottom:22px">
+    <img src="assets/logo.png" alt="S@FE" class="brand-logo brand-logo--sidebar">
     <nav class="navlinks">
       <!-- Navigation principale -->
       <div class="nav-section-lbl">Navigation</div>
@@ -376,27 +151,27 @@
       <button class="navlink" data-view="tasks" id="lk-tasks">✅ Tâches</button>
       <button class="navlink" data-view="agenda" id="nav-agenda">📅 Agenda</button>
       <button class="navlink" data-view="resultats" id="nav-resultats">📊 Résultats</button>
-      <a class="navlink" href="/prospection-terrain/" style="text-decoration:none">🥾 Prospection terrain</a>
-      <button class="navlink dci-only" style="display:none" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
+      <a class="navlink" href="/prospection-terrain/">🥾 Prospection terrain</a>
+      <button class="navlink dci-only is-hidden" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
 
       <!-- Modules -->
-      <div class="nav-sep" style="margin-top:8px"></div>
+      <div class="nav-sep nav-sep--mt"></div>
       <div class="nav-section-lbl">Modules</div>
-      <a class="navlink" href="/modules/SEO/module-seo-clients.html" style="text-decoration:none">🚀 SEO</a>
-      <a class="navlink" href="/modules/Cyber/module-cyber-clients.html" style="text-decoration:none">💻 Cybersec</a>
-      <a class="navlink" href="/modules/DPO/module-dpo-clients.html" style="text-decoration:none">⚖️ DPO</a>
-      <a class="navlink" href="/modules/Social/module-social-clients.html" style="text-decoration:none">📱 Social</a>
-      <a class="navlink" href="/modules/ClickCollect/module-clickcollect-clients.html" style="text-decoration:none">🛒 Click &amp; Collect</a>
-      <span class="navlink" style="opacity:.35;cursor:not-allowed;pointer-events:none">🛡 Assurances <small style="margin-left:auto;font-size:.6rem;font-family:monospace;opacity:.7">bientôt</small></span>
+      <a class="navlink" href="/modules/SEO/module-seo-clients.html">🚀 SEO</a>
+      <a class="navlink" href="/modules/Cyber/module-cyber-clients.html">💻 Cybersec</a>
+      <a class="navlink" href="/modules/DPO/module-dpo-clients.html">⚖️ DPO</a>
+      <a class="navlink" href="/modules/Social/module-social-clients.html">📱 Social</a>
+      <a class="navlink" href="/modules/ClickCollect/module-clickcollect-clients.html">🛒 Click &amp; Collect</a>
+      <span class="navlink navlink--disabled">🛡 Assurances <small class="badge-soon">bientôt</small></span>
 
       <!-- Administration (admin uniquement) -->
-      <div class="nav-sep admin-only" style="display:none;margin-top:8px"></div>
-      <div class="nav-section-lbl admin-only" style="display:none">Administration</div>
-      <button class="navlink admin-only" style="display:none" data-view="journal">📋 Journal RGPD</button>
-      <button class="navlink admin-only" style="display:none" onclick="switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)">👨‍💼 Gestion</button>
-      <a class="navlink admin-only" style="display:none;text-decoration:none" href="/modules/connecteurs.html">🔌 Connecteurs</a>
-      <a class="navlink admin-only" style="display:none;text-decoration:none" href="https://github.com/sebastien-Safe/" target="_blank" rel="noopener">⌥ GitHub</a>
-      <a class="navlink admin-only" style="display:none;text-decoration:none" href="https://supabase.com/dashboard/" target="_blank" rel="noopener">⚡ Supabase</a>
+      <div class="nav-sep admin-only nav-sep--mt is-hidden"></div>
+      <div class="nav-section-lbl admin-only is-hidden">Administration</div>
+      <button class="navlink admin-only is-hidden" data-view="journal">📋 Journal RGPD</button>
+      <button class="navlink admin-only is-hidden" onclick="switchView('admin');setTimeout(()=>switchAdminTab('registre'),50)">👨‍💼 Gestion</button>
+      <a class="navlink admin-only is-hidden" href="/modules/connecteurs.html">🔌 Connecteurs</a>
+      <a class="navlink admin-only is-hidden" href="https://github.com/sebastien-Safe/" target="_blank" rel="noopener">⌥ GitHub</a>
+      <a class="navlink admin-only is-hidden" href="https://supabase.com/dashboard/" target="_blank" rel="noopener">⚡ Supabase</a>
     </nav>
     <div class="sidebar-footer">
       <button class="btn btn-out btn-sm" onclick="openHelp('contextual')" title="Centre d'aide"
@@ -424,11 +199,11 @@
           <button class="btn btn-out btn-sm" id="open-mydata-btn">🔐 Mes données (RGPD)</button>
         </div>
       </div>
-      <div class="panel-block alert-block" id="echeances-alert" style="display:none">
+      <div class="panel-block alert-block is-hidden" id="echeances-alert">
         <h3>⚠️ Échéances de contrats à venir (15 jours)</h3>
         <div class="mini-list" id="echeances-list"></div>
       </div>
-      <div class="panel-block alert-block admin-only" id="bordereaux-alert" style="display:none">
+      <div class="panel-block alert-block admin-only is-hidden" id="bordereaux-alert">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <h3 style="margin:0">📋 Bordereaux de commission à envoyer</h3>
           <select id="bordereau-periode" style="background:var(--panel);border:1px solid var(--line);color:var(--mut-2);border-radius:8px;padding:6px 10px;font-size:.82rem"></select>
@@ -436,42 +211,42 @@
         <div class="mini-list" id="bordereaux-list"></div>
       </div>
       <!-- Notifications nouveaux contrats (admin) -->
-      <div class="panel-block alert-block admin-only" id="notif-contracts-alert" style="display:none">
+      <div class="panel-block alert-block admin-only is-hidden" id="notif-contracts-alert">
         <h3>📄 Nouveaux contrats</h3>
         <div class="mini-list" id="notif-contracts-list"></div>
       </div>
       <!-- Alerte demandes d'assistance (admin) -->
-      <div class="panel-block alert-block admin-only" id="help-requests-alert" style="display:none">
+      <div class="panel-block alert-block admin-only is-hidden" id="help-requests-alert">
         <h3>🆘 Demandes d'assistance en attente</h3>
         <div class="mini-list" id="help-requests-list"></div>
       </div>
       <!-- Résiliations en attente (admin) -->
-      <div class="panel-block alert-block admin-only" id="resiliation-pending-alert" style="display:none">
+      <div class="panel-block alert-block admin-only is-hidden" id="resiliation-pending-alert">
         <h3>🚫 Résiliations en attente</h3>
         <div class="mini-list" id="resiliation-pending-list"></div>
       </div>
       <!-- Potentiel montée en gamme (DCI) -->
-      <div class="panel-block alert-block" id="upsell-alert" style="display:none">
+      <div class="panel-block alert-block is-hidden" id="upsell-alert">
         <h3>📈 Potentiel de montée en gamme</h3>
         <div class="mini-list" id="upsell-list"></div>
       </div>
       <!-- Risque de résiliation (DCI) -->
-      <div class="panel-block alert-block" id="churn-alert" style="display:none">
+      <div class="panel-block alert-block is-hidden" id="churn-alert">
         <h3>⚠️ Risque de résiliation — sans contact depuis 60 j</h3>
         <div class="mini-list" id="churn-list"></div>
       </div>
       <!-- Messages du DCI (niveau 1 uniquement) -->
-      <div class="panel-block alert-block" id="messages-dci-alert" style="display:none">
+      <div class="panel-block alert-block is-hidden" id="messages-dci-alert">
         <h3>💬 Messages de votre DCI</h3>
         <div class="mini-list" id="messages-dci-list"></div>
       </div>
       <!-- Alerte facturation DCI — dernier jour ouvré du mois -->
-      <div class="panel-block alert-block" id="my-bordereau-alert" style="display:none">
+      <div class="panel-block alert-block is-hidden" id="my-bordereau-alert">
         <h3>💶 Rappel : émettez votre facture de commissions</h3>
         <div class="mini-list" id="my-bordereau-list"></div>
       </div>
       <!-- Alerte demandes d'assistance (utilisateur) -->
-      <div class="panel-block alert-block" id="my-help-requests-alert" style="display:none">
+      <div class="panel-block alert-block is-hidden" id="my-help-requests-alert">
         <h3>📬 Mes demandes en cours</h3>
         <div class="mini-list" id="my-help-requests-list"></div>
       </div>
@@ -617,7 +392,7 @@
       </div>
 
       <!-- Modal paramétrage disponibilités -->
-      <div id="modal-agenda-settings" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.55);overflow-y:auto">
+      <div id="modal-agenda-settings" class="is-hidden">
         <div style="background:#0f1f3d;border-radius:16px;max-width:560px;margin:40px auto;padding:28px 24px;color:#fff;position:relative">
           <button onclick="closeAgendaSettings()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer">✕</button>
           <h3 style="margin:0 0 6px;font-size:17px;font-weight:700">⚙️ Disponibilités pour les RDV clients</h3>
@@ -664,7 +439,7 @@
       </div>
       <div id="agenda-cells" class="agenda-grid"></div>
       <!-- Liste des événements du jour sélectionné -->
-      <div id="agenda-day-panel" class="agenda-day-panel" style="display:none">
+      <div id="agenda-day-panel" class="agenda-day-panel is-hidden">
         <h4 id="agenda-day-title"></h4>
         <div id="agenda-day-list"></div>
       </div>
@@ -678,7 +453,7 @@
           <p id="journal-view-subtitle">50 dernières actions enregistrées</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <select id="journal-filter-user" style="display:none;background:var(--navy-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--txt);font-size:.85rem;outline:none">
+          <select id="journal-filter-user" class="is-hidden">
             <option value="">Tous les utilisateurs</option>
           </select>
           <button class="btn btn-out btn-sm" onclick="loadJournalView()">↺ Actualiser</button>
@@ -751,7 +526,7 @@
 
       <!-- Panel Résultats supprimé — déplacé dans vue dédiée Gestion → Résultats -->
 
-      <div class="admin-panel" id="admin-panel-per-user" style="display:none">
+      <div class="admin-panel is-hidden" id="admin-panel-per-user">
         <div class="panel-block">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px">
             <div>
@@ -764,7 +539,7 @@
         </div>
       </div>
 
-      <div class="admin-panel" id="admin-panel-users" style="display:none">
+      <div class="admin-panel is-hidden" id="admin-panel-users">
         <div class="panel-block">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;flex-wrap:wrap">
             <h3 style="margin:0">Comptes utilisateurs</h3>
@@ -792,7 +567,7 @@
 
       <!-- Panel RGPD KO supprimé (simplifié selon nouvelle structure) -->
 
-      <div class="admin-panel" id="admin-panel-registre" style="display:none">
+      <div class="admin-panel is-hidden" id="admin-panel-registre">
 
         <!-- Sous-navigation RGPD -->
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--border,#e5e7eb);padding-bottom:12px">
@@ -833,23 +608,23 @@
         </div>
 
         <!-- Sous-panel : Journal RGPD -->
-        <div id="rgpd-panel-journal-rgpd" style="display:none">
+        <div id="rgpd-panel-journal-rgpd" class="is-hidden">
           <div id="journal-rgpd-container"><p class="empty" style="padding:20px">Chargement du journal…</p></div>
         </div>
 
         <!-- Sous-panel : Demandes d'exercice des droits -->
-        <div id="rgpd-panel-demandes-droits" style="display:none">
+        <div id="rgpd-panel-demandes-droits" class="is-hidden">
           <div id="demandes-droits-container"></div>
         </div>
 
         <!-- Sous-panel : Rapports de conformité -->
-        <div id="rgpd-panel-rapports-conformite" style="display:none">
+        <div id="rgpd-panel-rapports-conformite" class="is-hidden">
           <div id="rapports-conformite-container"></div>
         </div>
 
       </div>
 
-      <div class="admin-panel" id="admin-panel-securite" style="display:none">
+      <div class="admin-panel is-hidden" id="admin-panel-securite">
         <div class="panel-block">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px">
             <div>
@@ -875,7 +650,7 @@
       </div>
 
       <!-- ── PANEL RÉGLAGES ─────────────────────────────── -->
-      <div class="admin-panel" id="admin-panel-archives" style="display:none">
+      <div class="admin-panel is-hidden" id="admin-panel-archives">
         <div class="panel-block">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
             <div>
@@ -889,7 +664,7 @@
         </div>
       </div>
 
-      <div class="admin-panel" id="admin-panel-reglages" style="display:none">
+      <div class="admin-panel is-hidden" id="admin-panel-reglages">
         <div class="panel-block">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
             <div>
@@ -1034,7 +809,7 @@
       <input type="checkbox" id="f-dpa-signe" style="width:16px;height:16px;accent-color:var(--gold)">
       <label for="f-dpa-signe" style="font-size:.85rem;color:var(--txt2);cursor:pointer">DPA / accord sous-traitant signé</label>
     </div>
-    <div id="fournisseur-modal-error" class="error-msg" style="display:none"></div>
+    <div id="fournisseur-modal-error" class="error-msg is-hidden"></div>
     <div class="modal-footer">
       <button class="btn btn-out" onclick="$('#fournisseur-modal').classList.remove('show')">Annuler</button>
       <button class="btn btn-gold" onclick="saveFournisseur()">Enregistrer</button>
@@ -1098,12 +873,12 @@
     </div>
     <div class="field"><label>Notes</label><textarea id="c-notes"></textarea></div>
 
-    <p class="error" id="c-rgpd-locked-msg" style="display:none">🔒 Fiche verrouillée (RGPD KO) — coordonnées effacées, champs non modifiables.</p>
-    <p class="note" id="c-readonly-msg" style="display:none;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);color:var(--gold);border-radius:10px;padding:10px 14px;font-size:.85rem;margin:10px 0">🔒 Cette fiche appartient à <b id="c-owner-name">—</b>. Seul son propriétaire ou un super-administrateur peut la modifier.</p>
+    <p class="error is-hidden" id="c-rgpd-locked-msg">🔒 Fiche verrouillée (RGPD KO) — coordonnées effacées, champs non modifiables.</p>
+    <p class="note" id="c-readonly-msg" class="is-hidden">🔒 Cette fiche appartient à <b id="c-owner-name">—</b>. Seul son propriétaire ou un super-administrateur peut la modifier.</p>
     <div class="modal-actions">
-      <button class="btn btn-danger" id="contact-delete-btn" style="display:none;margin-right:auto">Supprimer</button>
-      <button class="btn btn-out" id="contact-transfer-btn" style="display:none">🔄 Transférer client</button>
-      <button class="btn btn-out" id="contact-rdv-btn" style="display:none">📅 Programmer un RDV</button>
+      <button class="btn btn-danger" id="contact-delete-btn" class="is-hidden" style="margin-right:auto">Supprimer</button>
+      <button class="btn btn-out is-hidden" id="contact-transfer-btn">🔄 Transférer client</button>
+      <button class="btn btn-out is-hidden" id="contact-rdv-btn">📅 Programmer un RDV</button>
       <button class="btn btn-out" id="contact-cancel-btn">Annuler</button>
       <button class="btn btn-pri" id="contact-save-btn">Enregistrer</button>
     </div>
@@ -1112,7 +887,7 @@
     <div id="contact-dpo-section"></div>
 
     <!-- ── Onglet Suivi client ── -->
-    <div id="contact-suivi-section" style="display:none;margin-top:24px;border-top:1px solid var(--line);padding-top:20px">
+    <div id="contact-suivi-section" class="is-hidden">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <h4 style="margin:0;font-size:1rem">📋 Suivi des échanges</h4>
         <button class="btn btn-pri btn-sm" id="btn-add-interaction">+ Ajouter un échange</button>
@@ -1151,7 +926,7 @@
     <div class="field"><label>Compte-rendu</label><textarea id="int-contenu" rows="4" placeholder="Résumé de l'échange…"></textarea></div>
     <div class="field"><label>Suite à donner</label><input type="text" id="int-suite" placeholder="Ex : Rappeler dans 15 jours"></div>
     <div class="modal-actions">
-      <button class="btn btn-danger" id="int-delete-btn" style="display:none;margin-right:auto">Supprimer</button>
+      <button class="btn btn-danger" id="int-delete-btn" class="is-hidden" style="margin-right:auto">Supprimer</button>
       <button class="btn btn-out" id="int-cancel-btn">Annuler</button>
       <button class="btn btn-pri" id="int-save-btn">Enregistrer</button>
     </div>
@@ -1199,7 +974,7 @@
               <option value="__autre__">✏️ Autre / Personnalisé</option>
             </select>
           </div>
-          <input id="ct-type-custom" type="text" placeholder="Saisir le type de prestation…" style="display:none;margin-top:6px;width:100%" oninput="updateContractTypeIcon(this)">
+          <input id="ct-type-custom" type="text" placeholder="Saisir le type de prestation…" class="is-hidden" style="margin-top:6px;width:100%" oninput="updateContractTypeIcon(this)">
         </div>
         <div class="field"><label>Formule</label>
           <select id="ct-formule-select"></select>
@@ -1219,7 +994,7 @@
       <div class="field-row">
         <div class="field">
           <label class="checkbox-label"><input type="checkbox" id="ct-remise-check" onchange="toggleRemise()"> Remise accordée</label>
-          <input id="ct-remise" type="number" step="0.01" min="0" placeholder="Montant de la remise (€ HT)" style="margin-top:8px;display:none" oninput="updateNetDisplay()">
+          <input id="ct-remise" type="number" step="0.01" min="0" placeholder="Montant de la remise (€ HT)" class="is-hidden" style="margin-top:8px" oninput="updateNetDisplay()">
         </div>
         <div class="field">
           <label>💶 Montant net HT</label>
@@ -1235,17 +1010,17 @@
       <input id="ct-statut-display" type="text" readonly style="font-weight:600">
       <input id="ct-statut" type="hidden">
     </div>
-    <div class="field admin-only" id="ct-resilier-wrap" style="display:none">
+    <div class="field admin-only is-hidden" id="ct-resilier-wrap">
       <label class="checkbox-label"><input type="checkbox" id="ct-resilier"> Résilier ce contrat (admin uniquement)</label>
     </div>
     <div class="field"><label>Notes</label><textarea id="ct-notes" placeholder="Notes complémentaires (optionnel)"></textarea></div>
     <div class="modal-actions">
-      <button class="btn btn-danger" id="contract-delete-btn" style="display:none;margin-right:auto">Supprimer</button>
-      <button class="btn btn-out" id="contract-pdf-btn" style="display:none">📄 PDF</button>
-      <button class="btn btn-pri" id="contract-send-btn" style="display:none">📧 Envoyer au client</button>
-      <button class="btn btn-danger" id="contract-resilier-btn" style="display:none">🚫 Résilier l'abonnement</button>
-      <button class="btn btn-danger" id="contract-demander-resiliation-btn" style="display:none">⚠️ Demander une résiliation</button>
-      <button class="btn btn-out" id="contract-portal-btn" style="display:none">🔗 Portail client</button>
+      <button class="btn btn-danger" id="contract-delete-btn" class="is-hidden" style="margin-right:auto">Supprimer</button>
+      <button class="btn btn-out is-hidden" id="contract-pdf-btn">📄 PDF</button>
+      <button class="btn btn-pri is-hidden" id="contract-send-btn">📧 Envoyer au client</button>
+      <button class="btn btn-danger is-hidden" id="contract-resilier-btn">🚫 Résilier l'abonnement</button>
+      <button class="btn btn-danger is-hidden" id="contract-demander-resiliation-btn">⚠️ Demander une résiliation</button>
+      <button class="btn btn-out is-hidden" id="contract-portal-btn">🔗 Portail client</button>
       <button class="btn btn-out" id="contract-cancel-btn">Annuler</button>
       <button class="btn btn-pri" id="contract-save-btn">Enregistrer</button>
     </div>
@@ -1290,7 +1065,7 @@
       <div class="field"><label>Contact lié</label><select id="t-contact"><option value="">— Aucun —</option></select></div>
       <div class="field"><label>Contrat lié</label><select id="t-contract"><option value="">— Aucun —</option></select></div>
     </div>
-    <div id="t-rdv-fields" style="display:none">
+    <div id="t-rdv-fields" class="is-hidden">
       <div class="field-row">
         <div class="field"><label>Date du RDV</label><input id="t-rdv-date" type="date"></div>
         <div class="field"><label>Heure du RDV</label><input id="t-rdv-heure" type="time"></div>
@@ -1310,7 +1085,7 @@
       <div class="field"><label>Assigné à</label><select id="t-assigne"><option value="">— Non assigné —</option></select></div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-danger" id="task-delete-btn" style="display:none;margin-right:auto">Supprimer</button>
+      <button class="btn btn-danger" id="task-delete-btn" class="is-hidden" style="margin-right:auto">Supprimer</button>
       <button class="btn btn-out" id="task-cancel-btn">Annuler</button>
       <button class="btn btn-pri" id="task-save-btn">Enregistrer</button>
     </div>
@@ -1352,11 +1127,11 @@
     </div>
     <p class="mut" style="font-size:.74rem;margin-top:6px">* Champs obligatoires.</p>
     <p class="error" id="profile-error"></p>
-    <div id="clause-signed-block" style="display:none;margin-top:8px;padding:10px 12px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:.8rem;color:var(--ok);display:flex;align-items:center;justify-content:space-between;gap:10px">
+    <div id="clause-signed-block" class="is-hidden">
       <span>✅ Clause de confidentialité signée</span>
       <a id="clause-signed-link" href="#" target="_blank" rel="noopener noreferrer" style="font-size:.76rem;color:var(--ok);font-weight:600;text-decoration:underline">Voir ma clause →</a>
     </div>
-    <div id="clause-unsigned-block" style="display:none;padding:10px 12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;font-size:.8rem;color:var(--gold);margin-top:8px">
+    <div id="clause-unsigned-block" class="is-hidden">
       ⚠️ Clause de confidentialité non signée —
       <a href="/clause.html" style="color:var(--gold);font-weight:600;text-decoration:underline">Signer maintenant →</a>
     </div>
@@ -1377,7 +1152,7 @@
     <div class="field"><label>Nouveau mot de passe</label><input id="profile-new-password" type="password" autocomplete="new-password" placeholder="Au moins 6 caractères"></div>
     <div class="field"><label>Confirmer le mot de passe</label><input id="profile-new-password-2" type="password" autocomplete="new-password"></div>
     <p class="error" id="password-error"></p>
-    <p class="success" id="password-success" style="display:none">Mot de passe mis à jour avec succès.</p>
+    <p class="success is-hidden" id="password-success">Mot de passe mis à jour avec succès.</p>
     <div class="modal-actions">
       <button class="btn btn-out" id="password-save-btn">Mettre à jour le mot de passe</button>
     </div>
@@ -1389,7 +1164,7 @@
     <p id="totp-status-label" class="mut" style="font-size:.85rem"></p>
     <div class="modal-actions">
       <button class="btn btn-out" id="totp-enroll-btn">Activer la 2FA (QR code)</button>
-      <button class="btn btn-danger" id="totp-disable-btn" style="display:none">Désactiver la 2FA</button>
+      <button class="btn btn-danger is-hidden" id="totp-disable-btn">Désactiver la 2FA</button>
     </div>
 
   </div>
@@ -1494,7 +1269,7 @@
         </button>
       </div>
     </div>
-    <div class="info-block warn" id="mdp-warn" style="display:none;margin-bottom:16px;font-size:.82rem">
+    <div class="info-block warn is-hidden" id="mdp-warn">
       ⚠️ Ce mot de passe ne sera affiché qu'une seule fois. Notez-le ou envoyez-le immédiatement.
     </div>
     <p class="error" id="mdp-error"></p>
@@ -1560,7 +1335,7 @@
     <div class="field" style="margin-bottom:12px">
       <label>Nouveau mot de passe *</label>
       <input id="cp-password" type="password" placeholder="Mot de passe" autocomplete="new-password">
-      <div id="cp-strength" style="margin-top:6px;font-size:.78rem;display:none">
+      <div id="cp-strength" class="is-hidden">
         <div style="display:flex;gap:4px;margin-bottom:4px">
           <div class="str-bar" id="str-1" style="flex:1;height:4px;border-radius:2px;background:var(--line)"></div>
           <div class="str-bar" id="str-2" style="flex:1;height:4px;border-radius:2px;background:var(--line)"></div>
@@ -1574,7 +1349,7 @@
     <div class="field" style="margin-bottom:20px">
       <label>Confirmer le mot de passe *</label>
       <input id="cp-password2" type="password" placeholder="Confirmer" autocomplete="new-password">
-      <span class="error" id="cp-match-error" style="display:none;font-size:.78rem;color:var(--alert)">Les mots de passe ne correspondent pas.</span>
+      <span class="error is-hidden" id="cp-match-error">Les mots de passe ne correspondent pas.</span>
     </div>
 
     <div class="modal-actions">
@@ -1600,10 +1375,10 @@
 </div>
 
 <!-- ================= BANNER RENOUVELLEMENT MOT DE PASSE (admin) ================= -->
-<div id="password-renewal-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:500;background:rgba(245,158,11,.15);border-bottom:2px solid var(--gold);padding:10px 20px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+<div id="password-renewal-banner" class="is-hidden">
   <span style="font-size:.85rem;color:var(--gold)">🔑 <strong>Renouvellement de mot de passe recommandé</strong> — Votre mot de passe a plus de 45 jours. Mettez-le à jour pour maintenir la sécurité de votre compte.</span>
   <div style="display:flex;gap:8px">
-    <button class="btn btn-out" style="padding:6px 12px;font-size:.78rem" onclick="document.getElementById('password-renewal-banner').style.display='none'">Ignorer</button>
+    <button class="btn btn-out" onclick="document.getElementById('password-renewal-banner').classList.add('is-hidden')">Ignorer</button>
     <button class="btn btn-pri" style="padding:6px 12px;font-size:.78rem" onclick="openChangePasswordModal(false)">Changer maintenant</button>
   </div>
 </div>
@@ -1694,7 +1469,7 @@
     <div class="field"><label>Nouveau propriétaire</label>
       <select id="transfer-target"></select>
     </div>
-    <p class="error" id="transfer-error" style="display:none"></p>
+    <p class="error is-hidden" id="transfer-error"></p>
     <div class="modal-actions">
       <button class="btn btn-out" id="transfer-cancel-btn">Annuler</button>
       <button class="btn btn-pri" id="transfer-confirm-btn">Transférer</button>
@@ -1710,7 +1485,7 @@
     <div id="totp-qr" style="display:flex;justify-content:center;padding:18px 0"></div>
     <div class="field"><label>Clé secrète (en secours, à conserver précieusement)</label><input id="totp-secret" type="text" readonly></div>
     <div class="field"><label>Saisissez le code à 6 chiffres affiché par votre application</label><input id="totp-code" type="text" maxlength="6" autocomplete="one-time-code" placeholder="123456" style="font-family:var(--ff-mono);font-size:1.3rem;letter-spacing:.3em;text-align:center"></div>
-    <p class="error" id="totp-enroll-error" style="display:none"></p>
+    <p class="error is-hidden" id="totp-enroll-error"></p>
     <div class="modal-actions">
       <button class="btn btn-out" id="totp-enroll-cancel">Annuler</button>
       <button class="btn btn-pri" id="totp-enroll-verify">Activer</button>
@@ -1724,7 +1499,7 @@
     <h3>Code de vérification</h3>
     <p class="mut">Saisissez le code à 6 chiffres affiché par votre application d'authentification.</p>
     <div class="field"><input id="totp-challenge-code" type="text" maxlength="6" autocomplete="one-time-code" placeholder="123456" style="font-family:var(--ff-mono);font-size:1.6rem;letter-spacing:.4em;text-align:center"></div>
-    <p class="error" id="totp-challenge-error" style="display:none"></p>
+    <p class="error is-hidden" id="totp-challenge-error"></p>
     <div class="modal-actions">
       <button class="btn btn-out" id="totp-challenge-cancel">Annuler</button>
       <button class="btn btn-pri" id="totp-challenge-verify">Vérifier</button>
@@ -1791,6 +1566,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
 <script src="assets/config.js"></script>
+<script src="assets/js/utils/helpers.js"></script>
+<script src="assets/js/composants/gauge.js"></script>
+<script src="assets/js/composants/toast.js"></script>
+<script src="assets/js/composants/session-banner.js"></script>
 <script src="assets/contacts/contacts.js"></script>
 <script src="assets/contacts/contacts.service.js"></script>
 <script src="assets/contacts/contacts-ui.js"></script>
@@ -1819,34 +1598,12 @@
 <!-- ============================================================ -->
 <!-- CENTRE D'AIDE — Panneau latéral + Tutoriel                   -->
 <!-- ============================================================ -->
-<style>
-/* Onglets du panneau d'aide */
-.help-tab {
-  padding: 10px 14px;
-  font-size: .78rem;
-  font-weight: 600;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: #64748b;
-  border-bottom: 2px solid transparent;
-  white-space: nowrap;
-  transition: color .15s, border-color .15s;
-}
-.help-tab:hover       { color: #334155; }
-.help-tab-active      { color: #3b82f6 !important; border-bottom-color: #3b82f6 !important; }
-
-/* Highlight tutoriel */
-.tuto-highlight-ring {
-  outline: 3px solid #3b82f6 !important;
-  outline-offset: 4px !important;
-}
-</style>
+<!-- styles du centre d'aide → assets/css/composants/help.css -->
 
 <!-- Backdrop -->
 <div id="help-backdrop"
      onclick="closeHelp()"
-     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1100;backdrop-filter:blur(2px)"></div>
+     class="is-hidden"></div>
 
 <!-- Panneau latéral -->
 <aside id="help-panel"
@@ -1868,7 +1625,7 @@
     <button class="help-tab help-tab-active" data-help-tab="contextual" onclick="switchHelpTab('contextual')">📌 Aide</button>
     <button class="help-tab" data-help-tab="docs"        onclick="switchHelpTab('docs')">📚 Docs</button>
     <button class="help-tab" data-help-tab="faq"         onclick="switchHelpTab('faq')">💬 FAQ</button>
-    <button class="help-tab admin-only" data-help-tab="rgpd" onclick="switchHelpTab('rgpd')" style="display:none">🔐 RGPD</button>
+    <button class="help-tab admin-only is-hidden" data-help-tab="rgpd" onclick="switchHelpTab('rgpd')">🔐 RGPD</button>
     <button class="help-tab" data-help-tab="search"      onclick="switchHelpTab('search')">🔍 Recherche</button>
   </div>
 
@@ -1892,10 +1649,10 @@
 <!-- Modale Demande d'assistance -->
 <div id="assistance-backdrop"
      onclick="closeAssistanceModal()"
-     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1300;backdrop-filter:blur(2px)"></div>
+     class="is-hidden"></div>
 
 <div id="assistance-modal"
-     style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1301;width:480px;max-width:calc(100vw - 32px);background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden">
+     class="is-hidden">
 
   <!-- Header modale -->
   <div style="background:#0a1628;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
@@ -1966,11 +1723,11 @@
 
 <!-- Tutoriel — Overlay sombre -->
 <div id="tuto-overlay"
-     style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.4);pointer-events:none"></div>
+     class="is-hidden"></div>
 
 <!-- Tutoriel — Bulle -->
 <div id="tuto-bubble"
-     style="display:none;position:fixed;z-index:1201;width:320px;background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:20px 22px">
+     class="is-hidden">
   <div id="tuto-step-label"
        style="font-size:.7rem;color:#64748b;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px"></div>
   <div id="tuto-title"

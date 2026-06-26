@@ -1,0 +1,25 @@
+/* =========================================================
+   S@FE CRM — Centre d'aide (panneau latéral + tutoriel)
+   ========================================================= */
+
+/* ── Onglets du panneau d'aide ── */
+.help-tab {
+  padding: 10px 14px;
+  font-size: .78rem;
+  font-weight: 600;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #64748b;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s;
+}
+.help-tab:hover    { color: #334155; }
+.help-tab-active   { color: #3b82f6 !important; border-bottom-color: #3b82f6 !important; }
+
+/* ── Highlight tutoriel interactif ── */
+.tuto-highlight-ring {
+  outline: 3px solid #3b82f6 !important;
+  outline-offset: 4px !important;
+}

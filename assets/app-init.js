@@ -30,8 +30,8 @@ if ('serviceWorker' in navigator) {
 function showUpdateBanner() {
   const banner = document.createElement('div');
   banner.id = 'pwa-update-banner';
-  banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:#142240;border:1px solid rgba(245,158,11,.4);border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.4);font-family:sans-serif;font-size:.85rem;color:#cbd5e1';
-  banner.innerHTML = '<span>🔄 Mise à jour S@FE CRM disponible</span><button onclick="appliquerMiseAJour()" style="background:#f59e0b;color:#0a1628;border:none;border-radius:7px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:.82rem">Mettre à jour</button><button onclick="this.parentElement.remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1rem">✕</button>';
+  banner.className = 'pwa-update-banner';
+  banner.innerHTML = '<span>🔄 Mise à jour S@FE CRM disponible</span><button class="pwa-btn-apply" onclick="appliquerMiseAJour()">Mettre à jour</button><button class="pwa-btn-close" onclick="this.closest(\'.pwa-update-banner\').remove()">✕</button>';
   document.body.appendChild(banner);
 }
 
@@ -56,8 +56,17 @@ function showInstallBanner() {
   if (document.getElementById('pwa-install-banner')) return;
   const banner = document.createElement('div');
   banner.id = 'pwa-install-banner';
-  banner.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#142240;border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,.4);max-width:280px;font-family:sans-serif';
-  banner.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><img src="/icons/icon-72.png" style="width:36px;height:36px;border-radius:8px"><div><div style="font-size:.88rem;font-weight:700;color:#fff">S@FE CRM</div><div style="font-size:.75rem;color:#94a3b8">Installer sur cet appareil</div></div><button onclick="document.getElementById(\'pwa-install-banner\').remove();deferredPrompt=null" style="background:none;border:none;color:#94a3b8;cursor:pointer;margin-left:auto;font-size:1rem">✕</button></div><button onclick="installerPWA()" style="width:100%;background:#f59e0b;color:#0a1628;border:none;border-radius:8px;padding:8px;font-weight:700;cursor:pointer;font-size:.85rem">📲 Installer l\'application</button>';
+  banner.className = 'pwa-install-banner';
+  banner.innerHTML = `
+    <div class="pwa-install-head">
+      <img src="/icons/icon-72.png" class="pwa-install-icon" alt="S@FE CRM">
+      <div>
+        <div class="pwa-install-name">S@FE CRM</div>
+        <div class="pwa-install-sub">Installer sur cet appareil</div>
+      </div>
+      <button class="pwa-btn-close" onclick="document.getElementById('pwa-install-banner').remove();deferredPrompt=null">✕</button>
+    </div>
+    <button class="pwa-btn-install" onclick="installerPWA()">📲 Installer l'application</button>`;
   document.body.appendChild(banner);
 }
 
