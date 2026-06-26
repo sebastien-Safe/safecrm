@@ -603,6 +603,19 @@ async function activer() {
   await supa.from('safe_connectors_log').insert({
     connector_key:currentKey, action:'activated', done_by:user?.id, notes:notes||null
   });
+
+  // Persister la clé complète dans safe_connector_secrets (via edge function sécurisée)
+  if (apiKey) {
+    const { data: { session } } = await supa.auth.getSession();
+    if (session) {
+      fetch(`${SUPA_URL}/functions/v1/connector-secret-store`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service_key: currentKey, api_key: apiKey }),
+      }).catch(() => {}); // fire-and-forget
+    }
+  }
+
   if (window.invalidateConnectorCache) invalidateConnectorCache(currentKey);
   toast('Connecteur activé ✅');
   closeModal(); await reload();

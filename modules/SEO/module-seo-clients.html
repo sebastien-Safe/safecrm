@@ -57,6 +57,10 @@
             onclick="switchSubView('assistant',this)">
           🤖 Assistant IA
         </li>
+        <li class="subnav-item" data-view="pagespeed"
+            onclick="switchSubView('pagespeed',this)">
+          ⚡ Performance
+        </li>
       </ul>
     </nav>
 
@@ -108,6 +112,15 @@
         <div id="assistant-content"></div>
       </section>
 
+      <!-- PERFORMANCE PAGESPEED -->
+      <section class="seo-view" id="view-pagespeed">
+        <div class="view-header">
+          <h2 class="view-title">⚡ Score de performance</h2>
+          <p class="view-subtitle">Analyse Lighthouse — Core Web Vitals, vitesse, accessibilité</p>
+        </div>
+        <div id="pagespeed-content"></div>
+      </section>
+
     </main>
   </div><!-- /seo-body -->
 </div><!-- /seo-layout -->
@@ -137,6 +150,7 @@
 <script src="seo-audit.js"></script>
 <script src="seo-rapport.js"></script>
 <script src="seo-assistant.js"></script>
+<script src="seo-pagespeed.js"></script>
 <script>
   function switchSubView(view, el) {
     document.querySelectorAll('.subnav-item').forEach(i => i.classList.remove('active'));
@@ -146,6 +160,7 @@
     else if (view === 'audit')  loadSeoAudit();
     else if (view === 'rapport') loadRapport();
     else if (view === 'assistant') loadSeoAssistant();
+    else if (view === 'pagespeed') loadPagespeed();
   }
 
   function filterSidebar(q) {

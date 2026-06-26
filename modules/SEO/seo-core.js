@@ -159,9 +159,10 @@ function selectDomaine(d) {
   }
   // Recharger la vue active
   const activeView = document.querySelector('.subnav-item.active')?.dataset.view;
-  if (activeView === 'mots-cles') loadMotsCles();
-  else if (activeView === 'audit') loadSeoAudit();
+  if (activeView === 'mots-cles')   loadMotsCles();
+  else if (activeView === 'audit')  loadSeoAudit();
   else if (activeView === 'rapport') loadRapport();
+  else if (activeView === 'pagespeed') loadPagespeed();
   else switchSubView('mots-cles', document.querySelector('.subnav-item[data-view="mots-cles"]'));
 }
 

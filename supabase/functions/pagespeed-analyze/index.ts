@@ -106,17 +106,25 @@ Deno.serve(async (req) => {
     return json(simulatedResult);
   }
 
-  // ── Appel API Google PageSpeed Insights ────────────────────────────────────
-  if (!PS_KEY) {
-    return json({
-      error: "Secret PAGESPEED_API_KEY manquant — à configurer dans Supabase Dashboard → Edge Functions → Secrets",
-    }, 500);
+  // ── Résolution de la clé API ───────────────────────────────────────────────
+  // Priorité : 1. secret d'env PAGESPEED_API_KEY, 2. safe_connector_secrets, 3. appel sans clé
+  let resolvedKey = PS_KEY ?? null;
+
+  if (!resolvedKey) {
+    const { data: secret } = await sbSrv
+      .from("safe_connector_secrets")
+      .select("api_key")
+      .eq("service_key", "pagespeed")
+      .maybeSingle();
+    resolvedKey = secret?.api_key ?? null;
   }
+
+  // Sans clé : appel quand même (quota gratuit 25k req/jour)
 
   const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed` +
     `?url=${encodeURIComponent(url)}` +
     `&strategy=${strategy}` +
-    `&key=${PS_KEY}` +
+    (resolvedKey ? `&key=${resolvedKey}` : '') +
     `&category=performance`;
 
   let psData: Record<string, unknown>;
