@@ -2,6 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss://*.supabase.co blob:;">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>S@FE — Module DPO</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.min.js" integrity="sha384-JWEyvHh+lRf0sN/WWY+QTQwX+CyWqmNg4tkc8GQzAMEtR2wGNrCJlvnu1lHD1kDm" crossorigin="anonymous"></script>
@@ -217,7 +220,7 @@ body{font-family:var(--ff-body);background:var(--bg-page);color:var(--tx);font-s
   <button id="mod-burger-btn" aria-label="Menu" onclick="toggleModSidebar()"><span></span><span></span><span></span></button>
   <div class="topbar-brand">S<b>@</b>FE<small>DPO</small></div>
   <span class="topbar-badge">📋 MODULE DPO</span>
-  <a href="/prospection-terrain/index.html" class="topbar-back">◀ Prospection</a>
+  <a href="/" class="topbar-back">◀ CRM</a>
 </div>
 
 <div id="mod-mob-overlay" onclick="closeModSidebar()"></div>
@@ -254,12 +257,28 @@ body{font-family:var(--ff-body);background:var(--bg-page);color:var(--tx);font-s
       </button>
     </div>
     <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Conformité étendue</div>
+      <button class="sidebar-item" onclick="showView('notices')" id="snav-notices">
+        <span class="ico">📄</span> Notices (Art.13/14)
+        <span class="badge-count" id="count-notices">0</span>
+      </button>
+      <button class="sidebar-item" onclick="showView('soustraitants')" id="snav-soustraitants">
+        <span class="ico">🤝</span> Sous-traitants (Art.28)
+        <span class="badge-count" id="count-sst">0</span>
+      </button>
+      <button class="sidebar-item" onclick="showView('transferts')" id="snav-transferts">
+        <span class="ico">🌍</span> Transferts hors UE (Art.44-49)
+        <span class="badge-count" id="count-trf">0</span>
+      </button>
+    </div>
+    <div class="sidebar-divider"></div>
     <!-- Deadlines actives -->
     <div id="sidebar-deadlines" style="padding:0 14px"></div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-section sidebar-back">
-      <button class="sidebar-item" onclick="window.location.href='/prospection-terrain/index.html'">
-        <span class="ico">◀</span> Prospection
+      <button class="sidebar-item" onclick="window.location.href='/'">
+        <span class="ico">◀</span> CRM
       </button>
     </div>
   </nav>
@@ -384,6 +403,36 @@ body{font-family:var(--ff-body);background:var(--bg-page);color:var(--tx);font-s
       </div>
     </div>
 
+    <!-- ════════ TRANSFERTS HORS UE ART.44-49 ════════ -->
+    <div id="view-transferts" class="view">
+      <div class="page-title">🌍 Transferts hors UE/EEE (Art.44-49)</div>
+      <div class="page-subtitle">Art.45 adéquation · Art.46 CCT/BCR · Art.49 dérogations · RGPD</div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="btn btn-pri" onclick="openTransfertModal()">+ Nouveau transfert</button>
+      </div>
+      <div id="trf-content"><div class="loader"><div class="spinner"></div>Chargement…</div></div>
+    </div>
+
+    <!-- ════════ SOUS-TRAITANTS ART.28 ════════ -->
+    <div id="view-soustraitants" class="view">
+      <div class="page-title">🤝 Sous-traitants &amp; DPA (Art.28)</div>
+      <div class="page-subtitle">Art.28 RGPD · Contrats de sous-traitance · Registre des DPA</div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="btn btn-pri" onclick="openSSTModal()">+ Nouveau sous-traitant</button>
+      </div>
+      <div id="sst-content"><div class="loader"><div class="spinner"></div>Chargement…</div></div>
+    </div>
+
+    <!-- ════════ NOTICES ART.13/14 ════════ -->
+    <div id="view-notices" class="view">
+      <div class="page-title">📄 Notices d'information (Art.13/14)</div>
+      <div class="page-subtitle">Art.13 collecte directe · Art.14 collecte indirecte · RGPD</div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="btn btn-pri" onclick="openNoticeModal()">+ Nouvelle notice</button>
+      </div>
+      <div id="notices-content"><div class="loader"><div class="spinner"></div>Chargement…</div></div>
+    </div>
+
   </main>
 </div>
 
@@ -401,6 +450,9 @@ body{font-family:var(--ff-body);background:var(--bg-page);color:var(--tx);font-s
   </div>
 </div>
 
+<script src="dpo-notices.js"></script>
+<script src="dpo-soustraitants.js"></script>
+<script src="dpo-transferts.js"></script>
 <script>
 /* ═══════════════ CONFIG ═══════════════════════════════════ */
 const SUPA_URL = 'https://qdjmzietysukediqkebg.supabase.co';
@@ -420,6 +472,9 @@ function showView(v){
   if(v==='registre') loadRegistre();
   if(v==='aipd') loadAIPD();
   if(v==='dashboard') loadDashboard();
+  if(v==='notices') loadNotices();
+  if(v==='soustraitants') loadSoustraitants();
+  if(v==='transferts') loadTransferts();
 }
 function switchInner(section,tab){
   document.querySelectorAll(`#view-${section} .inner-view`).forEach(el=>el.classList.remove('active'));
@@ -499,13 +554,16 @@ async function loadSidebarDeadlines(){
 }
 
 async function updateSidebarCounts(){
-  const[{count:cd},{count:cv},{count:cr},{count:ca}]=await Promise.all([
+  const[{count:cd},{count:cv},{count:cr},{count:ca},{count:cn},{count:csst},{count:ctrf}]=await Promise.all([
     supa.from('dpo_der').select('*',{count:'exact',head:true}).not('statut','in','("Clôturée","Archivée")'),
     supa.from('dpo_violations').select('*',{count:'exact',head:true}).not('statut','in','("Clôturée","Archivée")'),
     supa.from('dpo_traitements').select('*',{count:'exact',head:true}).eq('statut','Actif'),
     supa.from('dpo_aipd').select('*',{count:'exact',head:true}).not('statut','in','("Approuvée","Archivée")'),
+    supa.from('dpo_notices').select('*',{count:'exact',head:true}),
+    supa.from('dpo_soustraitants').select('*',{count:'exact',head:true}).neq('statut_dpa','Résilié'),
+    supa.from('dpo_transferts').select('*',{count:'exact',head:true}).neq('statut','Clôturé'),
   ]);
-  setCount('count-der',cd);setCount('count-viol',cv);setCount('count-reg',cr);setCount('count-aipd',ca);
+  setCount('count-der',cd);setCount('count-viol',cv);setCount('count-reg',cr);setCount('count-aipd',ca);setCount('count-notices',cn);setCount('count-sst',csst);setCount('count-trf',ctrf);
 }
 function setCount(id,n){const el=document.getElementById(id);if(el)el.textContent=n||0;}
 

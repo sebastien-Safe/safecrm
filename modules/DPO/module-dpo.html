@@ -2,6 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss://*.supabase.co blob:;">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>S@FE — Module DPO</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.min.js" integrity="sha384-JWEyvHh+lRf0sN/WWY+QTQwX+CyWqmNg4tkc8GQzAMEtR2wGNrCJlvnu1lHD1kDm" crossorigin="anonymous"></script>
@@ -217,7 +220,7 @@ body{font-family:var(--ff-body);background:var(--bg-page);color:var(--tx);font-s
   <button id="mod-burger-btn" aria-label="Menu" onclick="toggleModSidebar()"><span></span><span></span><span></span></button>
   <div class="topbar-brand">S<b>@</b>FE<small>DPO</small></div>
   <span class="topbar-badge">📋 MODULE DPO</span>
-  <a href="/prospection-terrain/index.html" class="topbar-back">◀ Prospection</a>
+  <a href="/" class="topbar-back">◀ CRM</a>
 </div>
 
 <div id="mod-mob-overlay" onclick="closeModSidebar()"></div>
@@ -258,8 +261,8 @@ body{font-family:var(--ff-body);background:var(--bg-page);color:var(--tx);font-s
     <div id="sidebar-deadlines" style="padding:0 14px"></div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-section sidebar-back">
-      <button class="sidebar-item" onclick="window.location.href='/prospection-terrain/index.html'">
-        <span class="ico">◀</span> Prospection
+      <button class="sidebar-item" onclick="window.location.href='/'">
+        <span class="ico">◀</span> CRM
       </button>
     </div>
   </nav>

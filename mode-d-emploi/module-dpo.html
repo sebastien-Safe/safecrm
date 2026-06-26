@@ -2,6 +2,9 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss://*.supabase.co blob:;">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mode d'emploi — Module RGPD / DPO — S@FE CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -583,6 +586,10 @@
     <a href="#registre">📁 Registre Art.30</a>
     <a href="#aipd">🔍 Analyses AIPD</a>
     <a href="#veille">📡 Veille & CNIL</a>
+    <div class="nav-section">Conformité étendue</div>
+    <a href="#notices">📄 Notices Art.13/14</a>
+    <a href="#soustraitants">🤝 Sous-traitants Art.28</a>
+    <a href="#transferts">🌍 Transferts hors UE</a>
     <div class="nav-section">Avancé</div>
     <a href="#ia">✦ IA intégrée</a>
     <a href="#delais">⏱ Délais légaux</a>
@@ -638,25 +645,18 @@
     <section id="acces">
       <h2>Accéder au module RGPD</h2>
 
-      <p>Le module DPO est accessible depuis le module <strong>Prospection</strong> de S@FE CRM.</p>
+      <p>Le module DPO est accessible depuis la <strong>sidebar principale</strong> de S@FE CRM.</p>
 
       <div class="steps">
         <div class="step">
           <div class="step-num">1</div>
           <div class="step-body">
-            <h3>Ouvrir la Prospection</h3>
-            <p>Depuis le menu principal de S@FE CRM, cliquez sur <strong>Prospection terrain</strong>.</p>
+            <h3>Ouvrir le module DPO</h3>
+            <p>Depuis le menu principal de S@FE CRM, cliquez sur <strong>⚖️ DPO</strong> dans la barre latérale gauche.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num">2</div>
-          <div class="step-body">
-            <h3>Accéder au module DPO</h3>
-            <p>Dans la barre de navigation, cliquez sur le bouton <strong>📋 DPO</strong>. Vous serez redirigé vers <code>modules/DPO/module-dpo.html</code>.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
           <div class="step-body">
             <h3>Naviguer dans les briques</h3>
             <p>La barre latérale gauche donne accès aux cinq briques du module : Droits DER, Violations, Registre, AIPD et Veille CNIL. Les compteurs en rouge indiquent les éléments nécessitant une attention immédiate.</p>
@@ -676,7 +676,7 @@
           <div class="ui-topbar">
             <div class="ui-brand">S<span style="color:var(--gold)">@</span>FE <small style="font-size:10px;letter-spacing:.15em;color:var(--muted)">DPO</small></div>
             <div class="ui-badge">📋 MODULE DPO</div>
-            <div class="ui-back-btn">◀ Prospection</div>
+            <div class="ui-back-btn">◀ CRM</div>
           </div>
           <div class="ui-shell">
             <div class="ui-sidebar">
@@ -1244,6 +1244,185 @@
       </div>
     </section>
 
+    <!-- ===== SECTION : NOTICES ART.13/14 ===== -->
+    <section id="notices">
+      <h2>Notices d'information (Art.13 &amp; Art.14)</h2>
+
+      <div class="section-intro">
+        <p>La brique <strong>Notices</strong> permet de générer et d'archiver les mentions d'information obligatoires à fournir aux personnes dont les données sont collectées. Elle couvre deux situations : la collecte <strong>directe</strong> (Art.13 — formulaire, téléphone) et la collecte <strong>indirecte</strong> (Art.14 — achat de fichier, partenaire).</p>
+      </div>
+
+      <h3>Différence Art.13 / Art.14</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin:16px 0">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px">Article</th>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px">Situation</th>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px">Champ spécifique</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px"><span class="art-pill">Art.13</span></td>
+            <td style="padding:9px 12px;color:var(--text)">Collecte directe auprès de la personne</td>
+            <td style="padding:9px 12px;color:var(--muted)">Information fournie au moment de la collecte</td>
+          </tr>
+          <tr>
+            <td style="padding:9px 12px"><span class="art-pill">Art.14</span></td>
+            <td style="padding:9px 12px;color:var(--text)">Collecte indirecte (tiers, fichier, partenaire)</td>
+            <td style="padding:9px 12px;color:var(--muted)">+ <strong>Source des données</strong> à préciser obligatoirement</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Contenu d'une notice générée</h3>
+      <p>Le module génère automatiquement la notice avec tous les éléments réglementaires obligatoires :</p>
+      <ul>
+        <li>Identité et coordonnées du responsable du traitement</li>
+        <li>Contact du DPO (si désigné)</li>
+        <li>Finalités et base légale du traitement (Art.6, avec précision si intérêt légitime Art.6.1.f)</li>
+        <li>Catégories de données collectées</li>
+        <li>Source des données (Art.14 uniquement)</li>
+        <li>Destinataires des données</li>
+        <li>Durée de conservation</li>
+        <li>Transferts hors UE/EEE (avec renvoi aux garanties Art.46)</li>
+        <li>Droits des personnes (Art.15 à 21)</li>
+        <li>Droit de retrait du consentement</li>
+        <li>Droit d'introduire une réclamation auprès de la CNIL</li>
+        <li>Décision automatisée / profilage (Art.22) si applicable</li>
+        <li>Caractère obligatoire ou contractuel de la collecte</li>
+      </ul>
+
+      <h3>Créer une notice</h3>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h3>Choisir le type de collecte</h3>
+            <p>Sélectionnez <strong>Collecte directe (Art.13)</strong> ou <strong>Collecte indirecte (Art.14)</strong>. Le champ <em>Source des données</em> apparaît automatiquement pour l'Art.14.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h3>Remplir les champs obligatoires</h3>
+            <p>Nom du traitement, responsable du traitement, finalités (une par ligne), base légale, catégories de données, durée de conservation.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h3>Générer et exporter</h3>
+            <p>Cliquez sur <strong>Générer et enregistrer</strong>. La notice est sauvegardée en base. Depuis la liste, utilisez <strong>Aperçu</strong>, <strong>Copier HTML</strong> (pour l'intégrer dans un formulaire web) ou <strong>PDF</strong> (pour l'archiver).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <div class="callout-icon">ℹ️</div>
+        <p>Le HTML généré est prêt à être collé directement dans une politique de confidentialité ou une page légale. Il respecte la structure exigée par les lignes directrices du CEPD.</p>
+      </div>
+    </section>
+
+    <!-- ===== SECTION : SOUS-TRAITANTS ART.28 ===== -->
+    <section id="soustraitants">
+      <h2>Sous-traitants &amp; DPA (Art.28)</h2>
+
+      <div class="section-intro">
+        <p>La brique <strong>Sous-traitants</strong> constitue le registre des accords de sous-traitance (DPA — Data Processing Agreement) exigés par l'Art.28 RGPD. Tout prestataire qui traite des données personnelles pour votre compte doit faire l'objet d'un contrat écrit.</p>
+      </div>
+
+      <h3>Statuts du DPA</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin:16px 0">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px">Statut</th>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px">Signification</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)"><td style="padding:9px 12px"><span class="tag orange">À signer</span></td><td style="padding:9px 12px;color:var(--muted)">DPA identifié mais pas encore formalisé</td></tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)"><td style="padding:9px 12px"><span class="tag green">Signé</span></td><td style="padding:9px 12px;color:var(--muted)">DPA en vigueur, conformité assurée</td></tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)"><td style="padding:9px 12px"><span class="tag red">Expiré</span></td><td style="padding:9px 12px;color:var(--muted)">DPA arrivé à échéance — à renouveler en priorité</td></tr>
+          <tr><td style="padding:9px 12px"><span class="tag muted">Résilié</span></td><td style="padding:9px 12px;color:var(--muted)">Relation terminée, conservé pour archivage</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Contenu du DPA généré</h3>
+      <p>Le module génère un accord de sous-traitance conforme Art.28.3 incluant :</p>
+      <ul>
+        <li>Identification des parties (RT et sous-traitant)</li>
+        <li>Objet, durée et nature du traitement</li>
+        <li>Finalités et catégories de données</li>
+        <li>Lieu de traitement et transferts hors UE (avec garanties Art.46)</li>
+        <li>Les 8 obligations légales du sous-traitant (Art.28.3.a à h)</li>
+        <li>Mesures de sécurité Art.32</li>
+        <li>Sous-sous-traitants autorisés (Art.28.2)</li>
+        <li>Zones de signature avec qualité des signataires</li>
+      </ul>
+
+      <div class="callout warn">
+        <div class="callout-icon">⚠️</div>
+        <p>Un DPA expirant dans moins de <strong>30 jours</strong> déclenche une alerte orange dans la liste. Un DPA expiré déclenche une alerte rouge. Le badge compteur dans la sidebar exclut les sous-traitants résiliés.</p>
+      </div>
+    </section>
+
+    <!-- ===== SECTION : TRANSFERTS HORS UE ART.44-49 ===== -->
+    <section id="transferts">
+      <h2>Transferts hors UE/EEE (Art.44-49)</h2>
+
+      <div class="section-intro">
+        <p>La brique <strong>Transferts hors UE</strong> documente tous les flux de données personnelles vers des pays tiers ou des organisations internationales. Chaque transfert doit reposer sur un mécanisme juridique valide (Art.45, 46, 47 ou 49).</p>
+      </div>
+
+      <h3>Mécanismes de transfert disponibles</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin:16px 0">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px">Article</th>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px">Mécanisme</th>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px">Risque</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px"><span class="art-pill">Art.45</span></td>
+            <td style="padding:9px 12px;color:var(--text)">Décision d'adéquation (ex : UK, Japon, USA/DPF)</td>
+            <td style="padding:9px 12px"><span class="tag green">Faible</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px"><span class="art-pill">Art.46</span></td>
+            <td style="padding:9px 12px;color:var(--text)">CCT, BCR, codes de conduite, certifications</td>
+            <td style="padding:9px 12px"><span class="tag green">Faible</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px"><span class="art-pill">Art.49</span></td>
+            <td style="padding:9px 12px;color:var(--text)">Dérogations (consentement, contrat, intérêt public…)</td>
+            <td style="padding:9px 12px"><span class="tag orange">Moyen</span></td>
+          </tr>
+          <tr>
+            <td style="padding:9px 12px"><span class="art-pill" style="background:rgba(239,68,68,.15);color:#f87171">—</span></td>
+            <td style="padding:9px 12px;color:var(--text)">Aucune garantie — à régulariser</td>
+            <td style="padding:9px 12px"><span class="tag red">Élevé</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Fonctionnalités clés</h3>
+      <ul>
+        <li><strong>Raccourcis pays adéquation</strong> — les 15 pays avec décision d'adéquation CEPD (2024) sont cliquables dans le formulaire pour remplissage rapide.</li>
+        <li><strong>Niveau de risque automatique</strong> — calculé selon le mécanisme choisi (vert Art.45/46, orange Art.49, rouge aucune garantie).</li>
+        <li><strong>Alerte revue</strong> — badge orange si la date de prochaine revue est dans moins de 30 jours, rouge si dépassée.</li>
+        <li><strong>Liste priorisée</strong> — les transferts "À régulariser" apparaissent en tête avec bordure rouge.</li>
+        <li><strong>Fiche PDF</strong> — export avec références réglementaires Art.44-49 et recommandations CEPD 01/2020.</li>
+      </ul>
+
+      <div class="callout warn">
+        <div class="callout-icon">⚠️</div>
+        <p>Les dérogations Art.49 sont d'usage <strong>exceptionnel et non répété</strong> selon le CEPD. Si votre transfert repose régulièrement sur Art.49, régularisez-le avec un mécanisme Art.46 (CCT ou BCR).</p>
+      </div>
+    </section>
+
     <!-- ===== SECTION 9 : IA INTÉGRÉE ===== -->
     <section id="ia">
       <h2>IA intégrée — DPO Senior IA</h2>
@@ -1336,11 +1515,35 @@
             <td style="padding:9px 12px"><span class="art-pill">Art.36</span></td>
             <td style="padding:9px 12px"><span class="tag purple">AIPD</span></td>
           </tr>
-          <tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
             <td style="padding:9px 12px;color:var(--text);font-weight:600">Mise à jour du registre</td>
             <td style="padding:9px 12px"><span class="tag gold">Continue</span></td>
             <td style="padding:9px 12px"><span class="art-pill">Art.30</span></td>
             <td style="padding:9px 12px"><span class="tag gold">Registre</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Information des personnes (collecte directe)</td>
+            <td style="padding:9px 12px"><span class="tag blue">Au moment de la collecte</span></td>
+            <td style="padding:9px 12px"><span class="art-pill">Art.13</span></td>
+            <td style="padding:9px 12px"><span class="tag blue">Notices</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Information des personnes (collecte indirecte)</td>
+            <td style="padding:9px 12px"><span class="tag orange">Dans le mois suivant la collecte</span></td>
+            <td style="padding:9px 12px"><span class="art-pill">Art.14</span></td>
+            <td style="padding:9px 12px"><span class="tag blue">Notices</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Contrat sous-traitant (DPA)</td>
+            <td style="padding:9px 12px"><span class="tag red">Avant tout traitement</span></td>
+            <td style="padding:9px 12px"><span class="art-pill">Art.28</span></td>
+            <td style="padding:9px 12px"><span class="tag muted">Sous-traitants</span></td>
+          </tr>
+          <tr>
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Revue des transferts hors UE</td>
+            <td style="padding:9px 12px"><span class="tag gold">Annuelle (recommandée)</span></td>
+            <td style="padding:9px 12px"><span class="art-pill">Art.44-49</span></td>
+            <td style="padding:9px 12px"><span class="tag muted">Transferts</span></td>
           </tr>
         </tbody>
       </table>
@@ -1399,10 +1602,35 @@
             <td style="padding:9px 12px"><span class="tag muted">Veille</span></td>
             <td style="padding:9px 12px;color:var(--muted)">Identifier les manquements et proposer des actions correctives</td>
           </tr>
-          <tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
             <td style="padding:9px 12px;color:var(--text);font-weight:600">Exporter une note DPO</td>
             <td style="padding:9px 12px"><span class="tag muted">Veille</span></td>
             <td style="padding:9px 12px;color:var(--muted)">Générer un document de note interne DPO exportable depuis l'analyse IA</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Créer une notice Art.13/14</td>
+            <td style="padding:9px 12px"><span class="tag blue">Notices</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Générer la mention légale complète pour collecte directe ou indirecte, avec export HTML et PDF</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Enregistrer un sous-traitant (DPA)</td>
+            <td style="padding:9px 12px"><span class="tag muted">Sous-traitants</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Créer la fiche DPA Art.28 avec statut, dates, mesures sécurité et sous-sous-traitants</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Générer et exporter un DPA PDF</td>
+            <td style="padding:9px 12px"><span class="tag muted">Sous-traitants</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Produire l'accord de sous-traitance Art.28.3 complet avec zones de signature, prêt à envoyer</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Documenter un transfert hors UE</td>
+            <td style="padding:9px 12px"><span class="tag muted">Transferts</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Enregistrer le mécanisme juridique (Art.45/46/49), les risques et mesures complémentaires CEPD</td>
+          </tr>
+          <tr>
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Exporter une fiche transfert PDF</td>
+            <td style="padding:9px 12px"><span class="tag muted">Transferts</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Générer la fiche de documentation du transfert avec références Art.44-49 et recommandations CEPD</td>
           </tr>
         </tbody>
       </table>
