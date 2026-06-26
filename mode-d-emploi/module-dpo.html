@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mode d'emploi — Module RGPD / DPO — S@FE CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #060d1f;
+      --surface: #0d1829;
+      --surface2: #111f36;
+      --surface3: #162540;
+      --line: #1e2f4a;
+      --text: #e8e6e0;
+      --muted: #7a8ea8;
+      --gold: #B8960C;
+      --gold-lt: #d4ae2a;
+      --gold-dim: rgba(184,150,12,.12);
+      --red: #ef4444;
+      --orange: #f59e0b;
+      --blue: #60a5fa;
+      --green: #4ade80;
+      --accent: #B8960C;
+      --radius: 10px;
+      --radius-lg: 16px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    /* ===== LAYOUT ===== */
+    .doc-layout { display: flex; min-height: 100vh; }
+
+    /* ===== SIDEBAR NAV ===== */
+    .doc-nav {
+      position: fixed;
+      top: 0; left: 0;
+      width: 260px;
+      height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--line);
+      overflow-y: auto;
+      padding: 24px 0;
+      z-index: 100;
+    }
+    .doc-nav-brand {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 12px;
+    }
+    .doc-nav-brand .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--gold-lt);
+      letter-spacing: -0.5px;
+    }
+    .doc-nav-brand .subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .doc-nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 20px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+    }
+    .doc-nav a:hover, .doc-nav a.active {
+      color: var(--text);
+      background: var(--surface2);
+      border-left-color: var(--gold);
+    }
+    .doc-nav .nav-section {
+      padding: 16px 20px 6px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .doc-content {
+      margin-left: 260px;
+      flex: 1;
+      max-width: 940px;
+      padding: 48px 52px;
+    }
+
+    /* ===== TYPOGRAPHY ===== */
+    h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 36px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+      line-height: 1.2;
+    }
+    h1 .accent { color: var(--gold-lt); }
+    h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      margin: 52px 0 16px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      letter-spacing: -0.5px;
+    }
+    h2:first-of-type { margin-top: 0; border-top: none; padding-top: 0; }
+    h3 {
+      font-family: 'Sora', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 28px 0 10px;
+    }
+    h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin: 20px 0 8px;
+    }
+    p { color: var(--muted); margin-bottom: 14px; line-height: 1.7; }
+    p strong { color: var(--text); font-weight: 600; }
+    ul, ol { color: var(--muted); padding-left: 22px; margin-bottom: 14px; }
+    li { margin-bottom: 6px; line-height: 1.6; }
+    li strong { color: var(--text); }
+    code {
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--surface2);
+      color: var(--gold-lt);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    hr { border: none; border-top: 1px solid var(--line); margin: 36px 0; }
+
+    /* ===== HERO ===== */
+    .hero {
+      background: linear-gradient(135deg, rgba(184,150,12,.14) 0%, var(--surface2) 60%);
+      border: 1px solid rgba(184,150,12,.45);
+      border-radius: var(--radius-lg);
+      padding: 36px 40px;
+      margin-bottom: 40px;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(184,150,12,.15);
+      border: 1px solid rgba(184,150,12,.4);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gold-lt);
+      margin-bottom: 16px;
+    }
+    .hero p { color: #c9b87a; font-size: 16px; margin-bottom: 0; }
+
+    /* ===== SECTION INTRO BOX ===== */
+    .section-intro {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 28px;
+    }
+    .section-intro p { margin-bottom: 0; }
+
+    /* ===== CALLOUTS ===== */
+    .callout {
+      display: flex;
+      gap: 14px;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    .callout-icon { font-size: 20px; flex-shrink: 0; line-height: 1.4; }
+    .callout p { margin: 0; }
+    .callout.tip { background: rgba(184,150,12,.08); border: 1px solid rgba(184,150,12,.28); }
+    .callout.tip p { color: #c9b87a; }
+    .callout.info { background: rgba(96,165,250,.08); border: 1px solid rgba(96,165,250,.25); }
+    .callout.info p { color: #bcd4f7; }
+    .callout.warning { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.28); }
+    .callout.warning p { color: #fca5a5; }
+    .callout.legal { background: rgba(139,92,246,.08); border: 1px solid rgba(139,92,246,.28); }
+    .callout.legal p { color: #c4b5fd; }
+
+    /* ===== MOCKUP ===== */
+    .mockup {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin: 24px 0;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    }
+    .mockup-bar {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .mockup-dot.r { background: #ff5f57; }
+    .mockup-dot.y { background: #ffbd2e; }
+    .mockup-dot.g { background: #28ca42; }
+    .mockup-title { margin-left: 8px; font-size: 12px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+    .mockup-body { padding: 0; }
+
+    /* ===== UI TOPBAR ===== */
+    .ui-topbar {
+      background: rgba(6,13,31,.96);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 13px;
+    }
+    .ui-brand { font-family: 'Sora', sans-serif; font-weight: 700; color: var(--gold-lt); font-size: 14px; }
+    .ui-badge {
+      background: var(--gold-dim);
+      border: 1px solid rgba(184,150,12,.4);
+      color: var(--gold-lt);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .ui-back-btn {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 5px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    /* ===== UI SHELL ===== */
+    .ui-shell {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 320px;
+      font-size: 13px;
+    }
+    .ui-sidebar {
+      background: rgba(10,17,36,.5);
+      border-right: 1px solid var(--line);
+      padding: 14px 0;
+    }
+    .ui-sidebar-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .15em;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding: 8px 14px 4px;
+    }
+    .ui-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      color: var(--muted);
+      font-size: 13px;
+      border-left: 3px solid transparent;
+      cursor: pointer;
+    }
+    .ui-nav-item.active { color: #fff; font-weight: 600; background: rgba(184,150,12,.1); border-left-color: var(--gold); }
+    .ui-nav-item .badge {
+      margin-left: auto;
+      background: #ef4444;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 10px;
+      padding: 1px 6px;
+    }
+    .ui-divider { border: none; border-top: 1px solid var(--line); margin: 8px 14px; }
+
+    /* ===== UI MAIN ===== */
+    .ui-main { padding: 18px 20px; background: var(--bg); }
+    .ui-view-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 16px; color: #fff; margin-bottom: 3px; }
+    .ui-view-sub { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 16px; }
+
+    /* ===== STAT CARDS ===== */
+    .ui-stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+    .ui-stat-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+    .ui-stat-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+    .ui-stat-value { font-size: 22px; font-weight: 800; color: #fff; font-family: 'IBM Plex Mono', monospace; }
+    .ui-stat-value.gold { color: var(--gold-lt); }
+    .ui-stat-value.red { color: var(--red); }
+    .ui-stat-value.blue { color: var(--blue); }
+
+    /* ===== ALERT ROWS ===== */
+    .ui-alert {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .ui-alert.danger { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); color: #fca5a5; }
+    .ui-alert.warn { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.28); color: #fde68a; }
+    .ui-alert-arrow { margin-left: auto; color: var(--muted); font-size: 11px; }
+
+    /* ===== ITEM ROWS ===== */
+    .ui-item-list { display: flex; flex-direction: column; gap: 8px; }
+    .ui-item-row {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+    }
+    .ui-item-row:hover { border-color: rgba(184,150,12,.3); }
+    .ui-item-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .ui-item-icon.blue { background: rgba(96,165,250,.15); border: 1px solid rgba(96,165,250,.3); }
+    .ui-item-icon.red { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.3); }
+    .ui-item-icon.purple { background: rgba(139,92,246,.12); border: 1px solid rgba(139,92,246,.3); }
+    .ui-item-icon.gold { background: rgba(184,150,12,.15); border: 1px solid rgba(184,150,12,.3); }
+    .ui-item-name { font-weight: 600; color: #fff; font-size: 13px; }
+    .ui-item-meta { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
+    .ui-item-info { flex: 1; min-width: 0; }
+
+    /* ===== BADGES ===== */
+    .ui-badge-inline {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .ui-badge-inline.danger { background: rgba(239,68,68,.12); color: #f87171; border: 1px solid rgba(239,68,68,.35); }
+    .ui-badge-inline.warn { background: rgba(251,191,36,.1); color: #fbbf24; border: 1px solid rgba(251,191,36,.3); }
+    .ui-badge-inline.ok { background: rgba(74,222,128,.1); color: #4ade80; border: 1px solid rgba(74,222,128,.3); }
+    .ui-badge-inline.info { background: rgba(96,165,250,.1); color: #60a5fa; border: 1px solid rgba(96,165,250,.3); }
+    .ui-badge-inline.muted { background: rgba(255,255,255,.06); color: var(--muted); border: 1px solid var(--line); }
+    .ui-badge-inline.purple { background: rgba(139,92,246,.15); color: #a78bfa; border: 1px solid rgba(139,92,246,.3); }
+
+    /* ===== DEADLINE BADGE ===== */
+    .ui-deadline { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+    .ui-deadline.ok { background: rgba(74,222,128,.1); color: #4ade80; border: 1px solid rgba(74,222,128,.3); }
+    .ui-deadline.warn { background: rgba(251,191,36,.1); color: #fbbf24; border: 1px solid rgba(251,191,36,.3); }
+    .ui-deadline.danger { background: rgba(239,68,68,.12); color: #f87171; border: 1px solid rgba(239,68,68,.35); }
+
+    /* ===== TIMER BAR ===== */
+    .ui-timer-bar { background: rgba(255,255,255,.06); border-radius: 4px; height: 5px; overflow: hidden; margin-top: 5px; }
+    .ui-timer-fill { height: 100%; border-radius: 4px; }
+
+    /* ===== QUICK ACTIONS ===== */
+    .ui-quick-actions { display: flex; flex-direction: column; gap: 7px; }
+    .ui-qa-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ui-qa-btn.gold { background: var(--gold); color: #fff; }
+    .ui-qa-btn.danger { background: rgba(239,68,68,.12); color: #f87171; border: 1px solid rgba(239,68,68,.35); }
+    .ui-qa-btn.primary { background: rgba(96,165,250,.15); color: #60a5fa; border: 1px solid rgba(96,165,250,.3); }
+    .ui-qa-btn.purple { background: rgba(139,92,246,.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,.3); }
+    .ui-qa-btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+
+    /* ===== MODAL ===== */
+    .ui-modal-overlay { background: rgba(0,0,0,.6); padding: 20px; border-radius: var(--radius); }
+    .ui-modal { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; max-width: 400px; margin: auto; }
+    .ui-modal-head { background: var(--surface2); border-bottom: 1px solid var(--line); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+    .ui-modal-title { font-weight: 700; font-size: 14px; color: #fff; }
+    .ui-modal-close { color: var(--muted); font-size: 16px; }
+    .ui-modal-body { padding: 16px; }
+    .ui-field { margin-bottom: 12px; }
+    .ui-field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.7px; font-family: 'IBM Plex Mono', monospace; }
+    .ui-field input, .ui-field select, .ui-field textarea {
+      width: 100%; background: var(--surface2); border: 1px solid var(--line);
+      border-radius: 6px; padding: 8px 11px; color: var(--text); font-size: 13px;
+    }
+    .ui-modal-foot { padding: 12px 16px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 8px; }
+    .ui-btn-cancel { background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 6px 14px; color: var(--muted); font-size: 13px; }
+    .ui-btn-save { background: var(--gold); border-radius: 6px; padding: 6px 14px; color: #fff; font-size: 13px; font-weight: 700; }
+    .ui-btn-save.danger { background: rgba(239,68,68,.8); }
+    .ui-btn-save.purple { background: linear-gradient(135deg, rgba(59,130,246,.7), rgba(139,92,246,.7)); }
+
+    /* ===== CRITERIA GRID ===== */
+    .ui-crit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 10px 0; }
+    .ui-crit-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 9px 11px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .ui-crit-item.checked { background: rgba(96,165,250,.08); border-color: rgba(96,165,250,.3); }
+    .ui-crit-box {
+      width: 16px; height: 16px;
+      border-radius: 4px;
+      border: 1.5px solid var(--line);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+    }
+    .ui-crit-item.checked .ui-crit-box { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+
+    /* ===== IA BOX ===== */
+    .ui-ia-box {
+      background: rgba(139,92,246,.06);
+      border: 1px solid rgba(139,92,246,.25);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-top: 12px;
+    }
+    .ui-ia-header { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #c4b5fd; margin-bottom: 8px; letter-spacing: .06em; }
+    .ui-ia-content { font-size: 12px; color: var(--muted); line-height: 1.7; }
+    .ui-ia-actions { display: flex; gap: 7px; margin-top: 10px; }
+    .ui-ia-btn {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ui-ia-btn.copy { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+    .ui-ia-btn.gold { background: var(--gold); color: #fff; }
+
+    /* ===== SCORE BAR ===== */
+    .score-bar { height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+    .score-fill { height: 100%; border-radius: 2px; }
+    .fill-gold { background: var(--gold-lt); }
+    .fill-red { background: var(--red); }
+    .fill-orange { background: var(--orange); }
+    .fill-green { background: var(--green); }
+
+    /* ===== STEP GUIDE ===== */
+    .steps { counter-reset: step; }
+    .step { display: flex; gap: 20px; margin-bottom: 28px; }
+    .step-num {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: rgba(184,150,12,.15);
+      border: 1px solid rgba(184,150,12,.38);
+      color: var(--gold-lt);
+      font-weight: 800; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .step-body { flex: 1; }
+    .step-body h3 { margin-top: 0; margin-bottom: 6px; }
+    .step-body p { margin-bottom: 8px; }
+
+    /* ===== FEATURE CARDS ===== */
+    .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 20px 0; }
+    .feature-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; }
+    .feature-card .icon { font-size: 28px; margin-bottom: 10px; }
+    .feature-card .title { font-family: 'Sora', sans-serif; font-weight: 700; color: #fff; margin-bottom: 6px; font-size: 15px; }
+    .feature-card p { font-size: 13px; margin-bottom: 0; }
+
+    /* ===== PILL TAGS ===== */
+    .tag {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      margin: 2px 3px 2px 0;
+    }
+    .tag.gold { background: rgba(184,150,12,.15); color: var(--gold-lt); }
+    .tag.blue { background: rgba(96,165,250,.15); color: var(--blue); }
+    .tag.red { background: rgba(239,68,68,.12); color: #f87171; }
+    .tag.green { background: rgba(74,222,128,.12); color: var(--green); }
+    .tag.orange { background: rgba(245,158,11,.12); color: var(--orange); }
+    .tag.purple { background: rgba(139,92,246,.15); color: #a78bfa; }
+    .tag.muted { background: rgba(122,142,168,.1); color: var(--muted); }
+
+    /* ===== LAW ARTICLE PILL ===== */
+    .art-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(184,150,12,.1);
+      border: 1px solid rgba(184,150,12,.3);
+      border-radius: 8px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold-lt);
+      font-family: 'IBM Plex Mono', monospace;
+      margin: 2px 4px 2px 0;
+    }
+
+    /* ===== SIDEBAR DEADLINE WIDGET ===== */
+    .ui-deadline-widget {
+      margin: 8px 14px;
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.3);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .ui-deadline-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 3px; }
+    .ui-deadline-val { font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 700; color: #f87171; }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+    /* ===== PRINT ===== */
+    @media print { .doc-nav { display: none; } .doc-content { margin-left: 0; } }
+
+    /* ===== MOBILE ===== */
+    @media (max-width: 768px) {
+      .doc-nav { display: none; }
+      .doc-content { margin-left: 0; padding: 24px 20px; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .ui-stat-row { grid-template-columns: 1fr 1fr; }
+      .ui-shell { grid-template-columns: 1fr; }
+      .ui-sidebar { display: none; }
+      .ui-crit-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="doc-layout">
+
+  <!-- ===== NAVIGATION SIDEBAR ===== -->
+  <nav class="doc-nav">
+    <div class="doc-nav-brand">
+      <div class="logo">S@FE CRM</div>
+      <div class="subtitle">Mode d'emploi — Module RGPD</div>
+    </div>
+    <div class="nav-section">Présentation</div>
+    <a href="#overview">Vue d'ensemble</a>
+    <a href="#acces">Accès au module</a>
+    <div class="nav-section">Fonctionnalités</div>
+    <a href="#dashboard">📊 Tableau de bord</a>
+    <a href="#der">📬 Droits DER</a>
+    <a href="#violations">🚨 Violations 72h</a>
+    <a href="#registre">📁 Registre Art.30</a>
+    <a href="#aipd">🔍 Analyses AIPD</a>
+    <a href="#veille">📡 Veille & CNIL</a>
+    <div class="nav-section">Avancé</div>
+    <a href="#ia">✦ IA intégrée</a>
+    <a href="#delais">⏱ Délais légaux</a>
+    <a href="#actions">📋 Récapitulatif</a>
+  </nav>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="doc-content">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-badge">📋 Module RGPD / DPO</div>
+      <h1>Conformité <span class="accent">RGPD</span><br>pilotée par l'IA</h1>
+      <p>Droits des personnes, violations 72h, registre Art.30, analyses AIPD et veille juridique — tout ce qu'il faut pour exercer votre fonction de DPO externalisé depuis S@FE CRM.</p>
+    </div>
+
+    <!-- ===== SECTION 1 : VUE D'ENSEMBLE ===== -->
+    <section id="overview">
+      <h2>Vue d'ensemble</h2>
+
+      <p>Le module <strong>RGPD / DPO</strong> centralise l'ensemble des obligations légales du Délégué à la Protection des Données dans une interface unifiée. Il est conçu pour les DPO externalisés gérant la conformité de plusieurs organisations.</p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="icon">📬</div>
+          <div class="title">Droits des personnes (DER)</div>
+          <p>Gérez les demandes d'exercice de droits (Accès, Effacement, Portabilité…) avec suivi du délai légal J+30 et rédaction automatique des réponses par l'IA.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🚨</div>
+          <div class="title">Violations de données</div>
+          <p>Déclarez et suivez les incidents. Timer 72h intégré pour la notification CNIL (Art.33), score de gravité ENISA automatique et draft de notification généré par l'IA.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📁</div>
+          <div class="title">Registre Art.30</div>
+          <p>Documentez tous les traitements de données. L'IA génère automatiquement la fiche Art.30 complète (finalités, bases légales, durées de conservation, mesures de sécurité).</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🔍</div>
+          <div class="title">Analyses AIPD</div>
+          <p>Screening en 9 critères CNIL pour déterminer si une AIPD est requise, suivi d'une analyse complète des risques avec recommandations de l'IA.</p>
+        </div>
+      </div>
+
+      <div class="callout legal">
+        <div class="callout-icon">⚖️</div>
+        <p>Le module applique automatiquement les obligations du RGPD : <span class="art-pill">Art.30</span><span class="art-pill">Art.33</span><span class="art-pill">Art.34</span><span class="art-pill">Art.35</span><span class="art-pill">Art.37-39</span>. Les délais légaux sont calculés et affichés en temps réel.</p>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 2 : ACCÈS ===== -->
+    <section id="acces">
+      <h2>Accéder au module RGPD</h2>
+
+      <p>Le module DPO est accessible depuis le module <strong>Prospection</strong> de S@FE CRM.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h3>Ouvrir la Prospection</h3>
+            <p>Depuis le menu principal de S@FE CRM, cliquez sur <strong>Prospection terrain</strong>.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h3>Accéder au module DPO</h3>
+            <p>Dans la barre de navigation, cliquez sur le bouton <strong>📋 DPO</strong>. Vous serez redirigé vers <code>modules/DPO/module-dpo.html</code>.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h3>Naviguer dans les briques</h3>
+            <p>La barre latérale gauche donne accès aux cinq briques du module : Droits DER, Violations, Registre, AIPD et Veille CNIL. Les compteurs en rouge indiquent les éléments nécessitant une attention immédiate.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mockup de l'interface principale -->
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="mockup-dot r"></div>
+          <div class="mockup-dot y"></div>
+          <div class="mockup-dot g"></div>
+          <span class="mockup-title">S@FE CRM — Module RGPD / DPO</span>
+        </div>
+        <div class="mockup-body">
+          <div class="ui-topbar">
+            <div class="ui-brand">S<span style="color:var(--gold)">@</span>FE <small style="font-size:10px;letter-spacing:.15em;color:var(--muted)">DPO</small></div>
+            <div class="ui-badge">📋 MODULE DPO</div>
+            <div class="ui-back-btn">◀ Prospection</div>
+          </div>
+          <div class="ui-shell">
+            <div class="ui-sidebar">
+              <div class="ui-sidebar-label">Tableau de bord</div>
+              <div class="ui-nav-item active">📊 Vue d'ensemble</div>
+              <div class="ui-divider"></div>
+              <div class="ui-sidebar-label">Briques DPO</div>
+              <div class="ui-nav-item">📬 Droits (DER) <span class="badge">3</span></div>
+              <div class="ui-nav-item">🚨 Violations <span class="badge">1</span></div>
+              <div class="ui-nav-item">📁 Registre Art.30</div>
+              <div class="ui-nav-item">🔍 AIPD</div>
+              <div class="ui-nav-item">📡 Veille & CNIL</div>
+              <div class="ui-divider"></div>
+              <div class="ui-deadline-widget">
+                <div class="ui-deadline-label">⏱ Notif. CNIL</div>
+                <div class="ui-deadline-val">38h restantes</div>
+                <div class="ui-timer-bar"><div class="ui-timer-fill fill-red" style="width:47%"></div></div>
+              </div>
+            </div>
+            <div class="ui-main">
+              <div class="ui-view-title">📋 Module DPO Automatisé</div>
+              <div class="ui-view-sub">S@FE Digitalisation · DPO externalisé · RGPD Art.37-39</div>
+              <div class="ui-stat-row">
+                <div class="ui-stat-card"><div class="ui-stat-label">Demandes DER actives</div><div class="ui-stat-value">3</div></div>
+                <div class="ui-stat-card"><div class="ui-stat-label">Violations en cours</div><div class="ui-stat-value red">1</div></div>
+                <div class="ui-stat-card"><div class="ui-stat-label">Traitements au registre</div><div class="ui-stat-value gold">12</div></div>
+                <div class="ui-stat-card"><div class="ui-stat-label">AIPD en cours</div><div class="ui-stat-value blue">2</div></div>
+              </div>
+              <div class="ui-alert danger">🚨 <span>Violation "Fuite base clients" — 38h restantes pour notifier la CNIL</span><span class="ui-alert-arrow">→</span></div>
+              <div class="ui-alert warn">📬 <span>DER Effacement (M. Lambert) — J-3 avant échéance légale</span><span class="ui-alert-arrow">→</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 3 : TABLEAU DE BORD ===== -->
+    <section id="dashboard">
+      <h2>Tableau de bord</h2>
+
+      <div class="section-intro">
+        <p>La vue <strong>📊 Vue d'ensemble</strong> s'affiche par défaut à l'ouverture du module. Elle concentre les indicateurs critiques et les alertes nécessitant une action immédiate.</p>
+      </div>
+
+      <h3>Indicateurs clés</h3>
+      <p>Quatre métriques sont affichées en haut du tableau de bord :</p>
+      <ul>
+        <li><strong>Demandes DER actives</strong> — nombre de droits en cours de traitement (hors clôturées et archivées)</li>
+        <li><strong>Violations en cours</strong> — incidents déclarés non encore archivés (affiché en rouge)</li>
+        <li><strong>Traitements au registre</strong> — fiches Art.30 au statut "Actif" (affiché en or)</li>
+        <li><strong>AIPD en cours</strong> — analyses d'impact non finalisées (affiché en bleu)</li>
+      </ul>
+
+      <h3>Alertes prioritaires</h3>
+      <p>Le panneau <strong>"Alertes prioritaires"</strong> liste automatiquement toutes les situations nécessitant une action urgente, classées par criticité :</p>
+      <ul>
+        <li><span class="tag red">🔴 Danger</span> — délai DER dépassé, violation en cours hors délai 72h</li>
+        <li><span class="tag orange">🟡 Avertissement</span> — DER à moins de 7 jours, violation dans les 72h</li>
+      </ul>
+      <p>Cliquez sur une alerte pour être redirigé directement vers l'élément concerné.</p>
+
+      <h3>Widget deadline en sidebar</h3>
+      <p>La barre latérale affiche en permanence un <strong>timer de violation</strong> pour les incidents détectés ou en analyse : temps restant avant le délai CNIL (72h), avec barre de progression colorée (vert → orange → rouge).</p>
+
+      <h3>Accès rapide</h3>
+      <p>Le panneau <strong>"Accès rapide"</strong> donne accès direct aux quatre actions principales en un clic :</p>
+      <ul>
+        <li><strong>📬 Nouvelle demande DER (J+30)</strong> — ouvre le formulaire de déclaration d'un nouveau droit</li>
+        <li><strong>🚨 Déclarer une violation (72h)</strong> — ouvre le formulaire de déclaration d'incident</li>
+        <li><strong>📁 Nouveau traitement Art.30</strong> — ajoute une fiche au registre des traitements</li>
+        <li><strong>🔍 Lancer un screening AIPD</strong> — démarre le questionnaire de qualification AIPD</li>
+      </ul>
+    </section>
+
+    <!-- ===== SECTION 4 : DER ===== -->
+    <section id="der">
+      <h2>Droits des personnes (DER)</h2>
+
+      <div class="section-intro">
+        <p>La brique <strong>📬 Droits (DER)</strong> — Demandes d'Exercice de Droits — gère toutes les demandes reçues des personnes concernées : accès, rectification, effacement, portabilité, opposition et limitation. Le délai légal de réponse est de <strong>J+30</strong> (<span class="art-pill">Art.12 RGPD</span>).</p>
+      </div>
+
+      <h3>Types de droits gérés</h3>
+      <p>
+        <span class="tag blue">Accès (Art.15)</span>
+        <span class="tag gold">Rectification (Art.16)</span>
+        <span class="tag red">Effacement (Art.17)</span>
+        <span class="tag green">Portabilité (Art.20)</span>
+        <span class="tag orange">Opposition (Art.21)</span>
+        <span class="tag muted">Limitation (Art.18)</span>
+      </p>
+
+      <h3>Créer une demande DER</h3>
+      <p>Cliquez sur <strong>"+ Nouvelle demande"</strong> ou depuis l'accès rapide du tableau de bord :</p>
+
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="mockup-dot r"></div><div class="mockup-dot y"></div><div class="mockup-dot g"></div>
+          <span class="mockup-title">Formulaire — Nouvelle demande DER</span>
+        </div>
+        <div class="mockup-body">
+          <div class="ui-modal-overlay">
+            <div class="ui-modal" style="max-width:100%">
+              <div class="ui-modal-head">
+                <span class="ui-modal-title">Nouvelle demande DER</span>
+                <span class="ui-modal-close">✕</span>
+              </div>
+              <div class="ui-modal-body">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="ui-field">
+                    <label>Nom du demandeur *</label>
+                    <input placeholder="Prénom Nom" readonly>
+                  </div>
+                  <div class="ui-field">
+                    <label>Email</label>
+                    <input placeholder="email@domaine.fr" readonly>
+                  </div>
+                  <div class="ui-field">
+                    <label>Type de droit exercé *</label>
+                    <select>
+                      <option>Accès (Art.15)</option>
+                      <option>Rectification (Art.16)</option>
+                      <option>Effacement (Art.17)</option>
+                    </select>
+                  </div>
+                  <div class="ui-field">
+                    <label>Canal de réception</label>
+                    <select><option>Email</option><option>Formulaire</option></select>
+                  </div>
+                  <div class="ui-field" style="grid-column:1/-1">
+                    <label>Contenu de la demande</label>
+                    <textarea rows="3" placeholder="Coller ici le texte de la demande reçue…" readonly></textarea>
+                  </div>
+                  <div class="ui-field">
+                    <label>Date de réception</label>
+                    <input type="date" readonly>
+                  </div>
+                </div>
+              </div>
+              <div class="ui-modal-foot">
+                <button class="ui-btn-cancel">Enregistrer sans IA</button>
+                <button class="ui-btn-save purple">✦ Enregistrer + Analyser avec l'IA</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Liste des demandes DER</h3>
+      <p>Chaque demande s'affiche dans un tableau avec son délai restant et son statut :</p>
+
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="mockup-dot r"></div><div class="mockup-dot y"></div><div class="mockup-dot g"></div>
+          <span class="mockup-title">Vue Droits DER — Liste</span>
+        </div>
+        <div class="mockup-body" style="padding:14px">
+          <div class="ui-item-list">
+            <div class="ui-item-row">
+              <div class="ui-item-icon blue">📬</div>
+              <div class="ui-item-info">
+                <div class="ui-item-name">Martin Lambert</div>
+                <div class="ui-item-meta">Effacement (Art.17) · Reçue le 05/06/2026</div>
+              </div>
+              <span class="ui-deadline danger">⏱ J-3</span>
+              <span class="ui-badge-inline warn">En cours</span>
+              <span class="ui-badge-inline purple">✦ IA</span>
+            </div>
+            <div class="ui-item-row">
+              <div class="ui-item-icon blue">📬</div>
+              <div class="ui-item-info">
+                <div class="ui-item-name">Sophie Bertrand</div>
+                <div class="ui-item-meta">Accès (Art.15) · Reçue le 10/06/2026</div>
+              </div>
+              <span class="ui-deadline ok">⏱ J-28</span>
+              <span class="ui-badge-inline muted">Reçue</span>
+              <span class="ui-badge-inline purple">✦ IA</span>
+            </div>
+            <div class="ui-item-row">
+              <div class="ui-item-icon blue">📬</div>
+              <div class="ui-item-info">
+                <div class="ui-item-name">Pierre Dumont</div>
+                <div class="ui-item-meta">Portabilité (Art.20) · Reçue le 01/06/2026</div>
+              </div>
+              <span class="ui-deadline ok">⏱ J-5</span>
+              <span class="ui-badge-inline ok">Clôturée</span>
+              <span class="ui-badge-inline purple">✦ IA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h4>Code couleur des délais</h4>
+      <p>
+        <span class="tag green">🟢 J+10 à J+30 — Délai confortable</span>
+        <span class="tag orange">🟡 J-7 à J-1 — Urgence imminente</span>
+        <span class="tag red">🔴 Dépassé — Action immédiate</span>
+      </p>
+
+      <h3>Analyse IA d'une demande DER</h3>
+      <p>Cliquez sur <strong>"✦ IA"</strong> pour générer automatiquement :</p>
+      <ul>
+        <li><strong>Qualification</strong> — type de droit RGPD exact et fondement légal</li>
+        <li><strong>Vérification d'identité</strong> — requise ou non, avec justification</li>
+        <li><strong>Délai légal</strong> — date limite J+30, possibilité de prorogation</li>
+        <li><strong>Issue probable</strong> — accordée / refusée / partiellement accordée</li>
+        <li><strong>Projet de réponse</strong> — lettre officielle complète prête à envoyer, signée par le DPO</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="callout-icon">💡</div>
+        <p>Collez le texte exact de la demande reçue dans le champ "Contenu de la demande" pour que l'IA génère une réponse parfaitement adaptée au contexte de la requête.</p>
+      </div>
+
+      <h4>Statuts d'une demande DER</h4>
+      <p>
+        <span class="tag muted">Reçue</span> — enregistrée, pas encore traitée<br>
+        <span class="tag orange">En cours</span> — traitement en cours<br>
+        <span class="tag green">Clôturée</span> — réponse envoyée, délai respecté<br>
+        <span class="tag muted">Archivée</span> — conservée à des fins de preuve de conformité
+      </p>
+    </section>
+
+    <!-- ===== SECTION 5 : VIOLATIONS ===== -->
+    <section id="violations">
+      <h2>Violations de données — Délai 72h</h2>
+
+      <div class="section-intro">
+        <p>La brique <strong>🚨 Violations</strong> gère les incidents de sécurité impliquant des données personnelles. Dès détection, un <strong>timer 72h</strong> s'enclenche pour la notification CNIL obligatoire (<span class="art-pill">Art.33 RGPD</span>). Si le risque est élevé, les personnes concernées doivent également être notifiées (<span class="art-pill">Art.34 RGPD</span>).</p>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-icon">🚨</div>
+        <p><strong>Délai légal strict :</strong> la notification CNIL doit intervenir dans les <strong>72 heures</strong> suivant la détection de la violation (Art.33 RGPD). En cas de retard, il est obligatoire de motiver ce retard dans la notification.</p>
+      </div>
+
+      <h3>Déclarer une violation</h3>
+      <p>Cliquez sur <strong>"🚨 Déclarer"</strong> ou depuis l'accès rapide du tableau de bord :</p>
+
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="mockup-dot r"></div><div class="mockup-dot y"></div><div class="mockup-dot g"></div>
+          <span class="mockup-title">Formulaire — Déclarer une violation</span>
+        </div>
+        <div class="mockup-body">
+          <div class="ui-modal-overlay">
+            <div class="ui-modal" style="max-width:100%">
+              <div class="ui-modal-head">
+                <span class="ui-modal-title" style="color:#f87171">🚨 Déclarer une violation de données</span>
+                <span class="ui-modal-close">✕</span>
+              </div>
+              <div class="ui-modal-body">
+                <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:7px;padding:9px 13px;margin-bottom:12px;font-size:12px;color:#fca5a5;font-family:'IBM Plex Mono',monospace">
+                  ⏱ Délai légal : NOTIFICATION CNIL SOUS 72H après détection (Art.33 RGPD)
+                </div>
+                <div class="ui-field">
+                  <label>Intitulé de l'incident *</label>
+                  <input placeholder="Ex : Fuite base clients suite phishing" readonly>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="ui-field">
+                    <label>Date et heure de détection *</label>
+                    <input type="datetime-local" readonly>
+                  </div>
+                  <div class="ui-field">
+                    <label>Nb personnes concernées (estimé)</label>
+                    <input type="number" placeholder="Ex : 250" readonly>
+                  </div>
+                </div>
+                <div class="ui-field">
+                  <label>Description de l'incident</label>
+                  <textarea rows="3" placeholder="Comment, quelles données, quelle cause, mesures prises…" readonly></textarea>
+                </div>
+                <div class="ui-field">
+                  <label>Catégories de données impliquées</label>
+                  <input placeholder="Ex : noms, emails, IBAN, données de santé…" readonly>
+                </div>
+              </div>
+              <div class="ui-modal-foot">
+                <button class="ui-btn-cancel">Enregistrer</button>
+                <button class="ui-btn-save danger">✦ Enregistrer + Analyse IA + Draft CNIL</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Score de gravité ENISA</h3>
+      <p>L'IA calcule automatiquement un <strong>score de gravité ENISA sur 16 points</strong>, évaluant 4 critères :</p>
+      <ul>
+        <li><strong>Nature des données</strong> — de 1 (publiques) à 4 (très sensibles Art.9)</li>
+        <li><strong>Ampleur</strong> — de 1 (quelques personnes) à 4 (grande échelle)</li>
+        <li><strong>Facilité d'identification</strong> — de 1 (anonymisation possible) à 4 (identification directe)</li>
+        <li><strong>Conséquences probables</strong> — de 1 (aucune) à 4 (irréversibles)</li>
+      </ul>
+      <p>
+        <span class="tag green">Faible — &lt; 4</span>
+        <span class="tag orange">Modéré — 4 à 8</span>
+        <span class="tag red">Sévère — 9 à 12</span>
+        <span class="tag red">Critique — &gt; 12</span>
+      </p>
+
+      <h3>Draft de notification CNIL généré par l'IA</h3>
+      <p>En un clic sur <strong>"✦ IA 72h"</strong>, l'IA produit :</p>
+      <ul>
+        <li>La <strong>qualification de la violation</strong> (confidentialité / intégrité / disponibilité)</li>
+        <li>La <strong>décision de notification</strong> CNIL (Art.33) et personnes concernées (Art.34)</li>
+        <li>Les <strong>8 rubriques du formulaire officiel CNIL</strong> pré-remplies</li>
+        <li>Le <strong>message aux personnes concernées</strong> si Art.34 requis</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="callout-icon">💡</div>
+        <p>Décrivez l'incident avec le maximum de détails dès la déclaration. Plus les informations sont précises, plus la notification CNIL générée par l'IA sera complète et conforme aux attentes de la CNIL.</p>
+      </div>
+
+      <h4>Statuts d'une violation</h4>
+      <p>
+        <span class="tag red">Détectée</span> — incident signalé, analyse en attente<br>
+        <span class="tag orange">En analyse</span> — évaluation de la gravité et du périmètre<br>
+        <span class="tag blue">Notifié CNIL</span> — notification envoyée dans les 72h<br>
+        <span class="tag green">Clôturée</span> — incident traité, mesures correctives en place<br>
+        <span class="tag muted">Archivée</span> — conservée pour preuve de conformité
+      </p>
+    </section>
+
+    <!-- ===== SECTION 6 : REGISTRE ===== -->
+    <section id="registre">
+      <h2>Registre des traitements (Art.30)</h2>
+
+      <div class="section-intro">
+        <p>La brique <strong>📁 Registre Art.30</strong> documente tous les traitements de données personnelles de l'organisation. Le registre est une obligation légale pour tout organisme de plus de 250 salariés (et souvent recommandé en deçà) — <span class="art-pill">Art.30 RGPD</span>.</p>
+      </div>
+
+      <h3>Créer un traitement</h3>
+      <p>Cliquez sur <strong>"+ Nouveau traitement"</strong>. Il suffit de décrire le projet ou l'outil en langage naturel — l'IA génère la fiche complète :</p>
+
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="mockup-dot r"></div><div class="mockup-dot y"></div><div class="mockup-dot g"></div>
+          <span class="mockup-title">Formulaire — Nouveau traitement Art.30</span>
+        </div>
+        <div class="mockup-body">
+          <div class="ui-modal-overlay">
+            <div class="ui-modal" style="max-width:100%">
+              <div class="ui-modal-head">
+                <span class="ui-modal-title">Nouveau traitement — Art.30 RGPD</span>
+                <span class="ui-modal-close">✕</span>
+              </div>
+              <div class="ui-modal-body">
+                <div class="ui-field">
+                  <label>Description du projet ou outil *</label>
+                  <textarea rows="4" placeholder="Décrivez le projet, l'outil, sa finalité, les données collectées… L'IA va générer la fiche complète." readonly></textarea>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="ui-field">
+                    <label>Intitulé du traitement *</label>
+                    <input placeholder="Ex : Gestion des candidatures RH" readonly>
+                  </div>
+                  <div class="ui-field">
+                    <label>Responsable métier</label>
+                    <input placeholder="Nom / Direction" readonly>
+                  </div>
+                </div>
+              </div>
+              <div class="ui-modal-foot">
+                <button class="ui-btn-cancel">Enregistrer sans IA</button>
+                <button class="ui-btn-save purple">✦ Générer la fiche Art.30 avec l'IA</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Contenu de la fiche Art.30 générée</h3>
+      <p>L'IA produit automatiquement les <strong>10 rubriques obligatoires</strong> :</p>
+
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:16px 0">
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold-lt);font-weight:700;margin-bottom:8px">INFORMATIONS OBLIGATOIRES</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.9">
+            1. Intitulé du traitement<br>
+            2. Finalité(s) principale et secondaires<br>
+            3. Base(s) légale(s) Art.6 RGPD<br>
+            4. Catégories de personnes concernées<br>
+            5. Catégories de données traitées<br>
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold-lt);font-weight:700;margin-bottom:8px">MESURES DE CONFORMITÉ</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.9">
+            6. Destinataires et sous-traitants<br>
+            7. Transferts hors UE (pays, garanties)<br>
+            8. Durée de conservation<br>
+            9. Mesures de sécurité (TOM)<br>
+            10. AIPD requise ? (9 critères CNIL)
+          </div>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <div class="callout-icon">ℹ️</div>
+        <p>Si la fiche générée signale des <strong>données sensibles Art.9</strong> (santé, biométrie, origine ethnique, opinions politiques…), un badge rouge <code>Art.9</code> s'affiche sur la ligne dans la liste. Ces traitements nécessitent des garanties renforcées.</p>
+      </div>
+
+      <h4>Statuts d'un traitement</h4>
+      <p>
+        <span class="tag green">Actif</span> — traitement en cours d'exploitation<br>
+        <span class="tag orange">À réviser</span> — fiche à mettre à jour (changement de finalité, nouveau sous-traitant…)<br>
+        <span class="tag muted">Archivé</span> — traitement arrêté, fiche conservée pour traçabilité
+      </p>
+    </section>
+
+    <!-- ===== SECTION 7 : AIPD ===== -->
+    <section id="aipd">
+      <h2>Analyses d'impact (AIPD)</h2>
+
+      <div class="section-intro">
+        <p>La brique <strong>🔍 AIPD</strong> — Analyses d'Impact sur la Protection des Données — est requise dès que le traitement est susceptible d'engendrer un risque élevé pour les personnes (<span class="art-pill">Art.35 RGPD</span>). Le module intègre le screening en <strong>9 critères CNIL</strong> pour déterminer si une AIPD est nécessaire.</p>
+      </div>
+
+      <h3>Screening AIPD — 9 critères CNIL</h3>
+      <p>Le formulaire de screening présente les 9 critères définis par la CNIL. Cochez ceux qui s'appliquent au traitement :</p>
+
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="mockup-dot r"></div><div class="mockup-dot y"></div><div class="mockup-dot g"></div>
+          <span class="mockup-title">Screening AIPD — 9 critères CNIL</span>
+        </div>
+        <div class="mockup-body" style="padding:16px">
+          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px">Intitulé : Déploiement IA de scoring crédit</div>
+          <div class="ui-crit-grid">
+            <div class="ui-crit-item checked">
+              <div class="ui-crit-box">✓</div>
+              Profilage ou évaluation systématique
+            </div>
+            <div class="ui-crit-item checked">
+              <div class="ui-crit-box">✓</div>
+              Décision automatisée avec effets juridiques
+            </div>
+            <div class="ui-crit-item">
+              <div class="ui-crit-box"></div>
+              Surveillance systématique à grande échelle
+            </div>
+            <div class="ui-crit-item checked">
+              <div class="ui-crit-box">✓</div>
+              Données sensibles Art.9 ou à caractère hautement personnel
+            </div>
+            <div class="ui-crit-item checked">
+              <div class="ui-crit-box">✓</div>
+              Traitement à grande échelle
+            </div>
+            <div class="ui-crit-item">
+              <div class="ui-crit-box"></div>
+              Croisement / combinaison de jeux de données
+            </div>
+            <div class="ui-crit-item">
+              <div class="ui-crit-box"></div>
+              Données concernant des personnes vulnérables
+            </div>
+            <div class="ui-crit-item checked">
+              <div class="ui-crit-box">✓</div>
+              Usage de nouvelles technologies ou usages innovants
+            </div>
+            <div class="ui-crit-item">
+              <div class="ui-crit-box"></div>
+              Traitement pouvant empêcher d'exercer ses droits
+            </div>
+          </div>
+          <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:7px;padding:9px 13px;margin-top:10px;font-size:12px;color:#fca5a5;font-family:'IBM Plex Mono',monospace">
+            ⚠ 5/9 critères positifs → AIPD OBLIGATOIRE (≥ 2 critères requis)
+          </div>
+        </div>
+      </div>
+
+      <h3>Règle de déclenchement de l'AIPD</h3>
+      <p>La CNIL considère qu'une AIPD est <strong>obligatoire</strong> dès que <strong>2 critères ou plus</strong> sont positifs. Si 1 seul critère est coché, une AIPD est <strong>recommandée</strong>.</p>
+
+      <h3>Analyse AIPD complète par l'IA</h3>
+      <p>Après le screening, cliquez sur <strong>"✦ IA"</strong> pour déclencher l'analyse complète :</p>
+      <ul>
+        <li>Identification des <strong>risques résiduels</strong> (atteinte à la vie privée, discrimination, vol d'identité…)</li>
+        <li>Évaluation de leur <strong>vraisemblance et gravité</strong></li>
+        <li>Propositions de <strong>mesures correctives</strong> (chiffrement, pseudonymisation, limitation d'accès…)</li>
+        <li><strong>Avis DPO</strong> : Approuvée / À compléter / Refusée, avec justification</li>
+      </ul>
+
+      <div class="callout legal">
+        <div class="callout-icon">⚖️</div>
+        <p>Si les mesures correctives ne permettent pas de ramener les risques à un niveau acceptable, l'Art.36 RGPD oblige à <strong>consulter la CNIL avant de lancer le traitement</strong>. L'IA vous alertera dans ce cas.</p>
+      </div>
+
+      <h4>Statuts d'une AIPD</h4>
+      <p>
+        <span class="tag purple">En cours</span> — screening réalisé, analyse en attente<br>
+        <span class="tag orange">À compléter</span> — mesures correctives à détailler<br>
+        <span class="tag green">Approuvée</span> — risques maîtrisés, traitement autorisé<br>
+        <span class="tag muted">Archivée</span> — conservée pour traçabilité
+      </p>
+    </section>
+
+    <!-- ===== SECTION 8 : VEILLE ===== -->
+    <section id="veille">
+      <h2>Veille juridique & Réponses CNIL</h2>
+
+      <div class="section-intro">
+        <p>La brique <strong>📡 Veille & CNIL</strong> est un espace d'analyse juridique assisté par IA. Elle permet d'analyser des décisions CNIL, des sanctions, des courriers d'investigation ou toute jurisprudence récente, et de préparer une réponse ou une note interne adaptée.</p>
+      </div>
+
+      <h3>Analyser une décision ou un courrier</h3>
+      <p>Collez le texte de la décision ou du courrier dans le champ dédié, sélectionnez le type d'analyse, puis cliquez sur <strong>"✦ Analyser avec l'IA"</strong> :</p>
+
+      <div class="mockup">
+        <div class="mockup-bar">
+          <div class="mockup-dot r"></div><div class="mockup-dot y"></div><div class="mockup-dot g"></div>
+          <span class="mockup-title">Veille juridique — Analyse IA</span>
+        </div>
+        <div class="mockup-body" style="padding:16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Texte ou résumé de la décision</div>
+              <textarea style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:7px;padding:9px 11px;font-size:12px;color:var(--muted);min-height:120px;resize:none" readonly placeholder="Coller ici la décision CNIL, la sanction, ou le courrier d'investigation…"></textarea>
+              <div style="margin-top:10px">
+                <div style="font-size:11px;font-weight:700;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Type d'analyse</div>
+                <select style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:7px;padding:8px 11px;font-size:12px;color:var(--text)">
+                  <option>Sanction / Délibération CNIL</option>
+                  <option>Courrier d'investigation / Contrôle</option>
+                  <option>Jurisprudence / Recommandation</option>
+                </select>
+              </div>
+              <button style="margin-top:10px;background:linear-gradient(135deg,rgba(59,130,246,.25),rgba(139,92,246,.25));border:1px solid rgba(139,92,246,.4);color:#c4b5fd;border-radius:7px;padding:8px 16px;font-size:12px;font-weight:600;width:100%">✦ Analyser avec l'IA</button>
+            </div>
+            <div class="ui-ia-box">
+              <div class="ui-ia-header">✦ Analyse IA — Résultat</div>
+              <div class="ui-ia-content">
+                <strong style="color:var(--text)">Sanction CNIL — Entreprise X — 200 000 €</strong><br><br>
+                <strong style="color:#c4b5fd">Manquements identifiés :</strong><br>
+                • Absence de registre Art.30 à jour<br>
+                • Durée de conservation non définie<br>
+                • Sous-traitants sans DPA signé<br><br>
+                <strong style="color:#c4b5fd">Actions correctives recommandées :</strong><br>
+                → Auditer et compléter le registre<br>
+                → Définir des durées par catégorie<br>
+                → Signer des DPA avec prestataires
+              </div>
+              <div class="ui-ia-actions">
+                <button class="ui-ia-btn copy">Copier</button>
+                <button class="ui-ia-btn gold">Exporter note</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Types d'analyses disponibles</h3>
+      <ul>
+        <li><strong>Sanction / Délibération CNIL</strong> — identifie les manquements, leur base légale, et propose des actions correctives transposables à votre organisation</li>
+        <li><strong>Courrier d'investigation / Contrôle</strong> — prépare une réponse structurée et complète à adresser à la CNIL</li>
+        <li><strong>Jurisprudence / Recommandation</strong> — synthétise l'impact pratique et les mesures à adopter</li>
+      </ul>
+
+      <div class="callout info">
+        <div class="callout-icon">ℹ️</div>
+        <p>Le bouton <strong>"Exporter note"</strong> génère une note interne DPO au format document, intégrant l'analyse IA et les recommandations — prête à partager avec la direction ou à archiver dans le dossier de conformité.</p>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 9 : IA INTÉGRÉE ===== -->
+    <section id="ia">
+      <h2>IA intégrée — DPO Senior IA</h2>
+
+      <div class="section-intro">
+        <p>Chaque brique du module DPO intègre un assistant IA spécialisé RGPD, configuré avec le profil <strong>S@FE Digitalisation (SIREN 104699558, DPO externalisé)</strong>. Il rédige des documents officiels, qualifie les situations juridiques et propose des recommandations actionnables.</p>
+      </div>
+
+      <h3>Capacités de l'IA par brique</h3>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="icon">📬</div>
+          <div class="title">Brique DER</div>
+          <p>Qualification du droit exercé (article exact), vérification d'identité requise ou non, calcul du délai J+30, rédaction de la lettre de réponse officielle.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🚨</div>
+          <div class="title">Brique Violations</div>
+          <p>Score ENISA automatique, qualification de la violation, décision Art.33/34, rédaction des 8 rubriques du formulaire CNIL et du message aux personnes concernées.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📁</div>
+          <div class="title">Brique Registre</div>
+          <p>Génération complète de la fiche Art.30 (finalités, bases légales, durées de conservation, sous-traitants, mesures de sécurité, AIPD requise).</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📡</div>
+          <div class="title">Brique Veille</div>
+          <p>Analyse des décisions CNIL, identification des manquements, recommandations correctives, rédaction de notes internes DPO et de réponses à la CNIL.</p>
+        </div>
+      </div>
+
+      <h3>Connecteurs IA supportés</h3>
+      <p>L'assistant peut s'appuyer sur plusieurs services IA selon la configuration dans les connecteurs S@FE CRM :</p>
+      <p>
+        <span class="tag green">Groq</span>
+        <span class="tag blue">Anthropic (Claude)</span>
+        <span class="tag purple">Mistral</span>
+        <span class="tag gold">Grok (xAI)</span>
+      </p>
+      <p>Configurez votre connecteur IA depuis <strong>Paramètres → Connecteurs</strong> dans le tableau de bord principal. La clé API est stockée de façon sécurisée dans Supabase.</p>
+    </section>
+
+    <!-- ===== SECTION 10 : DÉLAIS LÉGAUX ===== -->
+    <section id="delais">
+      <h2>Référentiel des délais légaux</h2>
+
+      <div class="section-intro">
+        <p>Le module calcule et affiche automatiquement tous les délais légaux RGPD. Ce récapitulatif détaille les délais à respecter et les obligations associées.</p>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin:16px 0">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:0.7px">Obligation</th>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:0.7px">Délai</th>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:0.7px">Article</th>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:0.7px">Brique</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Réponse à une demande DER</td>
+            <td style="padding:9px 12px"><span class="tag orange">J+30</span></td>
+            <td style="padding:9px 12px"><span class="art-pill">Art.12</span></td>
+            <td style="padding:9px 12px"><span class="tag blue">DER</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Notification CNIL — violation</td>
+            <td style="padding:9px 12px"><span class="tag red">72 heures</span></td>
+            <td style="padding:9px 12px"><span class="art-pill">Art.33</span></td>
+            <td style="padding:9px 12px"><span class="tag red">Violations</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Notification personnes — risque élevé</td>
+            <td style="padding:9px 12px"><span class="tag red">Sans délai</span></td>
+            <td style="padding:9px 12px"><span class="art-pill">Art.34</span></td>
+            <td style="padding:9px 12px"><span class="tag red">Violations</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Prorogation DER (cas complexes)</td>
+            <td style="padding:9px 12px"><span class="tag orange">+2 mois</span></td>
+            <td style="padding:9px 12px"><span class="art-pill">Art.12</span></td>
+            <td style="padding:9px 12px"><span class="tag blue">DER</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Consultation CNIL avant traitement risqué</td>
+            <td style="padding:9px 12px"><span class="tag purple">Avant lancement</span></td>
+            <td style="padding:9px 12px"><span class="art-pill">Art.36</span></td>
+            <td style="padding:9px 12px"><span class="tag purple">AIPD</span></td>
+          </tr>
+          <tr>
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Mise à jour du registre</td>
+            <td style="padding:9px 12px"><span class="tag gold">Continue</span></td>
+            <td style="padding:9px 12px"><span class="art-pill">Art.30</span></td>
+            <td style="padding:9px 12px"><span class="tag gold">Registre</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ===== SECTION 11 : RÉCAPITULATIF ===== -->
+    <section id="actions">
+      <h2>Récapitulatif des actions disponibles</h2>
+
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin:16px 0">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:0.7px">Action</th>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:0.7px">Brique</th>
+            <th style="text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:0.7px">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Créer une demande DER</td>
+            <td style="padding:9px 12px"><span class="tag blue">DER</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Enregistrer une demande de droit avec calcul automatique du J+30</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Analyser une DER avec l'IA</td>
+            <td style="padding:9px 12px"><span class="tag blue">DER</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Qualifier le droit, calculer le délai, générer le projet de réponse officielle</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Déclarer une violation</td>
+            <td style="padding:9px 12px"><span class="tag red">Violations</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Enregistrer un incident avec démarrage automatique du timer 72h</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Analyse IA violation + draft CNIL</td>
+            <td style="padding:9px 12px"><span class="tag red">Violations</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Score ENISA, décision Art.33/34, 8 rubriques formulaire CNIL, message personnes</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Créer une fiche Art.30</td>
+            <td style="padding:9px 12px"><span class="tag gold">Registre</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Décrire le traitement en langage naturel, l'IA génère la fiche complète</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Screening AIPD</td>
+            <td style="padding:9px 12px"><span class="tag purple">AIPD</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Cocher les 9 critères CNIL pour déterminer si une AIPD est obligatoire</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Analyse AIPD complète</td>
+            <td style="padding:9px 12px"><span class="tag purple">AIPD</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Risques résiduels, vraisemblance, mesures correctives, avis DPO</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(37,51,71,.5)">
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Analyser une décision CNIL</td>
+            <td style="padding:9px 12px"><span class="tag muted">Veille</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Identifier les manquements et proposer des actions correctives</td>
+          </tr>
+          <tr>
+            <td style="padding:9px 12px;color:var(--text);font-weight:600">Exporter une note DPO</td>
+            <td style="padding:9px 12px"><span class="tag muted">Veille</span></td>
+            <td style="padding:9px 12px;color:var(--muted)">Générer un document de note interne DPO exportable depuis l'analyse IA</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <hr>
+
+      <div style="text-align:center;padding:24px 0;color:var(--muted);font-size:13px">
+        <div style="font-size:24px;margin-bottom:8px">📋</div>
+        <div style="font-family:'Sora',sans-serif;font-weight:700;color:var(--text);margin-bottom:4px">S@FE CRM — Module RGPD / DPO</div>
+        <div>Mode d'emploi — Juin 2026</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
