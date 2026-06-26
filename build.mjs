@@ -75,7 +75,7 @@ function copyStatic() {
   // Répertoires complets (contenu HTML + assets propres)
   for (const dir of [
     'icons', 'legal', 'assets/supabase',
-    'prospection-terrain', 'modules', 'audits', 'docs',
+    'prospection-terrain', 'modules', 'audits', 'docs', 'mode-d-emploi',
   ]) {
     if (fs.existsSync(dir)) copyDir(dir, `${OUT}/${dir}`);
   }
