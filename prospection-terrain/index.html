@@ -326,6 +326,9 @@ select option{background:var(--navy-mid)}
 .cible-add{flex-shrink:0;padding:5px 12px;border-radius:8px;border:1px solid rgba(245,158,11,.4);background:transparent;color:var(--gold);font-size:.78rem;font-weight:700;cursor:pointer;transition:.15s;font-family:var(--ff-disp)}
 .cible-add:hover{background:rgba(245,158,11,.12)}
 .cible-add.done{border-color:var(--ok);color:var(--ok);cursor:default}
+/* ── BADGE DÉJÀ AJOUTÉ ── */
+.cible-already{display:inline-flex;align-items:center;gap:4px;font-family:var(--ff-mono);font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(34,197,94,.12);color:#86efac;border:1px solid rgba(34,197,94,.25);white-space:nowrap;flex-shrink:0}
+.cible-add.already-added{border-color:rgba(34,197,94,.4);color:#86efac;cursor:default;opacity:.7}
 /* ── ENGINE TABS ── */
 .engine-tabs{display:flex;gap:5px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:18px}
 .engine-tab{flex:1;padding:8px 12px;border-radius:9px;border:none;background:transparent;color:var(--mut-2);font-family:var(--ff-disp);font-size:.82rem;font-weight:600;cursor:pointer;transition:.15s;text-align:center}
@@ -2363,6 +2366,7 @@ async function _cibleSearch(){
   _cibleState.added = new Set();
   _cibleState.resultData = [];
   document.getElementById('cible-tournee-hint').style.display = 'none';
+  await _loadEtabCibles();
 
   const dep = document.getElementById('cible-depart').value.trim();
 
@@ -2430,19 +2434,24 @@ async function _cibleSearch(){
   title.textContent = `${filtered.length} établissement${filtered.length>1?'s':''} · rayon ${rayon} km`;
 
   list.innerHTML = filtered.map((r,i) => {
-    const nom  = r.nom_complet || '—';
-    const addr = [r.siege?.adresse, r.siege?.code_postal, r.siege?.commune].filter(Boolean).join(', ');
-    const naf  = r.siege?.activite_principale || r.activite_principale || '';
-    const dist = (r.siege?.latitude && r.siege?.longitude)
+    const nom    = r.nom_complet || '—';
+    const addr   = [r.siege?.adresse, r.siege?.code_postal, r.siege?.commune].filter(Boolean).join(', ');
+    const naf    = r.siege?.activite_principale || r.activite_principale || '';
+    const dist   = (r.siege?.latitude && r.siege?.longitude)
       ? _hvKm(lat, lng, parseFloat(r.siege.latitude), parseFloat(r.siege.longitude)).toFixed(1) + ' km'
       : '';
+    const siret  = r.siege?.siret || null;
+    const dejaCible = siret && _etabCiblesSet.sirene.has(siret);
+    const btnHtml = dejaCible
+      ? `<span class="cible-already">✓ Déjà ajouté</span>`
+      : `<button class="cible-add" id="cible-btn-${i}" onclick="_cibleAddResult(${i},this)">+ Tournée</button>`;
     return `<div class="cible-result">
       <div class="cible-result-body">
         <div class="cible-nom">${escHtml(nom)}</div>
         <div class="cible-addr">${escHtml(addr)}</div>
         <div class="cible-meta">${escHtml(naf)}${dist ? ' · 📍 ' + dist : ''}</div>
       </div>
-      <button class="cible-add" id="cible-btn-${i}" onclick="_cibleAddResult(${i},this)">+ Tournée</button>
+      ${btnHtml}
     </div>`;
   }).join('');
 }
@@ -2469,7 +2478,11 @@ async function _cibleAddResult(idx, btn){
   } catch { /* géocodage optionnel */ }
 
   // Ajout éphémère — RGPD : aucune donnée SIRENE n'entre dans Supabase avant consentement
-  _sireneTargets.push({ label, adresse, lat, lng, siret: r.siege?.siret || null, source: 'sirene' });
+  const siret = r.siege?.siret || null;
+  _sireneTargets.push({ label, adresse, lat, lng, siret, source: 'sirene' });
+
+  // Persistance de l'identifiant pour le suivi "Déjà ajouté" (Feature 1)
+  if (siret) _saveEtabCible('sirene', siret, label);
 
   _cibleState.added.add(idx);
   btn.textContent = '✓ Ajouté'; btn.classList.add('done'); btn.disabled = true;
@@ -2579,6 +2592,8 @@ let _sireneTargets  = [];  // cibles SIRENE pour la tournée (éphémère — RG
 let _placesTargets  = [];  // cibles sélectionnées pour la tournée (éphémère)
 let _placesResults  = [];  // résultats de la dernière recherche (éphémère)
 let _userProfile    = null;
+let _placesQuotaMax = 20;  // mise à jour depuis le profil (Feature 2)
+let _etabCiblesSet  = { sirene: new Set(), places: new Set() }; // Feature 1
 
 let _placesSector = '';
 let _placesVille  = '';
@@ -2633,6 +2648,41 @@ function _placesGeolocate() {
   }, () => { showToast('Position GPS indisponible', 'err'); btn.textContent = '📡'; btn.disabled = false; });
 }
 
+/* ── Chargement des identifiants déjà enregistrés (Feature 1) ── */
+async function _loadEtabCibles() {
+  const jwt = _getJWT();
+  if (!jwt) return;
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/etablissements_cibles?select=source,identifier`,
+      { headers: { ...H, 'Authorization': 'Bearer ' + jwt } }
+    );
+    const data = await r.json();
+    _etabCiblesSet = { sirene: new Set(), places: new Set() };
+    if (Array.isArray(data)) {
+      data.forEach(e => {
+        if (e.source === 'sirene')        _etabCiblesSet.sirene.add(e.identifier);
+        else if (e.source === 'google_places') _etabCiblesSet.places.add(e.identifier);
+      });
+    }
+  } catch(e) { console.warn('[EtabCibles] Erreur chargement:', e); }
+}
+
+async function _saveEtabCible(source, identifier, label) {
+  const jwt = _getJWT();
+  if (!jwt || !identifier) return;
+  try {
+    const payload = JSON.parse(atob(jwt.split('.')[1]));
+    await fetch(`${SUPABASE_URL}/rest/v1/etablissements_cibles`, {
+      method: 'POST',
+      headers: { ...H, 'Authorization': 'Bearer ' + jwt, 'Prefer': 'resolution=ignore-duplicates' },
+      body: JSON.stringify({ user_id: payload.sub, source, identifier, label: label || null }),
+    });
+    if (source === 'sirene')        _etabCiblesSet.sirene.add(identifier);
+    else if (source === 'google_places') _etabCiblesSet.places.add(identifier);
+  } catch(e) { console.warn('[EtabCibles] Erreur sauvegarde:', e); }
+}
+
 function _cibleSetEngine(eng) {
   _cibleEngine = eng;
   document.getElementById('engine-sirene').style.display = eng === 'sirene' ? '' : 'none';
@@ -2682,14 +2732,28 @@ async function _placesLoadQuota() {
     return;
   }
   try {
+    const payload    = JSON.parse(atob(jwt.split('.')[1]));
+    const userId     = payload.sub;
     const monthStart = new Date().toISOString().slice(0, 7) + '-01';
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/places_search_logs?select=id&created_at=gte.${monthStart}T00:00:00Z`,
-      { headers: { ...H, 'Authorization': 'Bearer ' + jwt } }
-    );
-    const data = await r.json();
-    const used = Array.isArray(data) ? data.length : 0;
-    const max = 20;
+
+    const [rLogs, rProfile] = await Promise.all([
+      fetch(
+        `${SUPABASE_URL}/rest/v1/places_search_logs?select=id&user_id=eq.${userId}&created_at=gte.${monthStart}T00:00:00Z`,
+        { headers: { ...H, 'Authorization': 'Bearer ' + jwt } }
+      ),
+      fetch(
+        `${SUPABASE_URL}/rest/v1/profiles?select=limite_requetes_google_places&id=eq.${userId}`,
+        { headers: { ...H, 'Authorization': 'Bearer ' + jwt } }
+      ),
+    ]);
+
+    const logsData    = await rLogs.json();
+    const profileData = await rProfile.json();
+
+    const used = Array.isArray(logsData) ? logsData.length : 0;
+    const max  = profileData?.[0]?.limite_requetes_google_places ?? 20;
+    _placesQuotaMax = max;
+
     const pct = Math.min(100, Math.round(used / max * 100));
     document.getElementById('places-quota-txt').textContent = `${used} / ${max} requêtes ce mois`;
     document.getElementById('places-quota-pct').textContent = pct + '%';
@@ -2698,7 +2762,7 @@ async function _placesLoadQuota() {
     fill.className = 'places-quota-fill' + (pct >= 90 ? ' full' : pct >= 70 ? ' warn' : '');
     if (used >= max) {
       document.getElementById('places-search-btn').disabled = true;
-      showToast('Quota mensuel Google Places atteint (20/20)', 'err');
+      showToast(`Quota mensuel Google Places atteint (${used}/${max})`, 'err');
     }
   } catch(e) {
     document.getElementById('places-quota-txt').textContent = 'Quota : erreur de chargement';
@@ -2723,6 +2787,8 @@ async function _placesSearch() {
   list.innerHTML = '<div style="text-align:center;padding:28px;color:var(--mut)"><div class="spinner" style="margin:0 auto 10px"></div>Recherche Google Places…</div>';
 
   try {
+    await _loadEtabCibles();
+
     const r = await fetch(`${SUPABASE_URL}/functions/v1/places-search`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
@@ -2746,19 +2812,24 @@ async function _placesSearch() {
 }
 
 function _placesRenderItem(p, i) {
-  const isSel  = _placesTargets.some(t => t.place_id === p.place_id);
-  const bdgMap = { gold:'p-gold', green:'p-green', blue:'p-blue', orange:'p-orange', gray:'p-gray' };
-  const bdg    = p.prospect ? `<span class="prospect-bdg ${bdgMap[p.prospect.color]||'p-gray'}">${p.prospect.label}</span>` : '';
-  const closed = p.status === 'CLOSED_TEMPORARILY' ? '<span class="places-closed">Fermé temporairement</span>' : '';
-  const stars  = p.rating ? `⭐ ${p.rating} (${p.ratings_total} avis)` : p.ratings_total === 0 ? '0 avis — sans présence' : '';
-  const noHours = !p.has_hours ? '<span style="font-size:.63rem;color:var(--mut-2)">Pas d\'horaires Google</span>' : '';
+  const isSel     = _placesTargets.some(t => t.place_id === p.place_id);
+  const dejaCible = p.place_id && _etabCiblesSet.places.has(p.place_id);
+  const bdgMap    = { gold:'p-gold', green:'p-green', blue:'p-blue', orange:'p-orange', gray:'p-gray' };
+  const bdg       = p.prospect ? `<span class="prospect-bdg ${bdgMap[p.prospect.color]||'p-gray'}">${p.prospect.label}</span>` : '';
+  const closed    = p.status === 'CLOSED_TEMPORARILY' ? '<span class="places-closed">Fermé temporairement</span>' : '';
+  const stars     = p.rating ? `⭐ ${p.rating} (${p.ratings_total} avis)` : p.ratings_total === 0 ? '0 avis — sans présence' : '';
+  const noHours   = !p.has_hours ? '<span style="font-size:.63rem;color:var(--mut-2)">Pas d\'horaires Google</span>' : '';
+  const dejaBdg   = dejaCible ? `<span class="cible-already" style="margin-left:6px">✓ Déjà ajouté</span>` : '';
+  const btnHtml   = dejaCible
+    ? `<span class="cible-already">✓ Déjà ajouté</span>`
+    : `<button class="cible-add${isSel?' done':''}" id="places-btn-${i}" onclick="_placesAddResult(${i},this)">${isSel?'✓ Ajouté':'+ Tournée'}</button>`;
   return `<div class="cible-result" id="places-item-${i}">
     <div class="cible-result-body">
-      <div class="cible-nom">${escHtml(p.name||'—')}</div>
+      <div class="cible-nom">${escHtml(p.name||'—')}${dejaBdg}</div>
       <div class="cible-addr">${escHtml(p.address||'—')}</div>
       <div class="cible-meta">${bdg}${closed}${stars?`<span>${stars}</span>`:''}${noHours}</div>
     </div>
-    <button class="cible-add${isSel?' done':''}" id="places-btn-${i}" onclick="_placesAddResult(${i},this)">${isSel?'✓ Ajouté':'+ Tournée'}</button>
+    ${btnHtml}
   </div>`;
 }
 
@@ -2774,6 +2845,8 @@ function _placesAddResult(idx, btn) {
     if (total >= 5) { showToast('Maximum 5 étapes par tournée (limite éco S@FE)', 'err'); return; }
     _placesTargets.push({ place_id:p.place_id, label:p.name, adresse:p.address, lat:p.lat, lng:p.lng, source:'google_places' });
     btn.textContent = '✓ Ajouté'; btn.classList.add('done');
+    // Persistance de l'identifiant pour le suivi "Déjà ajouté" (Feature 1)
+    if (p.place_id) _saveEtabCible('google_places', p.place_id, p.name);
   }
   _placesUpdateHint();
   _tourneeBuildList('');

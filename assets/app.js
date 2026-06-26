@@ -1722,10 +1722,19 @@ function openEditUserModal(userId) {
             <option value="admin_candy">⚙️ Admin (Niveau 3)</option>
           </select>
         </div>
+        <div class="field" style="border:1px solid rgba(245,158,11,.35);border-radius:8px;padding:10px 12px;background:rgba(245,158,11,.04)">
+          <label style="color:#f59e0b">🌍 Quota Google Places / mois (modifiable)</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <input id="eu-limite-places" type="number" min="0" max="500" step="1"
+              style="width:100px;margin:0"
+              placeholder="20">
+            <span style="font-size:.78rem;color:var(--mut)">requêtes / mois · défaut : 20</span>
+          </div>
+        </div>
         <p class="error" id="eu-error"></p>
         <div class="modal-actions">
           <button class="btn btn-out" onclick="$('#edit-user-modal').classList.remove('show')">Fermer</button>
-          <button class="btn btn-pri" onclick="saveEditUser()">Enregistrer le rôle</button>
+          <button class="btn btn-pri" onclick="saveEditUser()">Enregistrer</button>
         </div>
       </div>`;
     document.body.appendChild(modal);
@@ -1740,6 +1749,7 @@ function openEditUserModal(userId) {
   document.getElementById('eu-rcpro').value         = u.rcpro_numero || '—';
   document.getElementById('eu-numero-mandat').value = u.numero_mandat || '';
   document.getElementById('eu-role').value          = u.role || 'user';
+  document.getElementById('eu-limite-places').value = u.limite_requetes_google_places ?? 20;
   document.getElementById('eu-error').textContent = '';
   document.getElementById('edit-user-modal').classList.add('show');
 }
@@ -1747,16 +1757,19 @@ function openEditUserModal(userId) {
 async function saveEditUser() {
   const id      = document.getElementById('eu-id').value;
   const prenom  = document.getElementById('eu-prenom').value.trim();
-  const nom     = document.getElementById('eu-nom').value.trim();
   const role    = document.getElementById('eu-role').value;
   const errEl   = document.getElementById('eu-error');
   if (!prenom) { errEl.textContent = 'Le prénom est obligatoire.'; return; }
 
-  const numeroMandat = document.getElementById('eu-numero-mandat')?.value?.trim() || null;
+  const numeroMandat   = document.getElementById('eu-numero-mandat')?.value?.trim() || null;
+  const limiteRaw      = parseInt(document.getElementById('eu-limite-places')?.value, 10);
+  const limiteGPlaces  = (!isNaN(limiteRaw) && limiteRaw >= 0) ? limiteRaw : 20;
+
   const { error } = await sb.from('profiles').update({
     role,
     is_admin: ['admin_candy','super_admin'].includes(role),
     numero_mandat: numeroMandat,
+    limite_requetes_google_places: limiteGPlaces,
   }).eq('id', id);
 
   if (error) { errEl.textContent = 'Erreur : ' + error.message; return; }

@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
 // ── Limites ────────────────────────────────────────────────────────────────
-const USER_MONTHLY_LIMIT   = 20;
-const GLOBAL_MONTHLY_LIMIT = 5000;
+const USER_MONTHLY_LIMIT_DEFAULT = 20;  // fallback si profil absent
+const GLOBAL_MONTHLY_LIMIT       = 5000;
 
 // ── CORS (identique aux autres fonctions) ──────────────────────────────────
 const CORS = {
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
   const sbSrv = createClient(SB_URL, SB_SRV);
   const start = monthStart();
 
-  const [{ count: userCount }, { count: globalCount }] = await Promise.all([
+  const [{ count: userCount }, { count: globalCount }, { data: profileData }] = await Promise.all([
     sbSrv
       .from("places_search_logs")
       .select("*", { count: "exact", head: true })
@@ -62,16 +62,23 @@ Deno.serve(async (req) => {
       .from("places_search_logs")
       .select("*", { count: "exact", head: true })
       .gte("created_at", start),
+    sbSrv
+      .from("profiles")
+      .select("limite_requetes_google_places")
+      .eq("id", user.id)
+      .single(),
   ]);
 
-  const uUsed = userCount   ?? 0;
-  const gUsed = globalCount ?? 0;
+  const uUsed          = userCount   ?? 0;
+  const gUsed          = globalCount ?? 0;
+  const userMonthLimit = (profileData as { limite_requetes_google_places?: number } | null)
+    ?.limite_requetes_google_places ?? USER_MONTHLY_LIMIT_DEFAULT;
 
-  if (uUsed >= USER_MONTHLY_LIMIT) {
+  if (uUsed >= userMonthLimit) {
     return json({
       error:   "quota_user",
-      message: `Quota mensuel atteint : ${USER_MONTHLY_LIMIT} recherches/mois par utilisateur.`,
-      quota:   { user: { used: uUsed, limit: USER_MONTHLY_LIMIT }, global: { used: gUsed, limit: GLOBAL_MONTHLY_LIMIT } },
+      message: `Quota mensuel atteint : ${userMonthLimit} recherches/mois par utilisateur.`,
+      quota:   { user: { used: uUsed, limit: userMonthLimit }, global: { used: gUsed, limit: GLOBAL_MONTHLY_LIMIT } },
     }, 429);
   }
 
@@ -79,7 +86,7 @@ Deno.serve(async (req) => {
     return json({
       error:   "quota_global",
       message: `Quota global mensuel atteint (${GLOBAL_MONTHLY_LIMIT} recherches/mois).`,
-      quota:   { user: { used: uUsed, limit: USER_MONTHLY_LIMIT }, global: { used: gUsed, limit: GLOBAL_MONTHLY_LIMIT } },
+      quota:   { user: { used: uUsed, limit: userMonthLimit }, global: { used: gUsed, limit: GLOBAL_MONTHLY_LIMIT } },
     }, 429);
   }
 
@@ -174,7 +181,7 @@ Deno.serve(async (req) => {
   return json({
     results,
     quota: {
-      user:   { used: uUsed + 1, limit: USER_MONTHLY_LIMIT },
+      user:   { used: uUsed + 1, limit: userMonthLimit },
       global: { used: gUsed + 1, limit: GLOBAL_MONTHLY_LIMIT },
     },
   });
