@@ -37,10 +37,9 @@ refresh_token_reuse_interval = 10
 enable_signup = false
 enable_anonymous_sign_ins = false
 minimum_password_length = 8
-password_requirements = "upper_lower_letters_digits"
+password_requirements = "lower_upper_letters_digits"
 
 [auth.sms]
-enabled = false
 
 [auth.mfa]
 max_enrolled_factors = 10
