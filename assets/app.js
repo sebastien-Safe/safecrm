@@ -4904,37 +4904,125 @@ window.toggleLoginPasswordVisibility = toggleLoginPasswordVisibility;
 // ─────────────────────────────────────────────
 // AGENDA
 // ─────────────────────────────────────────────
-const agendaState = { year: 0, month: 0, selectedDay: null };
+const agendaState = { year: 0, month: 0, selectedDay: null, view: 'month', weekMonday: '' };
 
 function renderAgenda() {
   const now = new Date();
   if (!agendaState.year) { agendaState.year = now.getFullYear(); agendaState.month = now.getMonth(); }
+  if (!agendaState.weekMonday) {
+    const d = new Date(now), dow = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - dow);
+    agendaState.weekMonday = d.toISOString().slice(0, 10);
+  }
+  _updateAgendaViewToggle();
   _drawAgendaCalendar();
 }
 
-function agendaPrevMonth() {
-  if (--agendaState.month < 0) { agendaState.month = 11; agendaState.year--; }
+function agendaSetView(v) {
+  agendaState.view = v;
+  _updateAgendaViewToggle();
   _drawAgendaCalendar();
 }
 
-function agendaNextMonth() {
-  if (++agendaState.month > 11) { agendaState.month = 0; agendaState.year++; }
+function _updateAgendaViewToggle() {
+  ['month', 'week'].forEach(v => {
+    const btn = document.getElementById('avbtn-' + v);
+    if (btn) btn.classList.toggle('active', agendaState.view === v);
+  });
+}
+
+function agendaPrev() {
+  if (agendaState.view === 'week') {
+    const d = new Date(agendaState.weekMonday + 'T12:00:00');
+    d.setDate(d.getDate() - 7);
+    agendaState.weekMonday = d.toISOString().slice(0, 10);
+  } else {
+    if (--agendaState.month < 0) { agendaState.month = 11; agendaState.year--; }
+  }
+  _drawAgendaCalendar();
+}
+
+function agendaNext() {
+  if (agendaState.view === 'week') {
+    const d = new Date(agendaState.weekMonday + 'T12:00:00');
+    d.setDate(d.getDate() + 7);
+    agendaState.weekMonday = d.toISOString().slice(0, 10);
+  } else {
+    if (++agendaState.month > 11) { agendaState.month = 0; agendaState.year++; }
+  }
+  _drawAgendaCalendar();
+}
+
+// Rétro-compat (appelé depuis anciens liens éventuels)
+function agendaPrevMonth() { agendaState.view = 'month'; agendaPrev(); }
+function agendaNextMonth() { agendaState.view = 'month'; agendaNext(); }
+
+function agendaJumpToDate(iso) {
+  if (!iso) return;
+  const d = new Date(iso + 'T12:00:00');
+  agendaState.year = d.getFullYear();
+  agendaState.month = d.getMonth();
+  agendaState.selectedDay = iso;
+  const dow = (d.getDay() + 6) % 7;
+  const mon = new Date(d);
+  mon.setDate(d.getDate() - dow);
+  agendaState.weekMonday = mon.toISOString().slice(0, 10);
   _drawAgendaCalendar();
 }
 
 function _drawAgendaCalendar() {
-  const { year, month } = agendaState;
+  const { year, month, view, weekMonday } = agendaState;
   const todayStr = todayISO();
-  const label = new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-  $('#agenda-month-label').textContent = capitalize(label);
 
-  // Premier lundi avant le 1er du mois
-  const firstDay = new Date(year, month, 1);
-  const startDay = new Date(firstDay);
-  const dow = (firstDay.getDay() + 6) % 7; // 0=lundi
-  startDay.setDate(firstDay.getDate() - dow);
+  // Label de navigation
+  const labelEl = $('#agenda-month-label');
+  if (labelEl) {
+    if (view === 'week' && weekMonday) {
+      const mon = new Date(weekMonday + 'T12:00:00');
+      const fri = new Date(mon); fri.setDate(mon.getDate() + 4);
+      const fmt = d => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      labelEl.textContent = `${fmt(mon)} – ${fmt(fri)} ${fri.getFullYear()}`;
+    } else {
+      labelEl.textContent = capitalize(new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }));
+    }
+  }
 
-  // Index des tâches par date
+  // Construction de la liste de jours à afficher
+  const days = [];
+  if (view === 'week' && weekMonday) {
+    const mon = new Date(weekMonday + 'T12:00:00');
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(mon); d.setDate(mon.getDate() + i); days.push(d);
+    }
+  } else {
+    const firstDay = new Date(year, month, 1);
+    const startDay = new Date(firstDay);
+    const dow = (firstDay.getDay() + 6) % 7;
+    startDay.setDate(firstDay.getDate() - dow);
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(startDay); d.setDate(startDay.getDate() + i); days.push(d);
+    }
+  }
+
+  // Mise à jour dynamique des en-têtes
+  const headersEl = document.getElementById('agenda-headers');
+  if (headersEl) {
+    const JOURS5 = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven'];
+    const JOURS7 = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+    if (view === 'week' && weekMonday) {
+      const mon = new Date(weekMonday + 'T12:00:00');
+      headersEl.className = 'agenda-grid-week';
+      headersEl.innerHTML = JOURS5.map((j, i) => {
+        const d = new Date(mon); d.setDate(mon.getDate() + i);
+        return `<div class="agenda-day-header">${j} ${d.getDate()}</div>`;
+      }).join('');
+    } else {
+      headersEl.className = 'agenda-grid';
+      headersEl.innerHTML = JOURS7.map(j => `<div class="agenda-day-header">${j}</div>`).join('');
+    }
+  }
+
+  // Index des tâches et tournées par date
   const byDate = {};
   (state.tasks || []).forEach(t => {
     const dates = [];
@@ -4942,62 +5030,46 @@ function _drawAgendaCalendar() {
     else if (t.echeance) dates.push(t.echeance);
     dates.forEach(d => { if (d) { byDate[d] = byDate[d] || []; byDate[d].push(t); } });
   });
-
-  // Index des tournées par date
   const byDateTournee = {};
   (state.tournees || []).forEach(t => {
     if (t.date_tournee) { byDateTournee[t.date_tournee] = byDateTournee[t.date_tournee] || []; byDateTournee[t.date_tournee].push(t); }
   });
 
-  const cells = $('#agenda-cells');
-  cells.innerHTML = '';
+  // Rendu des cellules
+  const cellsEl = $('#agenda-cells');
+  cellsEl.className = view === 'week' ? 'agenda-grid-week' : 'agenda-grid';
+  cellsEl.innerHTML = '';
 
-  for (let i = 0; i < 42; i++) {
-    const d = new Date(startDay);
-    d.setDate(startDay.getDate() + i);
+  days.forEach(d => {
     const iso = d.toISOString().slice(0, 10);
-    const isCurrentMonth = d.getMonth() === month;
-    const isToday = iso === todayStr;
-    const isSelected = iso === agendaState.selectedDay;
-    const events = byDate[iso] || [];
+    const isCurrentMonth = view === 'week' ? true : d.getMonth() === month;
+    const isToday       = iso === todayStr;
+    const isSelected    = iso === agendaState.selectedDay;
+    const events        = byDate[iso] || [];
     const tourneesDuJour = byDateTournee[iso] || [];
+    const rdvs          = events.filter(t => t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain');
+    const hasEvents     = events.length + tourneesDuJour.length > 0;
 
     const cell = document.createElement('div');
     cell.className = ['agenda-cell', isToday ? 'today' : '', !isCurrentMonth ? 'other-month' : '', isSelected ? 'selected' : ''].filter(Boolean).join(' ');
-    cell.onclick = () => _selectAgendaDay(iso, events, tourneesDuJour);
+    cell.onclick = () => _selectAgendaDay(iso);
 
-    let html = `<div class="agenda-cell-num">${d.getDate()}</div>`;
-    const isMobile = window.innerWidth <= 600;
-    if (isMobile) {
-      // Vue mobile : points colorés uniquement
-      const dots = [];
-      tourneesDuJour.forEach(() => dots.push('tournee'));
-      events.forEach(t => {
-        const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
-        const late = isOverdue(t.echeance || t.rdv_date, t.statut);
-        dots.push(late ? 'overdue' : isRdv ? 'rdv' : 'task');
-      });
-      if (dots.length) {
-        html += `<div class="agenda-dots">${dots.slice(0, 4).map(c => `<span class="agenda-dot ${c}"></span>`).join('')}${dots.length > 4 ? `<span class="agenda-dot" style="background:var(--mut);opacity:.6"></span>` : ''}</div>`;
-      }
-    } else {
-      // Vue desktop : étiquettes texte
-      tourneesDuJour.forEach(tr => {
-        html += `<div class="agenda-event" style="background:rgba(245,158,11,.18);color:#f59e0b;border-left:2px solid #f59e0b">🗺️ Tournée terrain</div>`;
-      });
-      const remaining = 3 - tourneesDuJour.length;
-      events.slice(0, Math.max(0, remaining)).forEach(t => {
-        const isRdv = t.type_tache === 'RDV visio' || t.type_tache === 'RDV terrain';
-        const late = isOverdue(t.echeance || t.rdv_date, t.statut);
-        const cls = late ? 'overdue' : isRdv ? 'rdv' : 'task';
-        html += `<div class="agenda-event ${cls}">${escapeHtml(t.titre)}</div>`;
-      });
-      const total = tourneesDuJour.length + events.length;
-      if (total > 3) html += `<div style="font-size:.6rem;color:var(--mut)">+${total - 3}</div>`;
-    }
-    cell.innerHTML = html;
-    cells.appendChild(cell);
-  }
+    // Emojis conditionnels : 🗺️ uniquement si tournée, 👤 uniquement si RDV
+    const icons = [
+      ...tourneesDuJour.map(() => `<span title="Tournée terrain">🗺️</span>`),
+      ...rdvs.map(() => `<span title="Rendez-vous">👤</span>`),
+    ];
+    const visibleIcons = icons.slice(0, 4);
+    const overflow     = icons.length > 4 ? `<span style="font-size:.55rem;color:var(--mut)">+${icons.length - 4}</span>` : '';
+    const emojiBlock   = visibleIcons.length ? `<div class="agenda-cell-emojis">${visibleIcons.join('')}${overflow}</div>` : '';
+
+    // Boutons d'action
+    const addBtn = `<button class="agenda-cell-btn" title="Ajouter un RDV" onclick="event.stopPropagation();openTaskModal(null,{type_tache:'RDV terrain',rdv_date:'${iso}'})">➕</button>`;
+    const delBtn = hasEvents ? `<button class="agenda-cell-btn" title="Voir / Supprimer" onclick="event.stopPropagation();_selectAgendaDay('${iso}')">➖</button>` : '';
+
+    cell.innerHTML = `<div class="agenda-cell-num">${d.getDate()}</div>${emojiBlock}<div class="agenda-cell-actions">${addBtn}${delBtn}</div>`;
+    cellsEl.appendChild(cell);
+  });
 
   // Rouvrir le panneau jour si un jour était sélectionné
   if (agendaState.selectedDay) {
@@ -5097,7 +5169,7 @@ function _renderDayPanel(iso, events, tourneesDuJour = []) {
   }
 }
 
-function _selectAgendaDay(iso, events, tourneesDuJour = []) {
+function _selectAgendaDay(iso) {
   agendaState.selectedDay = iso;
   _drawAgendaCalendar();
 }

@@ -423,14 +423,19 @@
           </div>
         </div>
       </div>
-      <!-- Navigation mois -->
+      <!-- Navigation agenda -->
       <div class="agenda-nav">
-        <button class="btn btn-out btn-sm" onclick="agendaPrevMonth()">‹</button>
+        <div class="agenda-view-toggle">
+          <button class="agenda-vbtn active" id="avbtn-month" onclick="agendaSetView('month')">Mois</button>
+          <button class="agenda-vbtn" id="avbtn-week" onclick="agendaSetView('week')">Semaine</button>
+        </div>
+        <button class="btn btn-out btn-sm" onclick="agendaPrev()">‹</button>
         <span id="agenda-month-label"></span>
-        <button class="btn btn-out btn-sm" onclick="agendaNextMonth()">›</button>
+        <button class="btn btn-out btn-sm" onclick="agendaNext()">›</button>
+        <input type="date" id="agenda-datepicker" class="agenda-datepicker" onchange="agendaJumpToDate(this.value)" title="Aller à une date">
       </div>
-      <!-- Grille calendrier -->
-      <div class="agenda-grid">
+      <!-- En-têtes jours (mis à jour dynamiquement) -->
+      <div id="agenda-headers" class="agenda-grid">
         <div class="agenda-day-header">Lun</div>
         <div class="agenda-day-header">Mar</div>
         <div class="agenda-day-header">Mer</div>
@@ -1089,6 +1094,7 @@
       </div>
       <div class="field"><label>Assigné à</label><select id="t-assigne"><option value="">— Non assigné —</option></select></div>
     </div>
+    <div class="task-conflict-alert" id="task-conflict-alert"></div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="task-delete-btn" class="is-hidden" style="margin-right:auto">Supprimer</button>
       <button class="btn btn-out" id="task-cancel-btn">Annuler</button>

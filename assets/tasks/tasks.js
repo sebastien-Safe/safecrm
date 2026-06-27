@@ -103,6 +103,18 @@ function closeTaskModal() {
   $('#task-modal').classList.remove('show');
 }
 
+function _findRdvConflict(rdv_date, rdv_heure, excludeId) {
+  if (!rdv_date || !rdv_heure) return null;
+  const heure = rdv_heure.slice(0, 5);
+  return (state.tasks || []).find(t => {
+    if (excludeId && t.id === excludeId) return false;
+    if (t.rdv_date !== rdv_date) return false;
+    if (!t.rdv_heure) return false;
+    if (t.type_tache !== 'RDV visio' && t.type_tache !== 'RDV terrain') return false;
+    return t.rdv_heure.slice(0, 5) === heure;
+  }) || null;
+}
+
 async function saveTask() {
   const id    = $('#t-id').value;
   const titre = $('#t-titre').value.trim();
@@ -111,6 +123,27 @@ async function saveTask() {
   const type_tache = $('#t-type').value;
   const isRdv      = type_tache === 'RDV visio' || type_tache === 'RDV terrain';
   const rdv_date   = isRdv ? ($('#t-rdv-date').value || null) : null;
+  const rdv_heure  = isRdv ? ($('#t-rdv-heure').value || null) : null;
+
+  // Vérification de conflit de créneau horaire
+  const conflictAlert = document.getElementById('task-conflict-alert');
+  if (conflictAlert) conflictAlert.className = 'task-conflict-alert'; // reset
+  if (isRdv && rdv_date && rdv_heure) {
+    const conflict = _findRdvConflict(rdv_date, rdv_heure, id || null);
+    if (conflict) {
+      if (conflictAlert) {
+        const dayLabel = new Date(rdv_date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+        const contact  = conflict.contact_id ? (state.contacts || []).find(c => c.id === conflict.contact_id) : null;
+        const who      = contact ? ` (${escapeHtml(contact.nom)}${contact.entreprise ? ' — ' + escapeHtml(contact.entreprise) : ''})` : '';
+        conflictAlert.className = 'task-conflict-alert visible';
+        conflictAlert.innerHTML = `⚠️ <strong>Créneau déjà occupé</strong> — "${escapeHtml(conflict.titre)}"${who} est déjà planifié à ${rdv_heure.slice(0,5)} le ${dayLabel}.<br>
+          <span style="font-size:.78rem">Modifiez la date ou l'heure ci-dessus pour résoudre le conflit.</span>`;
+        document.getElementById('t-rdv-date')?.focus();
+      }
+      return;
+    }
+  }
+
   const payload = {
     type_tache,
     titre,
@@ -118,7 +151,7 @@ async function saveTask() {
     contact_id:  $('#t-contact').value  || null,
     contract_id: $('#t-contract').value || null,
     rdv_date,
-    rdv_heure:   isRdv ? ($('#t-rdv-heure').value || null) : null,
+    rdv_heure,
     rdv_lieu:    isRdv ? ($('#t-rdv-lieu').value.trim() || null) : null,
     echeance:    isRdv ? rdv_date : ($('#t-echeance').value || null),
     priorite:    $('#t-priorite').value,

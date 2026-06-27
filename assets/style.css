@@ -441,21 +441,36 @@ a.sidebar-item{text-decoration:none}
 }
 
 /* ── AGENDA ── */
-.agenda-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.agenda-nav span{font-weight:700;font-size:1rem;min-width:160px;text-align:center}
+.agenda-nav{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.agenda-nav span{font-weight:700;font-size:1rem;min-width:140px;text-align:center}
+/* Grille mois (7 cols) */
 .agenda-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
+/* Grille semaine (5 cols Lun–Ven) */
+.agenda-grid-week{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:8px}
 .agenda-day-header{text-align:center;font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:4px 0}
-.agenda-cell{min-height:72px;background:var(--navy-mid);border:1px solid var(--line);border-radius:8px;padding:6px;cursor:pointer;transition:.12s;position:relative}
+.agenda-cell{min-height:72px;background:var(--navy-mid);border:1px solid var(--line);border-radius:8px;padding:6px 6px 22px;cursor:pointer;transition:.12s;position:relative}
 .agenda-cell:hover{border-color:var(--accent-2)}
 .agenda-cell.today{border-color:var(--accent-2);background:rgba(59,130,246,.08)}
 .agenda-cell.other-month{opacity:.35}
 .agenda-cell.selected{border-color:var(--gold);background:rgba(245,158,11,.08)}
 .agenda-cell-num{font-size:.72rem;font-weight:700;color:var(--mut-2);margin-bottom:4px}
 .agenda-cell.today .agenda-cell-num{color:var(--accent-2)}
-.agenda-event{font-size:.65rem;padding:2px 5px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
-.agenda-event.rdv{background:var(--gold)}
-.agenda-event.task{background:var(--accent-2)}
-.agenda-event.overdue{background:var(--alert)}
+/* Emojis d'événements (uniquement si événement présent) */
+.agenda-cell-emojis{display:flex;flex-wrap:wrap;gap:2px;line-height:1;margin-bottom:2px}
+.agenda-cell-emojis span{font-size:.9rem;line-height:1}
+/* Boutons ➕/➖ en bas de la cellule */
+.agenda-cell-actions{position:absolute;bottom:3px;right:4px;display:flex;gap:1px;opacity:0;transition:opacity .15s}
+.agenda-cell:hover .agenda-cell-actions{opacity:1}
+.agenda-cell-btn{background:none;border:none;cursor:pointer;font-size:.75rem;padding:1px 3px;color:var(--mut);line-height:1;border-radius:4px;transition:color .12s,background .12s}
+.agenda-cell-btn:hover{color:#fff;background:rgba(255,255,255,.1)}
+/* Toggle vue semaine/mois */
+.agenda-view-toggle{display:flex;gap:3px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:9px;padding:3px;flex-shrink:0}
+.agenda-vbtn{background:transparent;border:none;color:var(--mut);font-size:.78rem;font-weight:600;padding:5px 12px;border-radius:7px;cursor:pointer;transition:.12s;font-family:inherit;white-space:nowrap}
+.agenda-vbtn.active{background:rgba(255,255,255,.1);color:#fff}
+/* DatePicker */
+.agenda-datepicker{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:8px;padding:5px 9px;color:#fff;font-size:.8rem;cursor:pointer;font-family:inherit;max-width:130px}
+.agenda-datepicker::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.5;cursor:pointer}
+/* Panneau jour */
 .agenda-day-panel{background:var(--navy-mid);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:12px}
 .agenda-day-panel h4{margin:0 0 12px;font-size:.95rem}
 .agenda-ev-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.04);margin-bottom:8px;cursor:pointer}
@@ -466,35 +481,30 @@ a.sidebar-item{text-decoration:none}
 .agenda-ev-dot.overdue{background:var(--alert)}
 .agenda-ev-title{font-size:.88rem;font-weight:600}
 .agenda-ev-meta{font-size:.75rem;color:var(--mut)}
+/* Alerte conflit dans la modale tâche */
+.task-conflict-alert{background:rgba(255,77,94,.08);border:1px solid rgba(255,77,94,.35);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:.82rem;color:#fca5a5;display:none}
+.task-conflict-alert.visible{display:block}
 
 /* ── AGENDA — adaptation mobile ── */
 @media(max-width:600px){
-  .agenda-nav{gap:8px;margin-bottom:12px}
-  .agenda-nav span{min-width:0;flex:1;font-size:.92rem}
-  .agenda-grid{gap:2px}
-  .agenda-day-header{font-size:.6rem;padding:3px 0;letter-spacing:.04em}
-  .agenda-cell{min-height:44px;padding:4px 3px;border-radius:6px}
-  .agenda-cell-num{font-size:.75rem;margin-bottom:2px;display:block;text-align:center}
-  /* Remplace les étiquettes texte par des points colorés sur mobile */
-  .agenda-event{
-    display:none
-  }
-  .agenda-dots{display:flex;justify-content:center;gap:3px;flex-wrap:wrap;margin-top:2px}
-  .agenda-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-  .agenda-dot.rdv{background:var(--gold)}
-  .agenda-dot.task{background:var(--accent-2)}
-  .agenda-dot.overdue{background:var(--alert)}
-  .agenda-dot.tournee{background:#34d399}
-  /* Panneau du jour : plein écran, plus lisible */
-  .agenda-day-panel{
-    border-radius:16px;
-    padding:14px 12px;
-    margin-top:10px;
-  }
+  .agenda-nav{gap:6px;margin-bottom:12px}
+  .agenda-nav span{min-width:0;flex:1;font-size:.82rem;text-align:center}
+  .agenda-grid,.agenda-grid-week{gap:2px}
+  .agenda-day-header{font-size:.58rem;padding:3px 0;letter-spacing:.03em}
+  .agenda-cell{min-height:52px;padding:4px 3px 20px;border-radius:6px}
+  .agenda-cell-num{font-size:.72rem;margin-bottom:2px;display:block;text-align:center}
+  .agenda-cell-emojis{justify-content:center}
+  .agenda-cell-emojis span{font-size:.78rem}
+  .agenda-cell-actions{opacity:1}
+  .agenda-cell-btn{font-size:.7rem}
+  /* Panneau jour : accent visuel pleine largeur */
+  .agenda-day-panel{border-radius:16px;padding:14px 12px;margin-top:10px;border-color:var(--gold);background:rgba(245,158,11,.04)}
   .agenda-day-panel h4{font-size:1rem;margin-bottom:10px}
   .agenda-ev-item{padding:10px;gap:8px}
   .agenda-ev-title{font-size:.92rem}
   .agenda-ev-meta{font-size:.78rem}
-  /* Boutons de navigation mois plus larges pour le toucher */
+  .agenda-view-toggle{order:-1;width:100%}
+  .agenda-vbtn{flex:1;text-align:center}
+  .agenda-datepicker{max-width:none;flex:1}
   .agenda-nav .btn{min-width:40px;height:40px;font-size:1.1rem;padding:0;display:grid;place-items:center}
 }
