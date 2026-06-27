@@ -288,7 +288,7 @@ table{width:100%;border-collapse:collapse}th{background:#06b6d4;color:#fff;paddi
     niveau_bg: niveauBg, niveau_border: niveauBorder,
     rows: rowsData, recommandations: [],
     date: now, conseiller: 'Safe Digitalisation',
-    rdv_url: 'https://crm.safe-digitalisation.fr/booking.html',
+    rdv_url: (()=>{ const t=localStorage.getItem('pt_booking_token'); return t?`https://crm.safe-digitalisation.fr/booking.html?token=${t}`:'https://crm.safe-digitalisation.fr/booking.html'; })(),
   });
 }
 

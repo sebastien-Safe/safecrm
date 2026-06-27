@@ -406,7 +406,6 @@ select option{background:var(--navy-mid)}
     <div class="topbar-brand">S<b>@</b>FE<small>PROSPECTION</small></div>
 
     <div class="topbar-user">
-      <a href="/" class="btn btn-out" style="font-size:.78rem;padding:5px 12px;text-decoration:none;border-color:rgba(245,158,11,.4);color:var(--gold)">← CRM</a>
       <button class="btn-logout" onclick="doLogout()">Verrouiller</button>
     </div>
   </div>
@@ -418,21 +417,19 @@ select option{background:var(--navy-mid)}
 
       <div class="sidebar-section">
         <div class="sidebar-label">Prospection</div>
-        <button class="sidebar-item" id="nav-ciblage" onclick="showView('ciblage')"><span class="ico">🚀</span> Cibler des établissements</button>
+        <button class="sidebar-item" id="nav-ciblage" onclick="showView('ciblage')"><span class="ico">🎯</span> Choisir mes prospects</button>
         <button class="sidebar-item" onclick="openTourneeModal()"><span class="ico">🗺️</span> Lancer l'itinéraire</button>
         <a class="sidebar-item" href="/prospection-terrain/audit.html"><span class="ico">🔍</span> Faire un audit gratuit</a>
       </div>
       <hr class="sidebar-divider">
       <div class="sidebar-section">
-        <div class="sidebar-label">Tableau de bord</div>
-        <button class="sidebar-item active" id="nav-dashboard" onclick="showView('dashboard')"><span class="ico">📊</span> Tableau de bord</button>
-        <button class="sidebar-item" id="nav-clients" onclick="showView('clients')"><span class="ico">👥</span> Contacts</button>
-        <button class="sidebar-item" id="nav-tasks"   onclick="showView('tasks')"  ><span class="ico">✅</span> Tâches</button>
+        <div class="sidebar-label">Agenda</div>
+        <a class="sidebar-item" href="/?v=agenda"><span class="ico">🗓️</span> Programmer un RDV</a>
+        <a class="sidebar-item" href="/?v=agenda"><span class="ico">📆</span> Voir mon agenda</a>
       </div>
-
-      <div class="sidebar-section" style="margin-top:auto;padding-top:12px;border-top:1px solid var(--line)">
-        <a class="sidebar-item" href="/?v=agenda"><span class="ico">📅</span> Agenda</a>
-        <a class="sidebar-item" href="/"><span class="ico">←</span> Retour au CRM</a>
+      <hr class="sidebar-divider">
+      <div class="sidebar-section">
+        <a class="sidebar-item" href="/"><span class="ico">🔙</span> Retour CRM</a>
       </div>
 
     </nav>
@@ -1071,7 +1068,7 @@ function pinClear(){ _pinVal=''; _pinUpdateDots(); document.getElementById('pin-
 function _pinUpdateDots(){ for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('filled',i<_pinVal.length); }
 function _pinCheck(){
   if(_pinVal===PT_PIN){
-    sessionStorage.setItem('pt_unlocked','1');
+    localStorage.setItem('pt_unlocked', Date.now().toString());
     document.getElementById('pin-overlay').style.display='none';
     initApp();
   } else {
@@ -1080,6 +1077,13 @@ function _pinCheck(){
     setTimeout(()=>{ document.getElementById('pin-error').textContent=''; },1500);
   }
 }
+(function _autoUnlock(){
+  const ts = parseInt(localStorage.getItem('pt_unlocked') || '0', 10);
+  if (ts && Date.now() - ts < 4 * 60 * 60 * 1000) {
+    document.getElementById('pin-overlay').style.display = 'none';
+    initApp();
+  }
+})();
 document.addEventListener('keydown', e=>{
   if(document.getElementById('pin-overlay').style.display==='none') return;
   if(e.key>='0'&&e.key<='9') pinKey(e.key);
@@ -1088,7 +1092,7 @@ document.addEventListener('keydown', e=>{
 });
 
 function doLogout(){
-  sessionStorage.removeItem('pt_unlocked');
+  localStorage.removeItem('pt_unlocked');
   document.getElementById('app').style.display='none';
   document.getElementById('pin-overlay').style.display='flex';
   _pinVal=''; _pinUpdateDots();
@@ -2246,11 +2250,6 @@ document.getElementById('wf-overlay').addEventListener('click', function(e){
   if(e.target.id==='wf-overlay') closeWorkflow();
 });
 
-// PIN déjà validé dans cette session → lancer l'app directement
-if (sessionStorage.getItem('pt_unlocked') === '1') {
-  document.getElementById('pin-overlay').style.display = 'none';
-  initApp();
-}
 
 // ── BURGER MOBILE WORK ──
 function toggleWorkSidebar() {
@@ -2482,7 +2481,7 @@ async function _cibleAddResult(idx, btn){
 
   // Ajout éphémère — RGPD : aucune donnée SIRENE n'entre dans Supabase avant consentement
   const siret = r.siege?.siret || null;
-  _sireneTargets.push({ label, adresse, lat, lng, siret, source: 'sirene' });
+  _sireneTargets.push({ label, adresse, lat, lng, siret, source: 'sirene', resultIdx: idx });
 
   // Persistance de l'identifiant pour le suivi "Déjà ajouté" (Feature 1)
   if (siret) _saveEtabCible('sirene', siret, label);
@@ -2720,11 +2719,14 @@ async function _loadUserProfile() {
     const userId = payload.sub;
     if (!userId) return;
     const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=id,role,is_admin,prenom,nom`,
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=id,role,is_admin,prenom,nom,booking_token`,
       { headers: { ...H, 'Authorization': 'Bearer ' + jwt } }
     );
     const data = await r.json();
     _userProfile = data?.[0] || null;
+    if (_userProfile?.booking_token) {
+      localStorage.setItem('pt_booking_token', _userProfile.booking_token);
+    }
   } catch(e) { console.warn('[Profile]', e); }
 }
 
@@ -2949,6 +2951,14 @@ function _tourneeBuildList(filter) {
 
 function _sireneRemoveFromTournee(idx, cb) {
   if (!cb.checked) {
+    const target = _sireneTargets[idx];
+    if (target && target.resultIdx !== undefined) {
+      _cibleState.added.delete(target.resultIdx);
+      const btn = document.getElementById(`cible-btn-${target.resultIdx}`);
+      if (btn) { btn.textContent = '+ Tournée'; btn.classList.remove('done'); btn.disabled = false; }
+      document.getElementById('cible-added-count').textContent = _cibleState.added.size;
+      if (_cibleState.added.size === 0) document.getElementById('cible-tournee-hint').style.display = 'none';
+    }
     _sireneTargets.splice(idx, 1);
     _tourneeBuildList('');
   }

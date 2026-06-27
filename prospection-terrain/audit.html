@@ -613,12 +613,16 @@ ${missionBlocks}
   <span>S@FE — Safe Digitalisation · contact@safe-digitalisation.fr</span>
   <span>Rapport du ${now} · Audits gratuits sans engagement</span>
 </div>
+<div style="text-align:center;padding:16px;margin-top:8px;border-top:1px solid #e5e7eb;display:flex;justify-content:center;gap:10px">
+  <button onclick="window.print()" style="background:#f59e0b;color:#0a1628;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer">🖨 Imprimer</button>
+  <button onclick="window.close()" style="background:transparent;color:#6b7280;border:1px solid #d1d5db;border-radius:8px;padding:9px 20px;font-size:13px;cursor:pointer">✕ Fermer</button>
+</div>
 </body></html>`;
 
   const w=window.open('','_blank');
   w.document.write(html);
   w.document.close();
-  w.onload=()=>w.print();
+  w.onload=()=>{ w.print(); try{ window.focus(); }catch(_){} };
   closeModal();
   showToast('Rapport généré !','ok');
 }
