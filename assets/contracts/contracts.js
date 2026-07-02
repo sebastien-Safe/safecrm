@@ -30,6 +30,7 @@ const CONTRACT_ICONS = {
   'Formation':      '🎓',
   'Audit':          '🔎',
   'DPO externalisé':'⚖️',
+  'C&NDY-e':        '🍬',
 };
 
 function getContractIcon(type) {
@@ -93,6 +94,10 @@ const FORMULE_PRESETS = {
     { label: 'Audit concurrentiel',      montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.10, comm_recurrent_pct: 0 },
     { label: 'Sensibilisation phishing', montant: 290, recurrence: 'Ponctuel', setup: 0, engagement: 0, comm_signature_pct: 0.10, comm_recurrent_pct: 0 },
     { label: 'Veille menaces',           montant: 89,  recurrence: 'Mensuel',  setup: 0, engagement: 0, comm_signature_pct: 0,    comm_recurrent_pct: 0.10 },
+  ],
+  'C&NDY-e': [
+    { label: 'Prix comptant',        montant: 5250, recurrence: 'Ponctuel', setup: 0, engagement: 0 },
+    { label: 'Maintenance annuelle', montant: 1080, recurrence: 'Annuel',  setup: 0, engagement: 0 },
   ],
 };
 const FORMULE_CUSTOM = '__custom__';
