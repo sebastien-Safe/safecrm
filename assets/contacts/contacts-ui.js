@@ -78,6 +78,12 @@ function openContactModal(id = null) {
   $('#c-siret').value = c?.siret || '';
   $('#c-source').value = c?.source || state.profile?.prenom || '';
   $('#c-source').readOnly = true;
+  const webBadge = $('#contact-modal-web-badge');
+  if (webBadge) {
+    webBadge.classList.toggle('is-hidden', !c?.canal_acquisition);
+    webBadge.textContent = c?.canal_acquisition ? `🌐 ${c.canal_acquisition}` : '';
+  }
+  if ($('#c-qualification')) $('#c-qualification').value = c?.qualification || 'qualifié';
   $('#c-notes').value = c?.notes || '';
   $('#c-consent-telephone').checked = !!c?.consent_telephone;
   $('#c-consent-email').checked = !!c?.consent_email;

@@ -43,6 +43,7 @@ async function logRgpd(action, module, opts = {}) {
 // ============================================================
 const JOURNAL_ACTION_LABELS = {
   contact_cree:                  'Création contact',
+  contact_cree_web:              'Création contact (formulaire web)',
   contact_modifie:               'Modification contact',
   contact_supprime:              'Suppression contact',
   contrat_cree:                  'Création contrat',

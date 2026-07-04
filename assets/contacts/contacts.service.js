@@ -31,6 +31,7 @@ async function saveContact() {
     siret: $('#c-siret').value.trim() || null,
     statut: existing?.statut || 'Client',
     source: $('#c-source').value.trim() || state.profile?.prenom || null,
+    qualification: $('#c-qualification')?.value || 'qualifié',
     notes: $('#c-notes').value.trim() || null,
     activites: $all('.c-activite').filter(cb => cb.checked).map(cb => cb.value),
     rgpd_ko: false,

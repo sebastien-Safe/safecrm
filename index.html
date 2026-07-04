@@ -831,6 +831,7 @@
 <div class="modal" id="contact-modal">
   <div class="box">
     <h3 id="contact-modal-title">Nouveau contact</h3>
+    <span class="pcard-web-badge is-hidden" id="contact-modal-web-badge" style="margin-bottom:10px"></span>
     <input type="hidden" id="c-id">
 
     <!-- 👤 Identité -->
@@ -863,6 +864,13 @@
       <input id="c-code-postal-ville" type="hidden">
     </div>
     <div class="field"><label>Source</label><input id="c-source" type="text" readonly style="opacity:.7"></div>
+    <div class="field" id="c-qualification-field">
+      <label>Qualification du prospect</label>
+      <select id="c-qualification">
+        <option value="non_qualifié">Non qualifié</option>
+        <option value="qualifié">Qualifié</option>
+      </select>
+    </div>
     <div class="field"><label>Activités concernées</label>
       <div class="checks">
         <label><input type="checkbox" value="Digitalisation" class="c-activite"> Digitalisation / SEO local</label>

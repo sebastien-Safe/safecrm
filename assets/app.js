@@ -2658,24 +2658,26 @@ function setupInactivityTimeout() {
 //   verifyTotpEnroll, disableTotp, _logTotpEvent, challengeTOTPIfNeeded, _forceTotpEnrollment
 
 // --- Registre RGPD (Article 30) ---
+// Source unique avec docs/legal/REGISTRE_TRAITEMENTS.md (T1-T10) — toute
+// modification doit être répercutée dans les deux fichiers.
 const REGISTRE_RGPD = [
   {
     traitement: 'Gestion des comptes utilisateurs du CRM',
-    finalite: "Permettre l'authentification et l'usage du CRM par les commerciaux S@FE",
+    finalite: "Authentification et usage du CRM par les commerciaux et administrateurs S@FE",
     base: "Exécution du contrat de travail / mission (art. 6.1.b RGPD)",
-    categories: "E-mail, prénom, photo de profil, journaux de connexion",
-    destinataires: "Direction S@FE, hébergeur Supabase (sous-traitant)",
-    duree: "Durée du contrat + 5 ans (obligations comptables)",
-    securite: "Authentification chiffrée, RLS Postgres, chiffrement en transit (TLS), MFA optionnelle"
+    categories: "E-mail, prénom, nom, photo de profil, rôle, journaux de connexion",
+    destinataires: "Direction S@FE, DPO",
+    duree: "Durée du contrat/mission + 5 ans (obligations comptables)",
+    securite: "RLS Postgres, TLS 1.2+, authentification MFA (TOTP) optionnelle"
   },
   {
-    traitement: 'Gestion des contacts (prospects et clients)',
-    finalite: "Suivi commercial, mise en relation, exécution des contrats",
-    base: "Intérêt légitime (prospection BtoB) / exécution du contrat (clients) (art. 6.1.f et 6.1.b)",
-    categories: "Nom, prénom, entreprise, e-mail, Téléphone, adresse, SIRET, consentements, notes commerciales",
-    destinataires: "Commerciaux S@FE habilités, hébergeur Supabase",
+    traitement: 'Gestion des contacts et prospects (tous canaux d’acquisition)',
+    finalite: "Suivi commercial, mise en relation, exécution des contrats, qualification des prospects — y compris ceux collectés via les sites vitrines (cf. traitement « Collecte de prospects via formulaires web »)",
+    base: "Exécution du contrat (clients, art. 6.1.b) + intérêt légitime de prospection BtoB (art. 6.1.f) + obligations comptables/assurance (art. 6.1.c)",
+    categories: "Nom, prénom, entreprise, fonction, e-mail, téléphone, adresse, SIRET, notes commerciales, consentements, historique d'actions, canal d'acquisition, qualification",
+    destinataires: "Commerciaux S@FE habilités, DPO, auditeurs externes",
     duree: "3 ans après dernier contact (prospects) — durée du contrat + 5 ans (clients)",
-    securite: "RLS par rôle, journalisation des accès, droit d'opposition (RGPD KO) avec effacement immédiat des coordonnées"
+    securite: "RLS par rôle et par propriétaire, journalisation des accès, droit d'opposition (RGPD KO) avec effacement immédiat des coordonnées"
   },
   {
     traitement: 'Gestion des contrats commerciaux',
@@ -2685,6 +2687,33 @@ const REGISTRE_RGPD = [
     destinataires: "Commerciaux S@FE, direction, comptabilité",
     duree: "Durée du contrat + 10 ans (pièces comptables)",
     securite: "RLS, sauvegardes chiffrées Supabase, historique des modifications"
+  },
+  {
+    traitement: 'Signatures numériques et preuve contractuelle',
+    finalite: "Preuve contractuelle, conformité réglementaire assurance",
+    base: "Exécution du contrat + obligation légale assurance/RGPD (art. 6.1.b et 6.1.c)",
+    categories: "OTP (24h), hash SHA-256, horodatage, IP signataire",
+    destinataires: "Clients, avocats, auditeurs, organismes assurance",
+    duree: "10 ans (obligation légale assurance) — OTP : 24h max",
+    securite: "OTP HTTPS, hachage SHA-256, anti-brute-force (5 essais/1h)"
+  },
+  {
+    traitement: 'Gestion financière et comptable',
+    finalite: "Gestion comptable, conformité TVA/URSSAF",
+    base: "Obligation légale (art. 6.1.c)",
+    categories: "E-mail client, montant, date, statut paiement, order_token (masqué)",
+    destinataires: "Comptable, auditeur, Stripe (sous-traitant)",
+    duree: "6 ans (obligation comptabilité française)",
+    securite: "PCI-DSS via Stripe — aucune donnée carte stockée par S@FE"
+  },
+  {
+    traitement: 'Audit trails et sécurité informatique',
+    finalite: "Sécurité informatique, détection d'incidents/violations, traçabilité (Journal RGPD Art. 30)",
+    base: "Intérêt légitime de sécurité (art. 6.1.f)",
+    categories: "Identifiant utilisateur (ou « Système » pour les actions automatisées), rôle, action, module, horodatage, résultat, IP",
+    destinataires: "DPO, super-administrateur uniquement",
+    duree: "90 jours (logs actifs) / 2 ans (archives)",
+    securite: "AES-256 pour logs sensibles, RLS"
   },
   {
     traitement: 'Suivi des objectifs commerciaux',
@@ -2698,11 +2727,29 @@ const REGISTRE_RGPD = [
   {
     traitement: 'Messagerie interne (notifications admin)',
     finalite: "Information ponctuelle des utilisateurs par la direction",
-    base: "Intérêt légitime",
+    base: "Intérêt légitime (art. 6.1.f)",
     categories: "Identifiant émetteur, identifiant destinataire, contenu du message",
     destinataires: "Destinataire et émetteur uniquement",
     duree: "1 an après lecture",
     securite: "RLS, accès journalisé"
+  },
+  {
+    traitement: 'Support IA (call-ia)',
+    finalite: "Service IA aux commerciaux (résumés, recommandations)",
+    base: "Contrat de service (art. 6.1.b)",
+    categories: "Contexte client partiel, requête utilisateur, réponse IA",
+    destinataires: "Grok (xAI), Claude (Anthropic), Mistral",
+    duree: "6 mois puis anonymisation",
+    securite: "Pseudonymisation avant transfert (masquage)"
+  },
+  {
+    traitement: 'Collecte de prospects via formulaires web',
+    finalite: "Traiter les demandes entrantes de safe-assurances.fr et safe-digitalisation.fr et, sur consentement explicite, permettre un rappel téléphonique commercial",
+    base: "Mesures précontractuelles à la demande de la personne (art. 6.1.b) + consentement explicite au démarchage téléphonique (art. 6.1.a — loi n°2025-594 du 30/06/2025, applicable au 11/08/2026)",
+    categories: "Nom, e-mail, téléphone, message, consentement horodaté, marque d'origine",
+    destinataires: "Commerciaux S@FE habilités",
+    duree: "3 ans après dernier contact (identique aux autres prospects)",
+    securite: "Edge Function dédiée (liste blanche CORS, honeypot anti-spam), aucune clé exposée côté client"
   },
 ];
 
