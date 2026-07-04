@@ -194,7 +194,7 @@
 ## SIGNATURE ET APPROBATION
 
 **Date :** 2026-07-04
-**Signataire (DPO) :** ___________________________
-**Signataire (Responsable légal) :** ___________________________
+**Signataire (DPO) :** Sébastien Alonso
+**Signataire (Responsable légal) :** Sébastien Alonso
 
 Ce registre doit être révisé annuellement ou en cas de modification des traitements. Cette révision fusionne les deux versions précédemment divergentes du registre (document signé vs. écran in-app) en un seul jeu de 10 traitements et ajoute T10 suite à la mise en place de la collecte de prospects via les sites vitrines.
