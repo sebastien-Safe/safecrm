@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss://*.supabase.co blob:;">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S@FE — Formation DDA</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.min.js" integrity="sha384-JWEyvHh+lRf0sN/WWY+QTQwX+CyWqmNg4tkc8GQzAMEtR2wGNrCJlvnu1lHD1kDm" crossorigin="anonymous"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --navy:#030D26; --navy-2:#0B1A3D; --gold:#C9A24B; --gold-soft:#E4CD91; --steel:#7C97C4;
+    --paper:#F7F5EF; --paper-2:#EFEBE0; --ink:#1B2233; --ink-soft:#5A6478;
+    --ok:#3E7A5C; --ok-bg:#E4F0E9; --err:#A24B3C; --err-bg:#F5E7E2; --radius:14px;
+  }
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{font-family:'IBM Plex Sans', system-ui, sans-serif; background:var(--navy); color:var(--ink); min-height:100vh;}
+  h1,h2,h3,.display{font-family:'Fraunces', Georgia, serif; font-weight:600; letter-spacing:-0.01em;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+
+  .topbar{position:sticky; top:0; z-index:20; height:52px; background:var(--navy); border-bottom:1px solid rgba(201,162,75,0.25); display:flex; align-items:center; padding:0 20px; gap:16px;}
+  .topbar .mark{font-family:'Fraunces', serif; font-weight:700; font-size:17px; color:var(--gold);}
+  .topbar .sub{font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--steel); margin-left:6px;}
+  .topbar-tabs{display:flex; gap:4px; margin-left:24px;}
+  .topbar-tabs button{background:transparent; border:none; color:rgba(247,245,239,0.65); padding:8px 14px; border-radius:8px; font-size:13px; font-family:'IBM Plex Sans', sans-serif; cursor:pointer;}
+  .topbar-tabs button:hover{background:rgba(255,255,255,0.06); color:var(--paper);}
+  .topbar-tabs button.active{background:rgba(201,162,75,0.16); color:var(--gold-soft); font-weight:600;}
+  .topbar-back{margin-left:auto; color:rgba(247,245,239,0.55); font-size:12.5px; text-decoration:none; padding:6px 12px; border:1px solid rgba(201,162,75,0.25); border-radius:8px;}
+  .topbar-back:hover{color:var(--paper); border-color:rgba(201,162,75,0.5);}
+
+  .app{display:grid; grid-template-columns:280px 1fr; min-height:calc(100vh - 52px);}
+  .sidebar{background:linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%); color:var(--paper); padding:20px; position:sticky; top:52px; height:calc(100vh - 52px); overflow-y:auto; border-right:1px solid rgba(201,162,75,0.25);}
+  .track-label{font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold-soft); margin:0 0 10px;}
+  .tabs{list-style:none; margin:0; padding:0;} .tabs li{margin-bottom:2px;}
+  .tab-btn{width:100%; text-align:left; background:transparent; border:none; color:rgba(247,245,239,0.65); padding:9px 10px; border-radius:8px; font-size:13.5px; font-family:'IBM Plex Sans', sans-serif; cursor:pointer; display:flex; align-items:center; gap:9px; transition:background .15s, color .15s;}
+  .tab-btn:hover{background:rgba(255,255,255,0.06); color:var(--paper);}
+  .tab-btn.active{background:rgba(201,162,75,0.16); color:var(--gold-soft); font-weight:600;}
+  .tab-btn[disabled]{opacity:0.4; cursor:not-allowed;}
+  .tab-dot{width:7px;height:7px;border-radius:50%; background:rgba(255,255,255,0.25); flex-shrink:0;}
+  .tab-btn.done .tab-dot{background:var(--ok);} .tab-btn.active .tab-dot{background:var(--gold);}
+  .sidebar-hours{margin-top:18px; padding-top:16px; border-top:1px solid rgba(201,162,75,0.2); font-size:12px; color:rgba(247,245,239,0.6);}
+  .sidebar-hours b{color:var(--gold-soft); font-family:'IBM Plex Mono', monospace;}
+
+  @media (max-width:860px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{position:sticky; top:52px; z-index:10; height:auto; max-height:60vh; padding:10px 14px; overflow-y:auto; border-right:none; border-bottom:1px solid rgba(201,162,75,0.25);}
+  }
+
+  .content{background:var(--paper); min-height:calc(100vh - 52px); display:flex; flex-direction:column;}
+  .panel{flex:1; padding:44px 56px 20px; max-width:820px;}
+  @media (max-width:640px){ .panel{padding:26px 20px 10px;} }
+  .eyebrow{display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.08em; color:var(--steel); background:rgba(124,151,196,0.12); padding:5px 12px; border-radius:999px; margin-bottom:18px;}
+  .panel h2{font-size:28px; margin:0 0 14px; color:var(--navy);}
+  .card{background:#fff; border:1px solid rgba(3,13,38,0.08); border-radius:var(--radius); padding:22px 26px; margin-bottom:20px;}
+  .card ul{margin:0; padding-left:20px; line-height:1.7;}
+  .callout{background:linear-gradient(135deg, rgba(201,162,75,0.10), rgba(201,162,75,0.03)); border:1px solid rgba(201,162,75,0.4); border-left:4px solid var(--gold); border-radius:10px; padding:16px 20px; margin:18px 0 26px;}
+  .callout .tag{font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#8A6A22; margin-bottom:6px; display:block;}
+  .callout p{margin:0; line-height:1.6; font-size:14.5px;}
+
+  .timer-block{background:#fff; border:1px solid rgba(3,13,38,0.08); border-radius:var(--radius); padding:16px 20px; margin-bottom:20px;}
+  .timer-row{display:flex; align-items:center; justify-content:space-between; font-size:12.5px; color:var(--ink-soft); margin-bottom:8px;}
+  .timer-row b{color:var(--navy); font-family:'IBM Plex Mono', monospace;}
+  .timer-bar{height:8px; background:var(--paper-2); border-radius:999px; overflow:hidden;}
+  .timer-fill{height:100%; background:linear-gradient(90deg, var(--steel), var(--gold)); width:0%; transition:width .4s ease;}
+  .timer-paused{color:var(--err); font-size:11.5px; margin-top:6px; display:none;}
+  .timer-paused.show{display:block;}
+
+  .quiz-block{background:var(--navy); border-radius:var(--radius); padding:24px 26px 20px; margin-top:26px; color:var(--paper);}
+  .quiz-block .qtitle{font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-soft); margin-bottom:14px;}
+  .question{margin-bottom:20px;} .question:last-child{margin-bottom:0;}
+  .question p{margin:0 0 10px; font-weight:500; line-height:1.5;}
+  .opts{display:flex; flex-direction:column; gap:8px;}
+  .opt{text-align:left; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); color:var(--paper); padding:10px 14px; border-radius:9px; cursor:pointer; font-size:14px; font-family:'IBM Plex Sans', sans-serif;}
+  .opt:hover{background:rgba(255,255,255,0.1);}
+  .opt.correct{background:var(--ok-bg); color:var(--ok); border-color:var(--ok); font-weight:600;}
+  .opt.incorrect{background:var(--err-bg); color:var(--err); border-color:var(--err); font-weight:600;}
+  .opt[disabled]{cursor:default;}
+  .reveal-btn{background:rgba(201,162,75,0.16); color:var(--gold-soft); border:1px solid rgba(201,162,75,0.4); border-radius:8px; padding:7px 14px; font-size:13px; cursor:pointer;}
+  .reveal-answer{margin-top:8px; font-size:13.5px; color:var(--gold-soft); display:none;}
+  .reveal-answer.show{display:block;}
+
+  .footer-nav{background:var(--paper); border-top:1px solid rgba(3,13,38,0.08); padding:20px 56px 26px; display:flex; align-items:center; justify-content:space-between; max-width:820px;}
+  .navbtn{font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:14px; border:none; border-radius:999px; padding:11px 22px; cursor:pointer; display:flex; align-items:center; gap:8px;}
+  .navbtn.primary{background:var(--navy); color:var(--gold-soft);}
+  .navbtn.primary:hover{background:var(--navy-2);}
+  .navbtn.ghost{background:transparent; color:var(--ink-soft); border:1px solid rgba(3,13,38,0.15);}
+  .navbtn[disabled]{opacity:0.35; cursor:default;}
+  .step-count{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink-soft);}
+
+  .cert{background:#fff; border:2px solid var(--gold); border-radius:16px; padding:30px 34px;}
+  .cert .field{border-bottom:1px dashed rgba(3,13,38,0.3); padding:12px 0 8px; display:flex; justify-content:space-between; font-size:14px;}
+  .cert .field span:first-child{color:var(--ink-soft);} .cert .field span:last-child{font-family:'IBM Plex Mono', monospace; color:var(--navy);}
+
+  .hist-table{width:100%; border-collapse:collapse; font-size:14px;}
+  .hist-table th, .hist-table td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--paper-2);}
+  .hist-table th{color:var(--ink-soft); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.04em;}
+  .tag-statut{font-family:'IBM Plex Mono', monospace; font-size:11px; padding:3px 9px; border-radius:6px;}
+  .tag-statut.a_jour{background:var(--ok-bg); color:var(--ok);}
+  .tag-statut.en_cours{background:rgba(124,151,196,0.15); color:#3E5384;}
+  .tag-statut.en_retard{background:var(--err-bg); color:var(--err);}
+
+  .screen{display:none;} .screen.active{display:block;}
+  #screen-historique{background:var(--paper); min-height:calc(100vh - 52px); color:var(--ink);}
+  #screen-historique h2{color:var(--navy); margin-top:0;}
+  .empty-state{padding:60px 40px; text-align:center; color:var(--ink-soft);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="mark">S@FE</span><span class="sub">Formation DDA</span>
+  <div class="topbar-tabs">
+    <button id="tab-parcours" class="active">Mon parcours</button>
+    <button id="tab-historique">Mon historique</button>
+  </div>
+  <a class="topbar-back" href="/">← Retour au CRM</a>
+</div>
+
+<div id="screen-parcours" class="screen active">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="track-label" id="programme-nom">Chargement…</div>
+      <ul class="tabs" id="tabList"></ul>
+      <div class="sidebar-hours" id="sidebar-hours"></div>
+    </aside>
+    <main class="content">
+      <div class="panel" id="panel"><div class="empty-state">Chargement de votre programme…</div></div>
+      <div class="footer-nav" id="footer-nav" style="display:none;">
+        <button class="navbtn ghost" id="prevBtn">← Précédent</button>
+        <span class="step-count" id="stepCount"></span>
+        <button class="navbtn primary" id="nextBtn">Suivant →</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="screen-historique" class="screen">
+  <div class="panel" style="max-width:960px; margin:0 auto;" id="panel-historique">
+    <div class="empty-state">Chargement de l'historique…</div>
+  </div>
+</div>
+
+<script src="/assets/config.js"></script>
+<script src="formation-core.js"></script>
+<script src="formation-parcours.js"></script>
+<script src="formation-historique.js"></script>
+<script>
+document.getElementById('tab-parcours').onclick = () => switchScreen('parcours');
+document.getElementById('tab-historique').onclick = () => switchScreen('historique');
+function switchScreen(name){
+  document.getElementById('tab-parcours').classList.toggle('active', name === 'parcours');
+  document.getElementById('tab-historique').classList.toggle('active', name === 'historique');
+  document.getElementById('screen-parcours').classList.toggle('active', name === 'parcours');
+  document.getElementById('screen-historique').classList.toggle('active', name === 'historique');
+  if (name === 'historique') loadHistorique();
+}
+initFormation();
+</script>
+</body>
+</html>

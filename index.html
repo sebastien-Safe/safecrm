@@ -64,6 +64,7 @@
       <button class="mob-lk" onclick="mobNav('agenda')"><span class="ico">📅</span> Agenda</button>
       <button class="mob-lk" id="mob-lk-resultats" onclick="mobNav('resultats')"><span class="ico">📊</span> R&#233;sultats</button>
       <a class="mob-lk" href="/prospection-terrain/" onclick="closeMobMenu()"><span class="ico">🥾</span> Prospection terrain</a>
+      <a class="mob-lk" href="/modules/Formation/module-formation.html" onclick="closeMobMenu()"><span class="ico">🎓</span> Formation DDA</a>
       <button class="mob-lk dci-only is-hidden" onclick="closeMobMenu();openEquipeModal()"><span class="ico">🤝</span> G&#233;rer mon &#233;quipe</button>
     </div>
 
@@ -71,6 +72,7 @@
     <div class="mob-divider"></div>
     <div class="mob-sec">
       <div class="mob-sec-lbl">Modules</div>
+      <a class="mob-lk super-admin-only is-hidden" href="/modules/Formation/module-formation-admin.html"><span class="ico">🎓</span> Formation — Espace formateur</a>
       <a class="mob-lk super-admin-only is-hidden" href="/modules/SEO/module-seo-clients.html"><span class="ico">🚀</span> SEO</a>
       <a class="mob-lk super-admin-only is-hidden" href="/modules/Cyber/module-cyber-clients.html"><span class="ico">💻</span> Cybersec</a>
       <a class="mob-lk super-admin-only is-hidden" href="/modules/DPO/module-dpo-clients.html"><span class="ico">⚖️</span> DPO</a>
@@ -155,11 +157,13 @@
       <button class="navlink" data-view="agenda" id="nav-agenda">📅 Agenda</button>
       <button class="navlink" data-view="resultats" id="nav-resultats">📊 Résultats</button>
       <a class="navlink" href="/prospection-terrain/">🥾 Prospection terrain</a>
+      <a class="navlink" href="/modules/Formation/module-formation.html">🎓 Formation DDA</a>
       <button class="navlink dci-only is-hidden" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
 
       <!-- Modules (réservés super_admin, sauf Assurance : collab-assurances + super_admin) -->
       <div class="nav-sep nav-sep--mt"></div>
       <div class="nav-section-lbl">Modules</div>
+      <a class="navlink super-admin-only is-hidden" href="/modules/Formation/module-formation-admin.html">🎓 Formation — Espace formateur</a>
       <a class="navlink super-admin-only is-hidden" href="/modules/SEO/module-seo-clients.html">🚀 SEO</a>
       <a class="navlink super-admin-only is-hidden" href="/modules/Cyber/module-cyber-clients.html">💻 Cybersec</a>
       <a class="navlink super-admin-only is-hidden" href="/modules/DPO/module-dpo-clients.html">⚖️ DPO</a>
