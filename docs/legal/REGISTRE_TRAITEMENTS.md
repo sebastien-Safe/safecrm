@@ -177,16 +177,16 @@
 
 | Propriété | Valeur |
 |---|---|
-| **Nom du traitement** | Collecte de prospects via les formulaires de contact des sites vitrines |
-| **Finalité légale** | Traiter les demandes entrantes de safe-assurances.fr et safe-digitalisation.fr et, sur consentement explicite, permettre un rappel téléphonique commercial |
-| **Base légale** | Art. 6(1)b (mesures précontractuelles prises à la demande de la personne concernée) + Art. 6(1)a (consentement explicite pour le démarchage téléphonique, cf. loi n°2025-594 du 30/06/2025, applicable au 11/08/2026) |
-| **Données personnelles** | Nom, e-mail, téléphone, message, consentement horodaté au démarchage téléphonique, marque d'origine (canal d'acquisition) |
-| **Catégories rétention** | 3 ans après dernier contact (identique aux autres prospects, cf. T2) |
+| **Nom du traitement** | Collecte de prospects via les formulaires de contact et de devis des sites vitrines |
+| **Finalité légale** | Traiter les demandes entrantes de safe-assurances.fr (contact + devis) et safe-digitalisation.fr (contact) et, sur consentement explicite, permettre un rappel téléphonique commercial |
+| **Base légale** | Art. 6(1)b (mesures précontractuelles prises à la demande de la personne concernée) + Art. 6(1)a (consentement explicite au traitement des données, et pour le démarchage téléphonique — loi n°2025-594 du 30/06/2025, applicable au 11/08/2026) |
+| **Données personnelles** | Nom, e-mail, téléphone, message (+ raison sociale, secteur, CA, effectif et garanties souhaitées pour les demandes de devis), consentement RGPD horodaté avec texte affiché, consentement horodaté au démarchage téléphonique, marque d'origine (canal d'acquisition) |
+| **Catégories rétention** | 3 ans après dernier contact (identique aux autres prospects, cf. T2) — bascule automatique via `check_rgpd_expiry()` |
 | **Destinataires** | Commerciaux S@FE habilités |
-| **Sous-traitants** | Supabase (Edge Function `create-lead`, clé service_role — aucune écriture directe depuis le navigateur du visiteur) |
+| **Sous-traitants** | Supabase (Edge Function `create-lead`, clé service_role — aucune écriture directe depuis le navigateur du visiteur) ; Brevo (notification e-mail à l'équipe suite à une nouvelle demande — DPA en attente, cf. REGISTRE_DPA.md) |
 | **Transferts tiers** | Aucun (données restent EU) |
 | **Droits concernés** | DSAR, rectification, suppression, retrait du consentement à tout moment |
-| **Sécurité** | Edge Function dédiée avec liste blanche CORS par domaine, honeypot anti-spam, aucune clé exposée côté client |
+| **Sécurité** | Edge Function dédiée avec liste blanche CORS par domaine, honeypot anti-spam, rate limiting par IP, validation serveur du consentement RGPD (obligatoire pour safe-assurances.fr), aucune clé exposée côté client |
 | **Chiffrement** | TLS transit, repos via Supabase (AES-256) |
 
 ---
