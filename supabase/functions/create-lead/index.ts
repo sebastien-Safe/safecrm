@@ -22,8 +22,9 @@ const MARQUES: Record<string, { label: string; email: string }> = {
 // Texte de consentement exact affiché sur chaque formulaire — codé en dur ici
 // (preuve juridique non falsifiable depuis le front) plutôt que reçu du client.
 const RGPD_TEXTE: Record<string, string> = {
-  contact: "J'accepte que mes données soient traitées pour répondre à ma demande.",
-  devis:   "J'accepte que S@FE Assurances traite mes données dans le cadre de cette demande de devis.",
+  "digitalisation:contact": "J'ai pris connaissance de la politique de protection des données et j'accepte que mes informations soient utilisées pour traiter ma demande.",
+  "assurances:contact":     "J'accepte que mes données soient traitées pour répondre à ma demande.",
+  "assurances:devis":       "J'accepte que S@FE Assurances traite mes données dans le cadre de cette demande de devis.",
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -81,11 +82,8 @@ Deno.serve(async (req) => {
   const type   = form_type === "devis" ? "devis" : "contact";
   if (!marque) return jsonResponse({ error: "Site inconnu" }, 400, CORS);
 
-  // Le consentement RGPD général n'est exigé (et tracé) que pour S@FE Assurances :
-  // le site S@FE Digitalisation n'a pas (encore) de case dédiée dans son formulaire —
-  // le rendre obligatoire ici casserait sa soumission en production.
   const rgpd = body.rgpd === true;
-  if (marque.label === "S@FE Assurances" && !rgpd) {
+  if (!rgpd) {
     return jsonResponse({ error: "Consentement RGPD requis" }, 400, CORS);
   }
 
@@ -180,7 +178,7 @@ Deno.serve(async (req) => {
       consent_telephone:   type === "contact" ? !!(body as Record<string, unknown>).consent_telephone : false,
       consent_rgpd:        rgpd,
       consent_rgpd_at:     rgpd ? nowIso : null,
-      consent_rgpd_texte:  rgpd ? RGPD_TEXTE[type] : null,
+      consent_rgpd_texte:  rgpd ? RGPD_TEXTE[`${site}:${type}`] : null,
       created_by:          null,
     })
     .select("id")

@@ -186,7 +186,7 @@
 | **Sous-traitants** | Supabase (Edge Function `create-lead`, clé service_role — aucune écriture directe depuis le navigateur du visiteur) ; Brevo (notification e-mail à l'équipe suite à une nouvelle demande — DPA en attente, cf. REGISTRE_DPA.md) |
 | **Transferts tiers** | Aucun (données restent EU) |
 | **Droits concernés** | DSAR, rectification, suppression, retrait du consentement à tout moment |
-| **Sécurité** | Edge Function dédiée avec liste blanche CORS par domaine, honeypot anti-spam, rate limiting par IP, validation serveur du consentement RGPD (obligatoire pour safe-assurances.fr), aucune clé exposée côté client |
+| **Sécurité** | Edge Function dédiée avec liste blanche CORS par domaine, honeypot anti-spam, rate limiting par IP, validation serveur du consentement RGPD (obligatoire et tracé pour les deux marques depuis le 2026-07-08, avec texte affiché exact horodaté par marque et type de formulaire), aucune clé exposée côté client |
 | **Chiffrement** | TLS transit, repos via Supabase (AES-256) |
 
 ---
