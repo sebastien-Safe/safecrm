@@ -10,9 +10,10 @@
 async function logRgpd(action, module, opts = {}) {
   if (typeof sb === 'undefined' || !state?.user) return;
 
-  const role = state.profile?.role === 'super_admin' ? 'Super Admin'
-    : state.profile?.is_admin                         ? 'Administrateur'
-    : state.profile?.role === 'dci'                   ? 'DCI'
+  const role = state.profile?.role === 'super_admin'       ? 'Super Admin'
+    : state.profile?.is_admin                               ? 'Administrateur'
+    : state.profile?.role === 'resp-equipe'                 ? 'Responsable équipe'
+    : state.profile?.role === 'collab-assurances'           ? 'Collaborateur Assurances'
     : 'Utilisateur';
 
   try {

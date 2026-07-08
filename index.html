@@ -67,15 +67,16 @@
       <button class="mob-lk dci-only is-hidden" onclick="closeMobMenu();openEquipeModal()"><span class="ico">🤝</span> G&#233;rer mon &#233;quipe</button>
     </div>
 
-    <!-- Modules -->
+    <!-- Modules (réservés super_admin, sauf Assurance : collab-assurances + super_admin) -->
     <div class="mob-divider"></div>
     <div class="mob-sec">
       <div class="mob-sec-lbl">Modules</div>
-      <a class="mob-lk" href="/modules/SEO/module-seo-clients.html"><span class="ico">🚀</span> SEO</a>
-      <a class="mob-lk" href="/modules/Cyber/module-cyber-clients.html"><span class="ico">💻</span> Cybersec</a>
-      <a class="mob-lk" href="/modules/DPO/module-dpo-clients.html"><span class="ico">⚖️</span> DPO</a>
-      <a class="mob-lk" href="/modules/Social/module-social-clients.html"><span class="ico">📱</span> Social</a>
-      <a class="mob-lk" href="/modules/ClickCollect/module-clickcollect-clients.html"><span class="ico">🛒</span> Click &amp; Collect</a>
+      <a class="mob-lk super-admin-only is-hidden" href="/modules/SEO/module-seo-clients.html"><span class="ico">🚀</span> SEO</a>
+      <a class="mob-lk super-admin-only is-hidden" href="/modules/Cyber/module-cyber-clients.html"><span class="ico">💻</span> Cybersec</a>
+      <a class="mob-lk super-admin-only is-hidden" href="/modules/DPO/module-dpo-clients.html"><span class="ico">⚖️</span> DPO</a>
+      <a class="mob-lk super-admin-only is-hidden" href="/modules/Social/module-social-clients.html"><span class="ico">📱</span> Social</a>
+      <a class="mob-lk super-admin-only is-hidden" href="/modules/ClickCollect/module-clickcollect-clients.html"><span class="ico">🛒</span> Click &amp; Collect</a>
+      <span class="mob-lk assurance-only is-hidden"><span class="ico">🛡</span> Assurances <small class="badge-soon">bientôt</small></span>
     </div>
 
     <!-- Administration (admin uniquement) -->
@@ -156,15 +157,15 @@
       <a class="navlink" href="/prospection-terrain/">🥾 Prospection terrain</a>
       <button class="navlink dci-only is-hidden" onclick="openEquipeModal()">🤝 Gérer mon équipe</button>
 
-      <!-- Modules -->
+      <!-- Modules (réservés super_admin, sauf Assurance : collab-assurances + super_admin) -->
       <div class="nav-sep nav-sep--mt"></div>
       <div class="nav-section-lbl">Modules</div>
-      <a class="navlink" href="/modules/SEO/module-seo-clients.html">🚀 SEO</a>
-      <a class="navlink" href="/modules/Cyber/module-cyber-clients.html">💻 Cybersec</a>
-      <a class="navlink" href="/modules/DPO/module-dpo-clients.html">⚖️ DPO</a>
-      <a class="navlink" href="/modules/Social/module-social-clients.html">📱 Social</a>
-      <a class="navlink" href="/modules/ClickCollect/module-clickcollect-clients.html">🛒 Click &amp; Collect</a>
-      <span class="navlink navlink--disabled">🛡 Assurances <small class="badge-soon">bientôt</small></span>
+      <a class="navlink super-admin-only is-hidden" href="/modules/SEO/module-seo-clients.html">🚀 SEO</a>
+      <a class="navlink super-admin-only is-hidden" href="/modules/Cyber/module-cyber-clients.html">💻 Cybersec</a>
+      <a class="navlink super-admin-only is-hidden" href="/modules/DPO/module-dpo-clients.html">⚖️ DPO</a>
+      <a class="navlink super-admin-only is-hidden" href="/modules/Social/module-social-clients.html">📱 Social</a>
+      <a class="navlink super-admin-only is-hidden" href="/modules/ClickCollect/module-clickcollect-clients.html">🛒 Click &amp; Collect</a>
+      <span class="navlink navlink--disabled assurance-only is-hidden">🛡 Assurances <small class="badge-soon">bientôt</small></span>
 
       <!-- Administration (admin uniquement) -->
       <div class="nav-sep admin-only nav-sep--mt is-hidden"></div>

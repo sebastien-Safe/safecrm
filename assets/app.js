@@ -1048,7 +1048,7 @@ function renderResultats() {
 
   _resultatsDetailUserId = null;
 
-  if (!isAtLeast('dci')) {
+  if (!canTeamOversight()) {
     // Niveau 1 → affiche ses propres objectifs dans view-objectifs
     $all('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === 'objectifs' || b.dataset.view === 'resultats'));
     $all('.view').forEach(v => {
@@ -1060,7 +1060,7 @@ function renderResultats() {
   }
 
   if (title)   title.textContent   = '📊 Résultats';
-  if (subtitle) subtitle.textContent = isRole('dci')
+  if (subtitle) subtitle.textContent = isRole('resp-equipe')
     ? 'Cockpit de votre secteur — production de votre équipe'
     : 'Cockpit commercial — performance par secteur et par équipe';
   if (actionsEl) actionsEl.innerHTML = '';
@@ -1086,8 +1086,8 @@ async function renderResultatsCockpit(container) {
   const endMonth   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
   // Déterminer les Niveau 2 visibles selon le rôle
-  let niveau2Users = allProfiles.filter(p => p.role === 'dci');
-  if (isRole('dci')) niveau2Users = niveau2Users.filter(p => p.id === state.user.id);
+  let niveau2Users = allProfiles.filter(p => p.role === 'resp-equipe');
+  if (isRole('resp-equipe')) niveau2Users = niveau2Users.filter(p => p.id === state.user.id);
 
   // Filtres actifs
   const f = _resultatsFilters;
@@ -1100,7 +1100,7 @@ async function renderResultatsCockpit(container) {
   const cards = [];
   for (const dci of niveau2Users) {
     // Niveau 1 rattachés
-    let niveau1 = allProfiles.filter(p => p.dci_parent_id === dci.id && p.role === 'user');
+    let niveau1 = allProfiles.filter(p => p.dci_parent_id === dci.id && p.role === 'collab-digitalisation');
     if (f.niveau1) niveau1 = niveau1.filter(p => p.id === f.niveau1);
 
     // Liste d'utilisateurs pour calcul : DCI + ses Niveau 1
@@ -1377,7 +1377,7 @@ function openResultatsDetail(userId) {
   if (!dci) return;
   _resultatsDetailUserId = userId;
 
-  const niveau1 = Object.values(state.profilesById).filter(p => p.dci_parent_id === userId && p.role === 'user');
+  const niveau1 = Object.values(state.profilesById).filter(p => p.dci_parent_id === userId && p.role === 'collab-digitalisation');
   const container = document.getElementById('resultats-main-container');
   if (!container) return;
 
@@ -1392,7 +1392,7 @@ function openResultatsDetail(userId) {
   // Niveau 1 rows
   const n1Rows = niveau1.map(u => _buildUserDetailRow(u, startMonth, endMonth)).join('');
 
-  const backLabel = isRole('dci') ? '' : `<button class="btn btn-out btn-sm" onclick="renderResultats()" style="margin-bottom:16px">← Retour au cockpit</button>`;
+  const backLabel = isRole('resp-equipe') ? '' : `<button class="btn btn-out btn-sm" onclick="renderResultats()" style="margin-bottom:16px">← Retour au cockpit</button>`;
 
   container.innerHTML = `
     ${backLabel}
@@ -1649,10 +1649,10 @@ function renderAdminUsers() {
   }
   const now = new Date();
   const roleLabels = {
-    'super_admin': '⚡ Super Admin',
-    'admin_candy': '⚙️ Admin (Niveau 3)',
-    'dci':         '🤝 DCI (Niveau 2)',
-    'user':        '👤 Utilisateur (Niveau 1)',
+    'super_admin':            '⚡ Super Admin',
+    'collab-assurances':      '🛡️ Collaborateur Assurances',
+    'resp-equipe':            '🤝 Responsable d\'équipe',
+    'collab-digitalisation':  '👤 Collaborateur Digitalisation',
   };
   tbody.innerHTML = state.adminUsers.map(u => {
     const bannedUntil  = u.banned_until ? new Date(u.banned_until) : null;
@@ -1661,8 +1661,8 @@ function renderAdminUsers() {
     const isLocked     = isBanned && bannedUntil < new Date(now.getTime() + 3600_000);
     const isRevoked    = isBanned && !isLocked;
     const isSelf       = u.id === state.user.id;
-    const role         = u.role || (u.is_admin ? 'admin_candy' : 'user');
-    const roleLbl      = roleLabels[role] || '👤 Utilisateur';
+    const role         = u.role || (u.is_admin ? 'super_admin' : 'collab-digitalisation');
+    const roleLbl      = roleLabels[role] || '👤 Collaborateur Digitalisation';
     const profil       = u.profil_completed ? '🟢' : '🔴';
     const revoc        = u.profil_revocation_flag ? ' <span class="badge badge-red" style="font-size:.62rem">⚠ Révocation</span>' : '';
 
@@ -1717,9 +1717,9 @@ function openEditUserModal(userId) {
         <div class="field" style="border:1px solid var(--accent);border-radius:8px;padding:10px 12px;background:rgba(59,130,246,.04)">
           <label style="color:var(--accent)">🎭 Rôle (modifiable)</label>
           <select id="eu-role" style="margin-top:4px">
-            <option value="user">👤 Utilisateur (Niveau 1)</option>
-            <option value="dci">🤝 DCI (Niveau 2)</option>
-            <option value="admin_candy">⚙️ Admin (Niveau 3)</option>
+            <option value="collab-digitalisation">👤 Collaborateur Digitalisation</option>
+            <option value="resp-equipe">🤝 Responsable d'équipe</option>
+            <option value="collab-assurances">🛡️ Collaborateur Assurances</option>
           </select>
         </div>
         <div class="field" style="border:1px solid rgba(245,158,11,.35);border-radius:8px;padding:10px 12px;background:rgba(245,158,11,.04)">
@@ -1748,7 +1748,7 @@ function openEditUserModal(userId) {
   document.getElementById('eu-siret').value         = u.siret        || '—';
   document.getElementById('eu-rcpro').value         = u.rcpro_numero || '—';
   document.getElementById('eu-numero-mandat').value = u.numero_mandat || '';
-  document.getElementById('eu-role').value          = u.role || 'user';
+  document.getElementById('eu-role').value          = u.role || 'collab-digitalisation';
   document.getElementById('eu-limite-places').value = u.limite_requetes_google_places ?? 20;
   document.getElementById('eu-error').textContent = '';
   document.getElementById('edit-user-modal').classList.add('show');
@@ -1767,7 +1767,7 @@ async function saveEditUser() {
 
   const { error } = await sb.from('profiles').update({
     role,
-    is_admin: ['admin_candy','super_admin'].includes(role),
+    is_admin: role === 'super_admin',
     numero_mandat: numeroMandat,
     limite_requetes_google_places: limiteGPlaces,
   }).eq('id', id);
@@ -2014,7 +2014,7 @@ function openNewUserModal() {
   // Peupler le sélecteur manager (DCI / NIV2)
   const sel = $('#nu-manager-id');
   if (sel) {
-    const managers = Object.values(state.profilesById || {}).filter(p => p.role === 'dci' || p.is_admin);
+    const managers = Object.values(state.profilesById || {}).filter(p => p.role === 'resp-equipe' || p.is_admin);
     sel.innerHTML = '<option value="">— Aucun (admin par défaut) —</option>'
       + managers.map(p => `<option value="${p.id}">${escapeHtml(p.prenom || '')} ${escapeHtml(p.nom || '')} (${p.role || 'admin'})</option>`).join('');
   }
@@ -4365,44 +4365,39 @@ async function loadChurnRisk() {
 
 
 // ==========================================================================
-// SYSTÈME DE RÔLES — 4 niveaux
+// SYSTÈME DE RÔLES — 4 profils (pas de hiérarchie linéaire : chaque rôle a
+// un périmètre propre, seul super_admin a accès à tout)
 // ==========================================================================
-// role: 'user' | 'dci' | 'admin_candy' | 'super_admin'
+// role: 'collab-digitalisation' | 'resp-equipe' | 'collab-assurances' | 'super_admin'
 
 function getRole() {
-  return state.profile?.role || 'user';
+  return state.profile?.role || 'collab-digitalisation';
 }
 function isRole(r) { return getRole() === r; }
-function isAtLeast(r) {
-  const order = ['user','dci','admin_candy','super_admin'];
-  return order.indexOf(getRole()) >= order.indexOf(r);
-}
 
-// Compatibilité avec l'ancien isAdmin()
-function isAdmin() {
-  return isAtLeast('admin_candy');
-}
+// Administration globale + modules SEO/DPO/Click&Collect/Cyber/Social : super_admin uniquement
 function isSuperAdmin() { return isRole('super_admin'); }
-function isDCI()        { return isRole('dci'); }
-function isUser()       { return isRole('user'); }
+function isAdmin()      { return isSuperAdmin(); }
+// Suivi d'équipe (résultats + contrôle du travail des collab-digitalisation)
+function isDCI()        { return isRole('resp-equipe'); }
+function canTeamOversight() { return isDCI() || isSuperAdmin(); }
+// Module Assurance (à venir) : collab-assurances + super_admin
+function isUser()       { return isRole('collab-digitalisation'); }
+function canAssurance() { return isRole('collab-assurances') || isSuperAdmin(); }
 
 // Appliquer la visibilité selon les rôles
 function applyRoleVisibility() {
-  const role = getRole();
-  const order = ['user','dci','admin_candy','super_admin'];
-  const level = order.indexOf(role);
-
-  // Masquer/afficher selon data-min-role
+  // Masquer/afficher selon data-min-role (super_admin voit toujours tout)
   document.querySelectorAll('[data-min-role]').forEach(el => {
     const minRole = el.getAttribute('data-min-role');
-    const minLevel = order.indexOf(minRole);
-    el.classList.toggle('is-hidden', level < minLevel);
+    el.classList.toggle('is-hidden', !(isRole(minRole) || isSuperAdmin()));
   });
 
   // Classes spécifiques
   document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('is-hidden', !isAdmin()));
   document.querySelectorAll('.super-admin-only').forEach(el => el.classList.toggle('is-hidden', !isSuperAdmin()));
-  document.querySelectorAll('.dci-only').forEach(el => el.classList.toggle('is-hidden', !isAtLeast('dci')));
+  document.querySelectorAll('.dci-only').forEach(el => el.classList.toggle('is-hidden', !canTeamOversight()));
+  document.querySelectorAll('.assurance-only').forEach(el => el.classList.toggle('is-hidden', !canAssurance()));
 }
 
 // Vérifier le profil complet + alerte révocation
@@ -4510,7 +4505,7 @@ async function loadEquipe() {
     .from('profiles')
     .select('id, prenom, nom, profil_completed, profil_revocation_flag')
     .eq('dci_parent_id', myId)
-    .eq('role', 'user');
+    .eq('role', 'collab-digitalisation');
 
   if (error) { console.error('loadEquipe:', error); return; }
   const equipe = membres || [];
@@ -4576,7 +4571,7 @@ async function envoyerMessageEquipe() {
 
   const myId = state.user?.id;
   const { data: membres } = await sb.from('profiles')
-    .select('id').eq('dci_parent_id', myId).eq('role', 'user');
+    .select('id').eq('dci_parent_id', myId).eq('role', 'collab-digitalisation');
 
   if (!membres?.length) { alert('Aucun membre dans votre équipe.'); return; }
 
@@ -4644,7 +4639,7 @@ async function loadMessagesDCI() {
 
 // Ajouter prime de cooptation dans loadBordereauDCI
 async function loadCooptationDCI() {
-  if (!isAtLeast('dci') || !isRole('dci')) return;
+  if (!canTeamOversight() || !isRole('resp-equipe')) return;
   const myId = state.user?.id;
 
   // CA de l'équipe ce mois
@@ -4653,7 +4648,7 @@ async function loadCooptationDCI() {
   const end   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
   const { data: membres } = await sb.from('profiles')
-    .select('id').eq('dci_parent_id', myId).eq('role', 'user');
+    .select('id').eq('dci_parent_id', myId).eq('role', 'collab-digitalisation');
   if (!membres?.length) return;
 
   const { data: cts } = await sb.from('contracts')
@@ -4760,7 +4755,7 @@ function openGenererMDPModal() {
 
   select.innerHTML = '<option value="">— Sélectionner un utilisateur —</option>' +
     users.map(u => {
-      const roleLabel = {'user':'Utilisateur','dci':'DCI','admin_candy':'Admin C@NDY'}[u.role] || 'Utilisateur';
+      const roleLabel = {'collab-digitalisation':'Collab. Digitalisation','resp-equipe':'Resp. équipe','collab-assurances':'Collab. Assurances'}[u.role] || 'Collaborateur';
       return `<option value="${u.id}" data-email="${escapeHtml(u.email||'')}" data-prenom="${escapeHtml(u.prenom||'')}">
         ${escapeHtml(u.prenom||'')} ${escapeHtml(u.nom||'')} — ${escapeHtml(u.email||'')} (${roleLabel})
       </option>`;
@@ -4912,10 +4907,12 @@ function mobNav(view) {
 }
 function updateMobMenuRole() {
   const admin = typeof isAdmin === 'function' && isAdmin();
-  const dci   = typeof isAtLeast === 'function' && isAtLeast('dci');
+  const dci   = typeof canTeamOversight === 'function' && canTeamOversight();
   const sup   = typeof isSuperAdmin === 'function' && isSuperAdmin();
+  const assur = typeof canAssurance === 'function' && canAssurance();
   document.querySelectorAll('#mob-drawer .admin-only').forEach(el => el.classList.toggle('is-hidden', !admin));
   document.querySelectorAll('#mob-drawer .dci-only').forEach(el => el.classList.toggle('is-hidden', !dci));
+  document.querySelectorAll('#mob-drawer .assurance-only').forEach(el => el.classList.toggle('is-hidden', !assur));
   const dciSec = document.getElementById('mob-sec-dci');
   if (dciSec) dciSec.classList.toggle('is-hidden', !dci);
   const outilsSec = document.getElementById('mob-sec-outils');

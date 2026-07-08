@@ -278,7 +278,7 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     </div>
     <div class="feature-card">
       <div class="fc-title"><code>is_dci()</code></div>
-      <div class="fc-body">Retourne <code>true</code> si <code>profiles.role = 'dci'</code>. Permet au DCI d'accéder en lecture aux fiches de son équipe.</div>
+      <div class="fc-body">Retourne <code>true</code> si <code>profiles.role = 'resp-equipe'</code>. Permet au responsable d'équipe d'accéder en lecture aux fiches de son équipe.</div>
     </div>
     <div class="feature-card">
       <div class="fc-title"><code>get_team_ids()</code></div>
@@ -1672,8 +1672,8 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
     <li><strong>🗺️ Lancer l'itinéraire — Tournée optimisée</strong> : sélection de cibles SIRENE et/ou Google Places (max 5 étapes — <strong>contrainte éco</strong>), calcul TSP nearest-neighbor, créneaux horaires automatiques (60 km/h · facteur route 1,3 · 60 min/visite). La tournée est enregistrée dans l'agenda CRM avec ses étapes ordonnées (tables <code>tournees</code> + <code>tournee_etapes</code>). Les données cibles sont <strong>éphémères</strong> (RGPD) : aucun prospect n'est persisté sans consentement explicite. La tournée apparaît dans l'agenda principal (blocs orange 🗺️) avec alertes si un RDV est déjà planifié ce jour.</li>
     <li><strong>🌿 Éco-responsabilité — Limites kilométriques RSE</strong> :
       <ul style="margin-top:6px">
-        <li>NIV1 (<code>role=user</code>) : <strong>100 km/tournée</strong> max — périmètre départemental (~12 kg CO₂)</li>
-        <li>NIV2 (<code>role=dci</code>) : <strong>200 km/tournée</strong> max — périmètre régional (~24 kg CO₂)</li>
+        <li>NIV1 (<code>role=collab-digitalisation</code>) : <strong>100 km/tournée</strong> max — périmètre départemental (~12 kg CO₂)</li>
+        <li>NIV2 (<code>role=resp-equipe</code>) : <strong>200 km/tournée</strong> max — périmètre régional (~24 kg CO₂)</li>
         <li>Admin : illimité</li>
         <li>Score CO₂ calculé automatiquement : <code>distance_totale_km × 0,120</code> (ADEME 2024, colonne générée <code>score_co2_kg</code>)</li>
         <li>Maximum <strong>5 étapes</strong> par tournée — contrainte enforced en base (<code>CHECK nb_etapes &lt;= 5</code>)</li>

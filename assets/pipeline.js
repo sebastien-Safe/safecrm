@@ -59,10 +59,10 @@ async function _plLoadData() {
     .select('id, nom, prenom, entreprise, kanban_col, priority, date_relance, created_by, notes, kanban_checklist, a_completer, canal_acquisition, qualification')
     .order('entreprise', { ascending: true });
 
-  if (!isAdm && role !== 'admin_candy' && role !== 'super_admin') {
-    if (role === 'dci') {
+  if (!isAdm && role !== 'super_admin') {
+    if (role === 'resp-equipe') {
       const { data: equipe } = await sb.from('profiles')
-        .select('id').eq('dci_parent_id', myId).eq('role', 'user');
+        .select('id').eq('dci_parent_id', myId).eq('role', 'collab-digitalisation');
       const ids = [myId, ...(equipe || []).map(p => p.id)];
       contactsQuery = contactsQuery.in('created_by', ids);
     } else {

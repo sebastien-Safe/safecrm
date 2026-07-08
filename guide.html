@@ -158,32 +158,29 @@
     // Charger le rôle
     const { data: profile } = await sb.from('profiles')
       .select('role, prenom').eq('id', session.user.id).maybeSingle();
-    const role  = profile?.role || 'user';
-    const order = ['user','dci','admin','super_admin'];
-    const order2 = ['user','dci','admin_candy','super_admin']; // compat. DB
-    const level = Math.max(order.indexOf(role), order2.indexOf(role));
+    const role  = profile?.role || 'collab-digitalisation';
 
     // Personnaliser le titre du guide
     const roleLabels = {
-      'user':        'Guide Utilisateur (Niveau 1)',
-      'dci':         'Guide DCI (Niveau 2)',
-      'admin':       'Guide Administrateur (Niveau 3)',
-      'admin_candy': 'Guide Administrateur (Niveau 3)',
-      'super_admin': 'Guide Super Admin (Niveau 4)',
+      'collab-digitalisation': 'Guide Collaborateur Digitalisation',
+      'resp-equipe':           'Guide Responsable d\'équipe',
+      'collab-assurances':     'Guide Collaborateur Assurances',
+      'super_admin':           'Guide Super Admin',
     };
     const heroTitle = document.getElementById('guide-role-title');
     if (heroTitle) heroTitle.textContent = roleLabels[role] || 'Guide utilisateur';
     const heroPre = document.getElementById('guide-role-prenom');
     if (heroPre) heroPre.textContent = profile?.prenom ? 'Bonjour ' + profile.prenom + ' —' : '';
 
-    // Masquer sections selon le rôle
+    // Masquer sections selon le rôle (pas de hiérarchie : super_admin voit tout,
+    // les autres rôles ne voient que ce qui correspond exactement à leur périmètre)
     document.querySelectorAll('[data-guide-min-role]').forEach(el => {
-      const minRole  = el.getAttribute('data-guide-min-role');
-      const minLevel = order.indexOf(minRole);
-      el.style.display = level >= minLevel ? '' : 'none';
+      const minRole = el.getAttribute('data-guide-min-role');
+      const visible = role === minRole || role === 'super_admin';
+      el.style.display = visible ? '' : 'none';
       // Masquer aussi l'entrée TOC correspondante
       const toc = document.querySelector('.toc a[href="#' + el.id + '"]');
-      if (toc) toc.style.display = level >= minLevel ? '' : 'none';
+      if (toc) toc.style.display = visible ? '' : 'none';
     });
 
     // Masquer les sections réservées à un seul rôle exact
@@ -574,7 +571,7 @@
 <div class="divider"></div>
 
 <!-- COMMISSIONS -->
-<section class="section" id="commissions" data-guide-min-role="dci">
+<section class="section" id="commissions" data-guide-min-role="resp-equipe">
   <div class="section-label">Rémunération</div>
   <h2>Grille des commissions.</h2>
   <p class="section-intro">Les commissions sont calculées automatiquement et versées sur facture, chaque mois. Un bordereau récapitulatif est généré et envoyé par l'administrateur en début de mois pour le mois précédent.</p>

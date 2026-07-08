@@ -5,7 +5,7 @@
 // ==========================================================================
 
 // Rôles nécessitant un TOTP obligatoire (Art.42 RGPD — accès aux données sensibles)
-const TOTP_REQUIRED_ROLES = ['admin_candy', 'super_admin', 'dci'];
+const TOTP_REQUIRED_ROLES = ['collab-assurances', 'super_admin', 'resp-equipe'];
 
 async function refreshTOTPStatus() {
   if (!state.user) return;
@@ -138,10 +138,10 @@ async function challengeTOTPIfNeeded() {
 
     if (trustExp > Date.now()) return true;
 
-    let userRole = 'user';
+    let userRole = 'collab-digitalisation';
     try {
       const { data: pData } = await sb.from('profiles').select('role').eq('id', userId).maybeSingle();
-      userRole = pData?.role || 'user';
+      userRole = pData?.role || 'collab-digitalisation';
     } catch (_) {}
     const isPrivileged = TOTP_REQUIRED_ROLES.includes(userRole);
 

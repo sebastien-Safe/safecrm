@@ -66,7 +66,7 @@ function renderHelpContextual(body) {
   const roleOk = data.roles === 'all'
     || (typeof state !== 'undefined' && (
       data.roles === 'admin' ? state.profile?.is_admin :
-      data.roles === 'dci'   ? (state.profile?.role === 'dci' || state.profile?.is_admin) : true
+      data.roles === 'dci'   ? (state.profile?.role === 'resp-equipe' || state.profile?.is_admin) : true
     ));
 
   if (!roleOk) {

@@ -3051,7 +3051,7 @@ async function _tourneeCalculer() {
 
     // Vérifier limite éco RSE
     if (_userProfile && !_userProfile.is_admin) {
-      const limit = _userProfile.role === 'dci' ? 200 : 100;
+      const limit = _userProfile.role === 'resp-equipe' ? 200 : 100;
       if (_ts.totalKm > limit) _ecoFrictionModal(_ts.totalKm, limit);
     }
   } catch(e) {

@@ -893,7 +893,7 @@ document.getElementById('btn-confirm-sign').addEventListener('click', async () =
     try {
       const { data: { session: s } } = await sb.auth.getSession();
       const { data: prof } = await sb.from('profiles').select('prenom, nom, role, is_admin').eq('id', currentUser.id).maybeSingle();
-      const roleLabel = prof?.is_admin ? 'Administrateur' : (prof?.role === 'dci' ? 'DCI' : 'Utilisateur');
+      const roleLabel = prof?.is_admin ? 'Administrateur' : (prof?.role === 'resp-equipe' ? 'Responsable équipe' : 'Utilisateur');
       await sb.from('audit_logs').insert({
         user_id: currentUser.id,
         user_role: roleLabel,
