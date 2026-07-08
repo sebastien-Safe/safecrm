@@ -144,20 +144,31 @@ function renderLesson(panel, section) {
   if (section.qcm_formatif && section.qcm_formatif.length) {
     const block = document.createElement('div');
     block.className = 'quiz-block';
-    block.innerHTML = '<div class="qtitle">Vérification rapide (non notée)</div>';
+    block.innerHTML = '<div class="qtitle">Vérification rapide (non notée) · cliquez une réponse</div>';
     section.qcm_formatif.forEach((item, qi) => {
       const qDiv = document.createElement('div');
       qDiv.className = 'question';
-      qDiv.innerHTML = `<p>${qi + 1}. ${item.q}</p>`;
-      const btn = document.createElement('button');
-      btn.className = 'reveal-btn';
-      btn.textContent = 'Voir la réponse';
-      const ans = document.createElement('div');
-      ans.className = 'reveal-answer';
-      ans.textContent = item.reponse;
-      btn.onclick = () => ans.classList.add('show');
-      qDiv.appendChild(btn);
-      qDiv.appendChild(ans);
+      const p = document.createElement('p');
+      p.textContent = (qi + 1) + '. ' + item.q;
+      qDiv.appendChild(p);
+      const optsDiv = document.createElement('div');
+      optsDiv.className = 'opts';
+      item.opts.forEach((optText, oi) => {
+        const b = document.createElement('button');
+        b.className = 'opt';
+        b.textContent = optText;
+        b.onclick = () => {
+          if (optsDiv.dataset.answered) return;
+          optsDiv.dataset.answered = '1';
+          Array.from(optsDiv.children).forEach((el, idx) => {
+            el.disabled = true;
+            if (idx === item.correct) el.classList.add('correct');
+          });
+          if (oi !== item.correct) b.classList.add('incorrect');
+        };
+        optsDiv.appendChild(b);
+      });
+      qDiv.appendChild(optsDiv);
       block.appendChild(qDiv);
     });
     panel.appendChild(block);
