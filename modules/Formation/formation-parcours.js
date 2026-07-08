@@ -178,18 +178,43 @@ function renderLesson(panel, section) {
   startTimer(section.id, section.duree_minimale_min);
 }
 
-async function submitQuizScore(uniteId, pct) {
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Tire au hasard `count` questions dans la banque, et mélange l'ordre des options de chacune
+// (en réindexant `correct` en conséquence). Le tirage n'est jamais déterministe côté serveur :
+// c'est un jeu d'options d'affichage, la validité de la réponse est toujours vérifiée côté client
+// contre la banque de référence au moment de la soumission (pas d'enjeu de sécurité, seul le score compte).
+function drawQuizQuestions(section, count) {
+  const pool = shuffle(section.questions);
+  return pool.slice(0, Math.min(count, pool.length)).map(item => {
+    const optIndexes = shuffle(item.opts.map((_, i) => i));
+    return {
+      q: item.q,
+      opts: optIndexes.map(i => item.opts[i]),
+      correct: optIndexes.indexOf(item.correct),
+    };
+  });
+}
+
+async function submitQuizScore(uniteId, pct, quizDetails) {
   const dureeMin = FormationState.sections[FormationState.currentIndex].duree_minimale_min;
   // s'assure que la ligne de progression existe (normalement déjà créée par le minuteur)
   await sb.rpc('dda_heartbeat', { p_session_id: FormationState.sessionId, p_unite_id: uniteId, p_duree_minimale_min: dureeMin, p_delta_sec: 0 });
-  await sb.from('dda_progression_unites').update({ quiz_score: pct })
+  await sb.from('dda_progression_unites').update({ quiz_score: pct, quiz_details: quizDetails })
     .eq('session_id', FormationState.sessionId).eq('unite_id', uniteId);
   const { data, error } = await sb.rpc('dda_heartbeat', { p_session_id: FormationState.sessionId, p_unite_id: uniteId, p_duree_minimale_min: dureeMin, p_delta_sec: 0 });
   if (!error) {
     const row = Array.isArray(data) ? data[0] : data;
     FormationState.progressionByUnit[uniteId] = {
       ...(FormationState.progressionByUnit[uniteId] || {}),
-      quiz_score: pct, temps_passe_sec: row?.temps_passe_sec, unite_validee: row?.unite_validee,
+      quiz_score: pct, quiz_details: quizDetails, temps_passe_sec: row?.temps_passe_sec, unite_validee: row?.unite_validee,
     };
   }
 }
@@ -209,14 +234,26 @@ function renderEvaluation(panel, section) {
   `;
   panel.appendChild(head);
 
-  const examAnswers = {};
   let submitted = prog.quiz_score !== undefined && prog.quiz_score !== null;
+  // Après soumission, on réaffiche exactement les questions réellement servies (quiz_details persisté).
+  // Avant soumission, on tire 20 questions au hasard dans la banque (~40), mémorisées en mémoire
+  // le temps de la tentative — jamais persistées tant que le QCM n'est pas validé.
+  let questions;
+  if (submitted && prog.quiz_details && Array.isArray(prog.quiz_details.questions)) {
+    questions = prog.quiz_details.questions;
+  } else {
+    if (!FormationState.quizSelection[section.id]) {
+      FormationState.quizSelection[section.id] = drawQuizQuestions(section, 20);
+    }
+    questions = FormationState.quizSelection[section.id];
+  }
+  const examAnswers = submitted && prog.quiz_details ? { ...(prog.quiz_details.answers || {}) } : {};
   const block = document.createElement('div');
   block.className = 'quiz-block';
 
   function renderQuestions() {
-    block.innerHTML = '<div class="qtitle">' + section.questions.length + ' questions · seuil de réussite 70% · un seul essai compte pour le score</div>';
-    section.questions.forEach((item, qi) => {
+    block.innerHTML = '<div class="qtitle">' + questions.length + ' questions · seuil de réussite 70% · un seul essai compte pour le score</div>';
+    questions.forEach((item, qi) => {
       const qDiv = document.createElement('div');
       qDiv.className = 'question';
       const p = document.createElement('p');
@@ -252,11 +289,11 @@ function renderEvaluation(panel, section) {
       submitBtn.textContent = 'Valider le QCM';
       submitBtn.onclick = async () => {
         let score = 0;
-        section.questions.forEach((item, qi) => { if (examAnswers[qi] === item.correct) score++; });
-        const pct = Math.round(score / section.questions.length * 100);
+        questions.forEach((item, qi) => { if (examAnswers[qi] === item.correct) score++; });
+        const pct = Math.round(score / questions.length * 100);
         submitBtn.disabled = true;
         submitBtn.textContent = 'Envoi en cours…';
-        await submitQuizScore(section.id, pct);
+        await submitQuizScore(section.id, pct, { questions, answers: examAnswers });
         submitted = true;
         renderQuestions();
         updatePrevNextButtons();

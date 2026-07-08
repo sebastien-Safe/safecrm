@@ -7,7 +7,8 @@ const FormationState = {
   obligation: null,
   programme: null,
   sessionId: null,
-  progressionByUnit: {},   // unite_id -> {temps_passe_sec, unite_validee, quiz_score}
+  progressionByUnit: {},   // unite_id -> {temps_passe_sec, unite_validee, quiz_score, quiz_details}
+  quizSelection: {},       // unite_id -> questions tirées au hasard pour la tentative en cours (non soumise)
   sections: [],
   currentIndex: 0,
 };
@@ -48,7 +49,7 @@ async function initFormation(){
 async function loadProgression(){
   const { data, error } = await sb
     .from('dda_progression_unites')
-    .select('unite_id, temps_passe_sec, duree_minimale_min, unite_validee, quiz_score')
+    .select('unite_id, temps_passe_sec, duree_minimale_min, unite_validee, quiz_score, quiz_details')
     .eq('session_id', FormationState.sessionId);
   if (error) { console.error('loadProgression', error); return; }
   FormationState.progressionByUnit = {};
