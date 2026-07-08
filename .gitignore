@@ -48,6 +48,9 @@ backups/
 # Scripts utilitaires de développement
 download-stripe-docs.sh
 
+# Supabase CLI — état/cache local (jamais commité)
+supabase/supabase/.temp/
+
 # ============================================================
 # NOTE : assets/config.js est intentionnellement tracké.
 # Il contient uniquement la clé "publishable" Supabase,

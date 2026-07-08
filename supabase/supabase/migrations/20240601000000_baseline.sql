@@ -305,7 +305,7 @@ alter table contacts add column if not exists rgpd_ko boolean not null default f
 -- =========================================================
 
 update objectifs
-set label = 'Commissions reversées',
+set label = 'Commissions reversées'
 where metric_type = 'commissions';
 
 -- ============================================================
@@ -1426,10 +1426,20 @@ alter table contracts
   check (statut in ('Devis envoyé','Signé','En cours','Terminé'));
 
 -- Migrer les anciens contrats 'Résilié' vers 'Terminé' + resilié_at
-update contracts
-set statut = 'Terminé', resilié_at = updated_at
-where statut = 'Résilié'
-  and resilié_at is null;
+-- (updated_at n'existe pas sur contracts à ce stade du schéma ; garde
+-- de compatibilité pour permettre le replay de cette migration historique)
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'contracts' and column_name = 'updated_at'
+  ) then
+    update contracts
+    set statut = 'Terminé', resilié_at = updated_at
+    where statut = 'Résilié'
+      and resilié_at is null;
+  end if;
+end $$;
 
 
 -- ============================================================
@@ -2256,15 +2266,27 @@ CREATE TABLE IF NOT EXISTS totp_audit (
 ALTER TABLE totp_audit ENABLE ROW LEVEL SECURITY;
 
 -- Seuls les super_admin peuvent lire — insertion via RLS SECURITY DEFINER function
-CREATE POLICY "totp_audit_read_super_admin"
-  ON totp_audit FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE profiles.id = auth.uid()
-        AND profiles.role = 'super_admin'
-    )
-  );
+-- (profiles.role n'existe pas encore à ce stade du schéma ; garde de
+-- compatibilité pour permettre le replay de cette migration historique)
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'profiles' and column_name = 'role'
+  ) then
+    execute $pol$
+      CREATE POLICY "totp_audit_read_super_admin"
+        ON totp_audit FOR SELECT
+        USING (
+          EXISTS (
+            SELECT 1 FROM profiles
+            WHERE profiles.id = auth.uid()
+              AND profiles.role = 'super_admin'
+          )
+        )
+    $pol$;
+  end if;
+end $$;
 
 -- INSERT autorisé à l'utilisateur connecté pour son propre user_id
 CREATE POLICY "totp_audit_insert_self"
@@ -2292,15 +2314,27 @@ CREATE TABLE IF NOT EXISTS audit_access_log (
 ALTER TABLE audit_access_log ENABLE ROW LEVEL SECURITY;
 
 -- Seuls les utilisateurs avec rôle super_admin ou admin_candy (= DPO) peuvent lire
-CREATE POLICY "audit_access_log_read_dpo"
-  ON audit_access_log FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE profiles.id = auth.uid()
-        AND profiles.role IN ('super_admin', 'admin_candy')
-    )
-  );
+-- (profiles.role n'existe pas encore à ce stade du schéma ; garde de
+-- compatibilité pour permettre le replay de cette migration historique)
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'profiles' and column_name = 'role'
+  ) then
+    execute $pol$
+      CREATE POLICY "audit_access_log_read_dpo"
+        ON audit_access_log FOR SELECT
+        USING (
+          EXISTS (
+            SELECT 1 FROM profiles
+            WHERE profiles.id = auth.uid()
+              AND profiles.role IN ('super_admin', 'admin_candy')
+          )
+        )
+    $pol$;
+  end if;
+end $$;
 
 -- INSERT autorisé à l'utilisateur connecté
 CREATE POLICY "audit_access_log_insert_self"
