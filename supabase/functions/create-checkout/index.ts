@@ -1,6 +1,7 @@
 // On cible "denonext" pour que esm.sh s'adapte à Deno v2
-import { createClient } from "@supabase/supabase-js";
-import Stripe from "stripe";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4?target=denonext";
+import Stripe from "https://esm.sh/stripe@14.5.0?target=denonext";
 
 const H = {
   "Access-Control-Allow-Origin": "https://crm.safe-digitalisation.fr",
@@ -15,7 +16,7 @@ function json(b: unknown, s = 200) {
   );
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: H });
   }
@@ -30,13 +31,59 @@ Deno.serve(async (req) => {
   if (!SK) return json({ error: "no_stripe_key" }, 500);
 
   const sb = createClient(SU, SR);
-  const stripe = new Stripe(SK, { apiVersion: "2023-10-16" });
+  const stripe = new Stripe(SK, { apiVersion: "2024-04-10" });
 
-  let body: { contract_id?: string };
+  let body: any;
   try {
-    body = await req.json() as { contract_id?: string };
+    body = await req.json();
   } catch {
     return json({ error: "bad_json" }, 400);
+  }
+
+  // ── Dossier victime 17Cyber : paiement ponctuel TTC, avec option 3x sans frais ──
+  if (body.cybervictim_lead_id) {
+    const { data: lead, error: eLead } = await sb
+      .from("cybervictim_leads")
+      .select("id, first_name, last_name, product_id, cybervictim_products(alert_type, price_ttc)")
+      .eq("id", body.cybervictim_lead_id)
+      .single();
+    if (eLead || !lead) return json({ error: "not_found" }, 404);
+
+    const product = lead.cybervictim_products;
+    const priceTtc = Number(product?.price_ttc || 0);
+    if (!priceTtc) return json({ error: "no_price" }, 400);
+
+    const okV = "https://crm.safe-digitalisation.fr/?v=victimes17&payment=success&lead=" + lead.id;
+    const koV = "https://crm.safe-digitalisation.fr/?v=victimes17&payment=cancel&lead=" + lead.id;
+
+    try {
+      const ss = await stripe.checkout.sessions.create({
+        mode: "payment",
+        payment_method_types: ["card"],
+        payment_method_options: {
+          card: { installments: { enabled: true } } // paiement en plusieurs fois (dont 3x) si la carte du client est éligible
+        },
+        line_items: [
+          {
+            price_data: {
+              currency: "eur",
+              product_data: { name: `${product.alert_type} — Intervention S@FE 17Cyber (${lead.first_name} ${lead.last_name})` },
+              unit_amount: Math.round(priceTtc * 100)
+            },
+            quantity: 1
+          }
+        ],
+        success_url: okV,
+        cancel_url: koV,
+        metadata: { cybervictim_lead_id: lead.id }
+      });
+      return json({ url: ss.url });
+    } catch (e: any) {
+      return json(
+        { error: "stripe_error", details: e.message },
+        502
+      );
+    }
   }
 
   const cid = body.contract_id;
@@ -65,7 +112,7 @@ Deno.serve(async (req) => {
   try {
     let ss;
     if (r) {
-      const li: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      const li: any[] = [
         {
           price_data: {
             currency: "eur",
@@ -112,9 +159,9 @@ Deno.serve(async (req) => {
       });
     }
     return json({ url: ss.url });
-  } catch (e) {
+  } catch (e: any) {
     return json(
-      { error: "stripe_error", details: e instanceof Error ? e.message : String(e) },
+      { error: "stripe_error", details: e.message },
       502
     );
   }

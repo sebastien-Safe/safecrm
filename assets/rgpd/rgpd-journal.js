@@ -91,6 +91,14 @@ const JOURNAL_ACTION_LABELS = {
   export_portabilite_contact:    'Export portabilité données (RGPD art. 20)',
   purge_donnees_perimees:        'Purge données périmées (RGPD art. 5)',
   js_error:                      'Erreur JavaScript capturée (monitoring)',
+  // Dossiers victimes 17Cyber — ajoutées session 2026-07
+  victim_lead_cree:              'Dossier victime 17Cyber créé',
+  victim_devis_genere:           'Devis victime 17Cyber généré',
+  victim_rapport_genere:         'Rapport victime 17Cyber généré',
+  victim_etape_modifiee:         'Étape pipeline victime modifiée',
+  victim_paiement_confirme:      'Paiement victime 17Cyber confirmé',
+  victim_dossier_cloture:        'Dossier victime 17Cyber clôturé',
+  victim_donnees_purgees:        'Purge RGPD dossier victime (données/documents)',
 };
 
 const JOURNAL_CRITICITE_CLASS = {

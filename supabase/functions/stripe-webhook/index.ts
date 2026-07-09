@@ -1,6 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
-import Stripe from "stripe";
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import Stripe from "https://esm.sh/stripe@14?target=deno";
+import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 
 // ── Signature commerciale : role → titre affiché ──────────────────────────
 const ROLE_TITRE: Record<string, string> = {
@@ -247,7 +248,7 @@ async function envoyerFacture(sb: ReturnType<typeof createClient>, opts: {
 // ═════════════════════════════════════════════════════════════════════════
 // WEBHOOK PRINCIPAL
 // ═════════════════════════════════════════════════════════════════════════
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method !== "POST") return new Response("not allowed", { status: 405 });
 
   const STRIPE_KEY     = Deno.env.get("STRIPE_SECRET_KEY")!;
@@ -291,6 +292,23 @@ Deno.serve(async (req) => {
   // ── 1. checkout.session.completed ────────────────────────────────────
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
+
+    // Dossier victime 17Cyber : paiement reçu → avance le pipeline + journal RGPD
+    const victimLeadId = session.metadata?.cybervictim_lead_id;
+    if (victimLeadId) {
+      await sb.from("cybervictim_leads")
+        .update({ pipeline_stage: "paiement_recu" })
+        .eq("id", victimLeadId);
+      await sb.from("audit_logs").insert({
+        user_id: null,
+        action: "victim_paiement_confirme",
+        entity_type: "cybervictim_lead",
+        entity_id: victimLeadId,
+        module: "Victimes17Cyber",
+        details: { session_id: session.id, amount_total: session.amount_total, installments: true },
+      });
+    }
+
     const contractId = session.metadata?.contract_id;
     if (contractId) {
       const update: Record<string, unknown> = { statut: "Contrat en cours" };
@@ -419,7 +437,7 @@ Deno.serve(async (req) => {
   // ── 4. customer.subscription.updated ────────────────────────────────
   if (event.type === "customer.subscription.updated") {
     const sub  = event.data.object as Stripe.Subscription;
-    const prev = event.data.previous_attributes as Partial<Stripe.Subscription>;
+    const prev = (event.data as any).previous_attributes as Partial<Stripe.Subscription>;
     const ct   = await contractBySubId(sub.id);
     if (ct && prev?.cancel_at_period_end !== undefined) {
       const periodEnd = sub.current_period_end

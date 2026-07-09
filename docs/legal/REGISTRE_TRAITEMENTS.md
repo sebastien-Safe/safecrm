@@ -4,10 +4,10 @@
 **Entreprise:** S@FE SASU
 **SIRET:** 104 699 558 00011
 **DPO:** Sébastien Alonso (dpo@safe-digitalisation.fr)
-**Dernière mise à jour:** 2026-07-04
+**Dernière mise à jour:** 2026-07-09
 **Certification cible:** Art. 42 RGPD / CNIL
 
-> Ce registre est la source unique de vérité pour les traitements de S@FE. Le tableau affiché dans la CRM (Administration → Registre RGPD → Registre des traitements) reprend exactement les mêmes 10 traitements, avec un sous-ensemble opérationnel des colonnes (finalité, base légale, catégories de données, destinataires, durée de conservation, mesures de sécurité) ; les colonnes légales complètes (sous-traitants, transferts tiers, droits concernés, chiffrement) ne sont détaillées que dans ce document.
+> Ce registre est la source unique de vérité pour les traitements de S@FE. Le tableau affiché dans la CRM (Administration → Registre RGPD → Registre des traitements) reprend exactement les mêmes 11 traitements, avec un sous-ensemble opérationnel des colonnes (finalité, base légale, catégories de données, destinataires, durée de conservation, mesures de sécurité) ; les colonnes légales complètes (sous-traitants, transferts tiers, droits concernés, chiffrement) ne sont détaillées que dans ce document.
 
 ---
 
@@ -187,6 +187,24 @@
 | **Transferts tiers** | Aucun (données restent EU) |
 | **Droits concernés** | DSAR, rectification, suppression, retrait du consentement à tout moment |
 | **Sécurité** | Edge Function dédiée avec liste blanche CORS par domaine, honeypot anti-spam, rate limiting par IP, validation serveur du consentement RGPD (obligatoire et tracé pour les deux marques depuis le 2026-07-08, avec texte affiché exact horodaté par marque et type de formulaire), aucune clé exposée côté client |
+| **Chiffrement** | TLS transit, repos via Supabase (AES-256) |
+
+---
+
+## T11 : GESTION DES DOSSIERS VICTIMES 17CYBER
+
+| Propriété | Valeur |
+|---|---|
+| **Nom du traitement** | Gestion des dossiers victimes 17Cyber |
+| **Finalité légale** | Prise en charge et suivi des victimes d'incidents de cybersécurité orientées via 17Cyber / cybermalveillance.gouv.fr — établissement de devis et production de rapports d'intervention |
+| **Base légale** | Art. 6(1)b RGPD (exécution d'un contrat) |
+| **Données personnelles** | État civil (nom, prénom), coordonnées (e-mail, téléphone), nature de l'incident cyber, numéro de ticket 17Cyber, notes d'intervention |
+| **Catégories rétention** | Données victime : 5 ans après clôture du dossier — Documents (devis, rapports) : 10 ans après clôture — Logs journal RGPD liés : 1 an glissant |
+| **Destinataires** | Collaborateurs S@FE SASU habilités (accès authentifié SafeCRM) |
+| **Sous-traitants** | Supabase (Francfort, Allemagne — hébergement base de données CRM), Stripe (paiement, PCI-DSS — aucune donnée carte stockée par S@FE) |
+| **Transferts tiers** | Aucun (données restent UE) |
+| **Droits concernés** | Accès, rectification, effacement (anonymisation automatique à 5 ans), portabilité, limitation, opposition — à exercer auprès du DPO (dpo@safe-digitalisation.fr) |
+| **Sécurité** | Authentification obligatoire, RLS Supabase (accès réservé aux utilisateurs authentifiés), purge automatique programmée (Edge Function `purge-cybervictim-data`, cron quotidien 2h UTC) |
 | **Chiffrement** | TLS transit, repos via Supabase (AES-256) |
 
 ---

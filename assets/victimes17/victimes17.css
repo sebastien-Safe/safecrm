@@ -1,0 +1,31 @@
+/* ═══════════════════════════════════════════
+   PARTICULIERS / 17CYBER — deltas visuels
+   Réutilise les classes .pcol / .pcard de pipeline.css
+   ═══════════════════════════════════════════ */
+
+.v17-ticket-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  background:rgba(201,162,75,.16); color:var(--gold-light, #f5c563);
+  border:1px solid rgba(201,162,75,.4); border-radius:999px;
+  font-size:.72rem; font-weight:600; padding:2px 9px; margin:4px 0;
+}
+
+.v17-alert-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  background:rgba(124,151,196,.16); color:#9db3d9;
+  border-radius:999px; font-size:.72rem; padding:2px 9px; margin:0 0 4px;
+}
+
+.v17-price-badge { color:#86efac; font-weight:600; }
+
+.v17-ticket-input {
+  border:1.5px solid var(--gold, #c9a24b) !important;
+  background:rgba(201,162,75,.06) !important;
+}
+
+.v17-product-option-price { color:#86efac; }
+
+@media (max-width: 720px) {
+  .pipeline-toolbar { flex-wrap:wrap; }
+  .v17-ticket-badge, .v17-alert-badge { font-size:.68rem; }
+}

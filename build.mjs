@@ -9,6 +9,8 @@ const JS_FILES = [
   'assets/app-init.js',
   'assets/config.js',
   'assets/pipeline.js',
+  'assets/victimes17/victimes17.js',
+  'assets/victimes17/victimes17-pdf.js',
   'assets/js/composants/gauge.js',
   'assets/js/composants/session-banner.js',
   'assets/js/composants/toast.js',
@@ -40,6 +42,7 @@ const JS_FILES = [
 const CSS_FILES = [
   'assets/style.css',
   'assets/pipeline.css',
+  'assets/victimes17/victimes17.css',
   'assets/css/base.css',
   'assets/css/composants/nav-mobile.css',
   'assets/css/composants/toast.css',

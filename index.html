@@ -34,6 +34,7 @@
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/style.css?v=1.2.5">
 <link rel="stylesheet" href="assets/pipeline.css">
+<link rel="stylesheet" href="assets/victimes17/victimes17.css">
 
 <link rel="stylesheet" href="assets/css/composants/nav-mobile.css">
 <link rel="stylesheet" href="assets/css/composants/onboarding.css">
@@ -59,6 +60,7 @@
       <div class="mob-sec-lbl">Navigation</div>
       <button class="mob-lk" id="mob-lk-dashboard" onclick="mobNav('dashboard')"><span class="ico">🏠</span> Tableau de bord</button>
       <button class="mob-lk" id="mob-lk-pipeline" onclick="mobNav('pipeline')"><span class="ico">🗂️</span> Pipeline</button>
+      <button class="mob-lk" id="mob-lk-victimes17" onclick="mobNav('victimes17')"><span class="ico">🆘</span> Particuliers 17Cyber</button>
       <button class="mob-lk" onclick="mobNav('contacts')"><span class="ico">👥</span> Contacts</button>
       <button class="mob-lk" onclick="mobNav('tasks')"><span class="ico">✅</span> T&#226;ches</button>
       <button class="mob-lk" onclick="mobNav('agenda')"><span class="ico">📅</span> Agenda</button>
@@ -150,6 +152,7 @@
       <div class="nav-section-lbl">Navigation</div>
       <button class="navlink" data-view="dashboard">🏠 Tableau de bord</button>
       <button class="navlink" data-view="pipeline">🗂️ Pipeline</button>
+      <button class="navlink" data-view="victimes17">🆘 Particuliers 17Cyber</button>
       <button class="navlink" data-view="contacts">👥 Contacts</button>
       <button class="navlink" data-view="tasks" id="lk-tasks">✅ Tâches</button>
       <button class="navlink" data-view="agenda" id="nav-agenda">📅 Agenda</button>
@@ -357,6 +360,19 @@
         <span class="pfl-tip">— La carte avance automatiquement à chaque étape clé</span>
       </div>
       <div class="pipeline-board" id="pl-board">
+        <div class="pipeline-loading"><div class="pipeline-spinner"></div> Chargement…</div>
+      </div>
+    </section>
+
+    <!-- ---------- PARTICULIERS / 17CYBER ---------- -->
+    <section id="view-victimes17" class="view">
+      <div class="pipeline-toolbar">
+        <h2>🆘 Particuliers — 17Cyber</h2>
+        <div class="pipeline-total" id="v17-total"><span>Dossiers actifs</span> —</div>
+        <input class="pipeline-search" id="v17-search" type="text" placeholder="Rechercher (nom, ticket)…" oninput="_v17ApplySearch()">
+        <button class="pipeline-btn-add" onclick="openVictimLeadModal()">+ Nouveau dossier victime</button>
+      </div>
+      <div class="pipeline-board" id="v17-board">
         <div class="pipeline-loading"><div class="pipeline-spinner"></div> Chargement…</div>
       </div>
     </section>
@@ -914,6 +930,37 @@
       <div id="interactions-list">
         <p class="mut" style="font-size:.85rem">Aucun échange enregistré.</p>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODALE NOUVEAU DOSSIER VICTIME 17CYBER ================= -->
+<div class="modal" id="victim-lead-modal">
+  <div class="box">
+    <h3 id="victim-lead-modal-title">🆘 Nouveau dossier victime — 17Cyber</h3>
+    <input type="hidden" id="vl-id">
+
+    <div class="field-row">
+      <div class="field"><label>👤 Prénom *</label><input id="vl-prenom" type="text" placeholder="Prénom de la victime"></div>
+      <div class="field"><label>Nom *</label><input id="vl-nom" type="text" placeholder="Nom de la victime"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>✉️ E-mail</label><input id="vl-email" type="email"></div>
+      <div class="field"><label>📞 Téléphone</label><input id="vl-telephone" type="tel"></div>
+    </div>
+    <div class="field">
+      <label>🎫 Numéro de ticket 17Cyber</label>
+      <input id="vl-ticket" type="text" class="v17-ticket-input" placeholder="Ex : 17C-2026-00042">
+    </div>
+    <div class="field">
+      <label>Type d'alerte / produit *</label>
+      <select id="vl-product"><option value="">Sélectionner une alerte…</option></select>
+    </div>
+    <div class="field"><label>Notes libres</label><textarea id="vl-notes" placeholder="Contexte, éléments transmis par la victime…"></textarea></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-out" onclick="closeVictimLeadModal()">Annuler</button>
+      <button class="btn btn-pri" id="victim-lead-save-btn" onclick="saveVictimLead()">Enregistrer</button>
     </div>
   </div>
 </div>
@@ -1611,6 +1658,8 @@
 <script src="assets/tasks/tasks.js"></script>
 <script src="assets/totp/totp.js"></script>
 <script src="assets/pipeline.js"></script>
+<script src="assets/victimes17/victimes17-pdf.js"></script>
+<script src="assets/victimes17/victimes17.js"></script>
 <script src="assets/app.js"></script>
 <script src="assets/rgpd/rgpd-journal.js"></script>
 <script src="assets/help/help-content.js"></script>
