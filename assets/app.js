@@ -189,6 +189,11 @@ async function submitNewPassword() {
   $('#reset-error').textContent = '';
   if (!pw1 || pw1.length < 6) { $('#reset-error').textContent = 'Le mot de passe doit contenir au moins 6 caractères.'; return; }
   if (pw1 !== pw2) { $('#reset-error').textContent = 'Les deux mots de passe ne correspondent pas.'; return; }
+  // Un lien de récupération n'ouvre qu'une session AAL1 — si le compte a la
+  // double authentification activée, Supabase refuse updateUser() tant que
+  // l'AAL2 n'est pas atteinte (même challenge que celui utilisé au login).
+  const totpOk = await challengeTOTPIfNeeded();
+  if (!totpOk) { $('#reset-error').textContent = 'Double authentification requise pour changer le mot de passe.'; return; }
   const { error, data: updData } = await sb.auth.updateUser({ password: pw1 });
   if (error) { $('#reset-error').textContent = 'Erreur : ' + error.message; return; }
   const { data: { session } } = await sb.auth.getSession();
