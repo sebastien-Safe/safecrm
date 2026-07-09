@@ -216,7 +216,7 @@ function _v17UpdateTotal() {
 }
 
 // ── Modale « Nouveau dossier victime » ──
-function openVictimLeadModal() {
+async function openVictimLeadModal() {
   document.getElementById('vl-id').value = '';
   document.getElementById('vl-prenom').value = '';
   document.getElementById('vl-nom').value = '';
@@ -225,11 +225,23 @@ function openVictimLeadModal() {
   document.getElementById('vl-ticket').value = '';
   document.getElementById('vl-notes').value = '';
 
-  const sel = document.getElementById('vl-product');
-  sel.innerHTML = '<option value="">Sélectionner une alerte…</option>' +
-    _v17Products.map(p => `<option value="${p.id}">${escapeHtml(p.alert_type)} — ${formatMoney(p.price_ttc)} TTC</option>`).join('');
+  // Clic possible avant la fin du chargement initial des produits
+  if (!_v17Products.length) {
+    try { await _v17LoadData(); } catch (e) { console.error('[victimes17]', e); }
+  }
 
+  // La modale doit être affichée (display:grid) avant qu'on peuple le
+  // <select> — Safari peut sinon ne plus réagir aux clics sur un select
+  // dont le contenu a été injecté pendant que son conteneur était encore
+  // display:none. requestAnimationFrame garantit que le layout de la
+  // modale est posé avant l'injection des <option>.
   document.getElementById('victim-lead-modal').classList.add('show');
+
+  requestAnimationFrame(() => {
+    const sel = document.getElementById('vl-product');
+    sel.innerHTML = '<option value="">Sélectionner une alerte…</option>' +
+      _v17Products.map(p => `<option value="${p.id}">${escapeHtml(p.alert_type)} — ${formatMoney(p.price_ttc)} TTC</option>`).join('');
+  });
 }
 
 function closeVictimLeadModal() {
