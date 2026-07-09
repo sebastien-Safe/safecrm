@@ -28,9 +28,33 @@ const state = {
 // ---------------------------------------------------------
 // AUTHENTIFICATION
 // ---------------------------------------------------------
+
+// Un lien de réinitialisation expiré/déjà utilisé fait revenir Supabase avec
+// #error=...&error_code=... dans l'URL (pas de session) — sans ça l'échec
+// est silencieux et l'utilisateur retombe sur l'écran de connexion sans explication.
+function _consumeRecoveryUrlError() {
+  if (!window.location.hash) return null;
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const code = params.get('error_code');
+  if (!code) return null;
+  history.replaceState({}, document.title, window.location.pathname);
+  if (code === 'otp_expired') return 'Ce lien de réinitialisation a expiré ou a déjà été utilisé (seul le dernier e-mail reçu est valide). Merci de refaire une demande.';
+  return 'Ce lien de réinitialisation n\'est plus valide. Merci de refaire une demande.';
+}
+
 async function init() {
+  // Capturé AVANT getSession() : getSession() attend l'initialisation interne
+  // du client (qui traite déjà le hash #access_token=...&type=recovery et émet
+  // PASSWORD_RECOVERY) — un onAuthStateChange branché après coup rate cet
+  // événement. On détecte donc le lien de récupération nous-mêmes pour ne pas
+  // dépendre du timing de l'événement.
+  const isRecoveryLink = /(?:^|[#&])type=recovery(?:&|$)/.test(window.location.hash);
+  const recoveryError = _consumeRecoveryUrlError();
   const { data: { session } } = await sb.auth.getSession();
-  if (session) {
+  if (isRecoveryLink && session) {
+    state.user = session.user;
+    showResetScreen();
+  } else if (session) {
     // Vérifier si la session dépasse 4h dès le démarrage (ex: rechargement de page)
     const signinAt = parseInt(localStorage.getItem('safe_signin_at') || '0', 10);
     if (signinAt && Date.now() - signinAt > SESSION_MAX_MS) {
@@ -43,6 +67,7 @@ async function init() {
     showApp();
   } else {
     showLogin();
+    if (recoveryError) $('#login-error').textContent = recoveryError;
   }
 
   sb.auth.onAuthStateChange((event, session) => {
