@@ -30,9 +30,6 @@ Deno.serve(async (req) => {
   const SB_URL  = Deno.env.get("SUPABASE_URL")!;
   const SB_ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
   const SB_SRV  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const GKEY    = Deno.env.get("GOOGLE_PLACES_API_KEY");
-
-  if (!GKEY) return json({ error: "Google Places API non configurée" }, 503);
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   const auth = req.headers.get("Authorization");
@@ -42,6 +39,23 @@ Deno.serve(async (req) => {
   const { data: { user }, error: authErr } = await sbUser.auth.getUser();
   if (authErr || !user) return json({ error: "Non authentifié" }, 401);
 
+  const sbSrv = createClient(SB_URL, SB_SRV);
+
+  // ── Résolution de la clé API ───────────────────────────────────────────────
+  // Priorité : 1. secret d'env GOOGLE_PLACES_API_KEY, 2. safe_connector_secrets
+  let GKEY = Deno.env.get("GOOGLE_PLACES_API_KEY") ?? null;
+
+  if (!GKEY) {
+    const { data: secret } = await sbSrv
+      .from("safe_connector_secrets")
+      .select("api_key")
+      .eq("service_key", "google_places")
+      .maybeSingle();
+    GKEY = secret?.api_key ?? null;
+  }
+
+  if (!GKEY) return json({ error: "Google Places API non configurée" }, 503);
+
   // ── Paramètre de recherche ─────────────────────────────────────────────────
   let body: { q?: string } = {};
   try { body = await req.json(); } catch { /* body vide */ }
@@ -49,7 +63,6 @@ Deno.serve(async (req) => {
   if (q.length < 2) return json({ error: "Requête trop courte (min 2 caractères)" }, 400);
 
   // ── Rate limiting (service role pour contourner RLS en lecture) ────────────
-  const sbSrv = createClient(SB_URL, SB_SRV);
   const start = monthStart();
 
   const [{ count: userCount }, { count: globalCount }, { data: profileData }] = await Promise.all([

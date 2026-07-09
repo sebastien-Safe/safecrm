@@ -1,6 +1,6 @@
 # S@FE CRM — Edge Functions
 
-14 fonctions Deno déployées sur Supabase Edge Runtime.  
+25 fonctions Deno déployées sur Supabase Edge Runtime.  
 URL de base : `https://qdjmzietysukediqkebg.supabase.co/functions/v1/`
 
 ## Secrets requis
@@ -12,6 +12,9 @@ URL de base : `https://qdjmzietysukediqkebg.supabase.co/functions/v1/`
 | `SUPABASE_SERVICE_ROLE_KEY` | Clé service (auto-injectée) |
 | `STRIPE_SECRET_KEY` | Clé secrète Stripe live (`sk_live_…`) |
 | `BREVO` | Clé API Brevo (email) |
+| `GOOGLE_PLACES_API_KEY` | Clé API Google Places (`places-search`). Fallback : `safe_connector_secrets` (`service_key='google_places'`), gérable via `/modules/connecteurs.html`. |
+| `PAGESPEED_API_KEY` | Clé API Google PageSpeed Insights (`pagespeed-analyze`). Fallback : `safe_connector_secrets` (`service_key='pagespeed'`). |
+| `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET` | Identifiants OAuth 2.0 Google Cloud Console (scope `webmasters.readonly`) pour la connexion Search Console (`gsc-oauth-start`, `gsc-oauth-callback`, `gsc-positions-sync`). URI de redirection à déclarer côté Google : `https://qdjmzietysukediqkebg.supabase.co/functions/v1/gsc-oauth-callback`. |
 | `TVA_MULTIPLIER` | Coefficient TTC en centimes (défaut `120` = TVA 20 %) |
 | `BREVO_TEMPLATE_RESILIATION` | ID template Brevo résiliation (défaut `3`) |
 | `BREVO_TEMPLATE_BORDEREAU` | ID template Brevo bordereau commission (défaut `4`) |
@@ -160,6 +163,51 @@ Calcule TTC = HT × `TVA_MULTIPLIER` en centimes. Crée une session `subscriptio
 Archivage RGPD automatique (profil + logs) dans `deleted_users` avant suppression. Conservation légale 5 ans (Art. L123-22 C.com).
 
 **Réponse :** `{ "ok": true, "archived": true }`
+
+---
+
+### `gsc-oauth-start`
+**Démarrer la connexion OAuth Google Search Console pour un domaine**
+
+| | |
+|---|---|
+| Méthode | `POST` |
+| Auth | JWT admin (`is_admin = true`) |
+| CORS | `https://crm.safe-digitalisation.fr` |
+
+**Body :** `{ "domaine_id": "uuid" }` (référence `seo_domaines.id`)
+Crée un état anti-CSRF à usage unique (`safe_gsc_oauth_state`) et retourne l'URL de consentement Google.
+
+**Réponse :** `{ "url": "https://accounts.google.com/o/oauth2/v2/auth?..." }`
+
+---
+
+### `gsc-oauth-callback`
+**Callback OAuth Google — échange le code contre les tokens**
+
+| | |
+|---|---|
+| Méthode | `GET` |
+| Auth | Aucune (appelée directement par Google ; sécurisée par le `state` à usage unique) |
+| CORS | — (redirection 302) |
+
+Échange le `code` contre `access_token`/`refresh_token`, les stocke dans `safe_gsc_tokens` (par `domaine_id`), marque `seo_domaines.gsc_connected = true` et le connecteur `google_gsc` comme `actif`. Redirige vers le module SEO Clients avec `?gsc=connected&contact_id=…&domaine_id=…` ou `?gsc_error=…`.
+
+---
+
+### `gsc-positions-sync`
+**Synchroniser les positions des mots-clés suivis via Search Console**
+
+| | |
+|---|---|
+| Méthode | `POST` |
+| Auth | JWT utilisateur |
+| CORS | `https://crm.safe-digitalisation.fr` |
+
+**Body :** `{ "domaine_id": "uuid" }`
+Rafraîchit le token si expiré, interroge `searchAnalytics.query` (28 derniers jours) et met à jour `position_actuelle`/`position_precedente` des lignes `seo_client_mots_cles` dont le libellé correspond à une requête Google.
+
+**Réponse :** `{ "updated": N, "total_queries_gsc": M }`
 
 ---
 

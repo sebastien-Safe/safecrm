@@ -3,5 +3,6 @@
         "**/*.code-search": false,
         "**/bower_components": false
     },
-    "search.useParentIgnoreFiles": true
+    "search.useParentIgnoreFiles": true,
+    "editor.mouseWheelZoom": true
 }

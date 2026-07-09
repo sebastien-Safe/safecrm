@@ -355,6 +355,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // ── Retour de connexion Google Search Console ──────────────────────────────
+  const gscParams = new URLSearchParams(location.search);
+  if (gscParams.get('gsc') === 'connected' || gscParams.get('gsc_error')) {
+    const contactId = gscParams.get('contact_id');
+    const domaineId = gscParams.get('domaine_id');
+    history.replaceState({}, '', location.pathname);
+
+    if (gscParams.get('gsc_error')) {
+      toast('Erreur Search Console : ' + gscParams.get('gsc_error'), 'err');
+    } else {
+      const contact = allContacts.find(c => c.id === contactId);
+      if (contact) {
+        selectContact(contact);
+        await loadDomaines(contact);
+        const d = _allDomaines.find(x => x.id === domaineId);
+        if (d) selectDomaine(d);
+      }
+      toast('Search Console connecté ✅');
+      return;
+    }
+  }
+
   loadDashboard();
   showView('dashboard');
 });

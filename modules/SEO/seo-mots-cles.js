@@ -40,13 +40,9 @@ async function loadMotsCles() {
       </div>
     </div>
 
-    ${list.length ? `
-      <div style="background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);
-        border-radius:var(--r-sm);padding:9px 14px;margin-bottom:14px;font-size:.77rem;color:var(--mut-2);
-        display:flex;align-items:center;justify-content:space-between;font-family:var(--ff-mono)">
-        <span>🔍 Positions saisies manuellement. <a href="/modules/connecteurs.html" style="color:var(--gold)">Activer Google Search Console</a> pour les importer automatiquement.</span>
-      </div>
+    ${_renderGscBanner()}
 
+    ${list.length ? `
       <div class="card">
         <div class="card-header">
           <span class="card-title">— Mots-clés (${list.length})</span>
@@ -218,4 +214,74 @@ async function deleteMC(id) {
   const { error } = await supa.from('seo_client_mots_cles').delete().eq('id', id);
   if (error) { toast('Erreur', 'err'); return; }
   closeModal(); toast('Mot-clé supprimé'); loadMotsCles();
+}
+
+/* ============================================================
+   GOOGLE SEARCH CONSOLE — connexion OAuth + synchronisation
+   ============================================================ */
+function _renderGscBanner() {
+  if (!currentDomaine) return '';
+  if (currentDomaine.gsc_connected) {
+    return `
+      <div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);
+        border-radius:var(--r-sm);padding:9px 14px;margin-bottom:14px;font-size:.77rem;color:var(--mut-2);
+        display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:var(--ff-mono)">
+        <span>✅ Search Console connecté pour ce domaine.</span>
+        <button class="btn btn-ghost btn-sm" id="gsc-sync-btn" onclick="syncGscPositions()">🔄 Synchroniser les positions</button>
+      </div>`;
+  }
+  return `
+    <div style="background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);
+      border-radius:var(--r-sm);padding:9px 14px;margin-bottom:14px;font-size:.77rem;color:var(--mut-2);
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:var(--ff-mono)">
+      <span>🔍 Positions saisies manuellement.</span>
+      <button class="btn btn-ghost btn-sm" id="gsc-connect-btn" onclick="connectGsc()">🔌 Connecter Search Console</button>
+    </div>`;
+}
+
+async function connectGsc() {
+  if (!currentDomaine) { toast('Sélectionnez un domaine', 'err'); return; }
+  const btn = document.getElementById('gsc-connect-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Redirection…'; }
+
+  const { data: { session } } = await supa.auth.getSession();
+  if (!session) { toast('Session expirée', 'err'); return; }
+
+  try {
+    const res = await fetch(`${SUPA_URL}/functions/v1/gsc-oauth-start`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domaine_id: currentDomaine.id }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
+    window.location.href = data.url;
+  } catch (e) {
+    toast('Erreur : ' + e.message, 'err');
+    if (btn) { btn.disabled = false; btn.textContent = '🔌 Connecter Search Console'; }
+  }
+}
+
+async function syncGscPositions() {
+  if (!currentDomaine) return;
+  const btn = document.getElementById('gsc-sync-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Synchronisation…'; }
+
+  const { data: { session } } = await supa.auth.getSession();
+  if (!session) { toast('Session expirée', 'err'); return; }
+
+  try {
+    const res = await fetch(`${SUPA_URL}/functions/v1/gsc-positions-sync`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domaine_id: currentDomaine.id }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
+    toast(`Synchronisé : ${data.updated} mot(s)-clé(s) mis à jour ✅`);
+    loadMotsCles();
+  } catch (e) {
+    toast('Erreur : ' + e.message, 'err');
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 Synchroniser les positions'; }
+  }
 }
