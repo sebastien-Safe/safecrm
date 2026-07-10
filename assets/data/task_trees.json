@@ -1,0 +1,1825 @@
+{
+  "version": "1.0.0",
+  "incidents": {
+    "hameconnage": {
+      "label": "Hameçonnage (phishing)",
+      "icon": "🎣",
+      "tarif_ht": 350.0,
+      "tarif_ttc": 420.0,
+      "os_tasks": {
+        "windows": [
+          {
+            "phase_id": "analyse",
+            "phase_label": "Analyse forensique",
+            "phase_icon": "🔍",
+            "tasks": [
+              {
+                "task_id": "WIN_HAMECONNAGE_ANALYSE_01",
+                "label": "Isoler le courriel frauduleux sans le supprimer",
+                "detail": "Outlook/Gmail : transférer le message en pièce jointe (Fichier > Propriétés > En-têtes Internet, ou « Afficher l'original » sous Gmail) — préserver les en-têtes complets pour analyse",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_ANALYSE_02",
+                "label": "Analyser les en-têtes complets du courriel",
+                "detail": "Outlook : Fichier > Propriétés > En-têtes Internet ; Gmail : ⋮ > Afficher l'original — relever adresse réelle vs affichée, SPF/DKIM/DMARC, IP d'origine, champ Reply-To",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_ANALYSE_03",
+                "label": "Analyser le site de phishing sans s'y connecter",
+                "detail": "Vérifier l'historique du navigateur (Chrome/Edge : chrome://history) puis vérification WHOIS / VirusTotal du domaine — ne jamais ressaisir d'identifiants",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_ANALYSE_04",
+                "label": "Vérifier l'exposition sur Have I Been Pwned",
+                "detail": "haveibeenpwned.com avec l'adresse e-mail de la victime — noter les fuites antérieures et la réutilisation de mot de passe",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              }
+            ]
+          },
+          {
+            "phase_id": "confinement",
+            "phase_label": "Confinement",
+            "phase_icon": "🔒",
+            "tasks": [
+              {
+                "task_id": "WIN_HAMECONNAGE_CONFINEMENT_01",
+                "label": "Changer immédiatement le mot de passe du compte visé",
+                "detail": "Depuis un appareil sain, changer le mot de passe et déconnecter toutes les sessions actives",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_CONFINEMENT_02",
+                "label": "Vérifier les règles de messagerie ajoutées par l'attaquant",
+                "detail": "Supprimer les transferts automatiques, filtres et règles de suppression suspects",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_CONFINEMENT_03",
+                "label": "Révoquer les applications tierces (OAuth) suspectes",
+                "detail": "Compte Microsoft > Sécurité > Applications et services connectés ; compte Google > Sécurité > Accès des applications tierces",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_CONFINEMENT_04",
+                "label": "Sécuriser le périmètre bancaire si des données de paiement ont été saisies",
+                "detail": "Opposer la carte auprès de la banque, vérifier les transactions récentes, activer les alertes SMS",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              }
+            ]
+          },
+          {
+            "phase_id": "securisation",
+            "phase_label": "Sécurisation et durcissement",
+            "phase_icon": "🛡️",
+            "tasks": [
+              {
+                "task_id": "WIN_HAMECONNAGE_SECURISATION_01",
+                "label": "Activer la double authentification (MFA)",
+                "detail": "Privilégier une application d'authentification plutôt que le SMS.",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_SECURISATION_02",
+                "label": "Installer un gestionnaire de mots de passe",
+                "detail": "Bitwarden (recommandé ANSSI) — migrer les mots de passe existants, générer des mots de passe uniques par service",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_SECURISATION_03",
+                "label": "Vérifier l'appareil si une pièce jointe a été ouverte",
+                "detail": "Scan complet Microsoft Defender + vérification des programmes au démarrage (msconfig)",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              }
+            ]
+          },
+          {
+            "phase_id": "preuves",
+            "phase_label": "Collecte de preuves",
+            "phase_icon": "📸",
+            "tasks": [
+              {
+                "task_id": "WIN_HAMECONNAGE_PREUVES_01",
+                "label": "Conserver le courriel original avec en-têtes (.eml)",
+                "detail": "Pièce jointe .eml/.msg exportée à l'étape d'analyse — à archiver dans le dossier",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_PREUVES_02",
+                "label": "Capturer des preuves horodatées du site frauduleux",
+                "detail": "Capture d'écran de la page de saisie avant qu'elle ne soit mise hors ligne",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              }
+            ]
+          },
+          {
+            "phase_id": "declarations",
+            "phase_label": "Déclarations légales",
+            "phase_icon": "⚖️",
+            "tasks": [
+              {
+                "task_id": "WIN_HAMECONNAGE_DECLARATIONS_01",
+                "label": "Signaler le courriel à Signal Spam",
+                "detail": "signal-spam.fr",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_DECLARATIONS_02",
+                "label": "Signaler le site frauduleux à Pharos",
+                "detail": "internet-signalement.gouv.fr",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_DECLARATIONS_03",
+                "label": "Déposer plainte ou signalement THESEE",
+                "detail": "Conserver le récépissé de dépôt",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_DECLARATIONS_04",
+                "label": "Signaler l'usurpation à l'organisme concerné",
+                "detail": "Formulaire de signalement officiel de l'organisme usurpé",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              }
+            ]
+          },
+          {
+            "phase_id": "rapport",
+            "phase_label": "Rapport S@FE",
+            "phase_icon": "📄",
+            "tasks": [
+              {
+                "task_id": "WIN_HAMECONNAGE_RAPPORT_01",
+                "label": "Transmettre les recommandations de cloisonnement",
+                "detail": "Alias e-mail dédié aux services sensibles, sensibilisation anti-phishing",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              },
+              {
+                "task_id": "WIN_HAMECONNAGE_RAPPORT_02",
+                "label": "Générer et remettre le rapport d'intervention",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              }
+            ]
+          }
+        ],
+        "mac": [
+          {
+            "phase_id": "analyse",
+            "phase_label": "Analyse forensique",
+            "phase_icon": "🔍",
+            "tasks": [
+              {
+                "task_id": "MAC_HAMECONNAGE_ANALYSE_01",
+                "label": "Isoler le courriel frauduleux sans le supprimer",
+                "detail": "Mail.app : Fichier > Enregistrer sous (.eml) pour préserver les en-têtes — préserver les en-têtes complets pour analyse",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_ANALYSE_02",
+                "label": "Analyser les en-têtes complets du courriel",
+                "detail": "Mail.app : Présentation > Message > Tout l'en-tête (Cmd+Maj+H) — relever adresse réelle vs affichée, SPF/DKIM/DMARC, IP d'origine, champ Reply-To",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_ANALYSE_03",
+                "label": "Analyser le site de phishing sans s'y connecter",
+                "detail": "Safari : Historique > Afficher tout l'historique puis vérification WHOIS / VirusTotal du domaine — ne jamais ressaisir d'identifiants",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_ANALYSE_04",
+                "label": "Vérifier l'exposition sur Have I Been Pwned",
+                "detail": "haveibeenpwned.com avec l'adresse e-mail de la victime — noter les fuites antérieures et la réutilisation de mot de passe",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              }
+            ]
+          },
+          {
+            "phase_id": "confinement",
+            "phase_label": "Confinement",
+            "phase_icon": "🔒",
+            "tasks": [
+              {
+                "task_id": "MAC_HAMECONNAGE_CONFINEMENT_01",
+                "label": "Changer immédiatement le mot de passe du compte visé",
+                "detail": "Depuis un appareil sain, changer le mot de passe et déconnecter toutes les sessions actives",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_CONFINEMENT_02",
+                "label": "Vérifier les règles de messagerie ajoutées par l'attaquant",
+                "detail": "Supprimer les transferts automatiques, filtres et règles de suppression suspects",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_CONFINEMENT_03",
+                "label": "Révoquer les applications tierces (OAuth) suspectes",
+                "detail": "Réglages Apple ID > Mots de passe et sécurité ; compte Google > Sécurité > Accès des applications tierces",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_CONFINEMENT_04",
+                "label": "Sécuriser le périmètre bancaire si des données de paiement ont été saisies",
+                "detail": "Opposer la carte auprès de la banque, vérifier les transactions récentes, activer les alertes SMS",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              }
+            ]
+          },
+          {
+            "phase_id": "securisation",
+            "phase_label": "Sécurisation et durcissement",
+            "phase_icon": "🛡️",
+            "tasks": [
+              {
+                "task_id": "MAC_HAMECONNAGE_SECURISATION_01",
+                "label": "Activer la double authentification (MFA)",
+                "detail": "Privilégier une application d'authentification plutôt que le SMS. Le Trousseau iCloud propose une alternative native à Bitwarden.",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_SECURISATION_02",
+                "label": "Installer un gestionnaire de mots de passe",
+                "detail": "Bitwarden (recommandé ANSSI) — migrer les mots de passe existants, générer des mots de passe uniques par service",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_SECURISATION_03",
+                "label": "Vérifier l'appareil si une pièce jointe a été ouverte",
+                "detail": "Vérifier Réglages Système > Général > Éléments de connexion, puis scan Malwarebytes for Mac",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              }
+            ]
+          },
+          {
+            "phase_id": "preuves",
+            "phase_label": "Collecte de preuves",
+            "phase_icon": "📸",
+            "tasks": [
+              {
+                "task_id": "MAC_HAMECONNAGE_PREUVES_01",
+                "label": "Conserver le courriel original avec en-têtes (.eml)",
+                "detail": "Pièce jointe .eml/.msg exportée à l'étape d'analyse — à archiver dans le dossier",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_PREUVES_02",
+                "label": "Capturer des preuves horodatées du site frauduleux",
+                "detail": "Capture d'écran de la page de saisie avant qu'elle ne soit mise hors ligne",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              }
+            ]
+          },
+          {
+            "phase_id": "declarations",
+            "phase_label": "Déclarations légales",
+            "phase_icon": "⚖️",
+            "tasks": [
+              {
+                "task_id": "MAC_HAMECONNAGE_DECLARATIONS_01",
+                "label": "Signaler le courriel à Signal Spam",
+                "detail": "signal-spam.fr",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_DECLARATIONS_02",
+                "label": "Signaler le site frauduleux à Pharos",
+                "detail": "internet-signalement.gouv.fr",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_DECLARATIONS_03",
+                "label": "Déposer plainte ou signalement THESEE",
+                "detail": "Conserver le récépissé de dépôt",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_DECLARATIONS_04",
+                "label": "Signaler l'usurpation à l'organisme concerné",
+                "detail": "Formulaire de signalement officiel de l'organisme usurpé",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              }
+            ]
+          },
+          {
+            "phase_id": "rapport",
+            "phase_label": "Rapport S@FE",
+            "phase_icon": "📄",
+            "tasks": [
+              {
+                "task_id": "MAC_HAMECONNAGE_RAPPORT_01",
+                "label": "Transmettre les recommandations de cloisonnement",
+                "detail": "Alias e-mail dédié aux services sensibles, sensibilisation anti-phishing",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              },
+              {
+                "task_id": "MAC_HAMECONNAGE_RAPPORT_02",
+                "label": "Générer et remettre le rapport d'intervention",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              }
+            ]
+          }
+        ],
+        "ios": [
+          {
+            "phase_id": "analyse",
+            "phase_label": "Analyse forensique",
+            "phase_icon": "🔍",
+            "tasks": [
+              {
+                "task_id": "IOS_HAMECONNAGE_ANALYSE_01",
+                "label": "Isoler le courriel frauduleux sans le supprimer",
+                "detail": "App Mail : appui long sur le message > Transférer en tant que pièce jointe — préserver les en-têtes complets pour analyse",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_ANALYSE_02",
+                "label": "Analyser les en-têtes complets du courriel",
+                "detail": "App Mail : appui long sur le message > Transférer en tant que pièce jointe (en-têtes conservés) — relever adresse réelle vs affichée, SPF/DKIM/DMARC, IP d'origine, champ Reply-To",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_ANALYSE_03",
+                "label": "Analyser le site de phishing sans s'y connecter",
+                "detail": "Réglages > Safari > Historique puis vérification WHOIS / VirusTotal du domaine — ne jamais ressaisir d'identifiants",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_ANALYSE_04",
+                "label": "Vérifier l'exposition sur Have I Been Pwned",
+                "detail": "haveibeenpwned.com avec l'adresse e-mail de la victime — noter les fuites antérieures et la réutilisation de mot de passe",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              }
+            ]
+          },
+          {
+            "phase_id": "confinement",
+            "phase_label": "Confinement",
+            "phase_icon": "🔒",
+            "tasks": [
+              {
+                "task_id": "IOS_HAMECONNAGE_CONFINEMENT_01",
+                "label": "Changer immédiatement le mot de passe du compte visé",
+                "detail": "Depuis un appareil sain, changer le mot de passe et déconnecter toutes les sessions actives",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_CONFINEMENT_02",
+                "label": "Vérifier les règles de messagerie ajoutées par l'attaquant",
+                "detail": "Supprimer les transferts automatiques, filtres et règles de suppression suspects",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_CONFINEMENT_03",
+                "label": "Révoquer les applications tierces (OAuth) suspectes",
+                "detail": "Réglages > [Nom] > Mots de passe et sécurité, et compte Google via Safari > Sécurité",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_CONFINEMENT_04",
+                "label": "Sécuriser le périmètre bancaire si des données de paiement ont été saisies",
+                "detail": "Opposer la carte auprès de la banque, vérifier les transactions récentes, activer les alertes SMS",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              }
+            ]
+          },
+          {
+            "phase_id": "securisation",
+            "phase_label": "Sécurisation et durcissement",
+            "phase_icon": "🛡️",
+            "tasks": [
+              {
+                "task_id": "IOS_HAMECONNAGE_SECURISATION_01",
+                "label": "Activer la double authentification (MFA)",
+                "detail": "Privilégier une application d'authentification plutôt que le SMS.",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_SECURISATION_02",
+                "label": "Installer un gestionnaire de mots de passe",
+                "detail": "Bitwarden (recommandé ANSSI) — migrer les mots de passe existants, générer des mots de passe uniques par service",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_SECURISATION_03",
+                "label": "Vérifier l'appareil si une pièce jointe a été ouverte",
+                "detail": "Réglages > Général > VPN et gestion de l'appareil — supprimer tout profil de configuration non reconnu",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              }
+            ]
+          },
+          {
+            "phase_id": "preuves",
+            "phase_label": "Collecte de preuves",
+            "phase_icon": "📸",
+            "tasks": [
+              {
+                "task_id": "IOS_HAMECONNAGE_PREUVES_01",
+                "label": "Conserver le courriel original avec en-têtes (.eml)",
+                "detail": "Pièce jointe .eml/.msg exportée à l'étape d'analyse — à archiver dans le dossier",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_PREUVES_02",
+                "label": "Capturer des preuves horodatées du site frauduleux",
+                "detail": "Capture d'écran de la page de saisie avant qu'elle ne soit mise hors ligne",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              }
+            ]
+          },
+          {
+            "phase_id": "declarations",
+            "phase_label": "Déclarations légales",
+            "phase_icon": "⚖️",
+            "tasks": [
+              {
+                "task_id": "IOS_HAMECONNAGE_DECLARATIONS_01",
+                "label": "Signaler le courriel à Signal Spam",
+                "detail": "signal-spam.fr",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_DECLARATIONS_02",
+                "label": "Signaler le site frauduleux à Pharos",
+                "detail": "internet-signalement.gouv.fr",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_DECLARATIONS_03",
+                "label": "Déposer plainte ou signalement THESEE",
+                "detail": "Conserver le récépissé de dépôt",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_DECLARATIONS_04",
+                "label": "Signaler l'usurpation à l'organisme concerné",
+                "detail": "Formulaire de signalement officiel de l'organisme usurpé",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              }
+            ]
+          },
+          {
+            "phase_id": "rapport",
+            "phase_label": "Rapport S@FE",
+            "phase_icon": "📄",
+            "tasks": [
+              {
+                "task_id": "IOS_HAMECONNAGE_RAPPORT_01",
+                "label": "Transmettre les recommandations de cloisonnement",
+                "detail": "Alias e-mail dédié aux services sensibles, sensibilisation anti-phishing",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              },
+              {
+                "task_id": "IOS_HAMECONNAGE_RAPPORT_02",
+                "label": "Générer et remettre le rapport d'intervention",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              }
+            ]
+          }
+        ],
+        "android": [
+          {
+            "phase_id": "analyse",
+            "phase_label": "Analyse forensique",
+            "phase_icon": "🔍",
+            "tasks": [
+              {
+                "task_id": "AND_HAMECONNAGE_ANALYSE_01",
+                "label": "Isoler le courriel frauduleux sans le supprimer",
+                "detail": "Gmail : menu ⋮ sur le message > Transférer en tant que pièce jointe — préserver les en-têtes complets pour analyse",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_ANALYSE_02",
+                "label": "Analyser les en-têtes complets du courriel",
+                "detail": "Gmail : menu ⋮ sur le message > Transférer en tant que pièce jointe (en-têtes conservés) — relever adresse réelle vs affichée, SPF/DKIM/DMARC, IP d'origine, champ Reply-To",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_ANALYSE_03",
+                "label": "Analyser le site de phishing sans s'y connecter",
+                "detail": "Chrome : menu ⋮ > Historique puis vérification WHOIS / VirusTotal du domaine — ne jamais ressaisir d'identifiants",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_ANALYSE_04",
+                "label": "Vérifier l'exposition sur Have I Been Pwned",
+                "detail": "haveibeenpwned.com avec l'adresse e-mail de la victime — noter les fuites antérieures et la réutilisation de mot de passe",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              }
+            ]
+          },
+          {
+            "phase_id": "confinement",
+            "phase_label": "Confinement",
+            "phase_icon": "🔒",
+            "tasks": [
+              {
+                "task_id": "AND_HAMECONNAGE_CONFINEMENT_01",
+                "label": "Changer immédiatement le mot de passe du compte visé",
+                "detail": "Depuis un appareil sain, changer le mot de passe et déconnecter toutes les sessions actives",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_CONFINEMENT_02",
+                "label": "Vérifier les règles de messagerie ajoutées par l'attaquant",
+                "detail": "Supprimer les transferts automatiques, filtres et règles de suppression suspects",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_CONFINEMENT_03",
+                "label": "Révoquer les applications tierces (OAuth) suspectes",
+                "detail": "Paramètres Google > Sécurité > Vos connexions à des tiers",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_CONFINEMENT_04",
+                "label": "Sécuriser le périmètre bancaire si des données de paiement ont été saisies",
+                "detail": "Opposer la carte auprès de la banque, vérifier les transactions récentes, activer les alertes SMS",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              }
+            ]
+          },
+          {
+            "phase_id": "securisation",
+            "phase_label": "Sécurisation et durcissement",
+            "phase_icon": "🛡️",
+            "tasks": [
+              {
+                "task_id": "AND_HAMECONNAGE_SECURISATION_01",
+                "label": "Activer la double authentification (MFA)",
+                "detail": "Privilégier une application d'authentification plutôt que le SMS.",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_SECURISATION_02",
+                "label": "Installer un gestionnaire de mots de passe",
+                "detail": "Bitwarden (recommandé ANSSI) — migrer les mots de passe existants, générer des mots de passe uniques par service",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_SECURISATION_03",
+                "label": "Vérifier l'appareil si une pièce jointe a été ouverte",
+                "detail": "Play Store > icône profil > Play Protect > Analyser",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              }
+            ]
+          },
+          {
+            "phase_id": "preuves",
+            "phase_label": "Collecte de preuves",
+            "phase_icon": "📸",
+            "tasks": [
+              {
+                "task_id": "AND_HAMECONNAGE_PREUVES_01",
+                "label": "Conserver le courriel original avec en-têtes (.eml)",
+                "detail": "Pièce jointe .eml/.msg exportée à l'étape d'analyse — à archiver dans le dossier",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_PREUVES_02",
+                "label": "Capturer des preuves horodatées du site frauduleux",
+                "detail": "Capture d'écran de la page de saisie avant qu'elle ne soit mise hors ligne",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              }
+            ]
+          },
+          {
+            "phase_id": "declarations",
+            "phase_label": "Déclarations légales",
+            "phase_icon": "⚖️",
+            "tasks": [
+              {
+                "task_id": "AND_HAMECONNAGE_DECLARATIONS_01",
+                "label": "Signaler le courriel à Signal Spam",
+                "detail": "signal-spam.fr",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_DECLARATIONS_02",
+                "label": "Signaler le site frauduleux à Pharos",
+                "detail": "internet-signalement.gouv.fr",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_DECLARATIONS_03",
+                "label": "Déposer plainte ou signalement THESEE",
+                "detail": "Conserver le récépissé de dépôt",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_DECLARATIONS_04",
+                "label": "Signaler l'usurpation à l'organisme concerné",
+                "detail": "Formulaire de signalement officiel de l'organisme usurpé",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              }
+            ]
+          },
+          {
+            "phase_id": "rapport",
+            "phase_label": "Rapport S@FE",
+            "phase_icon": "📄",
+            "tasks": [
+              {
+                "task_id": "AND_HAMECONNAGE_RAPPORT_01",
+                "label": "Transmettre les recommandations de cloisonnement",
+                "detail": "Alias e-mail dédié aux services sensibles, sensibilisation anti-phishing",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              },
+              {
+                "task_id": "AND_HAMECONNAGE_RAPPORT_02",
+                "label": "Générer et remettre le rapport d'intervention",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "faux_rib": {
+      "label": "Fraude au virement (faux RIB / BEC)",
+      "icon": "💸",
+      "tarif_ht": 382.5,
+      "tarif_ttc": 459.0,
+      "os_tasks": {
+        "windows": [
+          {
+            "phase_id": "analyse",
+            "phase_label": "Analyse forensique",
+            "phase_icon": "🔍",
+            "tasks": [
+              {
+                "task_id": "WIN_FAUXRIB_ANALYSE_01",
+                "label": "Isoler et analyser les courriels frauduleux (faux RIB)",
+                "detail": "Outlook/Gmail : exporter en .eml/.msg (Fichier > Propriétés > En-têtes Internet, ou « Afficher l'original ») — relever SPF/DKIM/DMARC, Reply-To, IP d'origine, domaine lookalike ou usurpation d'affichage",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_ANALYSE_02",
+                "label": "Vérifier le journal des connexions de la messagerie",
+                "detail": "Outlook Web / Google Admin : historique des connexions — IP, géolocalisation, appareils inconnus",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_ANALYSE_03",
+                "label": "Identifier le vecteur initial probable",
+                "detail": "Hameçonnage, mot de passe compromis (Have I Been Pwned) ou application OAuth malveillante",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              }
+            ]
+          },
+          {
+            "phase_id": "confinement",
+            "phase_label": "Confinement",
+            "phase_icon": "🔒",
+            "tasks": [
+              {
+                "task_id": "WIN_FAUXRIB_CONFINEMENT_01",
+                "label": "Bloquer ou tenter de rappeler le virement (appel banque < 30 min)",
+                "detail": "Numéro d'urgence fraude bancaire disponible 24/7 — demander un rappel SEPA immédiat",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_CONFINEMENT_02",
+                "label": "Changer le mot de passe et révoquer toutes les sessions actives",
+                "detail": "",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_CONFINEMENT_03",
+                "label": "Activer le MFA sur la messagerie",
+                "detail": "",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_CONFINEMENT_04",
+                "label": "Supprimer les règles de messagerie et délégations malveillantes",
+                "detail": "Vérifier les transferts automatiques et les délégations de boîte accordées à des tiers",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_CONFINEMENT_05",
+                "label": "Alerter l'ensemble des partenaires par un canal séparé (téléphone)",
+                "detail": "Consigne : tout changement de RIB doit être vérifié par appel au numéro connu",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              }
+            ]
+          },
+          {
+            "phase_id": "securisation",
+            "phase_label": "Sécurisation et durcissement",
+            "phase_icon": "🛡️",
+            "tasks": [
+              {
+                "task_id": "WIN_FAUXRIB_SECURISATION_01",
+                "label": "Durcir les enregistrements DNS SPF / DKIM / DMARC du domaine",
+                "detail": "SPF en -all, DKIM vérifié, DMARC relevé progressivement à p=quarantine puis p=reject (à coordonner avec l'IT/hébergeur du domaine)",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_SECURISATION_02",
+                "label": "Mettre en place une procédure de double vérification des RIB",
+                "detail": "Toute modification de coordonnées bancaires validée par un second canal",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_SECURISATION_03",
+                "label": "Sensibiliser les collaborateurs et partenaires aux fraudes BEC",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              }
+            ]
+          },
+          {
+            "phase_id": "preuves",
+            "phase_label": "Collecte de preuves",
+            "phase_icon": "📸",
+            "tasks": [
+              {
+                "task_id": "WIN_FAUXRIB_PREUVES_01",
+                "label": "Conserver les courriels frauduleux originaux avec en-têtes",
+                "detail": "Outlook/Gmail : exporter en .eml/.msg (Fichier > Propriétés > En-têtes Internet, ou « Afficher l'original »)",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_PREUVES_02",
+                "label": "Exporter les journaux de connexion et captures horodatées",
+                "detail": "Outlook Web / Google Admin : historique des connexions — IP, géolocalisation, appareils inconnus",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              }
+            ]
+          },
+          {
+            "phase_id": "declarations",
+            "phase_label": "Déclarations légales",
+            "phase_icon": "⚖️",
+            "tasks": [
+              {
+                "task_id": "WIN_FAUXRIB_DECLARATIONS_01",
+                "label": "Demander le rappel de fonds (recall SEPA) par écrit à la banque",
+                "detail": "",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_DECLARATIONS_02",
+                "label": "Déposer plainte pour escroquerie (art. 313-1 du Code pénal)",
+                "detail": "Conserver le récépissé de dépôt",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_DECLARATIONS_03",
+                "label": "Effectuer un signalement THESEE si applicable",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_DECLARATIONS_04",
+                "label": "Qualifier une éventuelle violation de données personnelles de tiers",
+                "detail": "Art. 4.12 RGPD — si des données de contacts/partenaires ont été exposées, évaluer la notification CNIL sous 72h",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              }
+            ]
+          },
+          {
+            "phase_id": "rapport",
+            "phase_label": "Rapport S@FE",
+            "phase_icon": "📄",
+            "tasks": [
+              {
+                "task_id": "WIN_FAUXRIB_RAPPORT_01",
+                "label": "Transmettre les recommandations anti-récidive",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              },
+              {
+                "task_id": "WIN_FAUXRIB_RAPPORT_02",
+                "label": "Générer et remettre le rapport d'intervention",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              }
+            ]
+          }
+        ],
+        "mac": [
+          {
+            "phase_id": "analyse",
+            "phase_label": "Analyse forensique",
+            "phase_icon": "🔍",
+            "tasks": [
+              {
+                "task_id": "MAC_FAUXRIB_ANALYSE_01",
+                "label": "Isoler et analyser les courriels frauduleux (faux RIB)",
+                "detail": "Mail.app : Fichier > Enregistrer sous (.eml) — relever SPF/DKIM/DMARC, Reply-To, IP d'origine, domaine lookalike ou usurpation d'affichage",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_ANALYSE_02",
+                "label": "Vérifier le journal des connexions de la messagerie",
+                "detail": "Webmail du fournisseur (pas d'outil natif macOS dédié) — section sécurité du compte",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_ANALYSE_03",
+                "label": "Identifier le vecteur initial probable",
+                "detail": "Hameçonnage, mot de passe compromis (Have I Been Pwned) ou application OAuth malveillante",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              }
+            ]
+          },
+          {
+            "phase_id": "confinement",
+            "phase_label": "Confinement",
+            "phase_icon": "🔒",
+            "tasks": [
+              {
+                "task_id": "MAC_FAUXRIB_CONFINEMENT_01",
+                "label": "Bloquer ou tenter de rappeler le virement (appel banque < 30 min)",
+                "detail": "Numéro d'urgence fraude bancaire disponible 24/7 — demander un rappel SEPA immédiat",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_CONFINEMENT_02",
+                "label": "Changer le mot de passe et révoquer toutes les sessions actives",
+                "detail": "",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_CONFINEMENT_03",
+                "label": "Activer le MFA sur la messagerie",
+                "detail": "",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_CONFINEMENT_04",
+                "label": "Supprimer les règles de messagerie et délégations malveillantes",
+                "detail": "Vérifier les transferts automatiques et les délégations de boîte accordées à des tiers",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_CONFINEMENT_05",
+                "label": "Alerter l'ensemble des partenaires par un canal séparé (téléphone)",
+                "detail": "Consigne : tout changement de RIB doit être vérifié par appel au numéro connu",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              }
+            ]
+          },
+          {
+            "phase_id": "securisation",
+            "phase_label": "Sécurisation et durcissement",
+            "phase_icon": "🛡️",
+            "tasks": [
+              {
+                "task_id": "MAC_FAUXRIB_SECURISATION_01",
+                "label": "Durcir les enregistrements DNS SPF / DKIM / DMARC du domaine",
+                "detail": "SPF en -all, DKIM vérifié, DMARC relevé progressivement à p=quarantine puis p=reject (à coordonner avec l'IT/hébergeur du domaine)",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_SECURISATION_02",
+                "label": "Mettre en place une procédure de double vérification des RIB",
+                "detail": "Toute modification de coordonnées bancaires validée par un second canal",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_SECURISATION_03",
+                "label": "Sensibiliser les collaborateurs et partenaires aux fraudes BEC",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              }
+            ]
+          },
+          {
+            "phase_id": "preuves",
+            "phase_label": "Collecte de preuves",
+            "phase_icon": "📸",
+            "tasks": [
+              {
+                "task_id": "MAC_FAUXRIB_PREUVES_01",
+                "label": "Conserver les courriels frauduleux originaux avec en-têtes",
+                "detail": "Mail.app : Fichier > Enregistrer sous (.eml)",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_PREUVES_02",
+                "label": "Exporter les journaux de connexion et captures horodatées",
+                "detail": "Webmail du fournisseur (pas d'outil natif macOS dédié) — section sécurité du compte",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              }
+            ]
+          },
+          {
+            "phase_id": "declarations",
+            "phase_label": "Déclarations légales",
+            "phase_icon": "⚖️",
+            "tasks": [
+              {
+                "task_id": "MAC_FAUXRIB_DECLARATIONS_01",
+                "label": "Demander le rappel de fonds (recall SEPA) par écrit à la banque",
+                "detail": "",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_DECLARATIONS_02",
+                "label": "Déposer plainte pour escroquerie (art. 313-1 du Code pénal)",
+                "detail": "Conserver le récépissé de dépôt",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_DECLARATIONS_03",
+                "label": "Effectuer un signalement THESEE si applicable",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_DECLARATIONS_04",
+                "label": "Qualifier une éventuelle violation de données personnelles de tiers",
+                "detail": "Art. 4.12 RGPD — si des données de contacts/partenaires ont été exposées, évaluer la notification CNIL sous 72h",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              }
+            ]
+          },
+          {
+            "phase_id": "rapport",
+            "phase_label": "Rapport S@FE",
+            "phase_icon": "📄",
+            "tasks": [
+              {
+                "task_id": "MAC_FAUXRIB_RAPPORT_01",
+                "label": "Transmettre les recommandations anti-récidive",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              },
+              {
+                "task_id": "MAC_FAUXRIB_RAPPORT_02",
+                "label": "Générer et remettre le rapport d'intervention",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              }
+            ]
+          }
+        ],
+        "ios": [
+          {
+            "phase_id": "analyse",
+            "phase_label": "Analyse forensique",
+            "phase_icon": "🔍",
+            "tasks": [
+              {
+                "task_id": "IOS_FAUXRIB_ANALYSE_01",
+                "label": "Isoler et analyser les courriels frauduleux (faux RIB)",
+                "detail": "App Mail : appui long sur le message > Transférer en tant que pièce jointe — relever SPF/DKIM/DMARC, Reply-To, IP d'origine, domaine lookalike ou usurpation d'affichage",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_ANALYSE_02",
+                "label": "Vérifier le journal des connexions de la messagerie",
+                "detail": "Depuis Safari mobile, section sécurité/connexions du webmail du fournisseur",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_ANALYSE_03",
+                "label": "Identifier le vecteur initial probable",
+                "detail": "Hameçonnage, mot de passe compromis (Have I Been Pwned) ou application OAuth malveillante",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              }
+            ]
+          },
+          {
+            "phase_id": "confinement",
+            "phase_label": "Confinement",
+            "phase_icon": "🔒",
+            "tasks": [
+              {
+                "task_id": "IOS_FAUXRIB_CONFINEMENT_01",
+                "label": "Bloquer ou tenter de rappeler le virement (appel banque < 30 min)",
+                "detail": "Numéro d'urgence fraude bancaire disponible 24/7 — demander un rappel SEPA immédiat",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_CONFINEMENT_02",
+                "label": "Changer le mot de passe et révoquer toutes les sessions actives",
+                "detail": "",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_CONFINEMENT_03",
+                "label": "Activer le MFA sur la messagerie",
+                "detail": "",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_CONFINEMENT_04",
+                "label": "Supprimer les règles de messagerie et délégations malveillantes",
+                "detail": "Vérifier les transferts automatiques et les délégations de boîte accordées à des tiers",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_CONFINEMENT_05",
+                "label": "Alerter l'ensemble des partenaires par un canal séparé (téléphone)",
+                "detail": "Consigne : tout changement de RIB doit être vérifié par appel au numéro connu",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              }
+            ]
+          },
+          {
+            "phase_id": "securisation",
+            "phase_label": "Sécurisation et durcissement",
+            "phase_icon": "🛡️",
+            "tasks": [
+              {
+                "task_id": "IOS_FAUXRIB_SECURISATION_01",
+                "label": "Durcir les enregistrements DNS SPF / DKIM / DMARC du domaine",
+                "detail": "SPF en -all, DKIM vérifié, DMARC relevé progressivement à p=quarantine puis p=reject (à coordonner avec l'IT/hébergeur du domaine)",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_SECURISATION_02",
+                "label": "Mettre en place une procédure de double vérification des RIB",
+                "detail": "Toute modification de coordonnées bancaires validée par un second canal",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_SECURISATION_03",
+                "label": "Sensibiliser les collaborateurs et partenaires aux fraudes BEC",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              }
+            ]
+          },
+          {
+            "phase_id": "preuves",
+            "phase_label": "Collecte de preuves",
+            "phase_icon": "📸",
+            "tasks": [
+              {
+                "task_id": "IOS_FAUXRIB_PREUVES_01",
+                "label": "Conserver les courriels frauduleux originaux avec en-têtes",
+                "detail": "App Mail : appui long sur le message > Transférer en tant que pièce jointe",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_PREUVES_02",
+                "label": "Exporter les journaux de connexion et captures horodatées",
+                "detail": "Depuis Safari mobile, section sécurité/connexions du webmail du fournisseur",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              }
+            ]
+          },
+          {
+            "phase_id": "declarations",
+            "phase_label": "Déclarations légales",
+            "phase_icon": "⚖️",
+            "tasks": [
+              {
+                "task_id": "IOS_FAUXRIB_DECLARATIONS_01",
+                "label": "Demander le rappel de fonds (recall SEPA) par écrit à la banque",
+                "detail": "",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_DECLARATIONS_02",
+                "label": "Déposer plainte pour escroquerie (art. 313-1 du Code pénal)",
+                "detail": "Conserver le récépissé de dépôt",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_DECLARATIONS_03",
+                "label": "Effectuer un signalement THESEE si applicable",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_DECLARATIONS_04",
+                "label": "Qualifier une éventuelle violation de données personnelles de tiers",
+                "detail": "Art. 4.12 RGPD — si des données de contacts/partenaires ont été exposées, évaluer la notification CNIL sous 72h",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              }
+            ]
+          },
+          {
+            "phase_id": "rapport",
+            "phase_label": "Rapport S@FE",
+            "phase_icon": "📄",
+            "tasks": [
+              {
+                "task_id": "IOS_FAUXRIB_RAPPORT_01",
+                "label": "Transmettre les recommandations anti-récidive",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              },
+              {
+                "task_id": "IOS_FAUXRIB_RAPPORT_02",
+                "label": "Générer et remettre le rapport d'intervention",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              }
+            ]
+          }
+        ],
+        "android": [
+          {
+            "phase_id": "analyse",
+            "phase_label": "Analyse forensique",
+            "phase_icon": "🔍",
+            "tasks": [
+              {
+                "task_id": "AND_FAUXRIB_ANALYSE_01",
+                "label": "Isoler et analyser les courriels frauduleux (faux RIB)",
+                "detail": "Gmail : menu ⋮ sur le message > Transférer en tant que pièce jointe — relever SPF/DKIM/DMARC, Reply-To, IP d'origine, domaine lookalike ou usurpation d'affichage",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "AND_FAUXRIB_ANALYSE_02",
+                "label": "Vérifier le journal des connexions de la messagerie",
+                "detail": "Depuis Chrome mobile, section sécurité/connexions du webmail du fournisseur",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              },
+              {
+                "task_id": "AND_FAUXRIB_ANALYSE_03",
+                "label": "Identifier le vecteur initial probable",
+                "detail": "Hameçonnage, mot de passe compromis (Have I Been Pwned) ou application OAuth malveillante",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "contexte"
+              }
+            ]
+          },
+          {
+            "phase_id": "confinement",
+            "phase_label": "Confinement",
+            "phase_icon": "🔒",
+            "tasks": [
+              {
+                "task_id": "AND_FAUXRIB_CONFINEMENT_01",
+                "label": "Bloquer ou tenter de rappeler le virement (appel banque < 30 min)",
+                "detail": "Numéro d'urgence fraude bancaire disponible 24/7 — demander un rappel SEPA immédiat",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "AND_FAUXRIB_CONFINEMENT_02",
+                "label": "Changer le mot de passe et révoquer toutes les sessions actives",
+                "detail": "",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "AND_FAUXRIB_CONFINEMENT_03",
+                "label": "Activer le MFA sur la messagerie",
+                "detail": "",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "AND_FAUXRIB_CONFINEMENT_04",
+                "label": "Supprimer les règles de messagerie et délégations malveillantes",
+                "detail": "Vérifier les transferts automatiques et les délégations de boîte accordées à des tiers",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              },
+              {
+                "task_id": "AND_FAUXRIB_CONFINEMENT_05",
+                "label": "Alerter l'ensemble des partenaires par un canal séparé (téléphone)",
+                "detail": "Consigne : tout changement de RIB doit être vérifié par appel au numéro connu",
+                "priority": "critical",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_confinement"
+              }
+            ]
+          },
+          {
+            "phase_id": "securisation",
+            "phase_label": "Sécurisation et durcissement",
+            "phase_icon": "🛡️",
+            "tasks": [
+              {
+                "task_id": "AND_FAUXRIB_SECURISATION_01",
+                "label": "Durcir les enregistrements DNS SPF / DKIM / DMARC du domaine",
+                "detail": "SPF en -all, DKIM vérifié, DMARC relevé progressivement à p=quarantine puis p=reject (à coordonner avec l'IT/hébergeur du domaine)",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "AND_FAUXRIB_SECURISATION_02",
+                "label": "Mettre en place une procédure de double vérification des RIB",
+                "detail": "Toute modification de coordonnées bancaires validée par un second canal",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              },
+              {
+                "task_id": "AND_FAUXRIB_SECURISATION_03",
+                "label": "Sensibiliser les collaborateurs et partenaires aux fraudes BEC",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "mesures_remediation"
+              }
+            ]
+          },
+          {
+            "phase_id": "preuves",
+            "phase_label": "Collecte de preuves",
+            "phase_icon": "📸",
+            "tasks": [
+              {
+                "task_id": "AND_FAUXRIB_PREUVES_01",
+                "label": "Conserver les courriels frauduleux originaux avec en-têtes",
+                "detail": "Gmail : menu ⋮ sur le message > Transférer en tant que pièce jointe",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              },
+              {
+                "task_id": "AND_FAUXRIB_PREUVES_02",
+                "label": "Exporter les journaux de connexion et captures horodatées",
+                "detail": "Depuis Chrome mobile, section sécurité/connexions du webmail du fournisseur",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "preuves_collectees"
+              }
+            ]
+          },
+          {
+            "phase_id": "declarations",
+            "phase_label": "Déclarations légales",
+            "phase_icon": "⚖️",
+            "tasks": [
+              {
+                "task_id": "AND_FAUXRIB_DECLARATIONS_01",
+                "label": "Demander le rappel de fonds (recall SEPA) par écrit à la banque",
+                "detail": "",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "AND_FAUXRIB_DECLARATIONS_02",
+                "label": "Déposer plainte pour escroquerie (art. 313-1 du Code pénal)",
+                "detail": "Conserver le récépissé de dépôt",
+                "priority": "high",
+                "auto_timestamp": true,
+                "evidence_required": true,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "AND_FAUXRIB_DECLARATIONS_03",
+                "label": "Effectuer un signalement THESEE si applicable",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              },
+              {
+                "task_id": "AND_FAUXRIB_DECLARATIONS_04",
+                "label": "Qualifier une éventuelle violation de données personnelles de tiers",
+                "detail": "Art. 4.12 RGPD — si des données de contacts/partenaires ont été exposées, évaluer la notification CNIL sous 72h",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "demarches_legales"
+              }
+            ]
+          },
+          {
+            "phase_id": "rapport",
+            "phase_label": "Rapport S@FE",
+            "phase_icon": "📄",
+            "tasks": [
+              {
+                "task_id": "AND_FAUXRIB_RAPPORT_01",
+                "label": "Transmettre les recommandations anti-récidive",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              },
+              {
+                "task_id": "AND_FAUXRIB_RAPPORT_02",
+                "label": "Générer et remettre le rapport d'intervention",
+                "detail": "",
+                "priority": "normal",
+                "auto_timestamp": true,
+                "evidence_required": false,
+                "charte_field": "recommandations"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "cyberharcelement": {
+      "label": "Cyberharcèlement",
+      "icon": "🗣️",
+      "tarif_ht": 427.5,
+      "tarif_ttc": 513.0,
+      "os_tasks": {
+        "windows": [],
+        "mac": [],
+        "ios": [],
+        "android": []
+      }
+    },
+    "faux_conseiller": {
+      "label": "Fraude au faux conseiller bancaire",
+      "icon": "🏦",
+      "tarif_ht": 300.0,
+      "tarif_ttc": 360.0,
+      "os_tasks": {
+        "windows": [],
+        "mac": [],
+        "ios": [],
+        "android": []
+      }
+    },
+    "faux_support": {
+      "label": "Arnaque au faux support technique",
+      "icon": "🛠️",
+      "tarif_ht": 315.0,
+      "tarif_ttc": 378.0,
+      "os_tasks": {
+        "windows": [],
+        "mac": [],
+        "ios": [],
+        "android": []
+      }
+    },
+    "fraude_cb": {
+      "label": "Fraude à la carte bancaire",
+      "icon": "💳",
+      "tarif_ht": 315.0,
+      "tarif_ttc": 378.0,
+      "os_tasks": {
+        "windows": [],
+        "mac": [],
+        "ios": [],
+        "android": []
+      }
+    },
+    "fuite_donnees": {
+      "label": "Fuite ou violation de données personnelles",
+      "icon": "🗂️",
+      "tarif_ht": 472.5,
+      "tarif_ttc": 567.0,
+      "os_tasks": {
+        "windows": [],
+        "mac": [],
+        "ios": [],
+        "android": []
+      }
+    },
+    "piratage_compte": {
+      "label": "Piratage de compte en ligne",
+      "icon": "🔑",
+      "tarif_ht": 200.0,
+      "tarif_ttc": 240.0,
+      "os_tasks": {
+        "windows": [],
+        "mac": [],
+        "ios": [],
+        "android": []
+      }
+    },
+    "virus_informatique": {
+      "label": "Virus informatique",
+      "icon": "🦠",
+      "tarif_ht": 450.0,
+      "tarif_ttc": 540.0,
+      "os_tasks": {
+        "windows": [],
+        "mac": [],
+        "ios": [],
+        "android": []
+      }
+    }
+  }
+}

@@ -110,12 +110,14 @@ function _v17CardHTML(lead) {
       <div class="pcard-meta">
         <div class="pcard-meta-item v17-price-badge">💰 ${formatMoney(product.price_ttc)} TTC</div>
         <div class="pcard-meta-item">📅 ${dateStr}</div>
+        ${lead.task_completion_pct ? `<div class="pcard-meta-item">🗂️ ${lead.task_completion_pct}% tâches</div>` : ''}
       </div>
       ${lead.notes ? `<div class="pcard-meta-item" style="margin-top:4px;font-size:.76rem;opacity:.75">📝 ${escapeHtml(lead.notes.slice(0, 80))}${lead.notes.length > 80 ? '…' : ''}</div>` : ''}
     </div>
     <div class="pcard-actions">
       <button class="pcard-edit-btn" onclick="generateVictimQuote('${lead.id}')">📋 Générer le devis</button>
-      <button class="pcard-edit-btn" onclick="generateVictimReport('${lead.id}')">📄 Générer le rapport</button>
+      <button class="pcard-edit-btn" onclick="openTaskTreeModal('${lead.id}')">🗂️ Suivi d'intervention</button>
+      <button class="pcard-edit-btn" onclick="generateVictimReport('${lead.id}')">📄 Générer le rapport (PDF simple)</button>
       ${['devis_envoye', 'paiement_recu'].includes(lead.pipeline_stage)
         ? `<button class="pcard-edit-btn" style="background:rgba(37,99,235,.15);color:#93c5fd;border-color:rgba(37,99,235,.3)" onclick="generateVictimPaymentLink('${lead.id}')">💳 Lien de paiement (3x dispo)</button>`
         : ''}
@@ -381,4 +383,59 @@ async function generateVictimPaymentLink(leadId) {
   } catch (e) {
     alert('Erreur : ' + e.message);
   }
+}
+
+// ── Suivi d'intervention — arbre de tâches (assets/js/task-tree.js) ──
+async function openTaskTreeModal(leadId) {
+  const lead = _v17Leads.find(l => l.id === leadId);
+  if (!lead) return;
+  const product = _v17ProductsById[lead.product_id];
+  if (!product) { alert('Produit introuvable pour ce dossier.'); return; }
+  if (typeof window.TaskTree === 'undefined') { alert("Composant d'arbre de tâches indisponible."); return; }
+
+  document.getElementById('task-tree-modal-title').textContent =
+    `🗂️ Suivi d'intervention — ${lead.first_name || ''} ${lead.last_name || ''}`.trim();
+  document.getElementById('task-tree-modal').classList.add('show');
+
+  try {
+    await window.TaskTree.init({
+      container: '#task-tree-container',
+      leadId,
+      incidentType: product.code,
+      os: lead.os_victim || null,
+      savedPhases: lead.intervention_tasks?.phases || null,
+      onSave: (payload) => _v17SaveTaskTree(leadId, payload),
+    });
+  } catch (e) {
+    document.getElementById('task-tree-container').innerHTML =
+      `<div class="pipeline-loading" style="color:#ef4444">Erreur chargement : ${escapeHtml(e.message)}</div>`;
+    console.error('[task-tree]', e);
+  }
+}
+
+function closeTaskTreeModal() {
+  document.getElementById('task-tree-modal').classList.remove('show');
+}
+
+async function _v17SaveTaskTree(leadId, payload) {
+  const { data: { session } } = await sb.auth.getSession();
+  const resp = await fetch(`${SUPABASE_URL}/functions/v1/update-cybervictim-tasks`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`,
+      'apikey': SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify(payload),
+  });
+  const result = await resp.json();
+  if (!resp.ok || result.error) throw new Error(result.details || result.error || 'Erreur inconnue');
+
+  const lead = _v17Leads.find(l => l.id === leadId);
+  if (lead) {
+    lead.os_victim = payload.os;
+    lead.task_completion_pct = result.completion_pct;
+    lead.intervention_tasks = { incident_type: payload.incident_type, os: payload.os, phases: payload.phases, completion_pct: result.completion_pct };
+  }
+  _v17RenderBoard();
 }

@@ -198,7 +198,7 @@
 | **Nom du traitement** | Gestion des dossiers victimes 17Cyber |
 | **Finalité légale** | Prise en charge et suivi des victimes d'incidents de cybersécurité orientées via 17Cyber / cybermalveillance.gouv.fr — établissement de devis et production de rapports d'intervention |
 | **Base légale** | Art. 6(1)b RGPD (exécution d'un contrat) |
-| **Données personnelles** | État civil (nom, prénom), coordonnées (e-mail, téléphone), nature de l'incident cyber, numéro de ticket 17Cyber, notes d'intervention |
+| **Données personnelles** | État civil (nom, prénom), coordonnées (e-mail, téléphone), nature de l'incident cyber, numéro de ticket 17Cyber, notes d'intervention, système d'exploitation de la victime (Windows/Mac/iOS/Android), arbre de tâches d'intervention (actions réalisées et horodatées, références de preuves) |
 | **Catégories rétention** | Données victime : 5 ans après clôture du dossier — Documents (devis, rapports) : 10 ans après clôture — Logs journal RGPD liés : 1 an glissant |
 | **Destinataires** | Collaborateurs S@FE SASU habilités (accès authentifié SafeCRM) |
 | **Sous-traitants** | Supabase (Francfort, Allemagne — hébergement base de données CRM), Stripe (paiement, PCI-DSS — aucune donnée carte stockée par S@FE) |

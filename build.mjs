@@ -14,6 +14,7 @@ const JS_FILES = [
   'assets/js/composants/gauge.js',
   'assets/js/composants/session-banner.js',
   'assets/js/composants/toast.js',
+  'assets/js/task-tree.js',
   'assets/js/utils/helpers.js',
   'assets/contacts/contacts-address.js',
   'assets/contacts/contacts-interactions.js',
@@ -77,7 +78,7 @@ function copyStatic() {
   }
   // Répertoires complets (contenu HTML + assets propres)
   for (const dir of [
-    'icons', 'legal', 'assets/supabase',
+    'icons', 'legal', 'assets/supabase', 'assets/data',
     'prospection-terrain', 'modules', 'audits', 'docs', 'mode-d-emploi',
   ]) {
     if (fs.existsSync(dir)) copyDir(dir, `${OUT}/${dir}`);
