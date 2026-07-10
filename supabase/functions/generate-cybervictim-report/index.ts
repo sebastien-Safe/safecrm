@@ -130,6 +130,7 @@ Deno.serve(async (req) => {
   const doc = new Document({
     sections: [
       {
+        properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 } } },
         children: [
           centered("S@FE", { bold: true, size: 22 }),
           centered("Cybersécurité · RGPD · Prestataire référencé cybermalveillance.gouv.fr", { color: "666666", size: 16 }),

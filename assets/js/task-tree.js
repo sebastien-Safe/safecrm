@@ -94,6 +94,7 @@ window.TaskTree = (function () {
         : `<div class="tt-phases">${phases.map((ph, i) => _renderPhase(ph, i)).join('')}</div>`}
       <div class="tt-actions">
         <button type="button" class="btn btn-out" id="tt-save-btn">💾 Sauvegarder</button>
+        <button type="button" class="btn btn-out" id="tt-quote-btn">📋 Générer devis 17Cyber</button>
         <button type="button" class="btn btn-pri" id="tt-generate-btn" ${!hasTasks ? 'disabled' : ''}>📄 Générer rapport 17Cyber</button>
       </div>
     `;
@@ -166,6 +167,7 @@ window.TaskTree = (function () {
     });
 
     container.querySelector('#tt-save-btn')?.addEventListener('click', _handleSave);
+    container.querySelector('#tt-quote-btn')?.addEventListener('click', _handleGenerateQuote);
     container.querySelector('#tt-generate-btn')?.addEventListener('click', _handleGenerate);
   }
 
@@ -197,6 +199,39 @@ window.TaskTree = (function () {
       alert('Erreur : ' + e.message);
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = '💾 Sauvegarder'; }
+    }
+  }
+
+  async function _handleGenerateQuote() {
+    const btn = _state.container.querySelector('#tt-quote-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Génération…'; }
+    try {
+      if (_state.onSave) await _state.onSave(getPayload()); // le devis doit refléter l'état affiché
+
+      const { data: { session } } = await sb.auth.getSession();
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/generate-cybervictim-quote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ lead_id: _state.leadId }),
+      });
+      const result = await resp.json();
+      if (!resp.ok || result.error) throw new Error(result.details || result.error || 'Erreur inconnue');
+
+      _downloadBase64Docx(result.docx_base64, result.filename);
+
+      if (typeof logRgpd === 'function') await logRgpd('victim_devis_genere', 'Victimes17Cyber', {
+        entityType: 'cybervictim_lead', entityId: _state.leadId,
+        donnees: 'Génération du devis (détail depuis l\'arbre de tâches)', criticite: 'Info',
+        details: { incident_type: _state.incidentType, os: _state.os },
+      });
+    } catch (e) {
+      alert('Erreur : ' + e.message);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '📋 Générer devis 17Cyber'; }
     }
   }
 
