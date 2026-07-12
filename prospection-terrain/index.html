@@ -326,6 +326,9 @@ select option{background:var(--navy-mid)}
 .cible-nom{font-size:.88rem;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cible-addr{font-size:.76rem;color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cible-meta{font-family:var(--ff-mono);font-size:.64rem;color:var(--mut);margin-top:1px}
+.cible-meta-pro{color:var(--mut-2)}
+.cible-meta-dirigeant{font-family:var(--ff-body);color:var(--mut-2)}
+.cible-meta-pitch{font-family:var(--ff-body);color:var(--gold);margin-top:4px;line-height:1.4;white-space:normal}
 .cible-add{flex-shrink:0;padding:5px 12px;border-radius:8px;border:1px solid rgba(245,158,11,.4);background:transparent;color:var(--gold);font-size:.78rem;font-weight:700;cursor:pointer;transition:.15s;font-family:var(--ff-disp)}
 .cible-add:hover{background:rgba(245,158,11,.12)}
 .cible-add.done{border-color:var(--ok);color:var(--ok);cursor:default}
@@ -462,16 +465,7 @@ select option{background:var(--navy-mid)}
           <!-- Étape 1 — Secteur -->
           <div class="step-content active" id="cstep-1">
             <div style="font-size:.88rem;color:var(--mut-2);margin-bottom:16px">Quel secteur souhaitez-vous prospecter ?</div>
-            <div class="sector-grid">
-              <button class="sector-btn" data-naf="56.10A" onclick="_cibleSelectSector(this)"><span class="s-ico">🍽️</span>Restauration</button>
-              <button class="sector-btn" data-naf="10.71C" onclick="_cibleSelectSector(this)"><span class="s-ico">🥖</span>Boulangerie / Pâtisserie</button>
-              <button class="sector-btn" data-naf="47.22Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🥩</span>Boucherie / Charcuterie</button>
-              <button class="sector-btn" data-naf="47.29Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🧀</span>Fromagerie</button>
-              <button class="sector-btn" data-naf="56.21Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🍱</span>Traiteur</button>
-              <button class="sector-btn" data-naf="47.76Z" onclick="_cibleSelectSector(this)"><span class="s-ico">💐</span>Fleuriste</button>
-              <button class="sector-btn" data-naf="45.20A" onclick="_cibleSelectSector(this)"><span class="s-ico">🔧</span>Garage automobile</button>
-              <button class="sector-btn" data-naf="55.20Z" onclick="_cibleSelectSector(this)"><span class="s-ico">🛏️</span>Gîte / Chambre d'hôtes</button>
-            </div>
+            <div class="sector-grid" id="cible-categorie-grid"></div>
             <div class="field">
               <label>Ou saisissez un autre métier</label>
               <input id="cible-keyword" type="text" placeholder="Ex : caviste, poissonnier, chocolatier…">
@@ -482,15 +476,13 @@ select option{background:var(--navy-mid)}
           </div>
           <!-- Étape 2 — Zone -->
           <div class="step-content" id="cstep-2">
-            <div style="font-size:.88rem;color:var(--mut-2);margin-bottom:18px">Dans quel périmètre souhaitez-vous prospecter ?</div>
+            <div style="font-size:.88rem;color:var(--mut-2);margin-bottom:18px">Quelles étapes souhaitez-vous prospecter ?</div>
             <div class="field" style="margin-bottom:16px">
-              <label>📍 Point de départ</label>
-              <div style="display:flex;gap:8px">
-                <input id="cible-depart" type="text" placeholder="Ville ou code postal…" style="flex:1">
-                <button class="btn btn-out btn-sm" id="cible-geo-btn" onclick="_cibleGeolocate()" title="Utiliser ma position GPS">📡</button>
-              </div>
+              <label>📍 Étapes de l'itinéraire <span style="color:var(--mut);font-weight:400">(1 à 5 villes)</span></label>
+              <div id="cible-etapes-list"></div>
+              <button class="btn btn-out btn-sm" id="cible-etape-add-btn" onclick="_cibleEtapeAdd()" style="margin-top:4px">+ Ajouter une étape</button>
             </div>
-            <div style="font-family:var(--ff-mono);font-size:.65rem;letter-spacing:.12em;color:var(--mut);text-transform:uppercase;margin-bottom:10px">Rayon de recherche</div>
+            <div style="font-family:var(--ff-mono);font-size:.65rem;letter-spacing:.12em;color:var(--mut);text-transform:uppercase;margin-bottom:10px">Rayon de recherche (par étape)</div>
             <div class="rayon-btns">
               <button class="rayon-btn" data-km="5"  onclick="_cibleSelectRayon(this)">5 km</button>
               <button class="rayon-btn" data-km="10" onclick="_cibleSelectRayon(this)">10 km</button>
@@ -506,7 +498,10 @@ select option{background:var(--navy-mid)}
           <div class="step-content" id="cstep-3">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
               <div id="cible-result-title" style="font-size:.88rem;color:var(--mut-2)">Résultats…</div>
-              <button class="btn btn-out btn-sm" onclick="_cibleSetStep(2)">← Modifier la zone</button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-out btn-sm" id="cible-ia-btn" onclick="_cibleGenererPitchsIA()">🤖 Accroches IA</button>
+                <button class="btn btn-out btn-sm" onclick="_cibleSetStep(2)">← Modifier la zone</button>
+              </div>
             </div>
             <div id="cible-results-list"></div>
             <div id="cible-tournee-hint" style="display:none;margin-top:14px;padding:12px 16px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;font-size:.84rem;color:var(--gold)">
@@ -1002,9 +997,13 @@ select option{background:var(--navy-mid)}
       <div id="tournee-map" style="height:260px;width:100%"></div>
       <div id="tournee-summary"></div>
       <div id="tournee-results-list" style="max-height:280px;overflow-y:auto"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-top:1px solid rgba(255,255,255,.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-top:1px solid rgba(255,255,255,.08);flex-wrap:wrap;gap:10px">
         <button onclick="_tourneeSetStep(2)" class="btn btn-ghost">← Modifier</button>
-        <button id="tournee-create-btn" onclick="_tourneeSaveToAgenda()" class="btn btn-gold">📅 Enregistrer dans l'agenda</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-out btn-sm" onclick="_tourneeOuvrirMaps()">📍 Ouvrir dans Maps</button>
+          <button class="btn btn-out btn-sm" onclick="_tourneeTelechargerIcs()">📆 Ajouter au calendrier</button>
+          <button id="tournee-create-btn" onclick="_tourneeSaveToAgenda()" class="btn btn-gold">📅 Enregistrer dans l'agenda</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2133,7 +2132,7 @@ function showView(name){
   if(name==='journal') loadJournal();
   if(name==='tasks')   loadTasks();
   if(name==='automate'){ loadContacts(); }
-  if(name==='ciblage'){ _cibleState.added=new Set(); _cibleState.resultData=[]; }
+  if(name==='ciblage'){ _cibleState.added=new Set(); _cibleState.resultData=[]; _cibleEtapesRender(); _cibleCategoriesRender(); }
 }
 
 function toggleSection(id){
@@ -2297,12 +2296,56 @@ document.addEventListener('click', e => {
 /* ============================================================
    MODULE CIBLAGE — Préparer ma cible (API SIRENE)
    ============================================================ */
-let _cibleState = { naf:'', rayon:25, added:new Set(), resultData:[] };
+let _cibleState = { naf:'', rayon:25, added:new Set(), resultData:[], categorie:null };
+let _cibleEtapes = ['']; // villes/adresses de l'itinéraire (1 à 5 étapes)
 
-function _cibleSelectSector(btn){
-  document.querySelectorAll('.sector-btn').forEach(b=>b.classList.remove('on'));
+// Catégories de prospection S@FE — validées avec l'utilisateur (2026-07-12).
+// Chaque catégorie associe des codes NAF (envoyés en liste à l'API SIRENE), l'angle
+// d'entrée (audit gratuit) le plus pertinent, et le produit Assurance Pro à proposer.
+const _CATEGORIES_PROSPECTION = [
+  {
+    key: 'commerces', icon: '🏪', label: 'Commerces',
+    naf: ['10.71C','47.22Z','47.29Z','56.21Z','47.76Z','47.11C','47.11D','47.11F'],
+    angleEntree: 'SEO', produitAssurance: 'Multirisque Commerces (CMAM)',
+  },
+  {
+    key: 'logistique', icon: '🚚', label: 'Logistique',
+    naf: ['45.11Z','45.19Z','45.20A','45.20B','45.31Z','45.32Z','49.41A','49.41B','49.42Z'],
+    angleEntree: 'Cyber', produitAssurance: 'Flotte (Groupama)',
+  },
+  {
+    key: 'services', icon: '💼', label: 'Services (hors santé)',
+    naf: ['69.10Z','69.20Z','70.22Z','71.11Z','71.12B','62.01Z','62.02A','63.11Z'],
+    angleEntree: 'Cyber', produitAssurance: 'RC Pro (Hiscox) + Cyber/RC Pro+Cyber (Dattak)',
+  },
+  {
+    key: 'sante', icon: '⚕️', label: 'Santé',
+    naf: ['86.10Z','86.21Z','86.22A','86.22B','86.22C','86.23Z','86.90F','87.10A'],
+    angleEntree: 'RGPD', produitAssurance: 'RC Pro (Hiscox)',
+  },
+  {
+    key: 'industriel', icon: '🏭', label: 'Industriel',
+    naf: ['20.14Z','22.29A','22.29B','25.62B','28.11Z','28.29B'],
+    angleEntree: 'RGPD', produitAssurance: 'Multirisques Pro (Hiscox)',
+  },
+];
+
+function _cibleCategoriesRender(){
+  const c = document.getElementById('cible-categorie-grid');
+  if(!c) return;
+  c.innerHTML = _CATEGORIES_PROSPECTION.map(cat => `
+    <button class="sector-btn" data-cat="${cat.key}" onclick="_cibleSelectCategorie('${cat.key}', this)">
+      <span class="s-ico">${cat.icon}</span>${escHtml(cat.label)}
+    </button>
+  `).join('');
+}
+
+function _cibleSelectCategorie(key, btn){
+  document.querySelectorAll('#cible-categorie-grid .sector-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  _cibleState.naf = btn.dataset.naf;
+  const cat = _CATEGORIES_PROSPECTION.find(c => c.key === key);
+  _cibleState.categorie = cat || null;
+  _cibleState.naf = cat ? cat.naf.join(',') : '';
   document.getElementById('cible-keyword').value = '';
 }
 
@@ -2326,24 +2369,52 @@ function _cibleSetStep(n){
 function _cibleStep1Next(){
   const kw = document.getElementById('cible-keyword').value.trim();
   if(!_cibleState.naf && !kw){ showToast('Sélectionnez un secteur ou saisissez un mot-clé','err'); return; }
-  if(kw) _cibleState.naf = '';
+  if(kw){ _cibleState.naf = ''; _cibleState.categorie = null; document.querySelectorAll('#cible-categorie-grid .sector-btn').forEach(b=>b.classList.remove('on')); }
   const saved = localStorage.getItem('pt_depart') || '';
-  if(saved && !document.getElementById('cible-depart').value)
-    document.getElementById('cible-depart').value = saved;
+  if(saved && !_cibleEtapes[0]) _cibleEtapes[0] = saved;
+  _cibleEtapesRender();
   _cibleSetStep(2);
 }
 
 function _cibleStep2Next(){
-  const dep = document.getElementById('cible-depart').value.trim();
-  if(!dep){ showToast('Saisissez une ville de départ','err'); return; }
-  localStorage.setItem('pt_depart', dep);
+  const etapes = _cibleEtapes.map(e=>e.trim()).filter(Boolean);
+  if(!etapes.length){ showToast('Saisissez au moins une ville/étape','err'); return; }
+  localStorage.setItem('pt_depart', etapes[0]);
   _cibleSetStep(3);
   _cibleSearch();
 }
 
-async function _cibleGeolocate(){
+function _cibleEtapesRender(){
+  const c = document.getElementById('cible-etapes-list');
+  if(!c) return;
+  c.innerHTML = _cibleEtapes.map((v,i) => `
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <input type="text" placeholder="Ville ou code postal…" value="${escHtml(v)}" style="flex:1"
+        oninput="_cibleEtapeSet(${i}, this.value)">
+      <button class="btn btn-out btn-sm" onclick="_cibleEtapeGeolocate(${i}, this)" title="Utiliser ma position GPS">📡</button>
+      ${_cibleEtapes.length > 1 ? `<button class="btn btn-out btn-sm" onclick="_cibleEtapeRemove(${i})" title="Supprimer cette étape">✕</button>` : ''}
+    </div>
+  `).join('');
+  const addBtn = document.getElementById('cible-etape-add-btn');
+  if(addBtn) addBtn.disabled = _cibleEtapes.length >= 5;
+}
+
+function _cibleEtapeSet(i, val){ _cibleEtapes[i] = val; }
+
+function _cibleEtapeAdd(){
+  if(_cibleEtapes.length >= 5) return;
+  _cibleEtapes.push('');
+  _cibleEtapesRender();
+}
+
+function _cibleEtapeRemove(i){
+  if(_cibleEtapes.length <= 1) return;
+  _cibleEtapes.splice(i, 1);
+  _cibleEtapesRender();
+}
+
+function _cibleEtapeGeolocate(i, btn){
   if(!navigator.geolocation){ showToast('Géolocalisation non disponible','err'); return; }
-  const btn = document.getElementById('cible-geo-btn');
   btn.textContent = '…'; btn.disabled = true;
   navigator.geolocation.getCurrentPosition(async pos=>{
     const { latitude:lat, longitude:lng } = pos.coords;
@@ -2353,11 +2424,11 @@ async function _cibleGeolocate(){
       const p = d.features?.[0]?.properties;
       if(p){
         const s = (p.postcode||'') + ' ' + (p.city || p.municipality || '');
-        document.getElementById('cible-depart').value = s.trim();
-        localStorage.setItem('pt_depart', s.trim());
+        _cibleEtapes[i] = s.trim();
+        if(i===0) localStorage.setItem('pt_depart', s.trim());
       }
     }catch(e){}
-    btn.textContent = '📡'; btn.disabled = false;
+    _cibleEtapesRender();
   }, ()=>{ showToast('Position GPS indisponible','err'); btn.textContent='📡'; btn.disabled=false; });
 }
 
@@ -2370,21 +2441,28 @@ async function _cibleSearch(){
   document.getElementById('cible-tournee-hint').style.display = 'none';
   await _loadEtabCibles();
 
-  const dep = document.getElementById('cible-depart').value.trim();
+  const etapes = _cibleEtapes.map(e=>e.trim()).filter(Boolean);
+  if(!etapes.length){
+    list.innerHTML = '<div class="empty"><div class="ico">📍</div><p>Saisissez au moins une ville/étape.</p></div>';
+    return;
+  }
 
-  // 1. Géocoder le point de départ → lat/lng + nom de commune
-  let lat=null, lng=null, commune='';
-  try{
-    const r = await fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(dep) + '&limit=1');
-    const d = await r.json();
-    const feat = d.features?.[0];
-    if(feat){
-      [lng, lat] = feat.geometry.coordinates;
-      commune = feat.properties.city || feat.properties.municipality || '';
-    }
-  }catch(e){}
-  if(!lat || !lng){
-    list.innerHTML = '<div class="empty"><div class="ico">📍</div><p>Impossible de localiser ce point de départ.<br>Vérifiez l\'adresse saisie.</p></div>';
+  // 1. Géocoder chaque étape → lat/lng + nom de commune
+  const points = [];
+  for(const dep of etapes){
+    try{
+      const r = await fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(dep) + '&limit=1');
+      const d = await r.json();
+      const feat = d.features?.[0];
+      if(feat){
+        const [lng, lat] = feat.geometry.coordinates;
+        const commune = feat.properties.city || feat.properties.municipality || '';
+        points.push({ label: dep, lat, lng, commune });
+      }
+    }catch(e){}
+  }
+  if(!points.length){
+    list.innerHTML = '<div class="empty"><div class="ico">📍</div><p>Impossible de localiser les étapes saisies.<br>Vérifiez les adresses saisies.</p></div>';
     return;
   }
 
@@ -2398,64 +2476,182 @@ async function _cibleSearch(){
     return d.results || [];
   };
 
-  let results = [];
+  const naf = _cibleState.naf;
+  const kw  = document.getElementById('cible-keyword').value.trim();
+  const rayon = _cibleState.rayon;
+
+  // 3. Rechercher autour de chaque étape, dédoublonner par SIREN en gardant l'occurrence la plus proche
+  const bySiren = new Map();
   try{
-    const naf = _cibleState.naf;
-    const kw  = document.getElementById('cible-keyword').value.trim();
-    // On utilise le mot-clé utilisateur S'IL existe, sinon la commune géocodée
-    const qParam = kw || commune;
-    // Première tentative avec la commune / mot-clé (25 résultats)
-    results = await _fetchSirene(qParam, naf, 25);
-    // Si peu de résultats locaux (<3), on retente sans filtre textuel pour élargir
-    if(results.length < 3 && !kw){
-      const broader = await _fetchSirene('', naf, 50);
-      results = [...results, ...broader.filter(b => !results.find(r => r.siren===b.siren))];
+    for(const pt of points){
+      const qParam = kw || pt.commune;
+      let res = await _fetchSirene(qParam, naf, 25);
+      if(res.length < 3 && !kw){
+        const broader = await _fetchSirene('', naf, 50);
+        res = [...res, ...broader.filter(b => !res.find(r => r.siren===b.siren))];
+      }
+      for(const r of res){
+        if(!r.siege?.latitude || !r.siege?.longitude) continue;
+        const d = _hvKm(pt.lat, pt.lng, parseFloat(r.siege.latitude), parseFloat(r.siege.longitude));
+        if(d > rayon) continue;
+        const existing = bySiren.get(r.siren);
+        if(!existing || d < existing._dist){
+          r._dist = d; r._etape = pt.label;
+          bySiren.set(r.siren, r);
+        }
+      }
     }
   }catch(e){
     list.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>Erreur lors de la recherche.<br>Vérifiez votre connexion internet.</p></div>';
     return;
   }
 
-  // 4. Filtrer par rayon + trier par distance
-  const rayon = _cibleState.rayon;
-  const withCoords = results.filter(r => r.siege?.latitude && r.siege?.longitude);
-  const noCoords   = results.filter(r => !r.siege?.latitude || !r.siege?.longitude);
-  const filtered = [
-    ...withCoords
-      .filter(r => _hvKm(lat, lng, parseFloat(r.siege.latitude), parseFloat(r.siege.longitude)) <= rayon)
-      .sort((a,b) => _hvKm(lat,lng,parseFloat(a.siege.latitude),parseFloat(a.siege.longitude)) - _hvKm(lat,lng,parseFloat(b.siege.latitude),parseFloat(b.siege.longitude))),
-    ...noCoords
-  ];
+  const filtered = Array.from(bySiren.values()).sort((a,b) => a._dist - b._dist);
   _cibleState.resultData = filtered;
+  _cibleState.multiEtape = points.length > 1;
 
   if(!filtered.length){
     title.textContent = 'Aucun résultat dans ce périmètre';
     list.innerHTML = '<div class="empty"><div class="ico">🔭</div><p>Aucun établissement trouvé dans ce rayon.<br>Essayez un périmètre plus large ou un autre secteur.</p></div>';
     return;
   }
-  title.textContent = `${filtered.length} établissement${filtered.length>1?'s':''} · rayon ${rayon} km`;
+  title.textContent = `${filtered.length} établissement${filtered.length>1?'s':''} · ${points.length} étape${points.length>1?'s':''} · rayon ${rayon} km`;
+  _cibleRenderResults();
+}
 
+function _cibleRenderResults(){
+  const list = document.getElementById('cible-results-list');
+  const filtered = _cibleState.resultData;
   list.innerHTML = filtered.map((r,i) => {
     const nom    = r.nom_complet || '—';
     const addr   = [r.siege?.adresse, r.siege?.code_postal, r.siege?.commune].filter(Boolean).join(', ');
     const naf    = r.siege?.activite_principale || r.activite_principale || '';
-    const dist   = (r.siege?.latitude && r.siege?.longitude)
-      ? _hvKm(lat, lng, parseFloat(r.siege.latitude), parseFloat(r.siege.longitude)).toFixed(1) + ' km'
+    const dist   = r._dist != null
+      ? r._dist.toFixed(1) + ' km' + (_cibleState.multiEtape ? ' (' + r._etape + ')' : '')
       : '';
     const siret  = r.siege?.siret || null;
     const dejaCible = siret && _etabCiblesSet.sirene.has(siret);
     const btnHtml = dejaCible
       ? `<span class="cible-already">✓ Déjà ajouté</span>`
       : `<button class="cible-add" id="cible-btn-${i}" onclick="_cibleAddResult(${i},this)">+ Tournée</button>`;
+    const dirigeant = _dirigeantLabel(r.dirigeants);
+    const ca        = _caLabel(r.finances);
+    const effectif  = _effectifLabel(r.tranche_effectif_salarie || r.siege?.tranche_effectif_salarie);
+    const infosPro  = [
+      siret ? `SIRET ${siret}` : '',
+      effectif,
+      ca,
+    ].filter(Boolean).join(' · ');
+    const pitch = r._pitch
+      ? `<div class="cible-meta cible-meta-pitch">🤖 <strong>${escHtml(r._pitch.produit_recommande||'')}</strong> — ${escHtml(r._pitch.accroche||'')}</div>`
+      : '';
     return `<div class="cible-result">
       <div class="cible-result-body">
         <div class="cible-nom">${escHtml(nom)}</div>
         <div class="cible-addr">${escHtml(addr)}</div>
         <div class="cible-meta">${escHtml(naf)}${dist ? ' · 📍 ' + dist : ''}</div>
+        ${infosPro ? `<div class="cible-meta cible-meta-pro">${escHtml(infosPro)}</div>` : ''}
+        ${dirigeant ? `<div class="cible-meta cible-meta-dirigeant">👤 ${escHtml(dirigeant)}</div>` : ''}
+        ${pitch}
       </div>
       ${btnHtml}
     </div>`;
   }).join('');
+}
+
+async function _cibleGenererPitchsIA(){
+  const jwt = _getJWT();
+  if(!jwt){ showToast('Connectez-vous au CRM pour utiliser l\'IA','err'); return; }
+  const candidats = (_cibleState.resultData || []).slice(0, 20);
+  if(!candidats.length){ showToast('Aucun résultat à analyser','err'); return; }
+
+  const cat = _cibleState.categorie;
+  const btn = document.getElementById('cible-ia-btn');
+  btn.disabled = true; btn.textContent = '⏳…';
+
+  const payload = candidats.map(r => ({
+    siren:               r.siren,
+    nom:                 r.nom_complet || '',
+    naf:                 r.siege?.activite_principale || r.activite_principale || '',
+    commune:             r.siege?.commune || '',
+    effectif:            _effectifLabel(r.tranche_effectif_salarie || r.siege?.tranche_effectif_salarie) || null,
+    ca:                  _caLabel(r.finances) || null,
+    dirigeant:           _dirigeantLabel(r.dirigeants) || null,
+    categorie:           cat?.label || null,
+    produit_par_defaut:  cat?.produitAssurance || null,
+    angle_entree_defaut: cat?.angleEntree || null,
+  }));
+
+  const system = `Tu es un assistant commercial pour des conseillers S@FE Assurances qui prospectent des professionnels en itinérance.
+Pour chaque établissement du JSON fourni, tu dois répondre STRICTEMENT à partir des champs donnés (nom, naf, commune, effectif, ca, dirigeant, categorie, produit_par_defaut, angle_entree_defaut).
+Interdiction absolue d'inventer une donnée absente (n'invente jamais de chiffre d'affaires, d'effectif ou de nom de dirigeant non fourni).
+Pour chaque établissement, choisis "produit_recommande" (reste dans la même famille de produits que produit_par_defaut, tu peux juste préciser lequel si plusieurs sont listés) et rédige "accroche", une phrase commerciale courte (moins de 160 caractères), professionnelle, en français, qui mentionne le dirigeant par son nom UNIQUEMENT si le champ dirigeant est fourni.
+Réponds uniquement avec un tableau JSON strict : [{"siren":"...","produit_recommande":"...","accroche":"..."}]. Aucun texte hors JSON, pas de bloc markdown.`;
+
+  try{
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/call-ia`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+      body: JSON.stringify({ system, messages: [{ role: 'user', content: JSON.stringify(payload) }] }),
+    });
+    const data = await r.json();
+    if(!r.ok || data.error) throw new Error(data.error || 'Erreur serveur IA');
+
+    let parsed;
+    try{
+      const raw = (data.reply || '').trim().replace(/^```json\s*|```$/g, '');
+      parsed = JSON.parse(raw);
+    }catch(e){
+      throw new Error('Réponse IA invalide (JSON non reconnu)');
+    }
+
+    const bySiren = new Map(parsed.map(p => [String(p.siren), p]));
+    _cibleState.resultData.forEach(r => {
+      const p = bySiren.get(String(r.siren));
+      if(p) r._pitch = { produit_recommande: p.produit_recommande, accroche: p.accroche };
+    });
+    _cibleRenderResults();
+    showToast(`${bySiren.size} accroche(s) générée(s)`, 'success');
+  }catch(e){
+    showToast('⚠️ ' + e.message, 'err');
+  }finally{
+    btn.disabled = false; btn.textContent = '🤖 Accroches IA';
+  }
+}
+
+// Codes INSEE "tranche_effectif_salarie" → libellé lisible
+const _TRANCHE_EFFECTIF = {
+  '00': '0 salarié', '01': '1 à 2 salariés', '02': '3 à 5 salariés', '03': '6 à 9 salariés',
+  '11': '10 à 19 salariés', '12': '20 à 49 salariés', '21': '50 à 99 salariés', '22': '100 à 199 salariés',
+  '31': '200 à 249 salariés', '32': '250 à 499 salariés', '41': '500 à 999 salariés',
+  '42': '1 000 à 1 999 salariés', '51': '2 000 à 4 999 salariés', '52': '5 000 à 9 999 salariés',
+  '53': '10 000 salariés et plus',
+};
+function _effectifLabel(code){
+  if(!code) return '';
+  return _TRANCHE_EFFECTIF[String(code)] || '';
+}
+
+// Premier dirigeant "personne physique" trouvé (le plus pertinent pour une accroche commerciale)
+function _dirigeantLabel(dirigeants){
+  if(!Array.isArray(dirigeants)) return '';
+  const d = dirigeants.find(d => d.type_dirigeant === 'personne physique' && (d.nom || d.prenoms));
+  if(!d) return '';
+  const nom = [d.prenoms, d.nom].filter(Boolean).join(' ');
+  return d.qualite ? `${nom} (${d.qualite})` : nom;
+}
+
+// Dernier CA connu dans finances (objet { "2024": { ca, resultat_net }, ... })
+function _caLabel(finances){
+  if(!finances || typeof finances !== 'object') return '';
+  const annees = Object.keys(finances).filter(a => finances[a]?.ca != null).sort().reverse();
+  if(!annees.length) return '';
+  const annee = annees[0];
+  const ca = finances[annee].ca;
+  const fmt = ca >= 1_000_000 ? (ca/1_000_000).toFixed(1).replace('.0','') + ' M€'
+            : ca >= 1_000     ? Math.round(ca/1_000) + ' k€'
+            : ca + ' €';
+  return `CA ${annee} : ${fmt}`;
 }
 
 async function _cibleAddResult(idx, btn){
@@ -3151,6 +3347,66 @@ function _tourneeRenderMap(points) {
      .addTo(map).bindPopup(`<b>${escHtml(p.label)}</b>${p.heure?'<br>🕐 '+p.heure:''}`);
   });
   map.fitBounds(ll,{padding:[24,24]});
+}
+
+// Ouvre l'itinéraire calculé dans l'app Maps/Waze native du téléphone (lien Google Maps universel, sans clé API)
+function _tourneeOuvrirMaps(){
+  const slots = _ts.slots || [];
+  if(slots.length < 2){ showToast('Calculez d\'abord l\'itinéraire','err'); return; }
+  const coord = s => `${s.lat},${s.lng}`;
+  const params = new URLSearchParams({
+    api: '1',
+    origin: coord(slots[0]),
+    destination: coord(slots[slots.length-1]),
+    travelmode: 'driving',
+  });
+  const waypoints = slots.slice(1, -1).map(coord).join('|');
+  if(waypoints) params.set('waypoints', waypoints);
+  window.open('https://www.google.com/maps/dir/?' + params.toString(), '_blank', 'noopener');
+}
+
+function _tourneeIcsEscape(s){
+  return String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+}
+
+// Génère et télécharge un .ics pour cette tournée précise (ouvrable directement par le Calendrier natif iOS/Android)
+function _tourneeTelechargerIcs(){
+  const slots = _ts.slots || [];
+  if(slots.length < 2){ showToast('Calculez d\'abord l\'itinéraire','err'); return; }
+
+  const date = _ts.date || new Date().toISOString().slice(0,10);
+  const dateCompact = date.replace(/-/g,'');
+  const first = slots[0], last = slots[slots.length-1];
+  const [sh, sm] = (first.heure||'09:00').split(':');
+  const [eh, em] = (last.heure||'18:00').split(':');
+  const endMin = parseInt(eh,10)*60 + parseInt(em,10) + 60; // +1h pour la durée de la dernière visite
+  const dtstart = `${dateCompact}T${sh.padStart(2,'0')}${sm.padStart(2,'0')}00`;
+  const dtend   = `${dateCompact}T${String(Math.floor(endMin/60)%24).padStart(2,'0')}${String(endMin%60).padStart(2,'0')}00`;
+  const now = new Date().toISOString().replace(/[-:]/g,'').slice(0,15) + 'Z';
+
+  const etapes  = slots.filter(s => !s.isDepart);
+  const summary = `Tournée de prospection — ${etapes.length} étape${etapes.length>1?'s':''}`;
+  const desc    = etapes.map((s,i) => `${i+1}. ${s.heure} — ${s.label}${s.adresse ? ' ('+s.adresse+')' : ''}`).join('\n');
+
+  const ics = [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//S@FE CRM//Tournee//FR','CALSCALE:GREGORIAN','METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:tournee-${Date.now()}@safe-crm`,
+    `DTSTAMP:${now}`,
+    `DTSTART:${dtstart}`,
+    `DTEND:${dtend}`,
+    `SUMMARY:${_tourneeIcsEscape(summary)}`,
+    `DESCRIPTION:${_tourneeIcsEscape(desc)}`,
+    first.adresse ? `LOCATION:${_tourneeIcsEscape(first.adresse)}` : '',
+    'END:VEVENT','END:VCALENDAR',
+  ].filter(Boolean).join('\r\n');
+
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `tournee-${date}.ics`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
 async function _tourneeSaveToAgenda() {
