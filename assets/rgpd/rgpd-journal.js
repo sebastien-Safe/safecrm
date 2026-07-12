@@ -99,6 +99,10 @@ const JOURNAL_ACTION_LABELS = {
   victim_paiement_confirme:      'Paiement victime 17Cyber confirmé',
   victim_dossier_cloture:        'Dossier victime 17Cyber clôturé',
   victim_donnees_purgees:        'Purge RGPD dossier victime (données/documents)',
+  // Demandes d'exercice des droits (contacts internes) — ajoutées session 2026-07
+  demande_droit_creee:           'Demande de droit créée',
+  demande_droit_modifiee:        'Demande de droit modifiée',
+  opposition_enregistree:        'Opposition enregistrée (RGPD KO)',
 };
 
 const JOURNAL_CRITICITE_CLASS = {
@@ -566,39 +570,297 @@ function printJournalRGPD() {
 
 // ============================================================
 // Demandes d'exercice des droits (Articles 15-22 RGPD)
+// Contacts internes connus du CRM S@FE (distinct du module DPO clients,
+// qui gère des demandeurs externes non présents dans ce CRM).
 // ============================================================
+const RGPD_DROITS_INTERNES = [
+  { key: 'accès',         label: "Droit d'accès (Art.15)",                    icon: '🔍' },
+  { key: 'rectification', label: 'Rectification (Art.16)',                    icon: '✏️' },
+  { key: 'suppression',   label: 'Effacement ("droit à l\'oubli") (Art.17)',  icon: '🗑️' },
+  { key: 'portabilité',   label: 'Portabilité (Art.20)',                      icon: '📤' },
+  { key: 'opposition',    label: 'Opposition (Art.21)',                       icon: '🚫' },
+  { key: 'limitation',    label: 'Limitation (Art.18)',                       icon: '⏸️' },
+];
+
+let _demandesDroitsData = [];
+
 function renderDemandesDroits() {
   const c = document.getElementById('demandes-droits-container');
-  if (!c || c.dataset.initialized === '1') return;
+  if (!c || c.dataset.initialized === '1') { loadDemandesDroitsTable(); return; }
   c.dataset.initialized = '1';
   c.innerHTML = `
     <div class="panel-block">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:12px">
         <div>
           <h3 style="margin:0">Demandes d'exercice des droits</h3>
-          <p class="mut" style="margin-top:5px;font-size:.85rem">Articles 15 à 22 RGPD — droit d'accès, de rectification, d'effacement, de portabilité et d'opposition.</p>
+          <p class="mut" style="margin-top:5px;font-size:.85rem">Articles 15 à 22 RGPD — droit d'accès, de rectification, d'effacement, de portabilité et d'opposition, pour les contacts connus du CRM.</p>
         </div>
+        <button class="btn btn-gold btn-sm" onclick="openDemandeDroitModal()">+ Nouvelle demande</button>
       </div>
       <div class="scrollx">
         <table class="tbl">
           <thead><tr>
             <th>Date de réception</th>
-            <th>Demandeur</th>
+            <th>Contact</th>
             <th>Type de droit</th>
-            <th>Contact associé</th>
             <th>Statut</th>
             <th>Délai légal restant</th>
-            <th>Traité par</th>
           </tr></thead>
-          <tbody>
-            <tr><td colspan="7" class="empty">Aucune demande enregistrée. Les demandes sont à saisir manuellement dès réception.</td></tr>
-          </tbody>
+          <tbody id="demandes-droits-tbody"><tr><td colspan="5" class="empty">Chargement…</td></tr></tbody>
         </table>
       </div>
       <div style="margin-top:16px;padding:12px 16px;background:#fef9c3;border-left:3px solid #d97706;border-radius:6px">
         <p style="margin:0;font-size:.83rem"><b>⏱️ Rappel légal :</b> vous disposez d'<b>1 mois</b> pour répondre à toute demande d'exercice des droits (Articles 12 et 19 RGPD). Ce délai peut être prorogé de 2 mois supplémentaires en cas de complexité.</p>
       </div>
     </div>`;
+  loadDemandesDroitsTable();
+}
+
+async function loadDemandesDroitsTable() {
+  const tbody = document.getElementById('demandes-droits-tbody');
+  if (!tbody) return;
+  const { data, error } = await sb.from('rgpd_demandes_droits')
+    .select('*, contacts(nom, prenom, entreprise, email, rgpd_ko)')
+    .order('date_demande', { ascending: false });
+  if (error) { tbody.innerHTML = `<tr><td colspan="5" class="empty">Erreur : ${escapeHtml(error.message)}</td></tr>`; return; }
+
+  _demandesDroitsData = data || [];
+  if (!_demandesDroitsData.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Aucune demande enregistrée.</td></tr>';
+    return;
+  }
+
+  const now = new Date();
+  const statutBadge = { 'Reçue': 'badge-blue', 'En cours': 'badge-orange', 'Traitée': 'badge-green', 'Refusée': 'badge-red' };
+  tbody.innerHTML = _demandesDroitsData.map(d => {
+    const droit = RGPD_DROITS_INTERNES.find(x => x.key === d.type_droit) || { icon: '📩', label: d.type_droit };
+    const contact = d.contacts;
+    const dl = d.date_limite ? new Date(d.date_limite) : null;
+    const diff = dl ? Math.ceil((dl - now) / 86400000) : null;
+    const dlBadge = dl
+      ? (diff < 0 ? `<span class="badge badge-red">⚠ Dépassé de ${Math.abs(diff)}j</span>`
+        : diff <= 7 ? `<span class="badge badge-orange">⏱ J-${diff}</span>`
+        : `<span class="badge badge-green">⏱ J-${diff}</span>`)
+      : '—';
+    return `
+      <tr style="cursor:pointer" onclick="openDemandeDroitModal('${d.id}')">
+        <td>${formatDate(d.date_demande)}</td>
+        <td>${escapeHtml(contact?.nom || '—')} ${escapeHtml(contact?.prenom || '')}${contact?.entreprise ? ' — ' + escapeHtml(contact.entreprise) : ''}</td>
+        <td>${droit.icon} ${escapeHtml(droit.label)}</td>
+        <td><span class="badge ${statutBadge[d.statut] || 'badge-gray'}">${escapeHtml(d.statut || 'Reçue')}</span></td>
+        <td>${dlBadge}</td>
+      </tr>`;
+  }).join('');
+}
+
+function openDemandeDroitModal(id = null) {
+  document.getElementById('rd-id').value = id || '';
+  document.getElementById('demande-droit-title').textContent = id ? 'Modifier la demande' : 'Nouvelle demande de droit';
+  document.getElementById('rd-delete-btn').style.display = id ? '' : 'none';
+  document.getElementById('rd-statut-field').classList.toggle('is-hidden', !id);
+
+  const contactSelect = document.getElementById('rd-contact');
+  const contacts = [...(state.contacts || [])].sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
+  contactSelect.innerHTML = contacts.map(c =>
+    `<option value="${c.id}">${escapeHtml(c.nom)} ${escapeHtml(c.prenom || '')}${c.entreprise ? ' — ' + escapeHtml(c.entreprise) : ''}</option>`
+  ).join('');
+
+  document.getElementById('rd-type').innerHTML = RGPD_DROITS_INTERNES.map(r =>
+    `<option value="${r.key}">${r.icon} ${escapeHtml(r.label)}</option>`
+  ).join('');
+
+  const existing = id ? _demandesDroitsData.find(d => d.id === id) : null;
+  document.getElementById('rd-date').value = existing?.date_demande || todayISO();
+  document.getElementById('rd-desc').value  = existing?.description || '';
+  if (existing) {
+    contactSelect.value = existing.contact_id;
+    document.getElementById('rd-type').value = existing.type_droit;
+    document.getElementById('rd-statut').value = existing.statut || 'Reçue';
+  }
+
+  renderRdAutomationButton();
+  document.getElementById('rd-contact').onchange = renderRdAutomationButton;
+  document.getElementById('rd-type').onchange = renderRdAutomationButton;
+
+  document.getElementById('demande-droit-modal').classList.add('show');
+}
+
+function closeDemandeDroitModal() {
+  document.getElementById('demande-droit-modal').classList.remove('show');
+}
+
+function renderRdAutomationButton() {
+  const type = document.getElementById('rd-type').value;
+  const contactId = document.getElementById('rd-contact').value;
+  const zone = document.getElementById('rd-automation');
+  const contact = (state.contacts || []).find(c => c.id === contactId);
+
+  if (type === 'accès') {
+    zone.innerHTML = `<button class="btn btn-out btn-sm" type="button" onclick="rdGenererPdfAcces()">🔍 Générer le PDF de ses données</button>`;
+  } else if (type === 'opposition') {
+    const dejaKo = contact?.rgpd_ko;
+    zone.innerHTML = dejaKo
+      ? `<p class="mut" style="font-size:.8rem">🚫 Ce contact est déjà en opposition (RGPD KO) — fiche verrouillée.</p>`
+      : `<button class="btn btn-out btn-sm" type="button" onclick="rdEnregistrerOpposition()">🚫 Enregistrer l'opposition &amp; générer l'accusé</button>`;
+  } else {
+    zone.innerHTML = '';
+  }
+}
+
+async function saveDemandeDroit() {
+  const id = document.getElementById('rd-id').value || null;
+  const contactId = document.getElementById('rd-contact').value;
+  if (!contactId) { showCrmToast?.('❌ Sélectionnez un contact'); return; }
+  const dateDemande = document.getElementById('rd-date').value || todayISO();
+
+  const payload = {
+    contact_id: contactId,
+    type_droit: document.getElementById('rd-type').value,
+    date_demande: dateDemande,
+    date_limite: id ? undefined : new Date(new Date(dateDemande).getTime() + 30 * 86400000).toISOString().slice(0, 10),
+    statut: id ? document.getElementById('rd-statut').value : 'Reçue',
+    description: document.getElementById('rd-desc').value.trim() || null,
+    updated_at: new Date().toISOString(),
+  };
+  if (payload.date_limite === undefined) delete payload.date_limite;
+
+  const { error } = id
+    ? await sb.from('rgpd_demandes_droits').update(payload).eq('id', id)
+    : await sb.from('rgpd_demandes_droits').insert({ ...payload, created_by: state.user.id });
+
+  if (error) { showCrmToast?.('❌ Erreur : ' + error.message); return; }
+
+  if (typeof logRgpd === 'function') {
+    await logRgpd(id ? 'demande_droit_modifiee' : 'demande_droit_creee', 'RGPD', {
+      criticite: 'Attention', donnees: payload.type_droit, resultat: 'Succès',
+      details: { contact_id: contactId },
+    });
+  }
+
+  closeDemandeDroitModal();
+  showCrmToast?.(id ? '✅ Demande mise à jour' : '✅ Demande enregistrée');
+  loadDemandesDroitsTable();
+}
+
+async function deleteDemandeDroit() {
+  const id = document.getElementById('rd-id').value;
+  if (!id || !confirm('Supprimer cette demande ?')) return;
+  const { error } = await sb.from('rgpd_demandes_droits').delete().eq('id', id);
+  if (error) { showCrmToast?.('❌ Erreur : ' + error.message); return; }
+  closeDemandeDroitModal();
+  showCrmToast?.('✅ Demande supprimée');
+  loadDemandesDroitsTable();
+}
+
+async function _rdMarquerTraitee(id, reponse) {
+  await sb.from('rgpd_demandes_droits').update({
+    statut: 'Traitée',
+    reponse,
+    updated_at: new Date().toISOString(),
+  }).eq('id', id);
+}
+
+// ── Automatisation Art.15 — Droit d'accès : PDF réel des données du contact ──
+async function rdGenererPdfAcces() {
+  const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+  if (!jsPDF) { showCrmToast?.('❌ jsPDF non disponible'); return; }
+  const contactId = document.getElementById('rd-contact').value;
+  const contact = (state.contacts || []).find(c => c.id === contactId);
+  if (!contact) return;
+
+  const [{ data: contrats }, { data: taches }, { data: interactions }] = await Promise.all([
+    sb.from('contracts').select('type, formule, montant, recurrence, statut, date_debut, date_echeance').eq('contact_id', contactId),
+    sb.from('tasks').select('titre, statut, priorite, echeance').eq('contact_id', contactId),
+    sb.from('interactions').select('type, date, objet, contenu').eq('contact_id', contactId),
+  ]);
+
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  let y = 18;
+  const line = (txt, size = 9, bold = false) => {
+    if (y > 275) { doc.addPage(); y = 18; }
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setFontSize(size);
+    doc.text(String(txt), 14, y);
+    y += size >= 12 ? 7 : 5;
+  };
+
+  line('Export de vos données personnelles — Droit d\'accès (Art.15 RGPD)', 13, true);
+  line(`Généré le ${new Date().toLocaleDateString('fr-FR')} par S@FE SAS`, 8);
+  y += 3;
+  line('Identité', 11, true);
+  line(`${contact.nom || ''} ${contact.prenom || ''}`);
+  if (contact.entreprise) line(`Entreprise : ${contact.entreprise}`);
+  if (contact.email) line(`E-mail : ${contact.email}`);
+  if (contact.telephone) line(`Téléphone : ${contact.telephone}`);
+  if (contact.adresse) line(`Adresse : ${contact.adresse} ${contact.code_postal_ville || ''}`);
+  y += 3;
+
+  line(`Contrats (${contrats?.length || 0})`, 11, true);
+  (contrats || []).forEach(c => line(`• ${c.type || ''} ${c.formule || ''} — ${c.statut || ''} — ${c.montant ? c.montant + ' €' : ''}`));
+  y += 3;
+
+  line(`Tâches (${taches?.length || 0})`, 11, true);
+  (taches || []).forEach(t => line(`• ${t.titre} — ${t.statut || ''}${t.echeance ? ' — éch. ' + t.echeance : ''}`));
+  y += 3;
+
+  line(`Échanges (${interactions?.length || 0})`, 11, true);
+  (interactions || []).forEach(i => line(`• ${i.date || ''} — ${i.objet || i.type || ''}`));
+
+  doc.save(`donnees-personnelles-${(contact.nom || 'contact').replace(/[^a-z0-9]/gi, '_')}-${todayISO()}.pdf`);
+
+  const id = document.getElementById('rd-id').value;
+  if (id) await _rdMarquerTraitee(id, 'PDF de données personnelles généré et remis au demandeur (Art.15 RGPD).');
+
+  if (typeof logRgpd === 'function') {
+    await logRgpd('export_portabilite_contact', 'RGPD', {
+      criticite: 'Attention', donnees: 'Contrats, tâches, échanges', resultat: 'Succès',
+      details: { contact_id: contactId, article: 'Art.15 RGPD — Droit d\'accès' },
+    });
+  }
+
+  showCrmToast?.('✅ PDF généré' + (id ? ' — demande marquée Traitée' : ''));
+  closeDemandeDroitModal();
+  loadDemandesDroitsTable();
+}
+
+// ── Automatisation Art.21 — Droit d'opposition : verrouillage + accusé PDF ──
+async function rdEnregistrerOpposition() {
+  const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+  if (!jsPDF) { showCrmToast?.('❌ jsPDF non disponible'); return; }
+  const contactId = document.getElementById('rd-contact').value;
+  const contact = (state.contacts || []).find(c => c.id === contactId);
+  if (!contact) return;
+  if (!confirm(`Enregistrer l'opposition de ${contact.nom} ? Sa fiche sera verrouillée et exclue des relances/prospection.`)) return;
+
+  const { error } = await sb.from('contacts').update({ rgpd_ko: true }).eq('id', contactId);
+  if (error) { showCrmToast?.('❌ Erreur : ' + error.message); return; }
+  contact.rgpd_ko = true;
+  if (typeof renderContacts === 'function') renderContacts();
+
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  let y = 20;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+  doc.text('Accusé de réception — Droit d\'opposition (Art.21 RGPD)', 14, y); y += 8;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+  doc.text(`Date : ${new Date().toLocaleDateString('fr-FR')}`, 14, y); y += 6;
+  doc.text(`Concernant : ${contact.nom || ''} ${contact.prenom || ''}${contact.entreprise ? ' — ' + contact.entreprise : ''}`, 14, y); y += 10;
+  const txt = `Nous accusons réception de votre demande d'opposition au traitement de vos données personnelles.\n\nConformément à l'article 21 du RGPD, le traitement de vos données à des fins de prospection et de relance commerciale a été immédiatement interrompu. Votre fiche a été verrouillée dans notre système d'information.\n\nLes données déjà nécessaires à l'exécution de nos obligations légales et contractuelles en cours restent conservées conformément à nos durées de conservation légales.\n\nPour toute question, contactez-nous à contact@safe-digitalisation.fr.`;
+  doc.text(doc.splitTextToSize(txt, 180), 14, y);
+  doc.save(`accuse-opposition-${(contact.nom || 'contact').replace(/[^a-z0-9]/gi, '_')}-${todayISO()}.pdf`);
+
+  const id = document.getElementById('rd-id').value;
+  if (id) await _rdMarquerTraitee(id, 'Opposition enregistrée : traitement stoppé (RGPD KO), accusé de réception remis (Art.21 RGPD).');
+
+  if (typeof logRgpd === 'function') {
+    await logRgpd('opposition_enregistree', 'RGPD', {
+      criticite: 'Critique', donnees: 'Opposition au traitement', resultat: 'Succès',
+      details: { contact_id: contactId, article: 'Art.21 RGPD — Droit d\'opposition', action: 'rgpd_ko = true' },
+    });
+  }
+
+  showCrmToast?.('✅ Opposition enregistrée, fiche verrouillée' + (id ? ' — demande marquée Traitée' : ''));
+  closeDemandeDroitModal();
+  loadDemandesDroitsTable();
 }
 
 // ============================================================

@@ -76,8 +76,6 @@
       <a class="mob-lk super-admin-only is-hidden" href="/modules/SEO/module-seo-clients.html"><span class="ico">🚀</span> SEO</a>
       <a class="mob-lk super-admin-only is-hidden" href="/modules/Cyber/module-cyber-clients.html"><span class="ico">💻</span> Cybersec</a>
       <a class="mob-lk super-admin-only is-hidden" href="/modules/DPO/module-dpo-clients.html"><span class="ico">⚖️</span> DPO</a>
-      <a class="mob-lk super-admin-only is-hidden" href="/modules/Social/module-social-clients.html"><span class="ico">📱</span> Social</a>
-      <a class="mob-lk super-admin-only is-hidden" href="/modules/ClickCollect/module-clickcollect-clients.html"><span class="ico">🛒</span> Click &amp; Collect</a>
       <span class="mob-lk assurance-only is-hidden"><span class="ico">🛡</span> Assurances <small class="badge-soon">bientôt</small></span>
     </div>
 
@@ -166,8 +164,6 @@
       <a class="navlink super-admin-only is-hidden" href="/modules/SEO/module-seo-clients.html">🚀 SEO</a>
       <a class="navlink super-admin-only is-hidden" href="/modules/Cyber/module-cyber-clients.html">💻 Cybersec</a>
       <a class="navlink super-admin-only is-hidden" href="/modules/DPO/module-dpo-clients.html">⚖️ DPO</a>
-      <a class="navlink super-admin-only is-hidden" href="/modules/Social/module-social-clients.html">📱 Social</a>
-      <a class="navlink super-admin-only is-hidden" href="/modules/ClickCollect/module-clickcollect-clients.html">🛒 Click &amp; Collect</a>
       <span class="navlink navlink--disabled assurance-only is-hidden">🛡 Assurances <small class="badge-soon">bientôt</small></span>
 
       <!-- Administration (admin uniquement) -->
@@ -2028,9 +2024,56 @@
       <label>Nombre approximatif de personnes concernées</label>
       <input id="violation-nb" type="number" min="0" placeholder="Ex : 42">
     </div>
+    <div class="field">
+      <label>Destinataires — personnes concernées à notifier (Art. 34 RGPD)</label>
+      <input id="violation-contact-search" type="text" placeholder="Rechercher un contact ou une entreprise…" style="width:100%;box-sizing:border-box;margin-bottom:8px">
+      <div id="violation-contacts-list" style="max-height:180px;overflow-y:auto;border:1px solid var(--line,#e5e7eb);border-radius:8px;padding:8px"></div>
+      <div style="font-size:.78rem;color:var(--mut);margin-top:6px"><span id="violation-selected-count">0</span> destinataire(s) sélectionné(s)</div>
+    </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
       <button class="btn btn-out btn-sm" onclick="closeViolationModal()">Annuler</button>
       <button class="btn btn-sm" id="btn-violation-submit" style="background:#dc2626;color:#fff;border-color:#dc2626" onclick="submitViolation()">🚨 Envoyer l'alerte &amp; journaliser</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal — Demande d'exercice des droits RGPD (Art.15-22, contacts internes) -->
+<div class="modal" id="demande-droit-modal">
+  <div class="modal-box" style="max-width:560px;width:100%">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+      <span style="font-size:22px">📩</span>
+      <h3 style="margin:0" id="demande-droit-title">Nouvelle demande de droit</h3>
+    </div>
+    <input type="hidden" id="rd-id">
+    <div class="field">
+      <label>Contact concerné *</label>
+      <select id="rd-contact" style="width:100%;box-sizing:border-box"></select>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Type de droit *</label>
+        <select id="rd-type" style="width:100%;box-sizing:border-box"></select>
+      </div>
+      <div class="field">
+        <label>Date de réception</label>
+        <input id="rd-date" type="date">
+      </div>
+    </div>
+    <div class="field">
+      <label>Description de la demande</label>
+      <textarea id="rd-desc" rows="3" style="width:100%;box-sizing:border-box" placeholder="Contenu de la demande reçue…"></textarea>
+    </div>
+    <div class="field is-hidden" id="rd-statut-field">
+      <label>Statut</label>
+      <select id="rd-statut" style="width:100%;box-sizing:border-box">
+        <option>Reçue</option><option>En cours</option><option>Traitée</option><option>Refusée</option>
+      </select>
+    </div>
+    <div id="rd-automation"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+      <button class="btn btn-out btn-sm" id="rd-delete-btn" style="margin-right:auto;display:none" onclick="deleteDemandeDroit()">Supprimer</button>
+      <button class="btn btn-out btn-sm" onclick="closeDemandeDroitModal()">Annuler</button>
+      <button class="btn btn-sm btn-pri" onclick="saveDemandeDroit()">Enregistrer</button>
     </div>
   </div>
 </div>

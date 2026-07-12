@@ -110,6 +110,7 @@ function openDemandeModal(id = null) {
       <label class="form-label">Description de la demande</label>
       <textarea class="form-textarea" id="dm-desc" placeholder="Contenu de la demande reçue…"></textarea>
     </div>
+    <div id="dm-automation"></div>
     ${id ? `
       <div class="grid-2">
         <div class="form-group">
@@ -133,6 +134,9 @@ function openDemandeModal(id = null) {
     <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
     <button class="btn btn-pri" onclick="saveDemande(${id ? `'${id}'` : 'null'})">Enregistrer</button>`);
 
+  renderDmAutomation(id);
+  document.getElementById('dm-type').addEventListener('change', () => renderDmAutomation(id));
+
   if (id) {
     supa.from('dpo_client_demandes').select('*').eq('id', id).single().then(({ data: d }) => {
       if (!d) return;
@@ -144,7 +148,83 @@ function openDemandeModal(id = null) {
       if (document.getElementById('dm-statut'))  document.getElementById('dm-statut').value  = d.statut       || 'Reçue';
       if (document.getElementById('dm-limite'))  document.getElementById('dm-limite').value  = d.date_limite  || '';
       if (document.getElementById('dm-reponse')) document.getElementById('dm-reponse').value = d.reponse      || '';
+      renderDmAutomation(id);
     });
+  }
+}
+
+function renderDmAutomation(id) {
+  const zone = document.getElementById('dm-automation');
+  if (!zone) return;
+  const type = document.getElementById('dm-type').value;
+  if (type === 'accès') {
+    zone.innerHTML = `<button class="btn btn-out btn-sm" type="button" onclick="dmGenererPdfReponse('accès', ${id ? `'${id}'` : 'null'})">🔍 Générer le PDF de réponse (registre)</button>`;
+  } else if (type === 'opposition') {
+    zone.innerHTML = `<button class="btn btn-out btn-sm" type="button" onclick="dmGenererPdfReponse('opposition', ${id ? `'${id}'` : 'null'})">🚫 Générer l'accusé d'opposition (registre)</button>`;
+  } else {
+    zone.innerHTML = '';
+  }
+}
+
+// ── Automatisation — PDF de réponse type basé sur le registre de traitements
+// du client (le demandeur n'est pas un contact connu : ses données réelles ne
+// résident pas dans ce système, seul le registre du client l'est).
+async function dmGenererPdfReponse(type, id) {
+  const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+  if (!jsPDF) { toast('jsPDF non disponible', 'err'); return; }
+
+  const nom = document.getElementById('dm-nom').value.trim() || 'Madame, Monsieur';
+  const { data: traitements } = await supa.from('dpo_client_traitements')
+    .select('*').eq('contact_id', currentContact.id).eq('statut', 'Actif');
+
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  let y = 20;
+  const title = type === 'accès'
+    ? "Réponse à votre demande de droit d'accès (Art.15 RGPD)"
+    : "Accusé de réception — Droit d'opposition (Art.21 RGPD)";
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+  doc.text(doc.splitTextToSize(title, 180), 14, y); y += 14;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+  doc.text(`À l'attention de : ${nom}`, 14, y); y += 6;
+  doc.text(`Responsable de traitement : ${currentContact.nom}${currentContact.entreprise ? ' — ' + currentContact.entreprise : ''}`, 14, y); y += 6;
+  doc.text(`Date : ${new Date().toLocaleDateString('fr-FR')}`, 14, y); y += 10;
+
+  const intro = type === 'accès'
+    ? "Conformément à l'article 15 du RGPD, voici les catégories de données que nous traitons vous concernant, telles qu'elles figurent dans notre registre des activités de traitement :"
+    : "Nous accusons réception de votre demande d'opposition. Conformément à l'article 21 du RGPD, voici les traitements concernés par votre demande et les mesures prises :";
+  doc.text(doc.splitTextToSize(intro, 180), 14, y); y += doc.splitTextToSize(intro, 180).length * 5 + 6;
+
+  (traitements || []).forEach((t, i) => {
+    if (y > 265) { doc.addPage(); y = 18; }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+    doc.text(`${i + 1}. ${t.nom}`, 14, y); y += 5;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    if (t.finalite)           { doc.text(doc.splitTextToSize(`Finalité : ${t.finalite}`, 175), 18, y); y += 5; }
+    if (t.duree_conservation) { doc.text(`Conservation : ${t.duree_conservation}`, 18, y); y += 5; }
+    if ((t.categories_donnees || []).length) { doc.text(doc.splitTextToSize(`Données : ${t.categories_donnees.join(', ')}`, 175), 18, y); y += 5; }
+    if (type === 'opposition') { doc.text('→ Traitement stoppé au titre de votre opposition.', 18, y); y += 5; }
+    y += 3;
+  });
+
+  if (!traitements || !traitements.length) {
+    doc.text("Aucun traitement actif identifié dans le registre à ce jour.", 14, y); y += 6;
+  }
+
+  doc.save(`reponse-${type}-${(currentContact.nom || 'client').replace(/[^a-z0-9]/gi, '_')}-${today()}.pdf`);
+
+  if (id) {
+    await supa.from('dpo_client_demandes').update({
+      statut: 'Traitée',
+      reponse: type === 'accès'
+        ? 'PDF de réponse (registre des traitements) généré et remis au demandeur.'
+        : "Opposition traitée : PDF d'accusé généré, traitements concernés arrêtés.",
+      updated_at: new Date().toISOString(),
+    }).eq('id', id);
+    toast('PDF généré — demande marquée Traitée', 'ok');
+    closeModal();
+    loadDemandes();
+  } else {
+    toast('PDF généré', 'ok');
   }
 }
 

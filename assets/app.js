@@ -2958,15 +2958,46 @@ function initErrorMonitoring() {
 
 // ── VIOLATION DE DONNÉES — Art. 33 RGPD ─────────────────────────────────────
 
+let violationSelectedIds = new Set();
+
 function openViolationModal() {
   const today = new Date().toISOString().slice(0, 10);
   const dateEl = document.getElementById('violation-date');
   if (dateEl && !dateEl.value) dateEl.value = today;
+  violationSelectedIds = new Set();
+  const searchEl = document.getElementById('violation-contact-search');
+  if (searchEl) searchEl.value = '';
+  renderViolationContactsList();
   document.getElementById('violation-modal').classList.add('show');
 }
 
 function closeViolationModal() {
   document.getElementById('violation-modal').classList.remove('show');
+}
+
+function renderViolationContactsList(filterText = '') {
+  const listEl = document.getElementById('violation-contacts-list');
+  if (!listEl) return;
+  const q = filterText.trim().toLowerCase();
+  const contacts = (state.contacts || [])
+    .filter(c => c.email)
+    .filter(c => !q || `${c.nom} ${c.prenom || ''} ${c.entreprise || ''}`.toLowerCase().includes(q));
+
+  listEl.innerHTML = contacts.length
+    ? contacts.map(c => `
+      <label style="display:flex;align-items:center;gap:8px;padding:4px 2px;font-size:.85rem;cursor:pointer">
+        <input type="checkbox" data-violation-contact="${c.id}" ${violationSelectedIds.has(c.id) ? 'checked' : ''} onchange="toggleViolationContact('${c.id}')">
+        <span>${escapeHtml(c.nom || '')} ${escapeHtml(c.prenom || '')}${c.entreprise ? ' — ' + escapeHtml(c.entreprise) : ''} <span style="color:var(--mut)">(${escapeHtml(c.email)})</span></span>
+      </label>`).join('')
+    : '<p class="mut" style="font-size:.8rem;padding:4px 2px">Aucun contact trouvé.</p>';
+
+  document.getElementById('violation-selected-count').textContent = violationSelectedIds.size;
+}
+
+function toggleViolationContact(id) {
+  if (violationSelectedIds.has(id)) violationSelectedIds.delete(id);
+  else violationSelectedIds.add(id);
+  document.getElementById('violation-selected-count').textContent = violationSelectedIds.size;
 }
 
 async function submitViolation() {
@@ -2977,29 +3008,46 @@ async function submitViolation() {
 
   if (!desc) { alert('La description de la violation est obligatoire.'); return; }
 
+  const destinataires = (state.contacts || [])
+    .filter(c => violationSelectedIds.has(c.id))
+    .map(c => ({ email: c.email, nom: `${c.nom || ''} ${c.prenom || ''}`.trim() }));
+
+  if (destinataires.length > 0) {
+    const confirmMsg = `Vous êtes sur le point d'envoyer une notification de violation de données à ${destinataires.length} destinataire(s) :\n\n`
+      + destinataires.map(d => `• ${d.nom} <${d.email}>`).join('\n')
+      + '\n\nCette action est irréversible. Confirmer l\'envoi ?';
+    if (!confirm(confirmMsg)) return;
+  }
+
   const btn = document.getElementById('btn-violation-submit');
   if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours…'; }
 
   try {
     const { data: { session } } = await sb.auth.getSession();
-    const resp = await fetch(
-      'https://qwzqatfewbzwrvqhvpbo.supabase.co/functions/v1/send-crm-email',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + session.access_token,
-        },
-        body: JSON.stringify({
-          type: 'violation_cnil',
+
+    const resp = await sb.functions.invoke('send-crm-email', {
+      body: {
+        type: 'violation_cnil',
+        description: desc,
+        date_decouverte: date,
+        categories_donnees: categories || null,
+        nb_personnes: nb ? parseInt(nb, 10) : null,
+      },
+    });
+    if (resp.error) throw resp.error;
+
+    if (destinataires.length > 0) {
+      const respClients = await sb.functions.invoke('send-crm-email', {
+        body: {
+          type: 'violation_client_notif',
           description: desc,
           date_decouverte: date,
           categories_donnees: categories || null,
-          nb_personnes: nb ? parseInt(nb, 10) : null,
-        }),
-      }
-    );
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          destinataires,
+        },
+      });
+      if (respClients.error) throw respClients.error;
+    }
 
     if (typeof logRgpd === 'function') {
       await logRgpd('incident_nis2_declare', 'RGPD', {
@@ -3011,7 +3059,8 @@ async function submitViolation() {
           description: desc,
           nb_personnes: nb || null,
           alerte_email: 'Envoyée',
-          lien_cnil: 'https://notifications.cnil.fr',
+          destinataires_notifies: destinataires.map(d => d.email),
+          lien_cnil: 'https://notifications.cnil.fr/notifications/',
         },
       });
     }
@@ -3020,8 +3069,13 @@ async function submitViolation() {
     document.getElementById('violation-desc').value       = '';
     document.getElementById('violation-categories').value = '';
     document.getElementById('violation-nb').value         = '';
+    violationSelectedIds = new Set();
 
-    alert('✅ Alerte envoyée à l\'administrateur.\nViolation enregistrée dans le journal RGPD.\n\nÉtape suivante : déclarer sur https://notifications.cnil.fr (délai 72h Art.33)');
+    window.open('https://notifications.cnil.fr/notifications/', '_blank');
+
+    alert('✅ Alerte envoyée à l\'administrateur'
+      + (destinataires.length ? ` et notification envoyée à ${destinataires.length} destinataire(s)` : '')
+      + '.\nViolation enregistrée dans le journal RGPD.\n\nLa page de déclaration CNIL vient de s\'ouvrir dans un nouvel onglet (délai 72h Art.33).');
   } catch (e) {
     console.error('[Violation CNIL]', e);
     alert('Erreur lors de l\'envoi. Réessayez ou contactez le support.');
@@ -3221,6 +3275,9 @@ function bindEvents() {
   $('#mydata-save-btn')?.addEventListener('click', saveMyData);
   $('#mydata-export-btn')?.addEventListener('click', exportMyDataCSV);
   $('#mydata-request-btn')?.addEventListener('click', requestMyDataExport);
+
+  // === Violation de données — recherche contacts ===
+  $('#violation-contact-search')?.addEventListener('input', (e) => renderViolationContactsList(e.target.value));
 
   // === Félicitations objectif atteint ===
   $('#felicitations-close-btn')?.addEventListener('click', () => $('#felicitations-modal').classList.remove('show'));

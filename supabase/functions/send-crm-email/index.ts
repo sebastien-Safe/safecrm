@@ -737,5 +737,71 @@ Deno.serve(async (req) => {
     return json({ ok: true });
   }
 
+  // ── VIOLATION DE DONNÉES — Notification aux personnes concernées (Art. 34 RGPD) ──
+  if (type === "violation_client_notif") {
+    const { description, date_decouverte, categories_donnees, destinataires } = body;
+
+    if (!Array.isArray(destinataires) || destinataires.length === 0) {
+      return json({ error: "Aucun destinataire" }, 400);
+    }
+
+    const dateDecouv = date_decouverte
+      ? new Date(date_decouverte).toLocaleDateString("fr-FR")
+      : new Date().toLocaleDateString("fr-FR");
+
+    function buildHtml(nomDestinataire: string) {
+      return `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><title>Notification de violation de données</title></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 16px"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:600px;width:100%">
+  <tr><td style="background:#dc2626;padding:28px 32px;text-align:center">
+    <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:.02em">Notification de violation de données personnelles</div>
+    <div style="color:rgba(255,255,255,.85);font-size:12px;margin-top:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Article 34 du RGPD</div>
+  </td></tr>
+  <tr><td style="padding:32px">
+    <p style="font-size:14px;color:#1e293b;margin:0 0 16px">Bonjour ${escTs(nomDestinataire)},</p>
+    <p style="font-size:14px;color:#1e293b;line-height:1.7;margin:0 0 16px">
+      Nous vous informons qu'une violation de données à caractère personnel susceptible de vous concerner a été identifiée le <strong>${escTs(dateDecouv)}</strong>.
+    </p>
+    ${categories_donnees ? `<p style="font-size:14px;color:#1e293b;line-height:1.7;margin:0 0 16px">
+      <strong>Catégories de données concernées :</strong> ${escTs(categories_donnees)}
+    </p>` : ""}
+    <p style="font-size:14px;color:#1e293b;line-height:1.7;margin:0 0 16px">
+      ${escTs(description || "")}
+    </p>
+    <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:16px 20px;margin-bottom:20px">
+      <p style="font-size:12px;font-weight:700;color:#92400e;margin:0 0 8px;text-transform:uppercase">Recommandations</p>
+      <ul style="font-size:13px;color:#374151;margin:0;padding-left:18px;line-height:1.9">
+        <li>Restez vigilant face aux emails ou appels suspects (phishing)</li>
+        <li>Ne communiquez jamais vos identifiants ou mots de passe par email</li>
+        <li>En cas de doute sur une communication reçue, contactez-nous directement</li>
+      </ul>
+    </div>
+    <p style="font-size:14px;color:#1e293b;line-height:1.7;margin:0 0 16px">
+      Pour toute question, vous pouvez nous contacter à <a href="mailto:contact@safe-digitalisation.fr" style="color:#dc2626">contact@safe-digitalisation.fr</a>.
+    </p>
+    <p style="font-size:12px;color:#94a3b8;text-align:center;margin-top:24px">S@FE — Notification RGPD Art. 34</p>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+    }
+
+    let sent = 0;
+    const failed: string[] = [];
+    for (const d of destinataires) {
+      if (!d?.email) continue;
+      const ok = await sendBrevoHtml(
+        "Notification de violation de données personnelles",
+        { email: d.email, name: d.nom || d.email },
+        buildHtml(d.nom || "Madame, Monsieur"),
+      );
+      if (ok) sent++; else failed.push(d.email);
+    }
+
+    return json({ ok: true, sent, failed });
+  }
+
   return json({ error: "Type inconnu" }, 400);
 });
