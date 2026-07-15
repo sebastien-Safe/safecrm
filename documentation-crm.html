@@ -1309,8 +1309,6 @@ tbody td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top
       <tr><td><code>send-clause-email</code></td><td>Email clause de confidentialité (collaborateur + public)</td><td>JWT / public</td><td>—</td></tr>
       <tr><td><code>send-audit-email</code></td><td>Envoi rapport d'audit terrain (RGPD · SEO · Cyber) PDF + email au prospect</td><td>JWT</td><td>—</td></tr>
       <tr><td><code>places-search</code></td><td>Proxy sécurisé Google Maps Places Text Search — clé API jamais exposée, résultats lecture seule</td><td>JWT</td><td>—</td></tr>
-      <tr><td><code>create-booking</code></td><td>Création d'un créneau de réservation prospect (anti-double-booking)</td><td>Public (token URL)</td><td>—</td></tr>
-      <tr><td><code>get-booking-slots</code></td><td>Calcul des créneaux disponibles pour la page de réservation publique</td><td>Public (token URL)</td><td>—</td></tr>
       <tr><td><code>record-login-failure</code></td><td>Anti-bruteforce : enregistre tentatives, ban IP/email · Journal sécurité</td><td>Aucune (pré-auth)</td><td>—</td></tr>
     </tbody>
   </table>

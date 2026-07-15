@@ -605,12 +605,11 @@ code{font-family:'Courier New',monospace;background:rgba(0,0,0,.06);padding:1px 
   <h3 style="margin-top:20px">Tournée de prospection optimisée <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
   <p>Depuis la sidebar "🗺️ Lancer l'itinéraire" : le commercial sélectionne ses cibles SIRENE et/ou Google Places (max 5 étapes — <strong>contrainte éco</strong>), le CRM calcule l'ordre de visite optimal via un algorithme TSP nearest-neighbor, génère les créneaux horaires (60 km/h · facteur route 1,3 · 60 min/visite) et enregistre la tournée directement dans l'agenda CRM (tables <code>tournees</code> + <code>tournee_etapes</code>). Les données cibles restent <strong>éphémères</strong> (RGPD) : aucun prospect SIRENE ou Google Places n'est stocké en base sans consentement explicite préalable.</p>
   <h3 style="margin-top:20px">Système de prise de RDV intégré <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
-  <p>Après chaque diagnostic, le prospect peut réserver directement un créneau avec le commercial via un lien personnel tokenisé.</p>
+  <p>Après chaque diagnostic, le prospect peut réserver directement un créneau avec le commercial via son planning de rendez-vous Google Calendar, intégré à la page de réservation S@FE.</p>
   <div class="cards">
-    <div class="card"><div class="card-title">⚙️ Paramétrage disponibilités</div><div class="card-body">Modal agenda (icône ⚙️) : le commercial définit ses plages horaires par jour (Lun–Ven), sa pause déjeuner, et génère son lien de réservation unique.</div></div>
-    <div class="card"><div class="card-title">📅 Page de réservation publique</div><div class="card-body"><code>/booking.html?token=XXX</code> — sans authentification. Affiche les créneaux disponibles en temps réel. Samedis, dimanches et jours fériés français exclus automatiquement.</div></div>
-    <div class="card"><div class="card-title">🗺️ Itinéraire sécurisé</div><div class="card-body">Géocodage via <strong>BAN data.gouv.fr</strong> (API officielle, sans clé, données souveraines). Itinéraire ouvert dans Google Maps. Partage natif iOS/Android via Web Share API.</div></div>
-    <div class="card"><div class="card-title">🔒 Sécurité &amp; RGPD</div><div class="card-body">Token UUID opaque (non devinable). Aucune donnée client exposée dans l'URL. Double-booking guard côté Edge Function. Données hébergées exclusivement sur Supabase EU (Paris).</div></div>
+    <div class="card"><div class="card-title">🔗 Lien Google Calendar</div><div class="card-body">Modal agenda (icône ⚙️) : le commercial colle le lien (ou code d'intégration) de son planning de rendez-vous Google Calendar (<code>profiles.google_booking_url</code>). Les disponibilités sont gérées nativement dans Google Calendar, pas dans le CRM.</div></div>
+    <div class="card"><div class="card-title">📅 Page de réservation publique</div><div class="card-body"><code>/booking.html?gcal=URL_GOOGLE&amp;nom=Prénom</code> — sans authentification. Charge le bouton de planification officiel Google Calendar (<code>scheduling-button-script.js</code>) qui affiche les créneaux disponibles en temps réel, gérés côté Google.</div></div>
+    <div class="card"><div class="card-title">🔒 Sécurité &amp; RGPD</div><div class="card-body">L'URL du planning Google est publique par conception (prévue pour être partagée). Validation stricte du domaine (<code>calendar.google.com/calendar/appointments/schedules/</code>) avant chargement. Aucune donnée de réservation (nom, email, créneau) n'est stockée côté S@FE — la prise de RDV et ses données sont entièrement gérées par Google Calendar.</div></div>
   </div>
 
   <h3>API Métier Souveraines — 3 intégrations <span class="fact-tag ft-v">FAIT VÉRIFIÉ</span></h3>
@@ -707,8 +706,6 @@ Schéma type (tables contacts, contracts, tasks) :
       <tr><td><code>check-resiliation-status</code></td><td>Vérifie statut résiliation en attente</td><td>JWT</td><td>Stripe API</td></tr>
       <tr><td><code>customer-portal</code></td><td>Génère lien Stripe Customer Portal auto-service</td><td>JWT</td><td>Stripe API</td></tr>
       <tr><td><code>places-search</code></td><td>Proxy sécurisé Google Maps Places Text Search — clé API jamais exposée, résultats lecture seule (RGPD)</td><td>JWT</td><td>Google Maps Places API</td></tr>
-      <tr><td><code>create-booking</code></td><td>Création d'un créneau de réservation prospect (anti-double-booking)</td><td>Public (token URL)</td><td>—</td></tr>
-      <tr><td><code>get-booking-slots</code></td><td>Calcul des créneaux disponibles pour la page de réservation publique</td><td>Public (token URL)</td><td>—</td></tr>
       <tr><td><code>send-mandat-email</code></td><td>Email mandat DCI signé + 9 pièces jointes Storage</td><td>JWT</td><td>Brevo, Supabase Storage</td></tr>
       <tr><td><code>send-clause-email</code></td><td>Email clause de confidentialité (interne + public)</td><td>JWT / Public</td><td>Brevo</td></tr>
       <tr><td><code>send-password-reset</code></td><td>Email réinitialisation mot de passe</td><td>Public</td><td>Brevo</td></tr>

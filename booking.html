@@ -2,83 +2,32 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss://*.supabase.co blob:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https:; frame-src https://calendar.google.com;">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Prendre rendez-vous — S@FE</title>
 <meta name="robots" content="noindex,nofollow">
+<link href="https://calendar.google.com/calendar/scheduling-button-script.css" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --navy:#0a1628;--navy-mid:#142240;--gold:#f59e0b;
-  --ok:#22c55e;--alert:#ef4444;--mut:#94a3b8;
-  --r:12px;--ff:'IBM Plex Sans',system-ui,sans-serif;
+  --mut:#94a3b8;--r:12px;--ff:'IBM Plex Sans',system-ui,sans-serif;
 }
 body{font-family:var(--ff);background:var(--navy);color:#fff;min-height:100vh;padding:0 0 60px}
-a{color:var(--gold);text-decoration:none}
 
 .header{background:var(--navy-mid);padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.07)}
 .logo{font-size:22px;font-weight:900;letter-spacing:-1px}.logo b{color:var(--gold)}
 .logo small{display:block;font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;font-weight:400;margin-top:1px}
 
-.container{max-width:600px;margin:0 auto;padding:28px 16px}
+.container{max-width:600px;margin:0 auto;padding:28px 16px;text-align:center}
 h1{font-size:20px;font-weight:700;margin-bottom:6px}
-.sub{color:var(--mut);font-size:13px;margin-bottom:24px}
+.sub{color:var(--mut);font-size:13px;margin-bottom:28px}
 
-.card{background:#0f1f3d;border-radius:var(--r);padding:20px;margin-bottom:16px}
-.card-title{font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.card{background:#0f1f3d;border-radius:var(--r);padding:32px 20px}
 
-/* Sélecteur de date */
-.dates-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
-.dates-scroll::-webkit-scrollbar{display:none}
-.date-chip{flex-shrink:0;background:#162035;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 14px;text-align:center;cursor:pointer;transition:all .15s;min-width:62px}
-.date-chip:hover{border-color:var(--gold)}
-.date-chip.sel{background:var(--gold);border-color:var(--gold);color:#0a1628}
-.date-chip .d-day{font-size:10px;color:var(--mut);text-transform:uppercase}
-.date-chip.sel .d-day{color:#0a1628}
-.date-chip .d-num{font-size:18px;font-weight:700;line-height:1.1}
-.date-chip .d-mon{font-size:10px;color:var(--mut)}
-.date-chip.sel .d-mon{color:#0a1628}
-
-/* Créneaux */
-.slots-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.slot-btn{background:#162035;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;text-align:center;transition:all .15s}
-.slot-btn:hover{border-color:var(--gold);color:var(--gold)}
-.slot-btn.sel{background:var(--gold);color:#0a1628;border-color:var(--gold)}
 .no-slots{color:var(--mut);font-size:13px;text-align:center;padding:16px 0}
-
-/* Formulaire */
-.field{margin-bottom:14px}
-.field label{display:block;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
-.field input,.field textarea{width:100%;background:#162035;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:8px;padding:11px 13px;font-size:14px;font-family:var(--ff);outline:none;transition:border .15s}
-.field input:focus,.field textarea:focus{border-color:var(--gold)}
-.field textarea{resize:vertical;min-height:70px}
-.req{color:var(--gold)}
-
-.btn-confirm{width:100%;background:var(--gold);color:#0a1628;border:none;border-radius:10px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;transition:opacity .15s}
-.btn-confirm:hover{opacity:.9}
-.btn-confirm:disabled{opacity:.5;cursor:not-allowed}
-
-/* Confirmation */
-.confirm-box{text-align:center;padding:32px 20px}
-.confirm-icon{font-size:48px;margin-bottom:16px}
-.confirm-title{font-size:20px;font-weight:700;margin-bottom:8px}
-.confirm-sub{color:var(--mut);font-size:14px;margin-bottom:24px}
-.confirm-detail{background:#162035;border-radius:10px;padding:16px;text-align:left;margin-bottom:20px}
-.confirm-detail p{font-size:13px;color:var(--mut);margin-bottom:4px}
-.confirm-detail p strong{color:#fff}
-
-.btn-maps{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#0a1628;border:none;border-radius:10px;padding:13px 22px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;margin-bottom:10px}
-.btn-share{display:inline-flex;align-items:center;gap:8px;background:#162035;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:11px 20px;font-size:13px;cursor:pointer;text-decoration:none}
-
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e3a5f;color:#fff;border-radius:8px;padding:11px 20px;font-size:13px;transition:transform .3s;z-index:999}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.toast.ok{background:#065f46}
-.toast.err{background:#7f1d1d}
-
-.skeleton{background:rgba(255,255,255,.06);border-radius:8px;animation:pulse 1.2s infinite}
-@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
 </style>
 </head>
 <body>
@@ -90,230 +39,56 @@ h1{font-size:20px;font-weight:700;margin-bottom:6px}
 
 <div class="container">
 
-  <!-- Loading -->
-  <div id="state-loading">
-    <div class="card-title" style="margin-bottom:14px;color:var(--mut)">Chargement…</div>
-    <div class="skeleton" style="height:32px;margin-bottom:10px"></div>
-    <div class="skeleton" style="height:60px;margin-bottom:10px"></div>
-    <div class="skeleton" style="height:120px"></div>
-  </div>
-
-  <!-- Erreur token -->
   <div id="state-error" style="display:none;text-align:center;padding:60px 20px">
     <div style="font-size:40px;margin-bottom:16px">🔗</div>
     <h2 style="margin-bottom:8px">Lien invalide</h2>
     <p style="color:var(--mut);font-size:14px">Ce lien de réservation n'est pas valide ou a expiré.</p>
   </div>
 
-  <!-- Booking -->
   <div id="state-booking" style="display:none">
     <h1 id="commercial-name">Prendre rendez-vous</h1>
-    <p class="sub">Choisissez une date et un créneau disponible</p>
-
-    <!-- Sélecteur de date -->
+    <p class="sub">Choisissez un créneau disponible dans l'agenda ci-dessous</p>
     <div class="card">
-      <div class="card-title">📅 Choisir une date</div>
-      <div class="dates-scroll" id="dates-scroll"></div>
-    </div>
-
-    <!-- Créneaux -->
-    <div class="card" id="slots-card" style="display:none">
-      <div class="card-title">🕐 Choisir un créneau</div>
-      <div class="slots-grid" id="slots-grid"></div>
-    </div>
-
-    <!-- Formulaire -->
-    <div class="card" id="form-card" style="display:none">
-      <div class="card-title">📝 Vos coordonnées</div>
-      <div class="field"><label>Nom complet <span class="req">*</span></label><input id="f-nom" type="text" placeholder="Jean Dupont" autocomplete="name"></div>
-      <div class="field"><label>Entreprise</label><input id="f-ent" type="text" placeholder="Dupont SARL" autocomplete="organization"></div>
-      <div class="field"><label>Email <span class="req">*</span></label><input id="f-email" type="email" placeholder="jean@dupont.fr" autocomplete="email"></div>
-      <div class="field"><label>Téléphone</label><input id="f-tel" type="tel" placeholder="06 12 34 56 78" autocomplete="tel"></div>
-      <div class="field"><label>Adresse du RDV (pour l'itinéraire)</label><input id="f-adr" type="text" placeholder="12 rue de la Paix, 75001 Paris" autocomplete="street-address"></div>
-      <div class="field"><label>Message (optionnel)</label><textarea id="f-msg" placeholder="Précisez votre besoin…"></textarea></div>
-      <p style="font-size:11px;color:var(--mut);margin-bottom:14px">Vos données sont traitées par S@FE Safe Digitalisation pour la gestion du rendez-vous — Art. 13 RGPD.</p>
-      <button class="btn-confirm" id="btn-confirm" onclick="confirmBooking()">Confirmer le rendez-vous</button>
-    </div>
-  </div>
-
-  <!-- Confirmation -->
-  <div id="state-confirmed" style="display:none">
-    <div class="card confirm-box">
-      <div class="confirm-icon">✅</div>
-      <div class="confirm-title">Rendez-vous confirmé !</div>
-      <div class="confirm-sub">Votre conseiller S@FE a été notifié.<br>Un email de confirmation vous a été envoyé.</div>
-      <div class="confirm-detail" id="confirm-detail"></div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
-        <a id="btn-maps" class="btn-maps" style="display:none" target="_blank" rel="noopener">
-          🗺️ Voir l'itinéraire
-        </a>
-        <button class="btn-share" id="btn-share" style="display:none" onclick="shareItinerary()">
-          📤 Partager l'itinéraire
-        </button>
-      </div>
+      <div id="gcal-button-target"></div>
     </div>
   </div>
 
 </div>
 
-<div class="toast" id="toast"></div>
-
+<script src="https://calendar.google.com/calendar/scheduling-button-script.js" async></script>
 <script>
-const SB_URL = 'https://qdjmzietysukediqkebg.supabase.co';
-const MOIS   = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
-const JOURS  = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+// L'URL Google Calendar transite en clair dans le lien partagé : c'est
+// volontaire, une page de planification Google est prévue pour être
+// publique (c'est exactement ce que le commercial partage à ses prospects).
+// On valide simplement qu'il s'agit bien d'un lien de planification Google
+// avant de le charger, pour éviter d'ouvrir ce bouton vers un domaine tiers.
+const GOOGLE_BOOKING_URL_RE = /^https:\/\/calendar\.google\.com\/calendar\/appointments\/schedules\//;
 
-let token = null, slots = [], selectedDate = null, selectedHeure = null, mapsUrl = null;
+function init() {
+  const params = new URLSearchParams(location.search);
+  const gcalUrl = params.get('gcal');
+  const nom     = params.get('nom');
 
-function show(id) {
-  ['state-loading','state-error','state-booking','state-confirmed'].forEach(s => {
-    document.getElementById(s).style.display = s === id ? 'block' : 'none';
+  if (!gcalUrl || !GOOGLE_BOOKING_URL_RE.test(gcalUrl)) {
+    document.getElementById('state-error').style.display = 'block';
+    return;
+  }
+
+  if (nom) {
+    document.getElementById('commercial-name').textContent = `Rendez-vous avec ${nom}`;
+    document.title = `RDV — ${nom} — S@FE`;
+  }
+  document.getElementById('state-booking').style.display = 'block';
+
+  window.addEventListener('load', () => {
+    calendar.schedulingButton.load({
+      url: gcalUrl,
+      color: '#f59e0b',
+      label: 'Réserver un rendez-vous',
+      target: document.getElementById('gcal-button-target'),
+    });
   });
 }
-
-function toast(msg, type = 'info') {
-  const t = document.getElementById('toast'); clearTimeout(t._t);
-  t.textContent = msg; t.className = 'toast ' + type + ' show';
-  t._t = setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-async function init() {
-  const params = new URLSearchParams(location.search);
-  token = params.get('token');
-  if (!token) { show('state-error'); return; }
-
-  try {
-    const r = await fetch(`${SB_URL}/functions/v1/get-booking-slots?token=${token}&days=30`);
-    if (!r.ok) { show('state-error'); return; }
-    const data = await r.json();
-    if (data.error) { show('state-error'); return; }
-
-    document.getElementById('commercial-name').textContent =
-      `Rendez-vous avec ${data.commercial.prenom} ${data.commercial.nom}`;
-    document.title = `RDV — ${data.commercial.prenom} ${data.commercial.nom} — S@FE`;
-
-    slots = data.slots;
-    renderDates();
-    show('state-booking');
-  } catch { show('state-error'); }
-}
-
-function renderDates() {
-  const byDate = {};
-  slots.forEach(s => { (byDate[s.date] = byDate[s.date] || []).push(s.heure); });
-
-  const scroll = document.getElementById('dates-scroll');
-  const dates  = Object.keys(byDate).sort();
-
-  scroll.innerHTML = dates.map(iso => {
-    const d = new Date(iso + 'T12:00:00');
-    return `<div class="date-chip" data-date="${iso}" onclick="selectDate('${iso}')">
-      <div class="d-day">${JOURS[d.getDay()]}</div>
-      <div class="d-num">${d.getDate()}</div>
-      <div class="d-mon">${MOIS[d.getMonth()]}</div>
-    </div>`;
-  }).join('');
-
-  if (dates.length > 0) selectDate(dates[0]);
-}
-
-function selectDate(iso) {
-  selectedDate = iso; selectedHeure = null;
-  document.querySelectorAll('.date-chip').forEach(c => c.classList.toggle('sel', c.dataset.date === iso));
-
-  const daySlots = slots.filter(s => s.date === iso).map(s => s.heure);
-  const grid = document.getElementById('slots-grid');
-
-  if (!daySlots.length) {
-    grid.innerHTML = '<div class="no-slots">Aucun créneau disponible ce jour</div>';
-  } else {
-    grid.innerHTML = daySlots.map(h =>
-      `<button class="slot-btn" data-heure="${h}" onclick="selectSlot('${h}')">${h}</button>`
-    ).join('');
-  }
-
-  document.getElementById('slots-card').style.display = 'block';
-  document.getElementById('form-card').style.display = 'none';
-}
-
-function selectSlot(heure) {
-  selectedHeure = heure;
-  document.querySelectorAll('.slot-btn').forEach(b => b.classList.toggle('sel', b.dataset.heure === heure));
-  document.getElementById('form-card').style.display = 'block';
-  document.getElementById('form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-async function confirmBooking() {
-  const nom   = document.getElementById('f-nom').value.trim();
-  const email = document.getElementById('f-email').value.trim();
-  const ent   = document.getElementById('f-ent').value.trim();
-  const tel   = document.getElementById('f-tel').value.trim();
-  const adr   = document.getElementById('f-adr').value.trim();
-  const msg   = document.getElementById('f-msg').value.trim();
-
-  if (!nom || !email)    { toast('Nom et email obligatoires', 'err'); return; }
-  if (!selectedDate)     { toast('Choisissez une date', 'err'); return; }
-  if (!selectedHeure)    { toast('Choisissez un créneau', 'err'); return; }
-
-  const btn = document.getElementById('btn-confirm');
-  btn.disabled = true; btn.textContent = 'Confirmation…';
-
-  try {
-    const r = await fetch(`${SB_URL}/functions/v1/create-booking`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, date: selectedDate, heure: selectedHeure, nom, entreprise: ent, email, telephone: tel, message: msg, adresse: adr }),
-    });
-    const result = await r.json();
-
-    if (!r.ok) {
-      toast(result.error || 'Erreur, veuillez réessayer', 'err');
-      btn.disabled = false; btn.textContent = 'Confirmer le rendez-vous';
-      return;
-    }
-
-    mapsUrl = result.maps_url;
-    showConfirmation(nom, ent, email, tel, adr);
-  } catch {
-    toast('Erreur réseau, veuillez réessayer', 'err');
-    btn.disabled = false; btn.textContent = 'Confirmer le rendez-vous';
-  }
-}
-
-function showConfirmation(nom, ent, email, tel, adr) {
-  const dateLabel = new Date(selectedDate + 'T12:00:00').toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-
-  document.getElementById('confirm-detail').innerHTML = `
-    <p><strong>${nom}${ent ? ' — ' + ent : ''}</strong></p>
-    <p>📅 <strong>${capitalize(dateLabel)} à ${selectedHeure}</strong></p>
-    ${adr ? `<p>📍 <strong>${adr}</strong></p>` : ''}
-    <p style="margin-top:8px;font-size:12px">Un email de confirmation vous a été envoyé à <strong>${email}</strong>.</p>
-  `;
-
-  if (mapsUrl) {
-    const btnMaps  = document.getElementById('btn-maps');
-    const btnShare = document.getElementById('btn-share');
-    btnMaps.href = mapsUrl;
-    btnMaps.style.display = 'inline-flex';
-    if (navigator.share) btnShare.style.display = 'inline-flex';
-  }
-
-  show('state-confirmed');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-async function shareItinerary() {
-  if (!mapsUrl || !navigator.share) return;
-  try {
-    await navigator.share({
-      title: `Itinéraire RDV — S@FE`,
-      text: `Mon RDV S@FE le ${selectedDate} à ${selectedHeure}`,
-      url: mapsUrl,
-    });
-  } catch { /* annulé par l'utilisateur */ }
-}
-
-function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
 init();
 </script>

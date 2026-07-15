@@ -11,6 +11,7 @@ const JS_FILES = [
   'assets/pipeline.js',
   'assets/victimes17/victimes17.js',
   'assets/victimes17/victimes17-pdf.js',
+  'assets/agenda/agenda-ui.js',
   'assets/js/composants/gauge.js',
   'assets/js/composants/session-banner.js',
   'assets/js/composants/toast.js',

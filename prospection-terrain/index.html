@@ -2903,13 +2903,14 @@ async function _loadUserProfile() {
     const userId = payload.sub;
     if (!userId) return;
     const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=id,role,is_admin,prenom,nom,booking_token`,
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=id,role,is_admin,prenom,nom,google_booking_url`,
       { headers: { ...H, 'Authorization': 'Bearer ' + jwt } }
     );
     const data = await r.json();
     _userProfile = data?.[0] || null;
-    if (_userProfile?.booking_token) {
-      localStorage.setItem('pt_booking_token', _userProfile.booking_token);
+    if (_userProfile?.google_booking_url) {
+      localStorage.setItem('pt_google_booking_url', _userProfile.google_booking_url);
+      localStorage.setItem('pt_prenom', _userProfile.prenom || '');
     }
   } catch(e) { console.warn('[Profile]', e); }
 }
