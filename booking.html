@@ -2,13 +2,12 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https:; frame-src https://calendar.google.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https:;">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Prendre rendez-vous — S@FE</title>
 <meta name="robots" content="noindex,nofollow">
-<link href="https://calendar.google.com/calendar/scheduling-button-script.css" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -27,7 +26,8 @@ h1{font-size:20px;font-weight:700;margin-bottom:6px}
 
 .card{background:#0f1f3d;border-radius:var(--r);padding:32px 20px}
 
-.no-slots{color:var(--mut);font-size:13px;text-align:center;padding:16px 0}
+.btn-book{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:#0a1628;border:none;border-radius:10px;padding:16px 28px;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none}
+.btn-book:hover{opacity:.9}
 </style>
 </head>
 <body>
@@ -47,22 +47,21 @@ h1{font-size:20px;font-weight:700;margin-bottom:6px}
 
   <div id="state-booking" style="display:none">
     <h1 id="commercial-name">Prendre rendez-vous</h1>
-    <p class="sub">Choisissez un créneau disponible dans l'agenda ci-dessous</p>
+    <p class="sub">Vous allez être redirigé vers l'agenda Google de votre conseiller pour choisir un créneau.</p>
     <div class="card">
-      <div id="gcal-button-target"></div>
+      <a id="btn-book" class="btn-book" target="_blank" rel="noopener">📅 Réserver un rendez-vous</a>
     </div>
   </div>
 
 </div>
 
-<script src="https://calendar.google.com/calendar/scheduling-button-script.js" async></script>
 <script>
 // L'URL Google Calendar transite en clair dans le lien partagé : c'est
 // volontaire, une page de planification Google est prévue pour être
 // publique (c'est exactement ce que le commercial partage à ses prospects).
-// On valide simplement qu'il s'agit bien d'un lien de planification Google
-// avant de le charger, pour éviter d'ouvrir ce bouton vers un domaine tiers.
-const GOOGLE_BOOKING_URL_RE = /^https:\/\/calendar\.google\.com\/calendar\/appointments\/schedules\//;
+// On valide simplement qu'il s'agit bien d'un lien Google avant de l'ouvrir,
+// pour éviter que ce bouton ne pointe vers un domaine tiers.
+const GOOGLE_BOOKING_URL_RE = /^https:\/\/calendar\.google\.com\/calendar\/appointments\/schedules\/|^https:\/\/calendar\.app\.google\//;
 
 function init() {
   const params = new URLSearchParams(location.search);
@@ -78,16 +77,8 @@ function init() {
     document.getElementById('commercial-name').textContent = `Rendez-vous avec ${nom}`;
     document.title = `RDV — ${nom} — S@FE`;
   }
+  document.getElementById('btn-book').href = gcalUrl;
   document.getElementById('state-booking').style.display = 'block';
-
-  window.addEventListener('load', () => {
-    calendar.schedulingButton.load({
-      url: gcalUrl,
-      color: '#f59e0b',
-      label: 'Réserver un rendez-vous',
-      target: document.getElementById('gcal-button-target'),
-    });
-  });
 }
 
 init();

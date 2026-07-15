@@ -302,7 +302,9 @@ async function copyIcalUrl() {
 // Google), et on la relaie telle quelle dans le lien de réservation partagé
 // — cette URL est prévue pour être publique, aucun token/backend requis.
 
-const GOOGLE_BOOKING_URL_RE = /^https:\/\/calendar\.google\.com\/calendar\/appointments\/schedules\//;
+// Deux formats valides : l'URL longue de la page de planification, ou le
+// lien court officiel généré par le bouton "Copier le lien" de Google.
+const GOOGLE_BOOKING_URL_RE = /^https:\/\/calendar\.google\.com\/calendar\/appointments\/schedules\/|^https:\/\/calendar\.app\.google\//;
 
 function _extractGoogleBookingUrl(raw) {
   const value = (raw || '').trim();
@@ -351,7 +353,7 @@ async function saveGoogleBookingUrl() {
   const raw = $('#agenda-gcal-input').value;
   const url = _extractGoogleBookingUrl(raw);
   if (!url) {
-    errorEl.textContent = "Lien Google Calendar invalide. Collez l'URL commençant par https://calendar.google.com/calendar/appointments/schedules/… (ou le snippet d'intégration fourni par Google).";
+    errorEl.textContent = "Lien Google Calendar invalide. Collez le lien de votre planning de rendez-vous : soit le lien court (https://calendar.app.google/…), soit l'URL longue (https://calendar.google.com/calendar/appointments/schedules/…), soit le snippet d'intégration fourni par Google.";
     errorEl.classList.remove('is-hidden');
     return;
   }
