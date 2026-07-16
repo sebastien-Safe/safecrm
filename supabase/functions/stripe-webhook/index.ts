@@ -293,22 +293,6 @@ serve(async (req) => {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
 
-    // Dossier victime 17Cyber : paiement reçu → avance le pipeline + journal RGPD
-    const victimLeadId = session.metadata?.cybervictim_lead_id;
-    if (victimLeadId) {
-      await sb.from("cybervictim_leads")
-        .update({ pipeline_stage: "paiement_recu" })
-        .eq("id", victimLeadId);
-      await sb.from("audit_logs").insert({
-        user_id: null,
-        action: "victim_paiement_confirme",
-        entity_type: "cybervictim_lead",
-        entity_id: victimLeadId,
-        module: "Victimes17Cyber",
-        details: { session_id: session.id, amount_total: session.amount_total, installments: true },
-      });
-    }
-
     const contractId = session.metadata?.contract_id;
     if (contractId) {
       const update: Record<string, unknown> = { statut: "Contrat en cours" };

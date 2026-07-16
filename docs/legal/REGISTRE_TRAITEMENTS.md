@@ -7,7 +7,7 @@
 **Dernière mise à jour:** 2026-07-09
 **Certification cible:** Art. 42 RGPD / CNIL
 
-> Ce registre est la source unique de vérité pour les traitements de S@FE. Le tableau affiché dans la CRM (Administration → Registre RGPD → Registre des traitements) reprend exactement les mêmes 11 traitements, avec un sous-ensemble opérationnel des colonnes (finalité, base légale, catégories de données, destinataires, durée de conservation, mesures de sécurité) ; les colonnes légales complètes (sous-traitants, transferts tiers, droits concernés, chiffrement) ne sont détaillées que dans ce document.
+> Ce registre est la source unique de vérité pour les traitements de S@FE. Le tableau affiché dans la CRM (Administration → Registre RGPD → Registre des traitements) reprend exactement les mêmes 10 traitements, avec un sous-ensemble opérationnel des colonnes (finalité, base légale, catégories de données, destinataires, durée de conservation, mesures de sécurité) ; les colonnes légales complètes (sous-traitants, transferts tiers, droits concernés, chiffrement) ne sont détaillées que dans ce document.
 
 ---
 
@@ -191,24 +191,6 @@
 
 ---
 
-## T11 : GESTION DES DOSSIERS VICTIMES 17CYBER
-
-| Propriété | Valeur |
-|---|---|
-| **Nom du traitement** | Gestion des dossiers victimes 17Cyber |
-| **Finalité légale** | Prise en charge et suivi des victimes d'incidents de cybersécurité orientées via 17Cyber / cybermalveillance.gouv.fr — établissement de devis et production de rapports d'intervention |
-| **Base légale** | Art. 6(1)b RGPD (exécution d'un contrat) |
-| **Données personnelles** | État civil (nom, prénom), coordonnées (e-mail, téléphone), nature de l'incident cyber, numéro de ticket 17Cyber, notes d'intervention, système d'exploitation de la victime (Windows/Mac/iOS/Android), arbre de tâches d'intervention (actions réalisées et horodatées, références de preuves) |
-| **Catégories rétention** | Données victime : 5 ans après clôture du dossier — Documents (devis, rapports) : 10 ans après clôture — Logs journal RGPD liés : 1 an glissant |
-| **Destinataires** | Collaborateurs S@FE SASU habilités (accès authentifié SafeCRM) |
-| **Sous-traitants** | Supabase (Francfort, Allemagne — hébergement base de données CRM), Stripe (paiement, PCI-DSS — aucune donnée carte stockée par S@FE) |
-| **Transferts tiers** | Aucun (données restent UE) |
-| **Droits concernés** | Accès, rectification, effacement (anonymisation automatique à 5 ans), portabilité, limitation, opposition — à exercer auprès du DPO (dpo@safe-digitalisation.fr) |
-| **Sécurité** | Authentification obligatoire, RLS Supabase (accès réservé aux utilisateurs authentifiés), purge automatique programmée (Edge Function `purge-cybervictim-data`, cron quotidien 2h UTC) |
-| **Chiffrement** | TLS transit, repos via Supabase (AES-256) |
-
----
-
 ## SIGNATURE ET APPROBATION
 
 **Date :** 2026-07-04
@@ -216,3 +198,5 @@
 **Signataire (Responsable légal) :** Sébastien Alonso
 
 Ce registre doit être révisé annuellement ou en cas de modification des traitements. Cette révision fusionne les deux versions précédemment divergentes du registre (document signé vs. écran in-app) en un seul jeu de 10 traitements et ajoute T10 suite à la mise en place de la collecte de prospects via les sites vitrines.
+
+**Révision du 2026-07-16 :** retrait du traitement T11 (Gestion des dossiers victimes 17Cyber), suite à l'arrêt du module « Particuliers 17Cyber » dans SafeCRM. Les dossiers actifs ont été soit migrés vers le module dédié CyberDesk (cyberdesk.safe-digitalisation.fr), qui tient désormais son propre registre pour ce traitement, soit supprimés lorsqu'il s'agissait de données de test — migration et suppressions tracées dans le journal RGPD (module Victimes17Cyber). Le registre passe de 11 à 10 traitements (T1 à T10).

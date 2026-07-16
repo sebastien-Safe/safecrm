@@ -40,52 +40,6 @@ serve(async (req) => {
     return json({ error: "bad_json" }, 400);
   }
 
-  // ── Dossier victime 17Cyber : paiement ponctuel TTC, avec option 3x sans frais ──
-  if (body.cybervictim_lead_id) {
-    const { data: lead, error: eLead } = await sb
-      .from("cybervictim_leads")
-      .select("id, first_name, last_name, product_id, cybervictim_products(alert_type, price_ttc)")
-      .eq("id", body.cybervictim_lead_id)
-      .single();
-    if (eLead || !lead) return json({ error: "not_found" }, 404);
-
-    const product = lead.cybervictim_products;
-    const priceTtc = Number(product?.price_ttc || 0);
-    if (!priceTtc) return json({ error: "no_price" }, 400);
-
-    const okV = "https://crm.safe-digitalisation.fr/?v=victimes17&payment=success&lead=" + lead.id;
-    const koV = "https://crm.safe-digitalisation.fr/?v=victimes17&payment=cancel&lead=" + lead.id;
-
-    try {
-      const ss = await stripe.checkout.sessions.create({
-        mode: "payment",
-        payment_method_types: ["card"],
-        payment_method_options: {
-          card: { installments: { enabled: true } } // paiement en plusieurs fois (dont 3x) si la carte du client est éligible
-        },
-        line_items: [
-          {
-            price_data: {
-              currency: "eur",
-              product_data: { name: `${product.alert_type} — Intervention S@FE 17Cyber (${lead.first_name} ${lead.last_name})` },
-              unit_amount: Math.round(priceTtc * 100)
-            },
-            quantity: 1
-          }
-        ],
-        success_url: okV,
-        cancel_url: koV,
-        metadata: { cybervictim_lead_id: lead.id }
-      });
-      return json({ url: ss.url });
-    } catch (e: any) {
-      return json(
-        { error: "stripe_error", details: e.message },
-        502
-      );
-    }
-  }
-
   const cid = body.contract_id;
   if (!cid) return json({ error: "no_id" }, 400);
 

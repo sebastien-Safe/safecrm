@@ -437,7 +437,6 @@ function switchView(view) {
   if (view === 'resultats') renderResultats();
   if (view === 'agenda') renderAgenda();
   if (view === 'pipeline' && typeof loadPipeline === 'function') loadPipeline();
-  if (view === 'victimes17' && typeof initVictimes17 === 'function') initVictimes17();
   if (view === 'journal') loadJournalView();
 }
 
@@ -2781,15 +2780,6 @@ const REGISTRE_RGPD = [
     destinataires: "Commerciaux S@FE habilités",
     duree: "3 ans après dernier contact (identique aux autres prospects)",
     securite: "Edge Function dédiée (liste blanche CORS, honeypot anti-spam), aucune clé exposée côté client"
-  },
-  {
-    traitement: 'Gestion des dossiers victimes 17Cyber',
-    finalite: "Prise en charge et suivi des victimes d'incidents de cybersécurité orientées via 17Cyber / cybermalveillance.gouv.fr — établissement de devis et production de rapports d'intervention",
-    base: "Exécution d'un contrat (art. 6.1.b RGPD)",
-    categories: "État civil (nom, prénom), coordonnées (e-mail, téléphone), nature de l'incident cyber, numéro de ticket 17Cyber, notes d'intervention",
-    destinataires: "Collaborateurs S@FE SASU habilités (accès authentifié SafeCRM)",
-    duree: "Données victime : 5 ans après clôture du dossier — Documents (devis, rapports) : 10 ans après clôture",
-    securite: "RLS Supabase, TLS 1.2+, purge automatique programmée (Edge Function quotidienne)"
   },
 ];
 
