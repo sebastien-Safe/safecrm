@@ -2521,9 +2521,8 @@ function _cibleRenderResults(){
       : '';
     const siret  = r.siege?.siret || null;
     const dejaCible = siret && _etabCiblesSet.sirene.has(siret);
-    const btnHtml = dejaCible
-      ? `<span class="cible-already">✓ Déjà ajouté</span>`
-      : `<button class="cible-add" id="cible-btn-${i}" onclick="_cibleAddResult(${i},this)">+ Tournée</button>`;
+    const dejaBdg = dejaCible ? `<span class="cible-already" style="margin-left:6px">🕓 Déjà ciblé</span>` : '';
+    const btnHtml = `<button class="cible-add" id="cible-btn-${i}" onclick="_cibleAddResult(${i},this)">+ Tournée</button>`;
     const dirigeant = _dirigeantLabel(r.dirigeants);
     const ca        = _caLabel(r.finances);
     const effectif  = _effectifLabel(r.tranche_effectif_salarie || r.siege?.tranche_effectif_salarie);
@@ -2537,7 +2536,7 @@ function _cibleRenderResults(){
       : '';
     return `<div class="cible-result">
       <div class="cible-result-body">
-        <div class="cible-nom">${escHtml(nom)}</div>
+        <div class="cible-nom">${escHtml(nom)}${dejaBdg}</div>
         <div class="cible-addr">${escHtml(addr)}</div>
         <div class="cible-meta">${escHtml(naf)}${dist ? ' · 📍 ' + dist : ''}</div>
         ${infosPro ? `<div class="cible-meta cible-meta-pro">${escHtml(infosPro)}</div>` : ''}
@@ -3015,10 +3014,8 @@ function _placesRenderItem(p, i) {
   const closed    = p.status === 'CLOSED_TEMPORARILY' ? '<span class="places-closed">Fermé temporairement</span>' : '';
   const stars     = p.rating ? `⭐ ${p.rating} (${p.ratings_total} avis)` : p.ratings_total === 0 ? '0 avis — sans présence' : '';
   const noHours   = !p.has_hours ? '<span style="font-size:.63rem;color:var(--mut-2)">Pas d\'horaires Google</span>' : '';
-  const dejaBdg   = dejaCible ? `<span class="cible-already" style="margin-left:6px">✓ Déjà ajouté</span>` : '';
-  const btnHtml   = dejaCible
-    ? `<span class="cible-already">✓ Déjà ajouté</span>`
-    : `<button class="cible-add${isSel?' done':''}" id="places-btn-${i}" onclick="_placesAddResult(${i},this)">${isSel?'✓ Ajouté':'+ Tournée'}</button>`;
+  const dejaBdg   = dejaCible ? `<span class="cible-already" style="margin-left:6px">🕓 Déjà ciblé</span>` : '';
+  const btnHtml   = `<button class="cible-add${isSel?' done':''}" id="places-btn-${i}" onclick="_placesAddResult(${i},this)">${isSel?'✓ Ajouté':'+ Tournée'}</button>`;
   return `<div class="cible-result" id="places-item-${i}">
     <div class="cible-result-body">
       <div class="cible-nom">${escHtml(p.name||'—')}${dejaBdg}</div>
