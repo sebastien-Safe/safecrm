@@ -1,7 +1,7 @@
 // S@FE CRM — Service Worker PWA
 // Version cache — incrémenter pour forcer la mise à jour
-const CACHE_VERSION = 'safe-crm-v11';
-const CACHE_STATIC  = 'safe-crm-static-v11';
+const CACHE_VERSION = 'safe-crm-v12';
+const CACHE_STATIC  = 'safe-crm-static-v12';
 
 // Assets à mettre en cache (shell applicatif)
 const STATIC_ASSETS = [
