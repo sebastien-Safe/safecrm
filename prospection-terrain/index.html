@@ -422,6 +422,7 @@ select option{background:var(--navy-mid)}
         <div class="sidebar-label">Prospection</div>
         <button class="sidebar-item" id="nav-ciblage" onclick="showView('ciblage')"><span class="ico">🎯</span> Choisir mes prospects</button>
         <button class="sidebar-item" onclick="openTourneeModal()"><span class="ico">🗺️</span> Lancer l'itinéraire</button>
+        <button class="sidebar-item" onclick="exporterProspectsXLS()"><span class="ico">📊</span> Exporter (XLS)</button>
         <a class="sidebar-item" href="/prospection-terrain/audit.html"><span class="ico">🔍</span> Faire un audit gratuit</a>
       </div>
       <hr class="sidebar-divider">
@@ -1018,6 +1019,7 @@ select option{background:var(--navy-mid)}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha384-NElt3Op+9NBMCYaef5HxeJmU4Xeard/Lku8ek6hoPTvYkQPh3zLIrJP7KiRocsxO" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
 <script>
 /* ============================================================
    CONFIG SUPABASE
@@ -2789,7 +2791,11 @@ function _placesSetStep(n) {
     const s = document.getElementById('pstep-' + i);
     if (s) s.classList.toggle('active', i === n);
     const dot = document.getElementById('pdot-' + i);
-    if (dot) { dot.classList.remove('active','done'); dot.classList.add(i === n ? 'active' : i < n ? 'done' : ''); }
+    if (dot) {
+      dot.classList.remove('active', 'done');
+      const dotState = i === n ? 'active' : i < n ? 'done' : '';
+      if (dotState) dot.classList.add(dotState);
+    }
     const line = document.getElementById('pline-' + i);
     if (line) line.classList.toggle('done', i < n);
   }
@@ -3154,6 +3160,57 @@ function _placesRemoveFromTournee(idx, cb) {
     _placesTargets.splice(idx, 1);
     _placesUpdateHint();
     _tourneeBuildList('');
+  }
+}
+
+/* ============================================================
+   EXPORT XLS — Siren / CA / Effectif / Domaine / Email courtier
+   ============================================================ */
+async function exporterProspectsXLS() {
+  const targets = [..._sireneTargets, ..._placesTargets];
+  if (!targets.length) {
+    showToast('Ajoutez au moins un établissement à la tournée avant d\'exporter', 'err');
+    return;
+  }
+
+  const jwt = _getJWT();
+  if (!jwt) { showToast('Connectez-vous au CRM pour exporter', 'err'); return; }
+
+  showToast(`Enrichissement de ${targets.length} établissement(s) en cours…`, 'info');
+
+  try {
+    const payload = targets.map(t => ({
+      source: t.source === 'sirene' ? 'sirene' : 'google_places',
+      label:  t.label,
+      adresse: t.adresse || '',
+      siret:  t.siret || null,
+      lat:    t.lat ?? null,
+      lng:    t.lng ?? null,
+    }));
+
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/entreprise-enrichissement`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+      body: JSON.stringify({ targets: payload }),
+    });
+    const data = await r.json();
+    if (!r.ok || data.error) throw new Error(data.error || 'Erreur serveur');
+
+    const rows = data.rows || [];
+    const sheetData = [
+      ['Siren', 'Chiffre d\'affaire', 'Effectif', 'Nom de domaine', 'Email courtier'],
+      ...rows.map(row => [row.siren, row.chiffre_affaires, row.effectif, row.nom_domaine, row.email_courtier]),
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Prospection');
+    const date = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `prospection-${date}.xlsx`);
+
+    showToast(`Export généré · ${rows.length} établissement(s)`, 'ok');
+  } catch (e) {
+    showToast('⚠️ ' + e.message, 'err');
   }
 }
 
