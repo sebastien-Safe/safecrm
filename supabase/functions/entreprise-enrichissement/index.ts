@@ -228,7 +228,9 @@ Deno.serve(async (req) => {
           googleCseSearch(CSE_KEY, CSE_CX, `"${denomination}" chiffre d'affaires ${commune}`),
           googleCseSearch(CSE_KEY, CSE_CX, `"${denomination}" ${commune} site internet officiel`),
         ]);
+        console.log(`[DEBUG ${denomination}] caResults=${caResults.length} domResults=${domResults.length}`, JSON.stringify({ caResults, domResults }));
         const ia = await askClaude(CLAUDE_KEY, denomination, commune, sireneCA, trancheLabel, caResults, domResults);
+        console.log(`[DEBUG ${denomination}] ia=`, JSON.stringify(ia));
         chiffreAffaires = ia.chiffre_affaires || chiffreAffaires;
         effectifReel    = ia.effectif_reel || null;
         nomDomaine      = ia.nom_domaine || null;
