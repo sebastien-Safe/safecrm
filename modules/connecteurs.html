@@ -49,118 +49,46 @@ h1,h2,h3{font-family:var(--ff-disp);color:#fff;letter-spacing:-.02em}
 .filter-tab.active{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:var(--gold)}
 
 /* GRID */
-.conn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.conn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
 
 /* CARD */
 .conn-card{background:rgba(20,34,64,.7);border:1px solid var(--line);border-radius:var(--r);
-  padding:18px 20px;transition:.18s;position:relative}
-.conn-card:hover{border-color:rgba(255,255,255,.15);transform:translateY(-1px);background:rgba(20,34,64,.9)}
+  padding:16px 18px;transition:.18s}
+.conn-card:hover{border-color:rgba(255,255,255,.15);background:rgba(20,34,64,.9)}
 .conn-card.actif{border-color:rgba(34,197,94,.25);background:rgba(34,197,94,.04)}
-.conn-card-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
-.conn-ico{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;
-  font-size:1.3rem;flex-shrink:0;background:rgba(255,255,255,.06);border:1px solid var(--line)}
-.conn-name{font-weight:700;font-size:.9rem;color:#fff;margin-bottom:2px}
-.conn-cat{font-family:var(--ff-mono);font-size:.66rem;color:var(--mut);letter-spacing:.06em;text-transform:uppercase}
-.conn-desc{font-size:.77rem;color:var(--mut);line-height:1.5;margin-top:8px;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.conn-footer{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.conn-status{display:inline-flex;align-items:center;gap:5px;font-family:var(--ff-mono);
-  font-size:.68rem;padding:3px 9px;border-radius:20px;font-weight:600}
-.st-non_configure{background:rgba(148,163,184,.1);color:var(--mut)}
-.st-configure{background:rgba(245,158,11,.12);color:var(--warn)}
-.st-actif{background:rgba(34,197,94,.12);color:var(--ok)}
-.st-simule{background:rgba(139,92,246,.15);color:#a78bfa;border:1px solid rgba(139,92,246,.3)}
-.st-desactive{background:rgba(255,77,94,.1);color:var(--alert)}
-/* simulation banner */
-#sim-banner{display:none;position:sticky;top:0;z-index:99;text-align:center;font-family:var(--ff-mono);
-  font-size:.74rem;font-weight:700;padding:6px 16px;
-  background:rgba(139,92,246,.15);border-bottom:1px solid rgba(139,92,246,.3);color:#a78bfa;
-  letter-spacing:.04em;}
-.conn-card.simule{border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.04)}
-.conn-modules{font-family:var(--ff-mono);font-size:.62rem;color:var(--mut)}
-.conn-actions{position:absolute;top:12px;right:12px;display:flex;gap:4px;opacity:0;transition:.15s}
-.conn-card:hover .conn-actions{opacity:1}
-.icon-btn{background:rgba(255,255,255,.07);border:1px solid var(--line);color:var(--mut);
-  border-radius:6px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;font-size:.75rem;transition:.15s}
-.icon-btn:hover{color:#fff;border-color:rgba(255,255,255,.25)}
-.icon-btn.danger:hover{color:var(--alert);border-color:rgba(255,77,94,.4)}
+.conn-card-top{display:flex;align-items:flex-start;gap:12px}
+.conn-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;flex-shrink:0;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.conn-name{font-weight:700;font-size:.87rem;color:#fff;margin-bottom:2px}
+.conn-cat{font-family:var(--ff-mono);font-size:.64rem;color:var(--mut);letter-spacing:.06em;text-transform:uppercase}
+.help-btn{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--mut);
+  border-radius:50%;width:24px;height:24px;flex-shrink:0;cursor:pointer;font-size:.7rem;
+  display:flex;align-items:center;justify-content:center;transition:.15s}
+.help-btn:hover{color:#fff;border-color:rgba(255,255,255,.25)}
 
-/* MODAL */
+/* SWITCH */
+.switch{display:flex;align-items:center;gap:9px;margin-top:14px;cursor:pointer;user-select:none}
+.switch input{display:none}
+.slider{width:36px;height:20px;border-radius:20px;background:rgba(255,255,255,.14);
+  position:relative;transition:.2s;flex-shrink:0}
+.slider::before{content:"";position:absolute;width:14px;height:14px;border-radius:50%;
+  background:#fff;top:3px;left:3px;transition:.2s}
+.switch input:checked + .slider{background:var(--ok)}
+.switch input:checked + .slider::before{transform:translateX(16px)}
+.switch-label{font-family:var(--ff-mono);font-size:.72rem;color:var(--mut)}
+
+/* MODAL (aide) */
 .modal-overlay{display:none;position:fixed;inset:0;z-index:200;
   background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal-box{background:var(--navy-mid);border:1px solid var(--line);border-radius:20px;
-  width:min(580px,96vw);max-height:92vh;overflow-y:auto;position:relative}
+  width:min(440px,94vw);max-height:92vh;overflow-y:auto}
 .modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0}
 .modal-title{font-family:var(--ff-disp);font-size:1rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:10px}
 .modal-close{background:none;border:none;color:var(--mut);font-size:1.2rem;cursor:pointer;
   padding:4px 8px;border-radius:6px;transition:.15s}
 .modal-close:hover{color:#fff;background:rgba(255,255,255,.08)}
-.modal-body{padding:18px 24px}
-.modal-foot{display:flex;gap:8px;justify-content:flex-end;padding:14px 24px;border-top:1px solid var(--line)}
-
-/* TABS MODAL */
-.modal-tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--line);padding-bottom:0}
-.modal-tab{font-family:var(--ff-mono);font-size:.72rem;padding:7px 14px;border:none;
-  background:transparent;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;
-  margin-bottom:-1px;transition:.15s}
-.modal-tab:hover{color:#fff}
-.modal-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
-.tab-panel{display:none}
-.tab-panel.active{display:block}
-
-/* FORM */
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.form-group{margin-bottom:14px}
-.form-label{font-family:var(--ff-mono);font-size:.7rem;color:var(--mut);
-  text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px}
-.form-input,.form-select,.form-textarea{width:100%;background:rgba(255,255,255,.04);
-  border:1px solid var(--line);border-radius:var(--r-sm);color:#fff;
-  font-family:var(--ff-body);font-size:.84rem;padding:8px 12px;outline:none;transition:.15s}
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);background:rgba(59,130,246,.05)}
-.form-select option{background:var(--navy-mid)}
-.form-textarea{resize:vertical;min-height:70px;line-height:1.5}
-.form-mono{font-family:var(--ff-mono) !important;font-size:.8rem !important}
-.checkbox-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
-.checkbox-row input[type=checkbox]{margin-top:2px;accent-color:var(--gold);width:15px;height:15px;flex-shrink:0}
-.checkbox-row label{font-size:.8rem;color:var(--mut-2);line-height:1.45;cursor:pointer}
-
-/* SECURITY BLOCK */
-.security-block{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);
-  border-radius:var(--r-sm);padding:12px 14px;margin-bottom:16px}
-.security-block-title{font-family:var(--ff-mono);font-size:.68rem;font-weight:700;
-  color:var(--gold);letter-spacing:.08em;margin-bottom:5px}
-.security-block p{font-size:.77rem;color:var(--mut-2);line-height:1.5}
-
-/* DETAIL GRID */
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-.detail-item{background:rgba(255,255,255,.03);border:1px solid var(--line);
-  border-radius:var(--r-sm);padding:10px 12px}
-.detail-label{font-family:var(--ff-mono);font-size:.64rem;color:var(--mut);
-  text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
-.detail-val{font-size:.8rem;color:var(--mut-2);line-height:1.4}
-
-/* LOG */
-.log-item{display:flex;align-items:baseline;gap:8px;padding:6px 0;
-  border-bottom:1px solid rgba(255,255,255,.04);font-size:.76rem}
-.log-item:last-child{border-bottom:none}
-.log-date{font-family:var(--ff-mono);color:var(--mut);white-space:nowrap;flex-shrink:0}
-
-/* BOUTONS */
-.btn{font-family:var(--ff-disp);font-weight:700;font-size:.83rem;padding:8px 18px;
-  border-radius:10px;cursor:pointer;border:1px solid transparent;transition:.15s;
-  display:inline-flex;align-items:center;gap:6px}
-.btn-pri{background:linear-gradient(135deg,var(--accent-2),#1d4ed8);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.3)}
-.btn-pri:hover{transform:translateY(-1px)}
-.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#0a1628}
-.btn-gold:hover{transform:translateY(-1px)}
-.btn-ghost{background:transparent;color:var(--mut);border-color:var(--line)}
-.btn-ghost:hover{color:#fff;border-color:rgba(255,255,255,.2)}
-.btn-danger{background:rgba(255,77,94,.1);color:var(--alert);border-color:rgba(255,77,94,.3)}
-.btn-danger:hover{background:rgba(255,77,94,.2)}
-.btn-sm{padding:5px 12px;font-size:.74rem;border-radius:8px}
-.btn:disabled{opacity:.4;cursor:not-allowed;transform:none !important}
+.modal-body{padding:18px 24px 22px}
 
 /* TOAST */
 #toast{position:fixed;bottom:24px;right:24px;z-index:500;font-family:var(--ff-mono);
@@ -172,128 +100,20 @@ h1,h2,h3{font-family:var(--ff-disp);color:#fff;letter-spacing:-.02em}
 
 .empty{text-align:center;padding:60px 20px;color:var(--mut)}
 .empty .ico{font-size:2.5rem;margin-bottom:10px}
-@media(max-width:600px){.form-row{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div id="sim-banner">⚡ MODE SIMULATION ACTIF — Aucun appel réel ne sera effectué</div>
 <div id="toast"></div>
 
-<!-- MODAL -->
-<div class="modal-overlay" id="conn-modal" onclick="if(event.target===this)closeModal()">
+<!-- MODAL AIDE -->
+<div class="modal-overlay" id="help-modal" onclick="if(event.target===this)closeHelp()">
   <div class="modal-box">
     <div class="modal-head">
-      <div class="modal-title"><span id="m-ico">🔌</span><span id="m-title">Connecteur</span></div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-title"><span id="h-ico">🔌</span><span id="h-title">Connecteur</span></div>
+      <button class="modal-close" onclick="closeHelp()">✕</button>
     </div>
     <div class="modal-body">
-      <div id="m-status-row" style="margin-bottom:14px"></div>
-
-      <div class="modal-tabs" id="m-tabs">
-        <button class="modal-tab active" onclick="switchTab('fiche',this)">Fiche</button>
-        <button class="modal-tab" onclick="switchTab('activer',this)">Activer / Clé</button>
-        <button class="modal-tab" onclick="switchTab('modifier',this)">Modifier</button>
-        <button class="modal-tab" onclick="switchTab('historique',this)">Historique</button>
-      </div>
-
-      <!-- Onglet fiche -->
-      <div class="tab-panel active" id="tab-fiche">
-        <div class="detail-grid" id="m-detail-grid"></div>
-        <div class="security-block">
-          <div class="security-block-title">🔒 RÈGLE DE SÉCURITÉ S@FE</div>
-          <p id="m-security-text">Avant toute activation, lisez et acceptez les informations de la fiche.</p>
-        </div>
-      </div>
-
-      <!-- Onglet activer -->
-      <div class="tab-panel" id="tab-activer">
-        <div class="form-group">
-          <label class="form-label">Clé API / Token</label>
-          <input class="form-input form-mono" id="m-apikey" type="password"
-            placeholder="Coller la clé ici — ne sera jamais affichée en clair">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Notes (optionnel)</label>
-          <input class="form-input" id="m-notes" type="text"
-            placeholder="Ex : compte de test, expire le…">
-        </div>
-        <div class="checkbox-row">
-          <input type="checkbox" id="m-consent">
-          <label for="m-consent">
-            Je confirme avoir lu la fiche de ce connecteur, compris les données échangées
-            et les coûts éventuels, et j'autorise son activation en tant qu'administrateur S@FE.
-          </label>
-        </div>
-        <div id="m-activer-actions" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-      </div>
-
-      <!-- Onglet modifier -->
-      <div class="tab-panel" id="tab-modifier">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Icône</label>
-            <input class="form-input" id="e-ico" placeholder="🔌" maxlength="4">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Catégorie</label>
-            <select class="form-select" id="e-cat">
-              <option value="ia">🤖 IA</option>
-              <option value="paiement">💳 Paiement</option>
-              <option value="seo">🔍 SEO</option>
-              <option value="social">📣 Social</option>
-              <option value="compta">📊 Compta</option>
-              <option value="notif">🔔 Notifications</option>
-              <option value="signature">✍️ Signature</option>
-              <option value="autre">🔌 Autre</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Nom du service *</label>
-            <input class="form-input" id="e-label" placeholder="Ex : Stripe">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Clé interne (service_key) *</label>
-            <input class="form-input form-mono" id="e-key" placeholder="ex: stripe" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'')">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Usage dans S@FE</label>
-          <input class="form-input" id="e-usage" placeholder="Description courte de l'utilité">
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Coût</label>
-            <input class="form-input" id="e-cout" placeholder="Ex : Gratuit / 25€/mois">
-          </div>
-          <div class="form-group">
-            <label class="form-label">URL Documentation</label>
-            <input class="form-input form-mono" id="e-doc" type="url" placeholder="https://…">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Données échangées</label>
-          <textarea class="form-textarea" id="e-donnees" placeholder="Quelles données sont envoyées à ce service ?"></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Limites / contraintes</label>
-          <textarea class="form-textarea" id="e-limite" placeholder="Quotas, conditions, prérequis…"></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Modules concernés (séparés par des virgules)</label>
-          <input class="form-input" id="e-modules" placeholder="Ex : DPO Assistant, SEO, Contrats">
-        </div>
-        <div style="display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap">
-          <button class="btn btn-danger btn-sm" id="e-delete-btn" onclick="deleteConnecteur()">🗑 Supprimer</button>
-          <button class="btn btn-pri" onclick="saveEdit()">Enregistrer les modifications</button>
-        </div>
-      </div>
-
-      <!-- Onglet historique -->
-      <div class="tab-panel" id="tab-historique">
-        <div id="m-logs"><p style="color:var(--mut);font-size:.82rem">Aucun historique.</p></div>
-      </div>
+      <p id="h-text" style="font-size:.85rem;line-height:1.65;color:var(--mut-2)"></p>
     </div>
   </div>
 </div>
@@ -307,7 +127,6 @@ h1,h2,h3{font-family:var(--ff-disp);color:#fff;letter-spacing:-.02em}
   </div>
   <div class="topbar-right">
     <span id="topbar-stats" style="font-family:var(--ff-mono);font-size:.74rem;color:var(--mut)"></span>
-    <button class="btn btn-gold btn-sm" onclick="newConnecteur()">+ Nouveau</button>
   </div>
 </header>
 
@@ -315,8 +134,8 @@ h1,h2,h3{font-family:var(--ff-disp);color:#fff;letter-spacing:-.02em}
   <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);
     border-radius:var(--r-sm);padding:10px 14px;margin-bottom:22px;
     font-size:.78rem;color:var(--mut-2);font-family:var(--ff-mono)">
-    ⚠️ Aucun service n'est activé par défaut. Chaque activation nécessite une confirmation explicite.
-    Les clés API ne sont jamais stockées en clair.
+    ⚠️ L'interrupteur autorise ou bloque les appels de SafeCRM vers ce service.
+    Les clés API se configurent dans Supabase (voir ❓ sur chaque carte), jamais ici.
   </div>
 
   <div class="filter-row">
@@ -346,16 +165,26 @@ const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let allRows = [];
 let currentCat = 'all';
-let currentKey = null;
 
-const ST_LABELS = {
-  non_configure:'⚫ Non configuré', configure:'🟡 Configuré',
-  actif:'🟢 Actif', simule:'⚡ Simulation', desactive:'🔴 Désactivé'
-};
 const CAT_LABELS = {
   ia:'IA', paiement:'Paiement', seo:'SEO', social:'Social',
   compta:'Compta', notif:'Notifications', signature:'Signature', autre:'Autre'
 };
+
+// Procédure de rotation de clé par connecteur — cf. code des edge functions.
+const HELP_TEXT = {
+  google_places: "Google Places API + Places API (New) : une seule clé. À définir dans Supabase → Edge Functions → Secrets, sous le nom GOOGLE_PLACES_API_KEY.",
+  pagespeed:     "PageSpeed Insights API. À définir dans Supabase → Edge Functions → Secrets, sous le nom PAGESPEED_API_KEY.",
+  google_gsc:    "Google Search Console n'utilise PAS une clé API mais des identifiants OAuth. Dans Google Cloud Console : Identifiants → ID client OAuth (pas « Clé API »). Puis dans Supabase → Edge Functions → Secrets : GOOGLE_OAUTH_CLIENT_ID et GOOGLE_OAUTH_CLIENT_SECRET.",
+  google_gmb:    "Aucune intégration technique n'existe encore dans SafeCRM pour cette API — ce connecteur n'a aucun effet fonctionnel pour l'instant, même activé.",
+  anthropic:     "Clé lue depuis Supabase → Edge Functions → Secrets, sous le nom ANTHROPIC_API_KEY.",
+  grok:          "Clé lue depuis Supabase → Edge Functions → Secrets, sous le nom GROK_API_KEY.",
+  stripe:        "Clés lues depuis Supabase → Edge Functions → Secrets, sous les noms STRIPE_SECRET_KEY et STRIPE_WEBHOOK_SECRET.",
+  brevo:         "Clé lue depuis Supabase → Edge Functions → Secrets, sous le nom BREVO (+ BREVO_TEMPLATE_* pour les modèles d'email utilisés).",
+  discord:       "Aucune intégration technique (webhook) n'existe encore dans SafeCRM — ce connecteur n'a aucun effet fonctionnel pour l'instant, même activé.",
+  linkedin:      "Aucune intégration technique (edge function) n'existe encore dans SafeCRM — ce connecteur n'a aucun effet fonctionnel pour l'instant, même activé. Si elle est développée un jour, les identifiants attendus sont LINKEDIN_CLIENT_ID et LINKEDIN_API_SECRET dans Supabase → Edge Functions → Secrets.",
+};
+const HELP_FALLBACK = "Procédure non documentée pour ce connecteur — vérifiez le code de l'edge function correspondante avant d'activer.";
 
 /* ---- INIT ---- */
 document.addEventListener('DOMContentLoaded', async () => {
@@ -373,11 +202,8 @@ async function reload() {
 
 function updateStats() {
   const actifs = allRows.filter(r => r.statut === 'actif').length;
-  const sims   = allRows.filter(r => r.statut === 'simule').length;
   document.getElementById('topbar-stats').textContent =
-    `${actifs} actif${actifs>1?'s':''} · ${sims} simulation${sims>1?'s':''} / ${allRows.length}`;
-  const banner = document.getElementById('sim-banner');
-  if (banner) banner.style.display = sims > 0 ? 'block' : 'none';
+    `${actifs} actif${actifs>1?'s':''} / ${allRows.length}`;
 }
 
 /* ---- GRID ---- */
@@ -389,24 +215,22 @@ function renderGrid() {
     return;
   }
   grid.innerHTML = list.map(r => {
-    const st = r.statut || 'non_configure';
+    const on = r.statut === 'actif';
     return `
-      <div class="conn-card ${st}" onclick="openModal('${r.service_key}')">
-        <div class="conn-actions">
-          <div class="icon-btn" title="Modifier" onclick="event.stopPropagation();openModal('${r.service_key}','modifier')">✏️</div>
-        </div>
+      <div class="conn-card ${on?'actif':''}">
         <div class="conn-card-top">
           <div class="conn-ico">${r.ico||'🔌'}</div>
           <div style="flex:1;min-width:0">
             <div class="conn-name">${escHtml(r.label)}</div>
             <div class="conn-cat">${CAT_LABELS[r.cat]||r.cat}</div>
           </div>
+          <button class="help-btn" title="Comment configurer la clé ?" onclick="openHelp('${r.service_key}')">❓</button>
         </div>
-        <div class="conn-desc">${escHtml(r.usage_desc||'')}</div>
-        <div class="conn-footer">
-          <span class="conn-status st-${st}">${ST_LABELS[st]||st}</span>
-          <span class="conn-modules">${(r.modules||[]).join(' · ')}</span>
-        </div>
+        <label class="switch">
+          <input type="checkbox" ${on?'checked':''} onchange="toggleConnector('${r.service_key}')">
+          <span class="slider"></span>
+          <span class="switch-label">${on?'Actif':'Inactif'}</span>
+        </label>
       </div>`;
   }).join('');
 }
@@ -418,258 +242,40 @@ function filterCat(cat, el) {
   renderGrid();
 }
 
-/* ---- MODAL ---- */
-function switchTab(name, el) {
-  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  if(el) el.classList.add('active');
-  document.getElementById('tab-'+name).classList.add('active');
-  if (name === 'historique') loadLogs(currentKey);
-}
-
-async function openModal(key, tab = 'fiche') {
+/* ---- TOGGLE ---- */
+async function toggleConnector(key) {
   const r = allRows.find(x => x.service_key === key);
   if (!r) return;
-  currentKey = key;
-
-  document.getElementById('m-ico').textContent   = r.ico || '🔌';
-  document.getElementById('m-title').textContent = r.label;
-
-  const st = r.statut || 'non_configure';
-  document.getElementById('m-status-row').innerHTML =
-    `<span class="conn-status st-${st}" style="font-size:.78rem">${ST_LABELS[st]}</span>
-     ${r.api_key_masked ? `<span style="font-family:var(--ff-mono);font-size:.72rem;color:var(--mut);margin-left:10px">Clé : …${escHtml(r.api_key_masked)}</span>` : ''}`;
-
-  // Fiche
-  document.getElementById('m-detail-grid').innerHTML = [
-    ['Usage',              r.usage_desc],
-    ['Coût',               r.cout],
-    ['Données échangées',  r.donnees],
-    ['Limites',            r.limite],
-    ['Modules',            (r.modules||[]).join(', ')],
-    ['Documentation',      r.doc_url ? `<a href="${escHtml(r.doc_url)}" target="_blank" rel="noopener" style="color:var(--accent);font-family:var(--ff-mono);font-size:.74rem">Ouvrir →</a>` : '—'],
-  ].map(([lbl,val])=>`
-    <div class="detail-item">
-      <div class="detail-label">${lbl}</div>
-      <div class="detail-val">${val||'—'}</div>
-    </div>`).join('');
-
-  document.getElementById('m-security-text').textContent =
-    `Avant d'activer ${r.label}, confirmez avoir lu et compris les données échangées et les coûts.`;
-
-  // Activer tab
-  document.getElementById('m-apikey').value = '';
-  document.getElementById('m-notes').value  = r.notes || '';
-  document.getElementById('m-consent').checked = false;
-  const actDiv = document.getElementById('m-activer-actions');
-  if (st === 'actif') {
-    actDiv.innerHTML = `<button class="btn btn-danger" onclick="desactiver()">Désactiver</button>`;
-  } else if (st === 'simule') {
-    actDiv.innerHTML = `
-      <button class="btn btn-danger btn-sm" onclick="desactiver()">Arrêter simulation</button>
-      <button class="btn btn-ghost" onclick="closeModal()">Fermer</button>`;
-  } else {
-    actDiv.innerHTML = `
-      <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
-      <button class="btn btn-ghost btn-sm" onclick="simuler()" title="Tester les fonctionnalités sans clé API réelle"
-        style="border-color:rgba(139,92,246,.4);color:#a78bfa">⚡ Mode Démo</button>
-      <button class="btn btn-gold" onclick="activer()">🔌 Activer</button>`;
-  }
-
-  // Modifier tab
-  document.getElementById('e-ico').value     = r.ico     || '';
-  document.getElementById('e-cat').value     = r.cat     || 'autre';
-  document.getElementById('e-label').value   = r.label   || '';
-  document.getElementById('e-key').value     = r.service_key;
-  document.getElementById('e-usage').value   = r.usage_desc || '';
-  document.getElementById('e-cout').value    = r.cout    || '';
-  document.getElementById('e-doc').value     = r.doc_url || '';
-  document.getElementById('e-donnees').value = r.donnees || '';
-  document.getElementById('e-limite').value  = r.limite  || '';
-  document.getElementById('e-modules').value = (r.modules||[]).join(', ');
-  // Les connecteurs pré-chargés sont supprimables (is_custom ou libre choix)
-  document.getElementById('e-delete-btn').style.display = '';
-
-  // Verrouiller service_key si pas custom
-  document.getElementById('e-key').disabled = !r.is_custom;
-
-  // Activer le bon tab
-  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  const tabEl = [...document.querySelectorAll('.modal-tab')].find(t => t.textContent.toLowerCase().includes(tab.toLowerCase()));
-  if (tabEl) tabEl.classList.add('active');
-  const panelId = { fiche:'tab-fiche', activer:'tab-activer', modifier:'tab-modifier', historique:'tab-historique' }[tab] || 'tab-fiche';
-  document.getElementById(panelId).classList.add('active');
-
-  document.getElementById('conn-modal').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('conn-modal').classList.remove('open');
-  currentKey = null;
-}
-
-/* ---- NOUVEAU ---- */
-function newConnecteur() {
-  currentKey = '__new__';
-  document.getElementById('m-ico').textContent   = '🔌';
-  document.getElementById('m-title').textContent = 'Nouveau connecteur';
-  document.getElementById('m-status-row').innerHTML = '';
-  document.getElementById('m-detail-grid').innerHTML = '';
-
-  document.getElementById('e-ico').value     = '🔌';
-  document.getElementById('e-cat').value     = 'autre';
-  document.getElementById('e-label').value   = '';
-  document.getElementById('e-key').value     = '';
-  document.getElementById('e-key').disabled  = false;
-  document.getElementById('e-usage').value   = '';
-  document.getElementById('e-cout').value    = '';
-  document.getElementById('e-doc').value     = '';
-  document.getElementById('e-donnees').value = '';
-  document.getElementById('e-limite').value  = '';
-  document.getElementById('e-modules').value = '';
-  document.getElementById('e-delete-btn').style.display = 'none';
-
-  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.modal-tab')[2].classList.add('active');
-  document.getElementById('tab-modifier').classList.add('active');
-
-  document.getElementById('conn-modal').classList.add('open');
-}
-
-/* ---- SAVE EDIT ---- */
-async function saveEdit() {
-  const label = document.getElementById('e-label').value.trim();
-  const key   = document.getElementById('e-key').value.trim();
-  if (!label || !key) { toast('Nom et clé interne requis', true); return; }
-
-  const modules = document.getElementById('e-modules').value
-    .split(',').map(s=>s.trim()).filter(Boolean);
-
-  const payload = {
-    service_key:  key,
-    label,
-    cat:          document.getElementById('e-cat').value,
-    ico:          document.getElementById('e-ico').value || '🔌',
-    usage_desc:   document.getElementById('e-usage').value.trim()   || null,
-    cout:         document.getElementById('e-cout').value.trim()    || null,
-    donnees:      document.getElementById('e-donnees').value.trim() || null,
-    limite:       document.getElementById('e-limite').value.trim()  || null,
-    doc_url:      document.getElementById('e-doc').value.trim()     || null,
-    modules,
-    is_custom:    true,
-    updated_at:   new Date().toISOString(),
-  };
-
-  let err;
-  if (currentKey === '__new__') {
-    ({ error: err } = await supa.from('safe_connectors').insert({ ...payload, statut:'non_configure' }));
-  } else {
-    ({ error: err } = await supa.from('safe_connectors').update(payload).eq('service_key', currentKey));
-  }
-  if (err) { toast('Erreur : ' + err.message, true); return; }
-
-  toast(currentKey === '__new__' ? 'Connecteur créé' : 'Connecteur mis à jour', false);
-  closeModal();
-  await reload();
-}
-
-/* ---- DELETE ---- */
-async function deleteConnecteur() {
-  if (!currentKey || currentKey === '__new__') return;
-  const r = allRows.find(x => x.service_key === currentKey);
-  if (!confirm(`Supprimer "${r?.label}" ? Cette action est irréversible.`)) return;
-  const { error } = await supa.from('safe_connectors').delete().eq('service_key', currentKey);
-  if (error) { toast('Erreur', true); return; }
-  toast('Connecteur supprimé');
-  closeModal();
-  await reload();
-}
-
-/* ---- ACTIVER / DÉSACTIVER ---- */
-async function activer() {
-  if (!document.getElementById('m-consent').checked) {
-    toast('Vous devez cocher la case de confirmation.', true); return;
-  }
-  const apiKey = document.getElementById('m-apikey').value.trim();
-  const notes  = document.getElementById('m-notes').value.trim();
+  const turningOn = r.statut !== 'actif';
   const { data: { user } } = await supa.auth.getUser();
-  const masked = apiKey.length >= 4 ? '…' + apiKey.slice(-4) : (apiKey ? '✓' : null);
 
-  const { error } = await supa.from('safe_connectors').update({
-    statut:'actif', api_key_masked:masked, notes:notes||null,
-    activated_by:user?.id, activated_at:new Date().toISOString(), updated_at:new Date().toISOString(),
-  }).eq('service_key', currentKey);
-  if (error) { toast('Erreur : ' + error.message, true); return; }
+  const payload = turningOn
+    ? { statut:'actif', activated_by:user?.id, activated_at:new Date().toISOString(), updated_at:new Date().toISOString() }
+    : { statut:'desactive', desactivated_at:new Date().toISOString(), updated_at:new Date().toISOString() };
+
+  const { error } = await supa.from('safe_connectors').update(payload).eq('service_key', key);
+  if (error) { toast('Erreur : ' + error.message, true); await reload(); return; }
 
   await supa.from('safe_connectors_log').insert({
-    connector_key:currentKey, action:'activated', done_by:user?.id, notes:notes||null
+    connector_key:key, action: turningOn ? 'activated' : 'desactivated', done_by:user?.id
   });
 
-  // Persister la clé complète dans safe_connector_secrets (via edge function sécurisée)
-  if (apiKey) {
-    const { data: { session } } = await supa.auth.getSession();
-    if (session) {
-      fetch(`${SUPA_URL}/functions/v1/connector-secret-store`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ service_key: currentKey, api_key: apiKey }),
-      }).catch(() => {}); // fire-and-forget
-    }
-  }
-
-  if (window.invalidateConnectorCache) invalidateConnectorCache(currentKey);
-  toast('Connecteur activé ✅');
-  closeModal(); await reload();
+  if (window.invalidateConnectorCache) invalidateConnectorCache(key);
+  toast(turningOn ? `${r.label} activé ✅` : `${r.label} désactivé`);
+  await reload();
 }
 
-/* ---- SIMULATION ---- */
-async function simuler() {
-  const r = allRows.find(x => x.service_key === currentKey);
+/* ---- AIDE ---- */
+function openHelp(key) {
+  const r = allRows.find(x => x.service_key === key);
   if (!r) return;
-  const { data: { user } } = await supa.auth.getUser();
-  const { error } = await supa.from('safe_connectors').update({
-    statut: 'simule', updated_at: new Date().toISOString(),
-  }).eq('service_key', currentKey);
-  if (error) { toast('Erreur : ' + error.message, true); return; }
-  await supa.from('safe_connectors_log').insert({
-    connector_key: currentKey, action:'simulated', done_by: user?.id,
-    notes: 'Mode simulation activé — aucun appel réel',
-  });
-  if (window.invalidateConnectorCache) invalidateConnectorCache(currentKey);
-  toast(`⚡ Mode Démo activé pour ${r.label}`);
-  closeModal(); await reload();
+  document.getElementById('h-ico').textContent   = r.ico || '🔌';
+  document.getElementById('h-title').textContent = r.label;
+  document.getElementById('h-text').textContent   = HELP_TEXT[key] || HELP_FALLBACK;
+  document.getElementById('help-modal').classList.add('open');
 }
-
-async function desactiver() {
-  if (!confirm('Désactiver ce connecteur ?')) return;
-  const { data: { user } } = await supa.auth.getUser();
-  await supa.from('safe_connectors').update({
-    statut:'desactive', desactivated_at:new Date().toISOString(), updated_at:new Date().toISOString(),
-  }).eq('service_key', currentKey);
-  await supa.from('safe_connectors_log').insert({
-    connector_key:currentKey, action:'desactivated', done_by:user?.id
-  });
-  if (window.invalidateConnectorCache) invalidateConnectorCache(currentKey);
-  toast('Connecteur désactivé');
-  closeModal(); await reload();
-}
-
-/* ---- LOGS ---- */
-async function loadLogs(key) {
-  if (!key || key === '__new__') return;
-  const { data } = await supa.from('safe_connectors_log')
-    .select('action,done_at,notes').eq('connector_key', key)
-    .order('done_at', { ascending: false }).limit(10);
-  const el = document.getElementById('m-logs');
-  if (!data?.length) { el.innerHTML = '<p style="color:var(--mut);font-size:.82rem">Aucun historique.</p>'; return; }
-  const AL = { activated:'✅ Activé', desactivated:'🔴 Désactivé', configured:'🟡 Configuré', key_updated:'🔑 Clé mise à jour' };
-  el.innerHTML = data.map(l=>`
-    <div class="log-item">
-      <span class="log-date">${new Date(l.done_at).toLocaleDateString('fr-FR')}</span>
-      <span>${AL[l.action]||l.action}${l.notes?' — '+escHtml(l.notes):''}</span>
-    </div>`).join('');
+function closeHelp() {
+  document.getElementById('help-modal').classList.remove('open');
 }
 
 /* ---- UTILS ---- */
