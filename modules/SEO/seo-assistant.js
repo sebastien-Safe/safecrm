@@ -48,7 +48,7 @@ async function loadSeoAssistant() {
   el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
 
   const db = window.supa || supa;
-  const keys = ['groq', 'grok', 'anthropic', 'mistral'];
+  const keys = ['anthropic', 'grok'];
   const results = await Promise.all(
     keys.map(k => db.from('safe_connectors').select('statut,label').eq('service_key', k).maybeSingle())
   );

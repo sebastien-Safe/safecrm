@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
     reply = data.content?.[0]?.text || "";
 
   } else {
-    // Format OpenAI-compatible (Grok, Mistral)
+    // Format OpenAI-compatible (Grok)
     const all = system
       ? [{ role: "system", content: system }, ...messages]
       : messages;

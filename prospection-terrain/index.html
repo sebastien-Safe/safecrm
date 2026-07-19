@@ -1128,25 +1128,25 @@ async function initApp(){
 const _MODULES_DEF = [
   {
     key:'dpo', name:'DPO Clients RGPD', icon:'⚖️', color:'#f59e0b', pct:100,
-    done:['Registre traitements','Consentements','Demandes RGPD','Documents','Violations','Audit & Score','Assistant IA (Grok / Claude / Mistral)','Envoi rapport par email au client'],
+    done:['Registre traitements','Consentements','Demandes RGPD','Documents','Violations','Audit & Score','Assistant IA (Grok / Claude)','Envoi rapport par email au client'],
     todo:[],
     href:'/modules/DPO/module-dpo-clients.html',
   },
   {
     key:'cyber', name:'Cybersécurité', icon:'🛡', color:'#06b6d4', pct:100,
-    done:['Audit 23 pts ANSSI/CIS','Incidents','Plan d\'action','Assistant IA (Grok / Claude / Mistral)','Rapport PDF brandé (export + email client)','Alertes email auto incidents graves/critiques'],
+    done:['Audit 23 pts ANSSI/CIS','Incidents','Plan d\'action','Assistant IA (Grok / Claude)','Rapport PDF brandé (export + email client)','Alertes email auto incidents graves/critiques'],
     todo:[],
     href:'/modules/Cyber/module-cyber-clients.html',
   },
   {
     key:'seo', name:'SEO Clients', icon:'🔍', color:'#10b981', pct:97,
-    done:['Suivi mots-clés','Audit 25 points','Rapport PDF mensuel','Assistant IA (Grok / Claude / Mistral)','Envoi rapport par email au client'],
+    done:['Suivi mots-clés','Audit 25 points','Rapport PDF mensuel','Assistant IA (Grok / Claude)','Envoi rapport par email au client'],
     todo:['Import positions GSC/SE Ranking','Alertes chute de positions'],
     href:'/modules/SEO/module-seo-clients.html',
   },
   {
     key:'connecteurs', name:'Connecteurs', icon:'🔌', color:'#3b82f6', pct:95,
-    done:['Gestion centralisée','Activation sécurisée','Logs historique','Mode simulation','Edge Function call-ia','Multi-IA Groq → Grok → Claude → Mistral'],
+    done:['Gestion centralisée','Activation sécurisée','Logs historique','Edge Function call-ia','Multi-IA Anthropic → Grok'],
     todo:['Webhooks entrants'],
     href:'/modules/connecteurs.html',
   },
@@ -1168,8 +1168,8 @@ async function loadModulesStatus() {
       sbGet('safe_connectors',       'select=service_key,statut&statut=in.(actif,simule)').catch(()=>[]),
     ]);
 
-    // Déterminer le connecteur IA actif (priorité groq > grok > anthropic > mistral)
-    const IA_KEYS = ['groq', 'grok', 'anthropic', 'mistral'];
+    // Déterminer le connecteur IA actif (priorité anthropic > grok)
+    const IA_KEYS = ['anthropic', 'grok'];
     const activeIA = IA_KEYS.map(k => conn.find(c => c.service_key === k)).find(Boolean);
     const iaLabel  = activeIA ? `🤖 ${activeIA.service_key.charAt(0).toUpperCase() + activeIA.service_key.slice(1)}` : null;
 

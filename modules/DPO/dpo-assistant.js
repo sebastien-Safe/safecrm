@@ -14,13 +14,11 @@ async function loadAssistant() {
   el.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
 
   const db = window.supa || supa;
-  const { data: groqConn }  = await db.from('safe_connectors').select('statut,label').eq('service_key', 'groq').maybeSingle();
-  const { data: grokConn }  = await db.from('safe_connectors').select('statut,label').eq('service_key', 'grok').maybeSingle();
-  const { data: mistral }   = await db.from('safe_connectors').select('statut,label').eq('service_key', 'mistral').maybeSingle();
   const { data: anthropic } = await db.from('safe_connectors').select('statut,label').eq('service_key', 'anthropic').maybeSingle();
+  const { data: grokConn }  = await db.from('safe_connectors').select('statut,label').eq('service_key', 'grok').maybeSingle();
 
-  const anyActive  = [groqConn, grokConn, mistral, anthropic].some(c => c?.statut === 'actif' || c?.statut === 'simule');
-  const activeConn = [groqConn, grokConn, mistral, anthropic].find(c => c?.statut === 'actif' || c?.statut === 'simule');
+  const anyActive  = [anthropic, grokConn].some(c => c?.statut === 'actif' || c?.statut === 'simule');
+  const activeConn = [anthropic, grokConn].find(c => c?.statut === 'actif' || c?.statut === 'simule');
   const isDemo     = anyActive && activeConn?.statut === 'simule';
 
   el.innerHTML = `
@@ -167,7 +165,7 @@ const DEMO_RESPONSES = [
   },
   {
     match: [],
-    reply: `**Assistant RGPD — Mode Simulation**\n\nJe suis en mode démo. Dans cette interface, je peux vous aider sur :\n\n• Consentements et droits des personnes\n• Registre des traitements (Art.30)\n• Violations de données et notification CNIL\n• Documentation et procédures RGPD\n• Évaluation des risques et conformité\n\nActivez un connecteur IA (Mistral ou Claude) dans les paramètres pour des réponses personnalisées basées sur vos données clients.\n\n_[Réponse simulée]_`
+    reply: `**Assistant RGPD — Mode Simulation**\n\nJe suis en mode démo. Dans cette interface, je peux vous aider sur :\n\n• Consentements et droits des personnes\n• Registre des traitements (Art.30)\n• Violations de données et notification CNIL\n• Documentation et procédures RGPD\n• Évaluation des risques et conformité\n\nActivez un connecteur IA (Grok ou Claude) dans les paramètres pour des réponses personnalisées basées sur vos données clients.\n\n_[Réponse simulée]_`
   },
 ];
 
