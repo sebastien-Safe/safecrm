@@ -2474,10 +2474,12 @@ async function _cibleSearch(){
   const bySiren = new Map();
   try{
     for(const pt of points){
-      const qParam = kw || pt.commune;
+      // Le mot-clé seul fait perdre l'ancrage géographique (q= devient un classement
+      // national par pertinence) : on combine toujours avec la commune pour rester local.
+      const qParam = kw ? `${pt.commune} ${kw}`.trim() : pt.commune;
       let res = await _fetchSirene(qParam, naf, 25);
-      if(res.length < 3 && !kw){
-        const broader = await _fetchSirene('', naf, 50);
+      if(res.length < 3){
+        const broader = await _fetchSirene(pt.commune, naf, 50);
         res = [...res, ...broader.filter(b => !res.find(r => r.siren===b.siren))];
       }
       for(const r of res){
